@@ -80,7 +80,8 @@ Use these exact names in code, UI, and docs.
   shipped.
 - **Deploying:** run `scripts/build-deploy-zip.sh`, then upload the resulting
   `deploy.zip` in the Elastic Beanstalk console. **There is no auto-deploy
-  from GitHub.**
+  from GitHub.** Laravel's error log (`storage/logs/*.log`) is included in the
+  console's Logs → Request logs downloads (`.ebextensions/laravel-logs.config`).
 - Live URL is in `README.md`.
 
 ## Contest

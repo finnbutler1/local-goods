@@ -6,6 +6,11 @@ set -euo pipefail
 
 cd /var/app/current
 
+# Make sure every folder Laravel writes to exists (sessions, cache, compiled
+# views, logs), even if the uploaded zip left an empty one out.
+mkdir -p storage/framework/sessions storage/framework/cache/data \
+    storage/framework/views storage/logs bootstrap/cache
+
 touch storage/database.sqlite
 php artisan migrate:fresh --seed --force --no-interaction
 

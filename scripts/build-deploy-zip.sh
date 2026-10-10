@@ -29,10 +29,17 @@ zip -r -q deploy.zip . \
     -x "storage/logs/*.log" \
     -x "storage/framework/views/*.php" \
     -x "storage/framework/sessions/*" \
-    -x "storage/framework/cache/data/*"
+    -x "storage/framework/cache/data/*" \
+    -x "bootstrap/cache/*.php"
 
-# .env.example is safe and useful to ship, so add it back in.
-zip -q deploy.zip .env.example
+# Add back files that are safe and needed:
+# - .env.example is useful documentation.
+# - The .gitignore placeholders keep the empty storage folders in the zip.
+#   Without them the folders vanish, and Laravel fails with a 500 error when
+#   it tries to save a session file into a folder that doesn't exist.
+zip -q deploy.zip .env.example \
+    storage/framework/sessions/.gitignore \
+    storage/framework/cache/data/.gitignore
 
 echo "Done: $(du -h deploy.zip | cut -f1) deploy.zip"
 echo "Upload it in the Elastic Beanstalk console (Upload and deploy)."
