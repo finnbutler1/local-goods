@@ -13,6 +13,7 @@ class LandingPageTest extends TestCase
             ->assertSee('Spend local. Prove it.')
             ->assertSee("See an employee's wallet", false)
             ->assertSee('See the BID admin view')
-            ->assertSee('All people and transactions are fictional');
+            ->assertSee('All businesses, people, and transactions are fictional.')
+            ->assertDontSee('public records');
     }
 }

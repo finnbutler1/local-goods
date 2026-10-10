@@ -26,7 +26,7 @@
     <footer class="bg-cream-deep text-muted text-sm">
         <div class="mx-auto max-w-5xl px-4 py-6 space-y-1">
             <p>A demonstration project for the CUA Busch School AI Vibe Coding Contest.</p>
-            <p>Business names come from public records. All people and transactions are fictional.</p>
+            <p>All businesses, people, and transactions are fictional.</p>
             <p>Not affiliated with the Golden Triangle Business Improvement District.</p>
         </div>
     </footer>
