@@ -14,6 +14,13 @@ return [
     |
     */
 
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        // Switch to a cheaper model by setting ANTHROPIC_MODEL; no code change needed.
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+        'timeout' => 20,
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
