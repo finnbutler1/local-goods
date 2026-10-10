@@ -5,6 +5,8 @@
 
 @section('content')
 <div class="mx-auto max-w-md px-4 py-8 space-y-6">
+    <x-demo-nav current="employee" />
+
 
     <p class="text-sm text-muted">Demo employee: <span class="font-semibold text-forest">{{ $employee->display_name }}</span>, {{ $employee->employer->name }}</p>
 

@@ -5,6 +5,8 @@
 
 @section('content')
 <div class="mx-auto max-w-5xl px-4 py-8 space-y-6">
+    <x-demo-nav current="bid-admin" />
+
     <header>
         <p class="text-sm font-semibold uppercase tracking-widest text-muted">{{ $bid->name }} BID · {{ $bid->city }}</p>
         <h1 class="mt-1 text-3xl font-semibold tracking-tight">Redemption Fraud Detection</h1>

@@ -13,8 +13,10 @@
         <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
             <a href="{{ route('home') }}" class="font-semibold tracking-tight text-lg">Local Goods</a>
             <nav aria-label="Demo views" class="flex gap-4 text-sm">
-                <a href="{{ route('demo.employee') }}" class="underline-offset-4 hover:underline">Employee wallet</a>
-                <a href="{{ route('demo.bid-admin') }}" class="underline-offset-4 hover:underline">BID admin</a>
+                <a href="{{ route('demo.employee') }}" @if (request()->routeIs('demo.employee')) aria-current="page" @endif
+                   class="underline-offset-4 hover:underline aria-[current=page]:underline aria-[current=page]:font-semibold">Employee wallet</a>
+                <a href="{{ route('demo.bid-admin') }}" @if (request()->routeIs('demo.bid-admin')) aria-current="page" @endif
+                   class="underline-offset-4 hover:underline aria-[current=page]:underline aria-[current=page]:font-semibold">BID admin</a>
             </nav>
         </div>
     </header>
