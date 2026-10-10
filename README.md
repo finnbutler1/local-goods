@@ -1,6 +1,8 @@
 # Local Goods
 
-**Live URL:** http://localgoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/
+**Live URL:** http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com
+
+**What's live:** the employee wallet with AI fraud detection. Redeem credits at a local merchant and every redemption is scored by Redemption Fraud Detection (plus a BID admin view of the AI's decisions).
 
 An employee rewards program that keeps employer spending in the neighborhood where it does business.
 
