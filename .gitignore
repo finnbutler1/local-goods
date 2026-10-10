@@ -27,3 +27,4 @@ Thumbs.db
 *.pem
 *.key
 /deploy.zip
+/storage/*.sqlite*

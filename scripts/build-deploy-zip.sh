@@ -20,12 +20,16 @@ zip -r -q deploy.zip . \
     -x "tests/*" \
     -x "deploy.zip" \
     -x "database/*.sqlite*" \
+    -x "storage/*.sqlite*" \
     -x "*.pem" \
     -x "*.key" \
     -x ".claude/*" \
     -x "*.DS_Store" \
     -x ".phpunit.result.cache" \
-    -x "storage/logs/*.log"
+    -x "storage/logs/*.log" \
+    -x "storage/framework/views/*.php" \
+    -x "storage/framework/sessions/*" \
+    -x "storage/framework/cache/data/*"
 
 # .env.example is safe and useful to ship, so add it back in.
 zip -q deploy.zip .env.example
