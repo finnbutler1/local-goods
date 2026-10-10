@@ -8,6 +8,7 @@ use App\Models\Redemption;
 use App\Services\Ai\ClaudeClient;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Tests\Fakes\FakeClaudeClient;
@@ -64,6 +65,19 @@ class EmployeeWalletTest extends TestCase
         $this->assertSame(Redemption::STATUS_APPROVED, $redemption->status);
         $this->assertSame(650, $redemption->amount_cents);
         $this->assertSame(11350, Employee::firstOrFail()->balanceCents());
+    }
+
+    public function test_the_ai_call_happens_outside_the_database_transaction(): void
+    {
+        $fake = FakeClaudeClient::verdict(6, 'clear');
+        $this->fakeClaude($fake);
+        // RefreshDatabase wraps each test in its own transaction; that is the baseline.
+        $baseline = DB::transactionLevel();
+
+        $this->post('/demo/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50']);
+
+        $this->assertCount(1, $fake->calls);
+        $this->assertSame($baseline, $fake->calls[0]['transaction_level']);
     }
 
     public function test_suspicious_button_prefills_full_balance_round_number(): void

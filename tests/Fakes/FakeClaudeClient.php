@@ -3,6 +3,7 @@
 namespace Tests\Fakes;
 
 use App\Services\Ai\ClaudeClient;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -11,7 +12,7 @@ use Throwable;
  */
 class FakeClaudeClient extends ClaudeClient
 {
-    /** @var list<array{system: string, user: string}> */
+    /** @var list<array{system: string, user: string, transaction_level: int}> */
     public array $calls = [];
 
     public function __construct(private string|Throwable $reply) {}
@@ -23,7 +24,7 @@ class FakeClaudeClient extends ClaudeClient
 
     public function json(string $system, string $userContent, array $schema): string
     {
-        $this->calls[] = ['system' => $system, 'user' => $userContent];
+        $this->calls[] = ['system' => $system, 'user' => $userContent, 'transaction_level' => DB::transactionLevel()];
 
         if ($this->reply instanceof Throwable) {
             throw $this->reply;

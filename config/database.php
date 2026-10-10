@@ -38,10 +38,16 @@ return [
             'database' => env('DB_DATABASE', storage_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
-            'transaction_mode' => 'DEFERRED',
+            // Concurrency settings for the demo's single SQLite file:
+            // WAL lets readers keep reading while one request writes; the busy
+            // timeout makes a second writer wait (ms) instead of failing with
+            // "database is locked"; IMMEDIATE takes the write lock at BEGIN so a
+            // transaction never fails trying to upgrade a read lock mid-way.
+            // transaction_mode needs PHP 8.4+ (older PHP ignores it).
+            'busy_timeout' => (int) env('DB_BUSY_TIMEOUT', 5000),
+            'journal_mode' => env('DB_JOURNAL_MODE', 'wal'),
+            'synchronous' => env('DB_SYNCHRONOUS', 'normal'),
+            'transaction_mode' => env('DB_TRANSACTION_MODE', 'IMMEDIATE'),
         ],
 
         'mysql' => [
