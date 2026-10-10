@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Redemption extends Model
+{
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_UNDER_REVIEW = 'under_review';
+
+    protected $fillable = [
+        'employee_id', 'merchant_id', 'amount_cents', 'status', 'risk_score',
+        'ai_decision', 'ai_explanation', 'signals', 'scored_by', 'created_at',
+    ];
+
+    protected function casts(): array
+    {
+        return ['signals' => 'array'];
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class);
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
+    }
+}
