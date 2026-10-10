@@ -1,57 +1,24 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name') }}</title>
-    <style>
-        :root {
-            --bg: #f7f5f0;
-            --text: #1f2a24;
-            --muted: #5b6660;
-            --accent: #2f6b4f;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #141a17;
-                --text: #eef2ef;
-                --muted: #a7b3ac;
-                --accent: #7cc39f;
-            }
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            background: var(--bg);
-            color: var(--text);
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            text-align: center;
-        }
-        main { max-width: 36rem; }
-        h1 { font-size: clamp(2.5rem, 8vw, 4rem); margin: 0 0 1rem; letter-spacing: -0.02em; }
-        p { font-size: 1.125rem; line-height: 1.6; color: var(--muted); margin: 0 0 2rem; }
-        .soon {
-            display: inline-block;
-            padding: 0.5rem 1.25rem;
-            border: 2px solid var(--accent);
-            border-radius: 999px;
-            color: var(--accent);
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-    </style>
-</head>
-<body>
-    <main>
-        <h1>{{ config('app.name') }}</h1>
-        <p>An employee rewards program that keeps employer spending in the neighborhood where it does business.</p>
-        <span class="soon">Coming Soon</span>
-    </main>
-</body>
-</html>
+@extends('layouts.app')
+
+@section('title', 'Local Goods: Spend local. Prove it.')
+
+@section('content')
+    <section class="mx-auto max-w-3xl px-4 py-16 sm:py-24">
+        <p class="text-sm font-semibold uppercase tracking-widest text-muted">Golden Triangle · Washington, DC</p>
+        <h1 class="mt-3 text-5xl sm:text-6xl font-semibold tracking-tight">Spend local. Prove it.</h1>
+        <p class="mt-6 text-lg sm:text-xl leading-relaxed text-muted max-w-2xl">
+            Give your team a perk they'll actually use: monthly credits that only work at the independent
+            restaurants, shops and studios around your office, so people get out of the building and into the neighborhood.
+        </p>
+        <div class="mt-10 flex flex-col sm:flex-row gap-3">
+            <a href="{{ route('demo.employee') }}"
+               class="inline-flex justify-center rounded-lg bg-amber px-5 py-3 font-semibold text-forest shadow-sm hover:brightness-95">
+                See an employee's wallet
+            </a>
+            <a href="{{ route('demo.bid-admin') }}"
+               class="inline-flex justify-center rounded-lg border-2 border-forest px-5 py-3 font-semibold text-forest hover:bg-forest hover:text-cream">
+                See the BID admin view
+            </a>
+        </div>
+    </section>
+@endsection
