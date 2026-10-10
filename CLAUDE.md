@@ -5,7 +5,9 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**One working slice (employee wallet + AI fraud check) live by Oct 16, 2026.**
+**One working slice (employee wallet + AI fraud check) live on Elastic Beanstalk by Thu Oct 15, 2026.**
+Built: landing page, `/demo/employee` wallet, `/demo/bid-admin` view, Redemption
+Fraud Detection. Remaining: deploy and verify on Beanstalk.
 Everything else is out of scope until then. Update this section whenever the
 milestone changes.
 
@@ -47,7 +49,9 @@ multi-BID data model.
    confidence score.
 2. **Redemption Fraud Detection.** Scores every redemption for abuse such as
    credit-to-cash collusion. **It gates real Stripe transfers:** a flagged
-   redemption is held and no money moves until it is cleared.
+   redemption is held and no money moves until it is cleared. It fails closed:
+   any API error or invalid reply means hold, never clear. Only anonymous
+   signals (no names) are sent to the AI.
 
 Use these exact names in code, UI, and docs.
 
@@ -64,7 +68,13 @@ Use these exact names in code, UI, and docs.
 
 - **Laravel** — check `composer.json` for the version (currently `^13.17`, PHP `^8.3`).
 - **Tailwind via Vite** (`npm run dev` / `npm run build`).
-- **SQLite** locally (`database/database.sqlite`, gitignored).
+- **SQLite** at `storage/database.sqlite` (gitignored), locally and on Beanstalk.
+  A postdeploy hook (`.platform/hooks/postdeploy/01_reset_database.sh`) runs
+  `migrate:fresh --seed --force` on every deploy, so demo data resets each deploy.
+- **Claude API** via the official `anthropic-ai/sdk` package, wrapped in
+  `App\Services\Ai\ClaudeClient`. Key from `ANTHROPIC_API_KEY`; model from
+  `ANTHROPIC_MODEL` (default `claude-opus-5-5`). Prompts live in `resources/prompts/`.
+  Tests use `Tests\Fakes\FakeClaudeClient` and never call the real API.
 - **AWS Elastic Beanstalk**, PHP platform, single instance. Config lives in
   `.ebextensions/`. EB runs `composer install` on deploy, so `vendor/` is not
   shipped.
