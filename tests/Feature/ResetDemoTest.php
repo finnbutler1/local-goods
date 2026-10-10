@@ -1,0 +1,78 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Employee;
+use App\Models\Merchant;
+use App\Models\Redemption;
+use App\Models\User;
+use App\Services\Ai\ClaudeClient;
+use Database\Seeders\DatabaseSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Tests\Fakes\FakeClaudeClient;
+use Tests\TestCase;
+
+class ResetDemoTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow(Carbon::parse('2026-10-20 12:00', 'America/New_York'));
+        $this->seed(DatabaseSeeder::class);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
+    public function test_reset_restores_seeded_demo_data_and_leaves_other_tables_alone(): void
+    {
+        // Non-demo data that must survive the reset.
+        $user = User::factory()->create();
+        DB::table('cache')->insert(['key' => 'keep-me', 'value' => 'x', 'expiration' => 0]);
+
+        // Make a held redemption during the "demo".
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(95, 'hold', 'Full balance.'));
+        $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
+        $this->post('/demo/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '120']);
+        $this->assertSame(0, Employee::firstOrFail()->balanceCents());
+        $this->assertSame(13, Redemption::count());
+
+        $this->followingRedirects()
+            ->post('/demo/reset')
+            ->assertOk()
+            ->assertSee('Demo data has been reset')
+            ->assertDontSee('Full balance.');
+
+        // Seeded state is back, exactly once.
+        $this->assertSame(12, Redemption::count());
+        $this->assertSame(0, Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->count());
+        $this->assertSame(1, Employee::count());
+        $this->assertSame(8, Merchant::count());
+        $this->assertSame(12000, Employee::firstOrFail()->balanceCents());
+
+        // Non-demo tables untouched.
+        $this->assertTrue(User::whereKey($user->id)->exists());
+        $this->assertTrue(DB::table('cache')->where('key', 'keep-me')->exists());
+    }
+
+    public function test_admin_view_has_the_reset_button(): void
+    {
+        $this->get('/demo/bid-admin')
+            ->assertOk()
+            ->assertSee('Reset demo')
+            ->assertSee(route('demo.reset'), false);
+    }
+
+    public function test_reset_requires_post(): void
+    {
+        $this->get('/demo/reset')->assertMethodNotAllowed();
+        $this->assertSame(12, Redemption::count());
+    }
+}

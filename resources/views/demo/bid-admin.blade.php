@@ -15,7 +15,14 @@
         </p>
     </header>
 
-    <dl class="grid grid-cols-2 gap-3 sm:max-w-md">
+    <div aria-live="polite">
+        @if (session('status'))
+            <p class="rounded-xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
+        @endif
+    </div>
+
+    <div class="flex flex-wrap items-end justify-between gap-4">
+    <dl class="grid grid-cols-2 gap-3 sm:w-md">
         <div class="rounded-xl bg-white p-4 ring-1 ring-cream-deep">
             <dt class="text-sm text-muted">AI-scored redemptions</dt>
             <dd class="text-2xl font-semibold">{{ $scoredCount }}</dd>
@@ -25,6 +32,17 @@
             <dd class="text-2xl font-semibold text-hold">{{ $heldCount }}</dd>
         </div>
     </dl>
+
+    <form method="POST" action="{{ route('demo.reset') }}"
+          onsubmit="return confirm('Reset the demo? This removes every redemption made since the last deploy and restores the seeded data.');">
+        @csrf
+        <button type="submit" aria-describedby="reset-help"
+                class="rounded-lg border-2 border-forest px-4 py-2.5 font-semibold text-forest hover:bg-forest hover:text-cream">
+            Reset demo
+        </button>
+        <p id="reset-help" class="mt-1 text-sm text-muted">Restores the seeded demo data only.</p>
+    </form>
+    </div>
 
     <section aria-labelledby="recent-heading">
         <h2 id="recent-heading" class="text-xl font-semibold">Recent redemptions</h2>
