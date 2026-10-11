@@ -16,8 +16,8 @@
 
 Employers in downtown business districts spend heavily on employee perks, but
 very little of that money stays in the surrounding neighborhood. It goes to
-national chains and online platforms. Yet **independent merchants return
-roughly 3x more per dollar to the local economy** than national chains. Business
+national chains and online platforms. Yet independent merchants return far
+more to the local economy: [Civic Economics](https://www.civiceconomics.com/) studies found that independent businesses recirculate roughly 48% of their revenue locally, versus under 14% for chains: roughly 3x more per dollar. Business
 Improvement Districts (BIDs) want to support their independent merchants, and
 employers want a perk their staff will actually use.
 
@@ -77,7 +77,7 @@ Only what exists today is claimed. Everything else is marked **planned**.
 | **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Planned:** Merchant Eligibility Matching. |
 | **Code quality / GitHub** | 15 | 36 automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php), so they need no secrets. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
 | **UX** | 10 | One-click demo flow (normal, then suspicious redemption), plain-English AI explanations, status badges, navigation between demo views, all businesses labeled fictional. **Planned:** the employer/HR dashboard. |
-| **Business impact** | 10 | Money stays with independent merchants (roughly 3x local return per dollar). BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, and **planned** Stripe payouts will only go out for cleared ones. Metrics like local spend captured are **planned**. |
+| **Business impact** | 10 | Designed to keep perk spending with independent merchants. [Civic Economics](https://www.civiceconomics.com/) studies found that independent businesses recirculate roughly 48% of their revenue locally, versus under 14% for chains: roughly 3x more per dollar. BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, and **planned** Stripe payouts will only go out for cleared ones. Metrics like local spend captured are **planned**. |
 | **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, synthetic data only. See [TRANSPARENCY.md](TRANSPARENCY.md). **Planned:** a human approve/reject action that records the reviewer's reason. |
 
 ## How I built it with Claude Code
