@@ -1,0 +1,60 @@
+# Changelog
+
+What has shipped in Local Goods so far, newest first. Dates come from the
+commit history.
+
+## 2026-10-11: CI and project documentation
+
+- GitHub Actions CI runs the full test suite and front-end build on every push
+  and pull request.
+- [TRANSPARENCY.md](TRANSPARENCY.md) explains how AI is used in the product and
+  how the app was built with Claude Code.
+- Architecture decision records in [docs/adr/](docs/adr/).
+- This changelog, and a README rewritten around the judging rubric.
+
+## 2026-10-10: First working slice, live on Elastic Beanstalk
+
+- **Redemption Fraud Detection.**
+  - PHP calculates anonymous signals and sends them to Claude with a prompt
+    file.
+  - Claude returns a risk score, a clear/hold decision and a plain-English
+    explanation.
+  - A score of 70 or higher is always held.
+  - Fails closed on any error.
+- **Employee wallet** (`/demo/employee`): balance, history, a redeem form,
+  and a one-click "suspicious redemption" demo that the AI holds.
+- **BID admin view** (`/demo/bid-admin`): every redemption with its AI score,
+  decision and explanation, plus a count of held redemptions.
+- **Data model:** BID, employer, employees, merchants and an append-only
+  credit ledger. Held redemptions keep their credits reserved.
+- **Reset demo** button on the BID admin view, and in-page navigation between
+  the demo views.
+- Brand layout and landing page. The footer notes that all businesses are
+  fictional.
+- **Deployment fixes:**
+  - a postdeploy hook that reseeds the demo database
+  - SQLite moved into `storage/`
+  - a fix for "database is locked" during redemptions
+  - a fix for a 500 error on first deploy
+  - nginx routing for Laravel
+  - Laravel error logs included in Beanstalk log downloads
+- `CLAUDE.md` project brief and a deploy-zip script.
+
+## 2026-10-09: Deployment prep
+
+- Week 2 deployment preparation and the live URL added to the README.
+
+## 2026-10-02: Security housekeeping
+
+- `.pem` and `.key` files ignored repo-wide.
+
+## 2026-09-26: Week 1 skeleton
+
+- Laravel application skeleton.
+- Contest attribution in the README.
+
+## 2026-09-21: Project start
+
+- Project thesis: the problem, the two AI functions, the target users and the
+  success criteria.
+- `.gitignore` to keep secrets out of the repo.
