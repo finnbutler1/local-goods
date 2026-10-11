@@ -4,8 +4,8 @@
 
 ## Context
 
-Employers pay for credits up front, and merchants are paid later when
-employees redeem. Someone has to hold that money in between and move it to
+In the planned design, employers pay for credits up front and merchants are
+paid later when employees redeem (today no money moves; see Consequences). Someone has to hold that money in between and move it to
 many small merchants. Holding other people's money ourselves would mean
 money-transmitter licensing, bank partnerships, merchant identity checks
 (KYC) and payout reconciliation. A student MVP cannot responsibly take that on.

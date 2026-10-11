@@ -64,13 +64,16 @@ it. Any of these counts as a failure:
 
 In each case the app records a hold with score 100, marks it `scored_by =
 fallback`, and shows the explanation: *"Automatic hold: the AI check could not
-be completed, so a person will review this redemption."* See
+be completed, so a person will review this redemption."* That review is only
+partly built today (see below). See
 [`RedemptionFraudDetector`](app/Services/Fraud/RedemptionFraudDetector.php)
 and [ADR 0003](docs/adr/0003-fail-closed-fraud-detection.md).
 
-### Human review of holds
+### Human review of holds (partly planned)
 
-A held redemption is never thrown away and never approved automatically:
+A held redemption is never thrown away and never approved automatically. A
+person can see it, but **approving or rejecting it in the app is not built
+yet**:
 
 - **Today:** a held redemption gets the status *under review*. The employee's
   credits stay reserved, so neither side loses anything while it waits. The
@@ -78,9 +81,17 @@ A held redemption is never thrown away and never approved automatically:
   explanation, and the admin view counts how many are waiting.
 - **Planned:** buttons that let a BID or HR reviewer approve or reject a held
   redemption, with their name and reason recorded next to the AI's decision.
-- **Planned:** once Stripe Connect is connected, no money will move to a
-  merchant for a held redemption until a person clears it. Stripe is not built
-  yet, so no real money moves today.
+- **Planned:** once Stripe Connect is built, no money will move to a merchant
+  for a held redemption until a person clears it. **Today no money moves at
+  all**, whether a redemption is cleared or held. Redemptions only update the
+  credit ledger.
+
+### Which merchants are eligible (planned)
+
+Today employees can only redeem at the demo's merchants, which were seeded by
+hand as fictional independent businesses. The app does not yet check whether a
+merchant is independent. Merchant Eligibility Matching will do that, and it is
+**planned**.
 
 ### Synthetic data
 

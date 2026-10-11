@@ -32,9 +32,11 @@ Tests: [`RedemptionFraudDetectorTest`](../../tests/Feature/RedemptionFraudDetect
 
 ## Consequences
 
-- An AI outage can never approve a fraudulent payout.
+- An AI outage can never mark a redemption as approved. Once Stripe payouts
+  are built (planned), that means an outage can never release a fraudulent
+  payout. Today no money moves.
 - During an outage, honest redemptions are held too, which annoys employees.
-  Their credits stay reserved, so nothing is lost while a person reviews.
+  Their credits stay reserved, so nothing is lost while they wait.
 - Held redemptions need a human. Today they appear on the BID admin view with
   the AI's explanation. Approve and reject buttons are **planned**.
 - The AI call happens outside the database transaction, so a slow reply never

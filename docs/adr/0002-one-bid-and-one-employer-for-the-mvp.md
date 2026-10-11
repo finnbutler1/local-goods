@@ -18,9 +18,9 @@ assumes a single row.
 
 ## Consequences
 
-- All the effort goes into making one complete loop work well: the employer
-  funds credits, the employee redeems, the AI checks the redemption and the
-  BID reviews it.
+- All the effort goes into making one complete loop work well. Today the
+  employee redeems seeded credits and the AI checks the redemption. Employer
+  funding and BID approve/reject of held redemptions are planned.
 - The demo is easy to follow for judges and for a real BID.
 - Expanding to more BIDs later will need a migration and scoping on every
   query. We accept that cost for the speed it buys now.
