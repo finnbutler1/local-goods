@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml/badge.svg)](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml)
 
-**Stack:** Laravel 13 · PHP 8.4 · Tailwind CSS (Vite) · SQLite · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect (planned)
+**Stack:** Laravel 13 · PHP 8.3+ (CI on 8.4) · Tailwind CSS 4 (Vite 8) · SQLite · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect (planned)
 
 ---
 
@@ -95,7 +95,7 @@ in [TRANSPARENCY.md](TRANSPARENCY.md).
 
 ## Local setup
 
-Requirements: PHP 8.3+ (CI uses 8.4), Composer, Node 22+.
+Requirements: PHP 8.3+ (CI uses 8.4), Composer, Node 20.19+ or 22.12+ (CI uses 22).
 
 ```sh
 git clone https://github.com/finnbutler1/local-goods.git
