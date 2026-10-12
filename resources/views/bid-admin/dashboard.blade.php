@@ -105,16 +105,18 @@
                                 <span class="font-semibold">Waiting for your decision.</span>
                                 The {{ Money::format($redemption->amount_cents) }} is reserved from the employee's balance.
                             </p>
-                            <div class="flex flex-wrap gap-2">
-                                <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}">
-                                    @csrf
-                                    <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
-                                </form>
-                                <form method="POST" action="{{ route('bid-admin.reject', $redemption) }}">
-                                    @csrf
-                                    <x-button type="submit" size="sm" variant="danger" class="bg-paper" aria-label="Reject {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Reject</x-button>
-                                </form>
-                            </div>
+                            @can('review', $redemption)
+                                <div class="flex flex-wrap gap-2">
+                                    <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}">
+                                        @csrf
+                                        <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
+                                    </form>
+                                    <form method="POST" action="{{ route('bid-admin.reject', $redemption) }}">
+                                        @csrf
+                                        <x-button type="submit" size="sm" variant="danger" class="bg-paper" aria-label="Reject {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Reject</x-button>
+                                    </form>
+                                </div>
+                            @endcan
                         </div>
                     @elseif ($redemption->reviewed_by)
                         <p class="mt-4 text-sm text-muted">

@@ -9,9 +9,6 @@ use Illuminate\View\View;
 
 class BidAdminController extends Controller
 {
-    /** The demo BID admin persona. Replaced by the signed-in user once login exists. */
-    public const DEMO_ADMIN = 'Sam Taylor (demo)';
-
     public function __invoke(): View
     {
         $redemptions = Redemption::with(['merchant', 'employee.employer'])

@@ -8,33 +8,38 @@ use App\Models\Redemption;
 use App\Services\RedemptionReviewService;
 use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Approve and Reject buttons for redemptions held by Redemption Fraud
- * Detection. Until login exists, every decision is made as the demo BID admin.
+ * Detection. The decision is recorded as the signed-in user. Only BID admins
+ * and the platform admin may decide (RedemptionPolicy); judges get 403.
  */
 class ReviewRedemptionController extends Controller
 {
     public function __construct(private RedemptionReviewService $reviews) {}
 
-    public function approve(Redemption $redemption): RedirectResponse
+    public function approve(Request $request, Redemption $redemption): RedirectResponse
     {
-        return $this->decide($redemption, 'approve',
+        return $this->decide($request, $redemption, 'approve',
             fn ($r) => 'Approved '.Money::format($r->amount_cents)." at {$r->merchant->name}. The reserved credits are spent.");
     }
 
-    public function reject(Redemption $redemption): RedirectResponse
+    public function reject(Request $request, Redemption $redemption): RedirectResponse
     {
-        return $this->decide($redemption, 'reject',
+        return $this->decide($request, $redemption, 'reject',
             fn ($r) => 'Rejected '.Money::format($r->amount_cents)." at {$r->merchant->name}. The credits are back in the employee's balance.");
     }
 
-    private function decide(Redemption $redemption, string $action, callable $message): RedirectResponse
+    private function decide(Request $request, Redemption $redemption, string $action, callable $message): RedirectResponse
     {
+        Gate::authorize('review', $redemption);
+
         $back = redirect()->to(route('bid-admin.dashboard')."#redemption-{$redemption->id}");
 
         try {
-            $this->reviews->{$action}($redemption, BidAdminController::DEMO_ADMIN);
+            $this->reviews->{$action}($redemption, $request->user());
         } catch (RedemptionAlreadyReviewed $e) {
             $done = $e->redemption->isUnderReview() ? 'not under review' : "already {$e->redemption->status}";
 
