@@ -1,7 +1,7 @@
 @props(['redemption'])
 
 @if ($redemption->isApproved())
-    <span {{ $attributes->class('inline-flex items-center rounded-full bg-ok-bg px-2.5 py-0.5 text-xs font-semibold text-ok') }}>Approved</span>
+    <x-badge tone="ok" {{ $attributes }}><span class="size-1.5 rounded-full bg-ok" aria-hidden="true"></span>Approved</x-badge>
 @else
-    <span {{ $attributes->class('inline-flex items-center rounded-full bg-hold-bg px-2.5 py-0.5 text-xs font-semibold text-hold') }}>Under review</span>
+    <x-badge tone="hold" {{ $attributes }}><span class="size-1.5 rounded-full bg-hold" aria-hidden="true"></span>Under review</x-badge>
 @endif
