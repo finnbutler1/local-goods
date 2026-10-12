@@ -15,6 +15,11 @@
             The AI can be wrong, so a held redemption is never rejected automatically: a person reviews it.
             If the AI check fails for any reason, the redemption is held, never cleared.
         </p>
+        <p class="mt-2">
+            <a href="{{ route('demo.bid-admin.eval') }}" class="font-semibold underline underline-offset-4 hover:no-underline">
+                How often does the AI agree with a person? See the eval results <span aria-hidden="true">→</span>
+            </a>
+        </p>
     </header>
 
     <div aria-live="polite">

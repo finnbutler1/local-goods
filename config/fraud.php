@@ -27,4 +27,7 @@ return [
         'salon' => [2500, 9000],
         'fitness' => [2000, 4000],
     ],
+
+    // Latest results written by `php artisan fraud:eval`, shown at /demo/bid-admin/eval.
+    'eval_latest_path' => base_path('docs/evals/fraud-eval-latest.json'),
 ];
