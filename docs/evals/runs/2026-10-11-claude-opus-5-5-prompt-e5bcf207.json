@@ -533,5 +533,6 @@
             "agree": true,
             "cached": true
         }
-    ]
+    ],
+    "note": "First run, with the original prompt. Its holdout cases (FE-21 to FE-30 group) were unseen at the time."
 }

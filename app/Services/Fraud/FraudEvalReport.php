@@ -68,22 +68,46 @@ class FraudEvalReport
                 'name' => basename($run['path'], '.json'),
                 'file' => 'runs/'.basename($run['path'], '.json').'.md',
                 'note' => $run['note'] ?? null,
+                'summary' => $run['summary'],
             ])
             ->values()
             ->all();
     }
 
     /**
-     * The run whose holdout score is the headline number (config
-     * fraud.eval_headline_run). Later runs don't replace it automatically:
-     * a prompt changed after seeing holdout results can't claim a clean score.
+     * The headline number: one split of one chosen run (config
+     * fraud.eval_headline). Later runs never replace it automatically,
+     * because a score only counts as clean if those cases were unseen when
+     * the prompt was last changed.
      *
      * @param  list<array<string, mixed>>  $history
      * @return array<string, mixed>|null
      */
     public function headline(array $history): ?array
     {
-        return collect($history)->firstWhere('name', config('fraud.eval_headline_run'));
+        $config = config('fraud.eval_headline');
+        $row = collect($history)->firstWhere('name', $config['run'] ?? null);
+        $split = $row['summary'][$config['split'] ?? ''] ?? null;
+
+        if ($split === null || $split['cases'] === 0) {
+            return null;
+        }
+
+        $current = $row['prompt_version'] === FraudEvalRunner::promptVersion();
+        $missed = $split['matrix']['suspicious']['normal'];
+
+        return [
+            'run_at' => $row['run_at'],
+            'prompt_version' => $row['prompt_version'],
+            'file' => $row['file'],
+            'split' => $config['split'],
+            'text' => "{$split['agreement_pct']}% agreement on {$split['cases']} unseen cases with "
+                .($current ? 'the current prompt' : "prompt {$row['prompt_version']}")
+                .", and {$missed} suspicious ".($missed === 1 ? 'case' : 'cases').' missed.',
+            'note' => $config['note'] ?? null,
+            'sample' => "Small sample: with {$split['cases']} cases, one case moves the score by "
+                .round(100 / $split['cases'], 1).' points.',
+        ];
     }
 
     /**
@@ -101,8 +125,10 @@ class FraudEvalReport
         $md = "# Redemption Fraud Detection eval results\n\n";
 
         if ($headline !== null) {
-            $md .= "**Headline: {$headline['holdout_pct']}% agreement on holdout cases**, from the run on "
-                .Carbon::parse($headline['run_at'])->format('F j, Y')." (prompt `{$headline['prompt_version']}`, [details]({$headline['file']})).\n\n";
+            $md .= "**Headline: {$headline['text']}**\n\n";
+            $md .= 'From the run on '.Carbon::parse($headline['run_at'])->format('F j, Y')
+                ." (prompt `{$headline['prompt_version']}`, `{$headline['split']}` cases, [details]({$headline['file']})). "
+                .($headline['note'] ? "{$headline['note']} " : '')."{$headline['sample']}\n\n";
         }
 
         $md .= $headline === null ? '' : "## Latest run\n\n";
@@ -119,13 +145,25 @@ class FraudEvalReport
 
         $md .= "## Agreement with the human labels\n\n";
         $md .= "| Split | Agreement |\n|---|---|\n";
-        // Bold the holdout score only when it is the headline (or no headline is set).
-        $bold = $headline === null || $headline['prompt_version'] === $run['prompt_version'] ? '**' : '';
-        $md .= "| {$bold}Holdout{$bold} (not used to change the prompt) | {$bold}{$pct($s['holdout'])}{$bold} |\n";
-        if (($s['holdout_2']['cases'] ?? 0) > 0) {
-            $md .= "| **Holdout 2** (labeled after the last prompt change, never seen while changing it) | **{$pct($s['holdout_2'])}** |\n";
+        $descriptions = [
+            'holdout_2' => 'labeled after the last prompt change, never seen while changing it',
+            'holdout' => 'not used to change the prompt',
+            'dev' => 'may be used to improve the prompt',
+        ];
+
+        foreach ($descriptions as $key => $description) {
+            if (($s[$key]['cases'] ?? 0) === 0) {
+                continue;
+            }
+
+            // Bold only the headline score (or the holdout score when no headline is set).
+            $isHeadline = $headline === null
+                ? $key === 'holdout'
+                : $headline['run_at'] === $run['run_at'] && $headline['split'] === $key;
+            $b = $isHeadline ? '**' : '';
+            $md .= '| '.$b.FraudEvalRunner::SPLITS[$key].$b." ({$description}) | {$b}{$pct($s[$key])}{$b} |\n";
         }
-        $md .= "| Dev (may be used to improve the prompt) | {$pct($s['dev'])} |\n";
+
         $md .= "| All cases | {$pct($s['all'])} |\n\n";
         $md .= "The AI's `hold` counts as *suspicious* and `clear` as *normal*.";
 

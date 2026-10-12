@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| Run | October 11, 2026 9:59 PM GMT-0400 |
+| Run | October 11, 2026 10:03 PM GMT-0400 |
 | Model | `claude-opus-5-5` |
 | Prompt version | `8d5e1e70` (first 8 characters of the SHA-256 of [`redemption-fraud-detection.md`](../../../resources/prompts/redemption-fraud-detection.md)) |
 | Cases | 40, version `3b40d7c8` hand-labeled synthetic redemptions ([`data/fraud_eval_cases.csv`](../../../data/fraud_eval_cases.csv)) |
@@ -13,8 +13,8 @@
 
 | Split | Agreement |
 |---|---|
+| Holdout 2 (labeled after the last prompt change, never seen while changing it) | 80% (8/10) |
 | **Holdout** (not used to change the prompt) | **90% (9/10)** |
-| **Holdout 2** (labeled after the last prompt change, never seen while changing it) | **80% (8/10)** |
 | Dev (may be used to improve the prompt) | 90% (18/20) |
 | All cases | 87.5% (35/40) |
 

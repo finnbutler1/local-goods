@@ -37,10 +37,14 @@
         @if ($headline)
             <section aria-labelledby="headline-heading" class="rounded-2xl bg-forest p-5 text-cream">
                 <h2 id="headline-heading" class="text-sm font-semibold uppercase tracking-widest">Headline result</h2>
-                <p class="mt-1 text-3xl font-semibold">{{ $headline['holdout_pct'] }}% agreement on holdout cases</p>
-                <p class="mt-1 text-sm">
-                    From the first run on {{ Carbon::parse($headline['run_at'])->format('M j, Y') }}
-                    (prompt version <code>{{ $headline['prompt_version'] }}</code>), before any change to the prompt.
+                <p class="mt-1 text-2xl font-semibold sm:text-3xl">{{ $headline['text'] }}</p>
+                @if ($headline['note'])
+                    <p class="mt-3">{{ $headline['note'] }}</p>
+                @endif
+                <p class="mt-3 text-sm">
+                    {{ $headline['sample'] }}
+                    From the run on {{ Carbon::parse($headline['run_at'])->format('M j, Y') }}
+                    (prompt version <code>{{ $headline['prompt_version'] }}</code>, <code>{{ $headline['split'] }}</code> cases).
                 </p>
             </section>
         @endif

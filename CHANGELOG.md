@@ -19,6 +19,10 @@ commit history.
   already been seen when the prompt was changed.
 - Ten new hand-labeled cases (`holdout_2`, FE-31 to FE-40), never seen while
   changing the prompt: 80% agreement with prompt `8d5e1e70`.
+- **New headline:** 80% agreement on 10 unseen cases with the current prompt,
+  and 0 suspicious cases missed. Every disagreement is a false alarm on the
+  same pattern, which goes to human review. Runs 1 and 2 stay listed with
+  their notes.
 
 ## 2026-10-11: Production database moves to Amazon RDS MySQL
 

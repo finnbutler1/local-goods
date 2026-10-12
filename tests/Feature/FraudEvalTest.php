@@ -181,7 +181,11 @@ class FraudEvalTest extends TestCase
         Carbon::setTestNow('2026-10-11 10:00');
         $this->useFake(FakeClaudeClient::verdict(85, 'hold'));
         $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
-        config(['fraud.eval_headline_run' => basename(File::glob("{$this->dir}/out/runs/*.json")[0], '.json')]);
+        config(['fraud.eval_headline' => [
+            'run' => basename(File::glob("{$this->dir}/out/runs/*.json")[0], '.json'),
+            'split' => 'holdout',
+            'note' => 'Every disagreement is a false alarm.',
+        ]]);
 
         // A later run (a different cache, as if the prompt changed) does not replace the headline.
         Carbon::setTestNow('2026-10-12 10:00');
@@ -191,15 +195,20 @@ class FraudEvalTest extends TestCase
         $latest = json_decode(file_get_contents("{$this->dir}/out/fraud-eval-latest.json"), true);
         $this->assertSame('Prompt changed after holdout was seen.', $latest['note']);
         $this->assertSame('2026-10-11', substr($latest['headline']['run_at'], 0, 10));
-        $this->assertSame(50.0, $latest['headline']['holdout_pct']);
+        $headline = '50% agreement on 2 unseen cases with the current prompt, and 0 suspicious cases missed.';
+        $this->assertSame($headline, $latest['headline']['text']);
+        $this->assertSame('Small sample: with 2 cases, one case moves the score by 50 points.', $latest['headline']['sample']);
 
         $md = file_get_contents("{$this->dir}/out/fraud-eval-results.md");
-        $this->assertStringContainsString('**Headline: 50% agreement on holdout cases**', $md);
+        $this->assertStringContainsString("**Headline: {$headline}**", $md);
+        $this->assertStringContainsString('Every disagreement is a false alarm.', $md);
         $this->assertStringContainsString('Prompt changed after holdout was seen.', $md);
 
         config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
         $this->get('/demo/bid-admin/eval')
-            ->assertSee('50% agreement on holdout cases')
+            ->assertSee('50% agreement on 2 unseen cases with the current prompt, and 0 suspicious cases missed.')
+            ->assertSee('Every disagreement is a false alarm.')
+            ->assertSee('one case moves the score by 50 points')
             ->assertSee('Note on this run:')
             ->assertSee('Earlier runs');
     }

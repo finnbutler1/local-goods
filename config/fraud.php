@@ -31,8 +31,12 @@ return [
     // Latest results written by `php artisan fraud:eval`, shown at /demo/bid-admin/eval.
     'eval_latest_path' => base_path('docs/evals/fraud-eval-latest.json'),
 
-    // The run whose holdout score is the headline. It is the first run, made
-    // before any prompt change; later runs used a prompt changed after the
-    // holdout results had been seen, so they don't replace it.
-    'eval_headline_run' => '2026-10-11-claude-opus-5-5-prompt-e5bcf207',
+    // The headline score: one split of one run. holdout_2 in run 3 was
+    // labeled after the last prompt change and never seen while changing it.
+    // Update the note whenever the headline run changes.
+    'eval_headline' => [
+        'run' => '2026-10-11-claude-opus-5-5-prompt-8d5e1e70-cases-3b40d7c8',
+        'split' => 'holdout_2',
+        'note' => 'Every disagreement is a false alarm on the same pattern (a frequent customer spending a round amount well above their usual), which the prompt treats as possible credit-to-cash collusion. A held redemption is never approved automatically: it waits under review for a person, so a false alarm costs a delay, not a wrong payout.',
+    ],
 ];
