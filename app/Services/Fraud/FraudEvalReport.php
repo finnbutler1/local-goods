@@ -48,6 +48,19 @@ class FraudEvalReport
     }
 
     /**
+     * The saved latest run (with history and headline), or null if
+     * `php artisan fraud:eval` has not been run yet.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function latest(): ?array
+    {
+        $path = config('fraud.eval_latest_path');
+
+        return is_file($path) ? json_decode(file_get_contents($path), true) : null;
+    }
+
+    /**
      * One row per saved run, oldest first.
      *
      * @return list<array<string, mixed>>

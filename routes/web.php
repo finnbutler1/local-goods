@@ -4,9 +4,10 @@ use App\Http\Controllers\Demo\BidAdminController;
 use App\Http\Controllers\Demo\EmployeeWalletController;
 use App\Http\Controllers\Demo\FraudEvalController;
 use App\Http\Controllers\Demo\ResetDemoController;
+use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', LandingController::class)->name('home');
 
 // Signed-in area. Real login arrives in a later step; for now it shows a demo persona.
 Route::view('/dashboard', 'dashboard')->name('dashboard');

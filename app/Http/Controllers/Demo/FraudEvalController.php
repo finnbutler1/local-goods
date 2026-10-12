@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Demo;
 
 use App\Http\Controllers\Controller;
+use App\Services\Fraud\FraudEvalReport;
 use Illuminate\View\View;
 
 /**
@@ -11,11 +12,8 @@ use Illuminate\View\View;
  */
 class FraudEvalController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(FraudEvalReport $report): View
     {
-        $path = config('fraud.eval_latest_path');
-        $run = is_file($path) ? json_decode(file_get_contents($path), true) : null;
-
-        return view('demo.fraud-eval', ['run' => $run]);
+        return view('demo.fraud-eval', ['run' => $report->latest()]);
     }
 }
