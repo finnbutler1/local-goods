@@ -17,7 +17,7 @@ class ColorContrastTest extends TestCase
         ['ink', 'cream'], ['ink', 'paper'], ['ink', 'cream-deep'], ['ink', 'forest-tint'], ['ink', 'amber'],
         ['forest', 'cream'], ['forest', 'paper'], ['forest', 'cream-deep'], ['forest', 'amber'], ['forest', 'forest-tint'],
         ['muted', 'cream'], ['muted', 'paper'], ['muted', 'cream-deep'],
-        ['cream', 'forest'], ['paper', 'forest'], ['cream', 'forest-soft'], ['sage', 'forest'], ['amber', 'forest'],
+        ['cream', 'forest'], ['paper', 'forest'], ['cream', 'forest-soft'], ['sage', 'forest'], ['sage', 'forest-soft'], ['amber', 'forest'], ['muted', 'forest-tint'],
         ['amber-ink', 'cream'], ['amber-ink', 'paper'],
         ['ok', 'ok-bg'], ['hold', 'hold-bg'], ['hold', 'paper'], ['ok', 'paper'],
     ];
