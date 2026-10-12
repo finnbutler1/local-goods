@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\FraudEvalController;
+use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StyleguideController;
 use App\Models\User;
@@ -21,6 +23,10 @@ Route::redirect('/demo/{any?}', '/login')->where('any', '.*');
 
 // Login, logout and password reset routes come from Laravel Fortify
 // (see App\Providers\FortifyServiceProvider). There is no registration.
+
+// Invite links for reviewers: signed, 7 days, single use (checked in the controller).
+Route::get('/invite/{user}/{token}', [InviteController::class, 'show'])->name('invite.show');
+Route::post('/invite/{user}/{token}', [InviteController::class, 'store'])->middleware('throttle:10,1')->name('invite.store');
 
 Route::middleware('auth')->group(function () {
     // Where Fortify sends people after logging in: each role's own dashboard.
@@ -43,8 +49,16 @@ Route::middleware('auth')->group(function () {
     Route::view('/employer', 'dashboards.employer')->middleware('role:employer_admin')->name('employer.dashboard');
     Route::view('/merchant', 'dashboards.merchant')->middleware('role:merchant')->name('merchant.dashboard');
     Route::view('/judge', 'dashboards.judge')->middleware('role:judge')->name('judge.dashboard');
-    Route::get('/admin', fn () => view('dashboards.admin', ['users' => User::orderBy('id')->get()]))
-        ->middleware('role:platform_admin')->name('admin.dashboard');
+    Route::middleware('role:platform_admin')->group(function () {
+        Route::get('/admin', fn () => view('dashboards.admin', ['users' => User::orderBy('id')->get()]))->name('admin.dashboard');
+
+        Route::prefix('admin/reviewers')->name('admin.reviewers.')->group(function () {
+            Route::get('/', [ReviewerController::class, 'index'])->name('index');
+            Route::post('/', [ReviewerController::class, 'store'])->name('store');
+            Route::post('/{user}/link', [ReviewerController::class, 'link'])->name('link');
+            Route::post('/{user}/revoke', [ReviewerController::class, 'revoke'])->name('revoke');
+        });
+    });
 });
 
 // Design system reference. Returns 404 outside the local environment.

@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -23,6 +25,13 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
         Fortify::resetPasswordView(fn (Request $request) => view('auth.reset-password', ['request' => $request]));
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+        // Normal email + password check, except a revoked reviewer can't log in.
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', Str::lower($request->input(Fortify::username())))->first();
+
+            return $user && ! $user->isRevoked() && Hash::check($request->input('password'), $user->password) ? $user : null;
+        });
 
         // Five tries a minute for each email + IP address pair.
         RateLimiter::for('login', function (Request $request) {

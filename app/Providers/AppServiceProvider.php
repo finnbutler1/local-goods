@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Enums\Role;
 use App\Models\User;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,5 +30,14 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('redeem', fn (User $user) => $user->hasRole(Role::Employee));
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+
+        // "What's new since your last visit" compares against previous_visit_at.
+        Event::listen(function (Login $event) {
+            $event->user->forceFill([
+                'first_login_at' => $event->user->first_login_at ?? now(),
+                'previous_visit_at' => $event->user->last_seen_at,
+                'last_seen_at' => now(),
+            ])->saveQuietly();
+        });
     }
 }

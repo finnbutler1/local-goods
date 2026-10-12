@@ -2,6 +2,8 @@
 
 use App\Http\Middleware\BlockJudgeWrites;
 use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\LogOutRevokedUsers;
+use App\Http\Middleware\TrackLastSeen;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['role' => EnsureUserHasRole::class]);
-        $middleware->appendToGroup('web', BlockJudgeWrites::class);
+        $middleware->appendToGroup('web', [LogOutRevokedUsers::class, BlockJudgeWrites::class, TrackLastSeen::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

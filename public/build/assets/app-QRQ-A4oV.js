@@ -1,0 +1,1 @@
+document.addEventListener(`click`,async e=>{let t=e.target.closest(`[data-copy]`);if(!t)return;let n=document.querySelector(t.dataset.copy),r=t.textContent;try{await navigator.clipboard.writeText(n.value),t.textContent=`Copied`}catch{n.select(),t.textContent=`Press Ctrl+C or ⌘C`}setTimeout(()=>t.textContent=r,2e3)});
