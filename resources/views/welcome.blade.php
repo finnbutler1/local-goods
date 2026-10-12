@@ -70,7 +70,9 @@
             <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">How it works</p>
             <h2 id="how-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-forest sm:text-5xl">Three steps from payroll perk to a busier block.</h2>
             <div class="relative mt-14">
-            <div class="ledger-rule absolute top-7 right-[16%] left-[16%] hidden h-1 md:block" aria-hidden="true"></div>
+            {{-- Runs from the centre of circle 1 to the centre of circle 3 (circles are 3.5rem, column gap 2rem),
+                 so the circles cover both ends exactly. Keep in sync with size-14 and md:gap-8 below. --}}
+            <div class="ledger-rule absolute top-[1.625rem] left-7 hidden h-1 w-[calc((100%_-_4rem)*2/3_+_4rem)] md:block" aria-hidden="true"></div>
             <ol class="relative grid gap-12 md:grid-cols-3 md:gap-8">
                 @foreach ([
                     ['Your company buys credits', 'Fund a monthly allowance for each employee. One invoice, no cards to issue, nothing for staff to sign up for beyond an app.'],
@@ -78,7 +80,7 @@
                     ['The money stays in the neighborhood', 'Merchants are paid out directly, and every redemption is checked for abuse before a cent moves.'],
                 ] as $i => [$title, $body])
                     <li class="relative">
-                        <span class="relative grid size-14 place-items-center rounded-full bg-forest font-display text-2xl font-semibold text-amber ring-8 ring-paper" aria-hidden="true">{{ $i + 1 }}</span>
+                        <span class="relative grid size-14 place-items-center rounded-full bg-forest font-display text-2xl font-semibold text-amber" aria-hidden="true">{{ $i + 1 }}</span>
                         <h3 class="mt-5 text-2xl font-semibold text-forest"><span class="sr-only">Step {{ $i + 1 }}: </span>{{ $title }}</h3>
                         <p class="mt-2 text-muted">{{ $body }}</p>
                     </li>
