@@ -5,11 +5,24 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**One working slice (employee wallet + AI fraud check) live on Elastic Beanstalk by Thu Oct 15, 2026.**
-Built: landing page, `/demo/employee` wallet, `/demo/bid-admin` view, Redemption
-Fraud Detection. Remaining: deploy and verify on Beanstalk.
-Everything else is out of scope until then. Update this section whenever the
-milestone changes.
+**Week 2: logins and roles (Prompt 2), then judge access and feedback (Prompt 3).**
+
+Done: Prompts 0, S, R, DB, E and 1.
+- Production runs on Amazon RDS MySQL.
+- Redemption Fraud Detection eval: 80% agreement on the unseen `holdout_2`
+  cases, 0 suspicious cases missed.
+- Brand redesign: theme tokens, self-hosted fonts, employer-first landing
+  page, app shell, `/dashboard` placeholder, local-only `/styleguide`.
+
+Update this section whenever the milestone changes.
+
+### Notes for later
+
+- When real Golden Triangle merchant names are seeded from public records,
+  update the footer in `resources/views/layouts/app.blade.php` and
+  `tests/Feature/LandingPageTest.php` together. Until then the footer must say
+  all businesses are fictional, and the test checks that "public records" does
+  not appear.
 
 ## What Local Goods is
 
