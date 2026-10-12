@@ -1,0 +1,149 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\Role;
+use App\Http\Middleware\BlockJudgeWrites;
+use App\Models\Merchant;
+use App\Models\Redemption;
+use App\Models\User;
+use App\Policies\RedemptionPolicy;
+use App\Services\Ai\ClaudeClient;
+use Database\Seeders\DatabaseSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Route as RoutingRoute;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+use Tests\Fakes\FakeClaudeClient;
+use Tests\TestCase;
+
+/**
+ * Judges can look at everything but change nothing except their own feedback
+ * and password. This walks the whole route list, so a write route added later
+ * is covered without touching this file.
+ */
+class JudgeReadOnlyTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /** Tables that change on any request (sessions, cache) and so aren't data. */
+    private const IGNORED_TABLES = ['sessions', 'cache', 'cache_locks', 'migrations'];
+
+    /** Visit bookkeeping on users, which is allowed to change. */
+    private const IGNORED_USER_COLUMNS = ['last_seen_at', 'previous_visit_at', 'first_login_at', 'updated_at'];
+
+    private User $judge;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(DatabaseSeeder::class);
+
+        // One held redemption, so Approve and Reject would have something to change.
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(90, 'hold'));
+        $this->signIn(Role::Employee);
+        $this->post('/employee/redeem', ['merchant_id' => Merchant::firstOrFail()->id, 'amount' => '5']);
+        $this->signIn(Role::PlatformAdmin);
+
+        $this->judge = $this->signIn(Role::Judge);
+    }
+
+    public function test_every_write_route_refuses_a_judge_and_changes_nothing(): void
+    {
+        $routes = collect(Route::getRoutes()->getRoutes())
+            ->reject(fn (RoutingRoute $r) => in_array($r->getName(), BlockJudgeWrites::ALLOWED_ROUTES, true))
+            ->filter(fn (RoutingRoute $r) => array_diff($r->methods(), ['GET', 'HEAD', 'OPTIONS']) !== []);
+
+        $this->assertGreaterThan(5, $routes->count(), 'The route list looks too short.');
+
+        $before = $this->snapshot();
+
+        foreach ($routes as $route) {
+            foreach (array_diff($route->methods(), ['GET', 'HEAD', 'OPTIONS']) as $method) {
+                $uri = $this->fillParameters($route->uri());
+                $this->actingAs($this->judge)
+                    ->call($method, $uri, $this->plausibleInput())
+                    ->assertStatus(403, "{$method} /{$uri} should be forbidden for a judge.");
+            }
+        }
+
+        $this->assertEquals($before, $this->snapshot(), 'A judge request changed data.');
+    }
+
+    public function test_policies_and_gates_refuse_a_judge_on_their_own(): void
+    {
+        foreach (['reset-demo', 'redeem', 'manage-reviewers', 'manage-feedback'] as $ability) {
+            $this->assertTrue(Gate::forUser($this->judge)->denies($ability), "Gate {$ability} let a judge through.");
+        }
+
+        $this->assertFalse((new RedemptionPolicy)->review($this->judge));
+    }
+
+    public function test_the_allowlist_is_short_and_known(): void
+    {
+        $this->assertSame(
+            ['logout', 'feedback.store', 'feedback.update', 'user-password.update'],
+            BlockJudgeWrites::ALLOWED_ROUTES,
+        );
+    }
+
+    /** Route parameters filled with ids that exist, so a missed check would really change something. */
+    private function fillParameters(string $uri): string
+    {
+        $ids = [
+            'redemption' => Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->value('id'),
+            'user' => $this->judge->id,
+        ];
+
+        return preg_replace_callback('/\{(\w+)\??\}/', function ($m) use ($ids) {
+            $table = (string) str($m[1])->plural()->snake();
+
+            return (string) ($ids[$m[1]] ?? (Schema::hasTable($table) ? DB::table($table)->value('id') : null) ?? 1);
+        }, $uri);
+    }
+
+    /** Input that a form on that route would accept, so validation isn't what stops the judge. */
+    private function plausibleInput(): array
+    {
+        return [
+            'merchant_id' => Merchant::firstOrFail()->id,
+            'amount' => '5',
+            'name' => 'Synthetic Reviewer',
+            'email' => 'synthetic.reviewer@example.test',
+            'reviewer_type' => 'friend',
+            'password' => 'a-long-test-password-123',
+            'password_confirmation' => 'a-long-test-password-123',
+            'current_password' => 'password',
+            'title' => 'Synthetic entry',
+            'body' => 'Synthetic body.',
+            'status' => 'fixed',
+            'fixed_commit_sha' => 'abc1234',
+            'category' => 'functionality',
+            'severity' => 'blocker',
+            'rating' => 1,
+            'comment' => 'Synthetic.',
+            'page_url' => 'http://localhost/judge',
+        ];
+    }
+
+    /** Every row of every app table. */
+    private function snapshot(): array
+    {
+        $tables = array_diff(
+            array_map(fn ($t) => is_array($t) ? $t['name'] : $t, Schema::getTables()),
+            self::IGNORED_TABLES,
+        );
+
+        return collect($tables)->sort()->values()->mapWithKeys(function (string $table) {
+            $rows = DB::table($table)->get()->map(function ($row) use ($table) {
+                $row = (array) $row;
+
+                return $table === 'users' ? array_diff_key($row, array_flip(self::IGNORED_USER_COLUMNS)) : $row;
+            });
+
+            return [$table => $rows->all()];
+        })->all();
+    }
+}

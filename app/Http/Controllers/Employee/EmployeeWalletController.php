@@ -9,6 +9,7 @@ use App\Models\Redemption;
 use App\Services\RedemptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class EmployeeWalletController extends Controller
@@ -56,6 +57,8 @@ class EmployeeWalletController extends Controller
 
     public function redeem(Request $request, RedemptionService $service): RedirectResponse
     {
+        Gate::authorize('redeem');
+
         $data = $request->validate([
             'merchant_id' => ['required', 'integer', 'exists:merchants,id'],
             'amount' => ['required', 'regex:/^\d{1,4}(\.\d{1,2})?$/', 'not_regex:/^0+(\.0+)?$/'],
