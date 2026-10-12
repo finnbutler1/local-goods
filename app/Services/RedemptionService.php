@@ -33,6 +33,11 @@ class RedemptionService
         $verdict = $this->detector->score($signals);
 
         return DB::transaction(function () use ($employee, $merchant, $amountCents, $signals, $verdict) {
+            // Lock the employee row so two redemptions at once can't both pass
+            // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
+            // transactions already let only one writer in at a time.
+            Employee::whereKey($employee->id)->lockForUpdate()->first();
+
             // Re-check inside the transaction in case another redemption landed meanwhile.
             $this->ensureAffordable($employee, $amountCents);
 
