@@ -80,7 +80,7 @@ class JudgeReadOnlyTest extends TestCase
 
     public function test_policies_and_gates_refuse_a_judge_on_their_own(): void
     {
-        foreach (['reset-demo', 'redeem', 'manage-reviewers', 'manage-feedback'] as $ability) {
+        foreach (['reset-demo', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog'] as $ability) {
             $this->assertTrue(Gate::forUser($this->judge)->denies($ability), "Gate {$ability} let a judge through.");
         }
 

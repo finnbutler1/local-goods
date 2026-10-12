@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('redeem', fn (User $user) => $user->hasRole(Role::Employee));
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+        Gate::define('manage-changelog', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
 
         // "What's new since your last visit" compares against previous_visit_at.
         Event::listen(function (Login $event) {

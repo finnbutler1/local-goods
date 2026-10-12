@@ -15,6 +15,7 @@
         <p class="mt-3 text-lg text-muted">
             Everything reviewers sent from the Feedback button. Mark items fixed with the commit that fixed them:
             reviewers see their fixed items under "What's new" on their next visit.
+            <a href="{{ route('admin.changelog.index') }}" class="font-semibold text-forest underline underline-offset-4 hover:no-underline">Add a changelog entry</a>.
         </p>
     </header>
 

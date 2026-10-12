@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FeedbackStatus;
 use App\Enums\Role;
+use App\Models\ChangelogEntry;
+use App\Models\User;
 use App\Support\ViewAs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,12 +56,33 @@ class JudgeController extends Controller
         ];
     }
 
+    /**
+     * Changelog entries and the judge's own feedback marked fixed since their
+     * previous visit. On a first visit: the latest few entries and every fix.
+     *
+     * @return array{since: ?\Carbon\CarbonInterface, entries: \Illuminate\Support\Collection, fixed: \Illuminate\Support\Collection}
+     */
+    public static function whatsNew(User $user): array
+    {
+        $since = $user->previous_visit_at;
+
+        $entries = ChangelogEntry::latest('published_at')->latest('id')
+            ->when($since, fn ($q) => $q->where('published_at', '>', $since), fn ($q) => $q->take(3))
+            ->get();
+
+        $fixed = $user->feedback()->where('status', FeedbackStatus::Fixed)
+            ->when($since, fn ($q) => $q->where('status_changed_at', '>', $since))
+            ->latest('status_changed_at')->get();
+
+        return ['since' => $since, 'entries' => $entries, 'fixed' => $fixed];
+    }
+
     public function dashboard(Request $request): View
     {
         // Landing here means the judge is back in their own view.
         $request->session()->forget(ViewAs::SESSION_KEY);
 
-        return view('dashboards.judge', ['tour' => self::tour()]);
+        return view('dashboards.judge', ['tour' => self::tour(), ...self::whatsNew($request->user())]);
     }
 
     /** Switch which role the judge is viewing the app as, then open that role's home page. */

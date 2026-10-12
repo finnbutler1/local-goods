@@ -9,6 +9,37 @@
             </p>
         </header>
 
+        <section aria-labelledby="new-heading" class="max-w-3xl">
+            <h2 id="new-heading" class="text-2xl font-semibold text-forest">
+                What's new {{ $since ? 'since your last visit' : 'lately' }}
+            </h2>
+            @if ($since)
+                <p class="mt-1 text-sm text-muted">Your last visit: {{ $since->setTimezone('America/New_York')->format('M j, g:i A') }}</p>
+            @endif
+            @if ($entries->isEmpty() && $fixed->isEmpty())
+                <p class="mt-3 text-muted">Nothing new since your last visit.</p>
+            @else
+                <ul class="mt-3 space-y-3">
+                    @foreach ($fixed as $item)
+                        <x-card as="li" class="border-l-4 border-l-ok">
+                            <p class="flex flex-wrap items-center gap-2 text-sm font-semibold"><x-badge tone="ok">Your feedback: fixed</x-badge> {{ $item->category->label() }}</p>
+                            <p class="mt-2">{{ Str::limit($item->comment, 240) }}</p>
+                            @if ($item->fixed_commit_sha)
+                                <p class="mt-1 text-sm text-muted">Fixed in commit <code class="font-mono">{{ $item->fixed_commit_sha }}</code></p>
+                            @endif
+                        </x-card>
+                    @endforeach
+                    @foreach ($entries as $entry)
+                        <x-card as="li">
+                            <p class="text-sm text-muted">{{ $entry->published_at->setTimezone('America/New_York')->format('M j') }}</p>
+                            <h3 class="mt-0.5 text-lg font-semibold">{{ $entry->title }}</h3>
+                            <p class="mt-1 whitespace-pre-line">{{ $entry->body }}</p>
+                        </x-card>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+
         <section aria-labelledby="about-heading" class="max-w-3xl">
             <h2 id="about-heading" class="text-2xl font-semibold text-forest">What Local Goods is</h2>
             <div class="mt-3 space-y-3 text-lg">

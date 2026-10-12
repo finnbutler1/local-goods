@@ -7,6 +7,11 @@
                 Every login is created by an admin; there is no public sign-up.
                 You can also open fraud review to approve or reject held redemptions.
             </p>
+            <p class="mt-3 flex flex-wrap gap-x-6 gap-y-2 font-semibold">
+                <a href="{{ route('admin.reviewers.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Invite reviewers</a>
+                <a href="{{ route('admin.feedback.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Feedback inbox</a>
+                <a href="{{ route('admin.changelog.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Changelog for reviewers</a>
+            </p>
         </header>
 
         <section aria-labelledby="accounts-heading">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
@@ -77,6 +78,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
         Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');
+        Route::get('/admin/changelog', [ChangelogController::class, 'index'])->name('admin.changelog.index');
+        Route::post('/admin/changelog', [ChangelogController::class, 'store'])->name('admin.changelog.store');
     });
 });
 
