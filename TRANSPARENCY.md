@@ -109,7 +109,23 @@ expectations:
    version (a fingerprint of the prompt file), so results before and after a
    prompt change can be compared.
 
-Results: [`docs/evals/fraud-eval-results.md`](docs/evals/fraud-eval-results.md),
+**Results so far** (model `claude-opus-5-5`):
+
+| Run | Prompt | Dev | Holdout | |
+|---|---|---|---|---|
+| 1 | `e5bcf207` (original) | 85% (17/20) | **80% (8/10)** | **Headline number** |
+| 2 | `8d5e1e70` (change 1) | 90% (18/20) | 90% (9/10) | Not fully independent (see below) |
+
+Change 1 added one rule to the prompt: using all or nearly all of the balance
+at a merchant not visited in the last 30 days is enough to hold on its own. It
+was written to fix one dev case (FE-18). **But the holdout results from run 1
+had already been seen when it was made**, and holdout case FE-23 is a similar
+pattern. So run 2's holdout score is not a fully independent test, and the
+headline stays at run 1's **80%**. Ten new holdout cases (FE-31 to FE-40),
+labeled by hand and never shown to the AI before, will give a clean test of
+the changed prompt.
+
+Full results: [`docs/evals/fraud-eval-results.md`](docs/evals/fraud-eval-results.md),
 also shown on the `/demo/bid-admin/eval` page. Limits: 30 cases is a small
 sample, the cases are synthetic, and one person's labels are one opinion.
 Agreement shows how closely the AI matches that person, not whether either of

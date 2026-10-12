@@ -13,6 +13,10 @@ commit history.
 - First run (`claude-opus-5-5`, prompt `e5bcf207`): **80% holdout, 85% dev**.
   See [the results](docs/evals/fraud-eval-results.md) and the
   `/demo/bid-admin/eval` page.
+- Prompt change 1, based on dev case FE-18: hold a full-balance redemption at
+  a merchant not visited in 30 days. Second run (prompt `8d5e1e70`): 90%
+  holdout, 90% dev. The headline stays at 80% because the holdout results had
+  already been seen when the prompt was changed.
 
 ## 2026-10-11: Production database moves to Amazon RDS MySQL
 

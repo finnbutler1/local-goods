@@ -102,11 +102,11 @@ class FraudEvalReport
                 .Carbon::parse($headline['run_at'])->format('F j, Y')." (prompt `{$headline['prompt_version']}`, [details]({$headline['file']})).\n\n";
         }
 
+        $md .= $headline === null ? '' : "## Latest run\n\n";
+
         if (! empty($run['note'])) {
             $md .= "> **Note on this run:** {$run['note']}\n\n";
         }
-
-        $md .= $headline === null ? '' : "## Latest run\n\n";
         $md .= "| | |\n|---|---|\n";
         $md .= "| Run | {$date} |\n";
         $md .= "| Model | `{$run['model']}` |\n";
@@ -115,7 +115,9 @@ class FraudEvalReport
 
         $md .= "## Agreement with the human labels\n\n";
         $md .= "| Split | Agreement |\n|---|---|\n";
-        $md .= "| **Holdout** (not used to change the prompt) | **{$pct($s['holdout'])}** |\n";
+        // Bold the holdout score only when it is the headline (or no headline is set).
+        $bold = $headline === null || $headline['prompt_version'] === $run['prompt_version'] ? '**' : '';
+        $md .= "| {$bold}Holdout{$bold} (not used to change the prompt) | {$bold}{$pct($s['holdout'])}{$bold} |\n";
         $md .= "| Dev (may be used to improve the prompt) | {$pct($s['dev'])} |\n";
         $md .= "| All cases | {$pct($s['all'])} |\n\n";
         $md .= "The AI's `hold` counts as *suspicious* and `clear` as *normal*.";

@@ -1,53 +1,53 @@
 {
-    "run_at": "2026-10-11T21:44:55-04:00",
+    "run_at": "2026-10-11T21:49:55-04:00",
     "model": "claude-opus-5-5",
-    "prompt_version": "e5bcf207",
+    "prompt_version": "8d5e1e70",
     "case_count": 30,
     "api_calls": 0,
     "errors": [],
     "summary": {
         "dev": {
             "cases": 20,
-            "agree": 17,
-            "agreement_pct": 85.0,
+            "agree": 18,
+            "agreement_pct": 90.0,
             "matrix": {
                 "normal": {
                     "normal": 11,
                     "suspicious": 2
                 },
                 "suspicious": {
-                    "normal": 1,
-                    "suspicious": 6
+                    "normal": 0,
+                    "suspicious": 7
                 }
             }
         },
         "holdout": {
             "cases": 10,
-            "agree": 8,
-            "agreement_pct": 80.0,
+            "agree": 9,
+            "agreement_pct": 90.0,
             "matrix": {
                 "normal": {
                     "normal": 5,
                     "suspicious": 1
                 },
                 "suspicious": {
-                    "normal": 1,
-                    "suspicious": 3
+                    "normal": 0,
+                    "suspicious": 4
                 }
             }
         },
         "all": {
             "cases": 30,
-            "agree": 25,
-            "agreement_pct": 83.3,
+            "agree": 27,
+            "agreement_pct": 90.0,
             "matrix": {
                 "normal": {
                     "normal": 16,
                     "suspicious": 3
                 },
                 "suspicious": {
-                    "normal": 2,
-                    "suspicious": 9
+                    "normal": 0,
+                    "suspicious": 11
                 }
             }
         }
@@ -64,8 +64,8 @@
             "notes": "almost drains his whole credit balance",
             "ai_decision": "hold",
             "ai_label": "suspicious",
-            "risk_score": 74,
-            "explanation": "This $80.00 redemption is a round amount that uses nearly all of the $82.00 balance, and it is about 5.8 times this employee's usual $13.87 spend. Although it falls within the normal retail range and happened during business hours, these signals together warrant a review.",
+            "risk_score": 78,
+            "explanation": "This $80.00 redemption is a round amount that uses nearly all of the employee's $82.00 balance and is about 5.8 times their usual $13.87 spend. Although it falls within the normal range for retail and occurred during business hours, these signals together warrant a review.",
             "agree": true,
             "cached": true
         },
@@ -80,8 +80,8 @@
             "notes": "doesn't drain his entire credit balance",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 4,
-            "explanation": "This $14.20 restaurant redemption is in line with the employee's usual $13.87 median and within the normal $10–$45 range for restaurants. It is not a round amount, uses only part of the $74.10 balance, and happened at 7 PM, with no repeat visits this week.",
+            "risk_score": 5,
+            "explanation": "This $14.20 restaurant purchase is in line with the employee's usual spending (median $13.87) and within the normal range for restaurants. It is not a round amount, uses only a small part of the $74.10 balance, and happened at 7 PM, so no fraud signals are present.",
             "agree": true,
             "cached": true
         },
@@ -96,8 +96,8 @@
             "notes": "has been there before",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 22,
-            "explanation": "This $36.50 retail purchase is about 2.6 times the employee's usual $13.87 spend, but it falls within the normal range for retail, isn't a round amount, uses only part of the $120.75 balance, and happened at 6 PM with just one prior visit to this merchant in 30 days. The one mild signal isn't enough to hold.",
+            "risk_score": 25,
+            "explanation": "This $36.50 retail purchase is about 2.6 times the employee's usual $13.87 spend, but it is a normal amount for a retail store, not a round number, uses only part of the $120.75 balance, and happened at 6 PM. That one mild signal is not enough to hold the payout.",
             "agree": true,
             "cached": true
         },
@@ -113,7 +113,7 @@
             "ai_decision": "clear",
             "ai_label": "normal",
             "risk_score": 5,
-            "explanation": "This $9.60 restaurant purchase at 11 a.m. is below the employee's usual $13.87 and slightly under a typical restaurant ticket, uses only part of the $33.40 balance, and is not a round amount. One prior visit to this merchant in the past week is normal.",
+            "explanation": "This $9.60 restaurant purchase at 11am is not a round amount, is below the employee's usual $13.87 spend, and uses only a small part of the $33.40 balance. One prior visit to this merchant in the last week is normal.",
             "agree": true,
             "cached": true
         },
@@ -128,8 +128,8 @@
             "notes": "regular customer",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 40,
-            "explanation": "This $22.80 restaurant charge is a normal, non-round amount within the typical range and uses a small part of the $140.00 balance. There are some mild signals: it is 1.64 times the employee's $13.87 median, it is the 4th visit to this merchant in 7 days, and it was made at 10 PM, but together they don't point strongly to collusion.",
+            "risk_score": 45,
+            "explanation": "This $22.80 restaurant purchase is a normal amount for a restaurant and uses only a small part of the $140.00 balance. It was made at 10 PM, just past business hours, and it is the employee's fourth visit to this merchant in 7 days at about 1.6 times their usual $13.87 spend, but these mild signals don't add up to a likely cash-out.",
             "agree": true,
             "cached": true
         },
@@ -145,7 +145,7 @@
             "ai_decision": "hold",
             "ai_label": "suspicious",
             "risk_score": 97,
-            "explanation": "This is a round $120.00 redemption at 2 AM that uses nearly the whole $122.30 balance, is about 8.7 times the employee's usual $13.87, and is well above the normal $10–$45 restaurant ticket. It is also the employee's fourth visit to this merchant in the past 7 days.",
+            "explanation": "This exactly $120.00 restaurant charge uses nearly all of the $122.30 balance, is about 8.7 times the employee's usual $13.87 spend and well above the normal $10–$45 restaurant ticket, and happened at 2 a.m. It also follows 3 visits to the same merchant in the past 7 days, so many collusion signals line up.",
             "agree": true,
             "cached": true
         },
@@ -160,8 +160,8 @@
             "notes": "has been there",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 5,
-            "explanation": "A $17.40 restaurant purchase at noon is within the normal range for restaurants and only slightly above this employee's usual $13.87, with no round amount, balance drain, or repeat-visit pattern.",
+            "risk_score": 8,
+            "explanation": "This $17.40 lunch-hour restaurant purchase is within the normal range for restaurants and only slightly above the employee's usual $13.87 spend. It uses a small part of the $98.15 balance and is not a round amount, so nothing suggests abuse.",
             "agree": true,
             "cached": true
         },
@@ -177,7 +177,7 @@
             "ai_decision": "hold",
             "ai_label": "suspicious",
             "risk_score": 85,
-            "explanation": "This is a round $40.00 charge at a cafe where a typical ticket is $3–$15, about 6 times this employee's usual $6.40 spend. It also follows 9 visits to the same merchant in the past 7 days (22 in 30 days).",
+            "explanation": "This is a round $40.00 charge at a cafe, more than six times this employee's usual $6.40 spend and well above the normal $3–$15 cafe ticket. The employee has also made 9 visits to this same cafe in the past 7 days (22 in 30 days).",
             "agree": false,
             "cached": true
         },
@@ -192,8 +192,8 @@
             "notes": "regular customer",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 30,
-            "explanation": "This $13.50 restaurant charge matches the employee's usual spending (median about $13.87), is within the normal range for restaurants, and uses only a small part of the $120 balance. The 6 a.m. timing and frequent visits to this merchant (4 in the past week, 9 in the past month) are worth noting, but with such a small, ordinary amount they look like a regular habit rather than collusion.",
+            "risk_score": 35,
+            "explanation": "This $13.50 restaurant purchase matches the employee's usual spending (median about $13.87), is within the normal range for restaurants, and uses only a small part of the $120.00 balance. It was made at 6 a.m., before normal business hours, and the employee has visited this merchant often (4 times in the last 7 days, 9 in the last 30), but these signals are not strong enough to hold an ordinary-sized purchase.",
             "agree": true,
             "cached": true
         },
@@ -208,8 +208,8 @@
             "notes": "drains account late at night",
             "ai_decision": "hold",
             "ai_label": "suspicious",
-            "risk_score": 92,
-            "explanation": "This $150.00 salon redemption is a round amount that uses nearly the entire $152.50 balance, is about 11 times this employee's usual $13.87 purchase, and is above the normal $25–$90 salon ticket. It also happened at 11 PM, outside normal business hours.",
+            "risk_score": 95,
+            "explanation": "This $150.00 redemption is a round amount that uses nearly all of the $152.50 balance at a salon the employee hasn't visited in the last 30 days, and it is about 11 times their usual $13.87 spend and above the typical $25–$90 salon ticket. It also happened at 11 PM, outside normal business hours.",
             "agree": true,
             "cached": true
         },
@@ -225,7 +225,7 @@
             "ai_decision": "clear",
             "ai_label": "normal",
             "risk_score": 12,
-            "explanation": "This $21.35 lunch-hour restaurant purchase is within the normal range for restaurants and uses only a small part of the $151.25 balance. It is somewhat above the employee's usual $13.87, but that mild signal alone is not a concern.",
+            "explanation": "This $21.35 lunch-hour restaurant purchase is a normal, non-round amount within the typical $10–$45 range and uses only a small part of the $151.25 balance. It is somewhat above the employee's usual $13.87, but that mild signal alone is not a concern.",
             "agree": true,
             "cached": true
         },
@@ -240,8 +240,8 @@
             "notes": "drains account even though they have been there before",
             "ai_decision": "hold",
             "ai_label": "suspicious",
-            "risk_score": 92,
-            "explanation": "This $80.00 cafe redemption is a round amount that uses nearly the entire $84.00 balance, is about 5.8 times the employee's usual $13.87 spend, and is well above the normal $3–$15 cafe ticket. It also happened at 6 a.m., outside normal business hours, so several warning signs point the same way.",
+            "risk_score": 95,
+            "explanation": "This $80.00 cafe redemption is a round amount that uses nearly the entire $84.00 balance, is about 5.8 times the employee's usual $13.87 spend, and far exceeds a normal cafe ticket of $3 to $15. It also happened at 6 a.m., before normal business hours, and is the employee's third visit to this merchant in 30 days.",
             "agree": true,
             "cached": true
         },
@@ -257,7 +257,7 @@
             "ai_decision": "clear",
             "ai_label": "normal",
             "risk_score": 5,
-            "explanation": "This $11.85 lunch-hour restaurant purchase is within the normal range for restaurants ($10–$45) and slightly below the employee's usual $13.87 spend, using only a small part of the $143.60 balance. One prior visit to this merchant in the past week is ordinary, and no other warning signs are present.",
+            "explanation": "This $11.85 restaurant purchase at noon is a normal lunch amount, slightly below the employee's usual $13.87, and uses only a small part of the $143.60 balance. One prior visit to this merchant in the past week is not unusual, and no other risk signals are present.",
             "agree": true,
             "cached": true
         },
@@ -272,8 +272,8 @@
             "notes": "purchase after work",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 12,
-            "explanation": "This $24.99 retail purchase is a normal, non-round amount within the typical $10–$80 range for retail, made at 5 PM at a merchant the employee hasn't visited recently. It is somewhat above the employee's $13.87 median and uses only part of the $130 balance, which on its own is not a concern.",
+            "risk_score": 15,
+            "explanation": "This $24.99 retail purchase is a normal, non-round amount within the typical range for retail and uses only a small part of the $130.00 balance, made during business hours. It is about 1.8 times the employee's usual $13.87 spend, but that mild signal alone is not a concern.",
             "agree": true,
             "cached": true
         },
@@ -289,7 +289,7 @@
             "ai_decision": "hold",
             "ai_label": "suspicious",
             "risk_score": 88,
-            "explanation": "This is an exactly $100.00 restaurant charge, about 7 times the employee's usual $13.87 and well above the normal $10–$45 restaurant ticket. It also follows 6 prior visits to the same merchant in the last 7 days (14 in 30 days).",
+            "explanation": "This $100.00 redemption is a round amount, about 7 times the employee's usual $13.87 spend, and well above the typical $10–$45 restaurant ticket. It also follows 6 visits to the same merchant in the past 7 days (14 in 30 days).",
             "agree": false,
             "cached": true
         },
@@ -304,8 +304,8 @@
             "notes": "looks like they're getting some coffee",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 4,
-            "explanation": "This is a small $4.75 cafe purchase at 3 PM, within the normal cafe range and well below the employee's $13.87 median. It uses only a small part of the $61.90 balance, and visits to this merchant are infrequent.",
+            "risk_score": 5,
+            "explanation": "This is a small $4.75 cafe purchase at 3 PM, well within the normal cafe range and below the employee's typical $13.87 spend. It uses only a small part of the $61.90 balance, and visit frequency at this merchant is modest.",
             "agree": true,
             "cached": true
         },
@@ -321,7 +321,7 @@
             "ai_decision": "hold",
             "ai_label": "suspicious",
             "risk_score": 92,
-            "explanation": "This $200.00 redemption is a round amount that uses nearly the entire $205.00 balance, is about 14 times this employee's usual $13.87 spend, and is far above the normal $20–$40 fitness ticket. It also occurred at 5 a.m., outside normal business hours.",
+            "explanation": "This $200.00 redemption is a round amount that uses nearly all of the $205.00 balance, is about 14 times the employee's usual $13.87 spend, and is well above the normal $20–$40 fitness ticket. It also occurred at 5 AM, outside normal business hours.",
             "agree": true,
             "cached": true
         },
@@ -334,11 +334,11 @@
             "local_time": "12:50",
             "my_label": "suspicious",
             "notes": "drains entire account while never coming previously",
-            "ai_decision": "clear",
-            "ai_label": "normal",
-            "risk_score": 35,
-            "explanation": "This $64.20 retail purchase uses the full remaining balance and is about 3.6 times the employee's $18.00 median, but the median comes from only 2 past redemptions. The amount is not round, is within the normal $10–$80 range for retail, it is the first visit to this merchant, and it happened at midday.",
-            "agree": false,
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 75,
+            "explanation": "This $64.20 retail purchase uses the employee's entire $64.20 balance at a merchant they have not visited in the last 30 days, which is enough on its own to hold. It is also about 3.6 times the employee's usual $18.00 redemption, though the amount is normal for retail and was made at midday.",
+            "agree": true,
             "cached": true
         },
         {
@@ -352,8 +352,8 @@
             "notes": "drains entire account while never coming previously",
             "ai_decision": "hold",
             "ai_label": "suspicious",
-            "risk_score": 92,
-            "explanation": "This $270.00 round-number redemption drains the employee's entire $270.00 balance, is about 19 times their usual $13.87 purchase, and is well above the normal $10–$80 retail ticket. It also happened at 10 PM, outside normal business hours.",
+            "risk_score": 97,
+            "explanation": "This $270.00 redemption is a round amount that uses the employee's entire $270.00 balance at a retail merchant they haven't visited in the last 30 days. It is also about 19 times their usual $13.87 spend, well above the normal $10–$80 retail ticket, and was made at 10 PM, outside business hours.",
             "agree": true,
             "cached": true
         },
@@ -369,7 +369,7 @@
             "ai_decision": "clear",
             "ai_label": "normal",
             "risk_score": 15,
-            "explanation": "This $28.00 fitness redemption is within the normal $20.00–$40.00 range for fitness, is not a round number, and leaves most of the $86.50 balance unused. It is about twice this employee's usual $13.87, but that alone is a mild signal, and there is only one prior visit to this merchant in the last 30 days.",
+            "explanation": "This $28.00 fitness redemption is within the normal $20–$40 range for fitness and uses only part of the $86.50 balance. It is about twice the employee's usual $13.87 spend, but that is a single mild signal with no other red flags.",
             "agree": true,
             "cached": true
         },
@@ -385,7 +385,7 @@
             "ai_decision": "hold",
             "ai_label": "suspicious",
             "risk_score": 82,
-            "explanation": "This is a round $60.00 charge, about 4.3 times the employee's usual $13.87 and above the normal $10–$45 restaurant ticket. It is also the employee's sixth visit to this restaurant in 7 days (11 prior visits in 30 days), so several warning signs point the same way, even though it happened at lunchtime and did not drain the $210.00 balance.",
+            "explanation": "This $60.00 restaurant redemption is a round amount, about 4.3 times the employee's usual $13.87 spend, and above the normal $10–$45 restaurant ticket. The employee has also made 5 prior redemptions at this same merchant in the last 7 days (11 in 30 days), so several signals point the same way.",
             "agree": false,
             "cached": true
         },
@@ -400,8 +400,8 @@
             "notes": "no past redemptions while draining the entire account",
             "ai_decision": "hold",
             "ai_label": "suspicious",
-            "risk_score": 92,
-            "explanation": "This $150.00 redemption is a round amount that uses the employee's entire $150.00 balance, is well above the typical $10–$80 retail ticket, and occurred at 3 a.m., outside normal business hours. It is also the employee's first-ever redemption, so there is no spending history to offset these signals.",
+            "risk_score": 95,
+            "explanation": "This $150.00 redemption uses the employee's entire $150.00 balance at a retail merchant they haven't visited in the last 30 days. It is also a round amount, well above the typical $10–$80 retail ticket, and was made at 3 a.m., outside business hours.",
             "agree": true,
             "cached": true
         },
@@ -414,11 +414,11 @@
             "local_time": "18:30",
             "my_label": "suspicious",
             "notes": "drains account without ever being there",
-            "ai_decision": "clear",
-            "ai_label": "normal",
-            "risk_score": 45,
-            "explanation": "This $85.00 salon redemption uses nearly all of the $88.00 balance and is about 6 times the employee's usual $13.87 spend, but it falls within the normal $25–$90 range for a salon. It is also not a round number, happened during business hours at 6 PM, and is the first visit to this merchant in 30 days, which fits a legitimate salon appointment.",
-            "agree": false,
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 78,
+            "explanation": "This $85.00 salon redemption uses nearly all of the employee's $88.00 balance at a merchant they haven't visited in the last 30 days, which is enough to hold on its own. It is also about 6 times their usual $13.87 spend, though the amount is within the normal range for a salon.",
+            "agree": true,
             "cached": true
         },
         {
@@ -432,8 +432,8 @@
             "notes": "not that big of a purchase relative to their account balance",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 22,
-            "explanation": "This $42.00 salon visit is about three times the employee's usual $13.87 spend, but it falls within the normal $25–$90 range for a salon. It is not a round amount, uses only part of the $175.80 balance, is a first visit to this merchant, and happened at 11 a.m.",
+            "risk_score": 25,
+            "explanation": "This $42.00 salon redemption is about three times the employee's usual $13.87 spend, but it falls within the normal $25–$90 range for a salon. It is not a round amount, uses only part of the $175.80 balance, and happened at 11 a.m., so no other warning signs point to abuse.",
             "agree": true,
             "cached": true
         },
@@ -449,7 +449,7 @@
             "ai_decision": "hold",
             "ai_label": "suspicious",
             "risk_score": 95,
-            "explanation": "This $150.00 redemption is a round amount that drains the employee's entire $150.00 balance, is about 11 times their usual $13.87 spend, and is above the normal $10–$80 retail ticket. It also happened at 11 PM, outside normal business hours.",
+            "explanation": "This $150.00 redemption is a round amount that uses the employee's entire $150.00 balance, is about 11 times their usual $13.87 spend, and exceeds the normal $10–$80 range for retail. It also happened at 11 PM, outside normal business hours.",
             "agree": true,
             "cached": true
         },
@@ -464,8 +464,8 @@
             "notes": "drains entire account late at night with barely any previous visits",
             "ai_decision": "hold",
             "ai_label": "suspicious",
-            "risk_score": 90,
-            "explanation": "This $90.00 restaurant redemption is a round amount that uses nearly the entire $92.00 balance, is about 6.5 times this employee's usual $13.87, and is double the top of a normal restaurant bill ($45.00). It also happened at 11 PM, outside normal business hours.",
+            "risk_score": 92,
+            "explanation": "This $90.00 round-number redemption uses nearly all of the $92.00 balance. It is about 6.5 times the employee's usual $13.87 spend, above the normal $10–$45 restaurant ticket, and was made at 11 PM, outside business hours.",
             "agree": true,
             "cached": true
         },
@@ -481,7 +481,7 @@
             "ai_decision": "clear",
             "ai_label": "normal",
             "risk_score": 45,
-            "explanation": "This $30.00 cafe redemption is a round amount, about twice the employee's usual $13.87, and above the typical $3–$15 cafe ticket. However, it uses only a small part of the $145.00 balance, happened at 8 AM, and visit frequency is modest, so it does not warrant a hold.",
+            "explanation": "This $30.00 cafe redemption is a round amount, about double the employee's usual $13.87, and above a typical cafe ticket of $3.00-$15.00. However, it uses only a fraction of the $145.00 balance, happened at 8 AM, and follows a normal visit pattern, so the signals are not strong enough to hold.",
             "agree": true,
             "cached": true
         },
@@ -496,8 +496,8 @@
             "notes": "matches up with median past amount",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 35,
-            "explanation": "This $40.00 fitness redemption is a round amount at 6 AM after 3 visits to the same merchant this week, but the amount is within the normal $20–$40 range for fitness classes and early-morning, frequent visits are typical for gym-goers. It uses only a small part of the $210.00 balance and is modestly above this employee's $28.00 median, so the signals do not add up to a hold.",
+            "risk_score": 38,
+            "explanation": "This $40.00 fitness redemption is within the normal range for fitness businesses, is only modestly above the employee's $28.00 median, and uses a small part of the $210.00 balance. The round amount, 6 a.m. time and frequent visits (3 in the last 7 days, 8 in the last 30) are worth noting, but they fit a regular early-morning class routine rather than clear collusion.",
             "agree": true,
             "cached": true
         },
@@ -513,7 +513,7 @@
             "ai_decision": "clear",
             "ai_label": "normal",
             "risk_score": 4,
-            "explanation": "This is a $6.25 cafe purchase at 8 a.m., within the normal cafe range and below this employee's usual $13.87 median. It used only a small part of the $112.40 balance, and two visits to this merchant in 30 days is ordinary.",
+            "explanation": "This $6.25 cafe purchase at 8 AM is within the normal range for a cafe and below the employee's usual $13.87 spend, using only a small part of the $112.40 balance. Visit frequency at this merchant (1 in the past week, 2 in the past month) is ordinary.",
             "agree": true,
             "cached": true
         },
@@ -528,12 +528,13 @@
             "notes": "big purchase but looks to be dinner time",
             "ai_decision": "clear",
             "ai_label": "normal",
-            "risk_score": 35,
-            "explanation": "This $48.60 restaurant bill is about 3.5 times the employee's usual $13.87 and slightly above the typical $10–$45 range, but it is not a round number, uses about half of the $96.20 balance, and came at 8 PM with no recent repeat visits. That looks like an ordinary larger dinner rather than collusion.",
+            "risk_score": 45,
+            "explanation": "This $48.60 restaurant bill is about 3.5 times the employee's usual $13.87 and slightly above the typical $10–$45 range. However, it is not a round number, uses only about half of the $96.20 balance, and took place at 8 PM, so it looks like an ordinary larger dinner.",
             "agree": true,
             "cached": true
         }
     ],
+    "note": "Prompt change 1 (hold full-balance redemptions at a merchant not visited in 30 days) was based on dev case FE-18 only, but it was made after the first run's holdout results had been seen, so this run's holdout score is not fully independent.",
     "history": [
         {
             "run_at": "2026-10-11T21:44:55-04:00",
@@ -542,7 +543,31 @@
             "dev_pct": 85.0,
             "holdout_pct": 80.0,
             "all_pct": 83.3,
-            "file": "runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md"
+            "name": "2026-10-11-claude-opus-5-5-prompt-e5bcf207",
+            "file": "runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md",
+            "note": null
+        },
+        {
+            "run_at": "2026-10-11T21:49:55-04:00",
+            "model": "claude-opus-5-5",
+            "prompt_version": "8d5e1e70",
+            "dev_pct": 90.0,
+            "holdout_pct": 90.0,
+            "all_pct": 90.0,
+            "name": "2026-10-11-claude-opus-5-5-prompt-8d5e1e70",
+            "file": "runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70.md",
+            "note": "Prompt change 1 (hold full-balance redemptions at a merchant not visited in 30 days) was based on dev case FE-18 only, but it was made after the first run's holdout results had been seen, so this run's holdout score is not fully independent."
         }
-    ]
+    ],
+    "headline": {
+        "run_at": "2026-10-11T21:44:55-04:00",
+        "model": "claude-opus-5-5",
+        "prompt_version": "e5bcf207",
+        "dev_pct": 85.0,
+        "holdout_pct": 80.0,
+        "all_pct": 83.3,
+        "name": "2026-10-11-claude-opus-5-5-prompt-e5bcf207",
+        "file": "runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md",
+        "note": null
+    }
 }
