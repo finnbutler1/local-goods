@@ -141,7 +141,7 @@
                     @foreach ([
                         ['Redemption Fraud Detection', 'scores every redemption for abuse, such as turning credits into cash, and explains its reasoning in plain language.'],
                         ['It fails closed.', 'If the AI check errors or gives an unusable answer, the redemption is held. It is never waved through.'],
-                        ['A person makes the final call.', 'A held redemption is never rejected automatically. Someone at the BID reviews it.'],
+                        ['A person makes the final call.', 'A held redemption is never approved automatically; it waits for review by the BID.'],
                         ['No names go to the AI.', 'It sees only anonymous signals, like amount, time of day and visit history.'],
                     ] as [$lead, $rest])
                         <li class="flex gap-3">

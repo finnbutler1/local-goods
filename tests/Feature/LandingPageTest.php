@@ -47,7 +47,8 @@ class LandingPageTest extends TestCase
                 ->assertSee('73% agreement on 11 unseen cases with the current prompt, and 1 suspicious case missed.')
                 ->assertSee('one case moves the score by 9.1 points')
                 ->assertSee('href="'.route('demo.bid-admin.eval').'"', false)
-                ->assertSee('fails closed');
+                ->assertSee('fails closed')
+                ->assertSee('A held redemption is never approved automatically; it waits for review by the BID.');
         } finally {
             unlink($path);
         }
