@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "anthropic-ai/sdk": "^0.57.0",
+        "laravel/fortify": "^1.41",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0"
     },
