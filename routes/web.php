@@ -4,6 +4,7 @@ use App\Http\Controllers\Demo\BidAdminController;
 use App\Http\Controllers\Demo\EmployeeWalletController;
 use App\Http\Controllers\Demo\FraudEvalController;
 use App\Http\Controllers\Demo\ResetDemoController;
+use App\Http\Controllers\Demo\ReviewRedemptionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StyleguideController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,8 @@ Route::post('/demo/employee/redeem', [EmployeeWalletController::class, 'redeem']
 
 Route::get('/demo/bid-admin', BidAdminController::class)->name('demo.bid-admin');
 Route::get('/demo/bid-admin/eval', FraudEvalController::class)->name('demo.bid-admin.eval');
+Route::post('/demo/bid-admin/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->name('demo.bid-admin.approve');
+Route::post('/demo/bid-admin/redemptions/{redemption}/reject', [ReviewRedemptionController::class, 'reject'])->name('demo.bid-admin.reject');
 Route::post('/demo/reset', ResetDemoController::class)->name('demo.reset');
 
 // Design system reference. Returns 404 outside the local environment.

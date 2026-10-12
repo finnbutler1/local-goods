@@ -1,7 +1,7 @@
-@php use App\Support\Money; use App\Support\SignalPresenter; @endphp
+@php use App\Http\Controllers\Demo\BidAdminController; use App\Support\Money; use App\Support\SignalPresenter; @endphp
 
 <x-app-shell title="BID admin" active="bid-admin"
-             user-name="Sam Taylor (demo)" role="BID admin"
+             :user-name="BidAdminController::DEMO_ADMIN" role="BID admin"
              :context="$bid->name.' BID · '.$bid->city">
 <div class="space-y-8">
     <x-demo-nav current="bid-admin" />
@@ -11,7 +11,7 @@
         <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Redemption Fraud Detection</h1>
         <p class="mt-3 text-lg text-muted">
             Every new redemption is scored by AI from anonymous signals (no names) before any merchant is paid.
-            The AI can be wrong, so a held redemption is never rejected automatically: a person reviews it.
+            The AI can be wrong, so a held redemption is never approved or rejected automatically: a person at the BID decides.
             If the AI check fails for any reason, the redemption is held, never cleared.
         </p>
         <p class="mt-3">
@@ -24,6 +24,9 @@
     <div aria-live="polite">
         @if (session('status'))
             <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
+        @endif
+        @if (session('error'))
+            <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">{{ session('error') }}</p>
         @endif
     </div>
 
@@ -51,7 +54,7 @@
         <h2 id="recent-heading" class="text-2xl font-semibold text-forest">Recent redemptions</h2>
         <ul class="mt-3 space-y-3">
             @foreach ($redemptions as $redemption)
-                <x-card as="li" @class(['border-l-4', 'border-l-hold' => ! $redemption->isApproved(), 'border-l-ok' => $redemption->isApproved()])>
+                <x-card as="li" id="redemption-{{ $redemption->id }}" @class(['scroll-mt-24 border-l-4', 'border-l-hold' => $redemption->isUnderReview(), 'border-l-ok' => $redemption->isApproved(), 'border-l-muted' => $redemption->isRejected()])>
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <p class="tabular font-display text-xl font-semibold">{{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}</p>
@@ -97,6 +100,32 @@
                                 </dl>
                             </div>
                         </div>
+                    @endif
+
+                    @if ($redemption->isUnderReview())
+                        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-hold-bg p-4">
+                            <p class="text-sm text-hold">
+                                <span class="font-semibold">Waiting for your decision.</span>
+                                The {{ Money::format($redemption->amount_cents) }} is reserved from the employee's balance.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <form method="POST" action="{{ route('demo.bid-admin.approve', $redemption) }}">
+                                    @csrf
+                                    <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
+                                </form>
+                                <form method="POST" action="{{ route('demo.bid-admin.reject', $redemption) }}">
+                                    @csrf
+                                    <x-button type="submit" size="sm" variant="danger" class="bg-paper" aria-label="Reject {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Reject</x-button>
+                                </form>
+                            </div>
+                        </div>
+                    @elseif ($redemption->reviewed_by)
+                        <p class="mt-4 text-sm text-muted">
+                            {{ $redemption->isApproved() ? 'Approved' : 'Rejected' }} by
+                            <span class="font-semibold text-ink">{{ $redemption->reviewed_by }}</span>
+                            on {{ $redemption->reviewed_at->setTimezone('America/New_York')->format('M j, g:i A') }}.
+                            {{ $redemption->isApproved() ? 'The reserved credits were spent.' : 'The credits went back to the employee.' }}
+                        </p>
                     @endif
                 </x-card>
             @endforeach

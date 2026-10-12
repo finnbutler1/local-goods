@@ -1,6 +1,6 @@
-@php use Illuminate\Support\Carbon; @endphp
+@php use App\Http\Controllers\Demo\BidAdminController; use Illuminate\Support\Carbon; @endphp
 
-<x-app-shell title="Fraud check eval" active="eval" user-name="Sam Taylor (demo)" role="BID admin">
+<x-app-shell title="Fraud check eval" active="eval" :user-name="BidAdminController::DEMO_ADMIN" role="BID admin">
 <div class="space-y-10">
     <nav aria-label="Demo pages" class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-forest">
         <a href="{{ route('demo.bid-admin') }}" class="underline decoration-line decoration-2 underline-offset-4 hover:decoration-forest">
