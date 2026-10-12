@@ -1,6 +1,6 @@
 case_id,merchant,category,amount,local_time,balance_before,recent_history,visits_7d,visits_30d,past_redemptions,median_past_amount,my_label,notes,split
-FE-01,Triangle Stems,retail,80.00,10:30,82.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,suspicious,almost drains his whole bank account,dev
-FE-02,Connecticut Noodle Bar,restaurant,14.20,19:30,74.10,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,normal,doesn't drain his entire bank,dev
+FE-01,Triangle Stems,retail,80.00,10:30,82.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,suspicious,almost drains his whole credit balance,dev
+FE-02,Connecticut Noodle Bar,restaurant,14.20,19:30,74.10,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,normal,doesn't drain his entire credit balance,dev
 FE-03,Triangle Stems,retail,36.50,18:05,120.75,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,normal,has been there before,dev
 FE-04,Press Room Deli,restaurant,9.60,11:45,33.40,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 1 visit in last 30 days",1,1,12,13.87,normal,small purchase,holdout
 FE-05,Connecticut Noodle Bar,restaurant,22.80,22:20,140.00,"12 past redemptions, median $13.87; 3 visits here in last 7 days, 6 visits in last 30 days",3,6,12,13.87,normal,regular customer,dev
@@ -13,19 +13,19 @@ FE-11,Seventeenth Street Kitchen,restaurant,21.35,13:10,151.25,"12 past redempti
 FE-12,Farragut Grind,cafe,80.00,06:10,84.00,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 2 visits in last 30 days",1,2,12,13.87,suspicious,drains account even though they have been there before,dev
 FE-13,Press Room Deli,restaurant,11.85,12:05,143.60,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 1 visit in last 30 days",1,1,12,13.87,normal,lunch time,dev
 FE-14,Page & Quill Books,retail,24.99,17:30,130.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 0 visits in last 30 days",0,0,12,13.87,normal,purchase after work,dev
-FE-15,Connecticut Noodle Bar,restaurant,100.00,14:00,250.00,"12 past redemptions, median $13.87; 6 visits here in last 7 days, 14 visits in last 30 days",6,14,12,13.87,normal,treating oneself,dev
+FE-15,Connecticut Noodle Bar,restaurant,100.00,14:00,250.00,"20 past redemptions, median $13.87; 6 visits here in last 7 days, 14 visits in last 30 days",6,14,20,13.87,normal,treating oneself,dev
 FE-16,Farragut Grind,cafe,4.75,15:20,61.90,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 2 visits in last 30 days",1,2,12,13.87,normal,looks like they're getting some coffee,holdout
 FE-17,Lafayette Cycle Studio,fitness,200.00,05:30,205.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,suspicious,drains entire account while barely being there,dev
 FE-18,Page & Quill Books,retail,64.20,12:50,64.20,"2 past redemptions, median $18.00; 0 visits here in last 7 days, 0 visits in last 30 days",0,0,2,18.00,suspicious,drains entire account while never coming previously,dev
 FE-19,Page & Quill Books,retail,270.00,22:45,270.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 0 visits in last 30 days",0,0,12,13.87,suspicious,drains entire account while never coming previously,holdout
-FE-20,Lafayette Cycle Studio,fitness,28.00,07:10,86.50,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,normal,early monring workout,dev
+FE-20,Lafayette Cycle Studio,fitness,28.00,07:10,86.50,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,normal,early morning workout,dev
 FE-21,Press Room Deli,restaurant,60.00,12:30,210.00,"12 past redemptions, median $13.87; 5 visits here in last 7 days, 11 visits in last 30 days",5,11,12,13.87,normal,previous customer making a bigger purchase,holdout
 FE-22,Triangle Stems,retail,150.00,03:05,150.00,"No past redemptions; 0 visits here in last 7 days, 0 visits in last 30 days",0,0,0,,suspicious,no past redemptions while draining the entire account,holdout
 FE-23,K Street Cuts,salon,85.00,18:30,88.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 0 visits in last 30 days",0,0,12,13.87,suspicious,drains account without ever being there,holdout
 FE-24,K Street Cuts,salon,42.00,11:00,175.80,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 0 visits in last 30 days",0,0,12,13.87,normal,not that big of a purchase relative to their account balance,dev
 FE-25,Triangle Stems,retail,150.00,23:40,150.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,suspicious,drains entire account late at night,holdout
 FE-26,Seventeenth Street Kitchen,restaurant,90.00,23:50,92.00,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,suspicious,drains entire account late at night with barely any previous visits,dev
-FE-27,Farragut Grind,cafe,30.00,08:20,145.00,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 2 visits in last 30 days",1,2,12,13.87,normal,seems like a cusotmer wanting to make a bigger purchase while not coming back for a while,dev
+FE-27,Farragut Grind,cafe,30.00,08:20,145.00,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 2 visits in last 30 days",1,2,12,13.87,normal,seems like a customer wanting to make a bigger purchase while not coming back for a while,dev
 FE-28,Lafayette Cycle Studio,fitness,40.00,06:00,210.00,"20 past redemptions, median $28.00; 3 visits here in last 7 days, 8 visits in last 30 days",3,8,20,28.00,normal,matches up with median past amount,dev
 FE-29,Farragut Grind,cafe,6.25,08:35,112.40,"12 past redemptions, median $13.87; 1 visit here in last 7 days, 2 visits in last 30 days",1,2,12,13.87,normal,grabbing coffee early in the morning,dev
 FE-30,Seventeenth Street Kitchen,restaurant,48.60,20:15,96.20,"12 past redemptions, median $13.87; 0 visits here in last 7 days, 1 visit in last 30 days",0,1,12,13.87,normal,big purchase but looks to be dinner time,holdout
