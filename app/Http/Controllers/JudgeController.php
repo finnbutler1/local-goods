@@ -49,7 +49,7 @@ class JudgeController extends Controller
             ],
             [
                 'title' => 'Merchant dashboard',
-                'look_for' => 'What a coffee shop or salon sees: Local Goods sales and Stripe payouts.',
+                'look_for' => 'What a coffee shop or salon sees: Local Goods sales, and payouts once Stripe Connect is built.',
                 'url' => route('judge.view-as', Role::Merchant->value),
                 'available' => false,
             ],

@@ -46,7 +46,7 @@
                 <p>
                     Local Goods is a workplace perk: employers inside a Business Improvement District buy credits for their staff.
                     Employees can spend those credits only at independent merchants in that district, using their phone as the card.
-                    Stripe Connect holds and moves the money, while Local Goods keeps the ledger of who is owed what and enforces the rules.
+                    Payments will run through Stripe Connect in test mode in a later build; today Local Goods tracks every credit in its own append-only ledger and enforces the rules.
                     Every redemption is checked by an AI, Redemption Fraud Detection, and anything suspicious is held until a person at the BID decides.
                     This demo covers one district, the Golden Triangle in Washington, DC, and every business, person and transaction in it is fictional.
                 </p>

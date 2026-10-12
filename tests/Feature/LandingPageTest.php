@@ -78,4 +78,12 @@ class LandingPageTest extends TestCase
             ->assertSee('Demonstration project for the CUA Busch School AI Vibe Coding Contest.')
             ->assertSee('Not affiliated with the Golden Triangle BID.');
     }
+
+    public function test_payouts_are_not_described_as_live(): void
+    {
+        // Stripe Connect isn't built yet: the page must not say merchants are paid out today.
+        $this->get('/')->assertOk()
+            ->assertDontSee('paid out directly')
+            ->assertSee('Stripe Connect (test mode) come in a later build');
+    }
 }

@@ -77,7 +77,7 @@
                 @foreach ([
                     ['Your company buys credits', 'Fund a monthly allowance for each employee. One invoice, no cards to issue, nothing for staff to sign up for beyond an app.'],
                     ['Employees spend them nearby', 'Credits work only at independent restaurants, shops, salons and gyms inside the district. The phone is the card.'],
-                    ['The money stays in the neighborhood', 'Merchants are paid out directly, and every redemption is checked for abuse before a cent moves.'],
+                    ['The money stays in the neighborhood', 'Every redemption is checked for abuse before a merchant is paid. Merchant payouts through Stripe Connect (test mode) come in a later build.'],
                 ] as $i => [$title, $body])
                     <li class="relative">
                         <span class="relative grid size-14 place-items-center rounded-full bg-forest font-display text-2xl font-semibold text-amber" aria-hidden="true">{{ $i + 1 }}</span>
@@ -128,7 +128,7 @@
             <x-card as="article" aria-labelledby="aud-merchants" class="lg:col-span-2" padding="p-8">
                 <p class="text-sm font-semibold uppercase tracking-widest text-muted">For independents</p>
                 <h3 id="aud-merchants" class="mt-2 text-3xl font-semibold text-forest">Merchants</h3>
-                <p class="mt-3 text-muted">New customers from the office towers next door, with no setup cost and no new hardware. Customers show the app at the counter and you're paid out directly.</p>
+                <p class="mt-3 text-muted">New customers from the office towers next door, with no setup cost and no new hardware. Customers show the app at the counter; direct payouts through Stripe Connect come in a later build.</p>
             </x-card>
         </div>
     </section>

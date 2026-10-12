@@ -20,7 +20,10 @@ class JudgeLandingTest extends TestCase
             ->assertSee('What Local Goods is')
             ->assertSee('Redemption Fraud Detection')
             ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Employer dashboard', 'Merchant dashboard'])
-            ->assertSee('Coming in a later build');
+            ->assertSee('Coming in a later build')
+            ->assertSee('Payments will run through Stripe Connect in test mode in a later build')
+            ->assertSee('append-only ledger')
+            ->assertDontSee('holds and moves the money');
 
         // The five tour links all open for a judge.
         preg_match_all('/<a href="([^"]+)" class="text-forest underline decoration-amber/', $page->getContent(), $links);
