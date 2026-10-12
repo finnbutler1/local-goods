@@ -87,24 +87,24 @@
                     <p class="hidden truncate text-sm font-semibold text-muted lg:block">{{ $context }}</p>
                 </div>
                 <div class="flex min-w-0 items-center gap-3">
-                    <div class="min-w-0 text-right">
-                        <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>{{ $userName }}</p>
-                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs) · viewing as {{ $viewAs->label() }}@endif</x-badge>
+                    <div @class(['min-w-0 text-right', 'hidden sm:block' => $role === \App\Enums\Role::Judge])>
+                        <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>@if ($user)<a href="{{ route('account') }}" class="hover:underline underline-offset-4" title="Your account">{{ $userName }}</a>@else{{ $userName }}@endif</p>
+                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs)<span class="hidden sm:inline"> · viewing as {{ $viewAs->label() }}</span>@endif</x-badge>
                     </div>
                     @if ($role === \App\Enums\Role::Judge)
                         <details class="relative">
-                            <summary class="cursor-pointer list-none rounded-full border-2 border-forest px-3 py-1.5 text-sm font-semibold text-forest hover:bg-forest hover:text-cream">View as<span aria-hidden="true"> ▾</span></summary>
+                            <summary class="cursor-pointer list-none rounded-full border-2 border-forest px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-forest hover:bg-forest hover:text-cream">View as<span aria-hidden="true"> ▾</span></summary>
                             <ul class="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-line bg-paper p-2 shadow-lg">
                                 @foreach (\App\Support\ViewAs::ROLES as $option)
                                     <li><a href="{{ route('judge.view-as', $option->value) }}" @if ($viewAs === $option) aria-current="true" @endif
                                            class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream aria-[current=true]:bg-cream-deep">{{ $option->label() }}</a></li>
                                 @endforeach
                                 <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream">Back to judge home</a></li>
+                                <li class="lg:hidden"><a href="{{ route('account') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream">Your account</a></li>
                             </ul>
                         </details>
                     @endif
-                    <span class="grid size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink" aria-hidden="true">{{ $initials }}</span>
-                    <a href="{{ route('account') }}" class="text-sm font-semibold text-forest underline-offset-4 hover:underline lg:hidden">Account</a>
+                    <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink sm:grid" aria-hidden="true">{{ $initials }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
                         @csrf
                         <x-button type="submit" variant="ghost" size="sm">Log out</x-button>

@@ -66,7 +66,7 @@
                                     <span class="sr-only">Step {{ $i + 1 }}: </span>{{ $step['title'] }}
                                 </a>
                                 @unless ($step['available'])
-                                    <x-badge tone="neutral">Coming in a later build</x-badge>
+                                    <x-badge tone="neutral" class="font-sans">Coming in a later build</x-badge>
                                 @endunless
                             </h3>
                             <p class="mt-1 text-muted">{{ $step['look_for'] }}</p>
