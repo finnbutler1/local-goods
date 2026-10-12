@@ -28,7 +28,8 @@ class FraudEvalReport
         file_put_contents($runJson, json_encode($run, self::JSON_FLAGS)."\n");
 
         $history = $this->history($dir);
-        $latest = $run + ['history' => $history];
+        $headline = $this->headline($history);
+        $latest = $run + ['history' => $history, 'headline' => $headline];
 
         $paths = [
             'run_json' => $runJson,
@@ -37,8 +38,8 @@ class FraudEvalReport
             'latest_json' => "{$dir}/fraud-eval-latest.json",
         ];
 
-        file_put_contents($paths['run_md'], $this->markdown($run, [], '../../../'));
-        file_put_contents($paths['latest_md'], $this->markdown($run, $history, '../../'));
+        file_put_contents($paths['run_md'], $this->markdown($run, [], null, '../../../'));
+        file_put_contents($paths['latest_md'], $this->markdown($run, $history, $headline, '../../'));
         file_put_contents($paths['latest_json'], json_encode($latest, self::JSON_FLAGS)."\n");
 
         return $paths;
@@ -61,24 +62,51 @@ class FraudEvalReport
                 'dev_pct' => $run['summary']['dev']['agreement_pct'],
                 'holdout_pct' => $run['summary']['holdout']['agreement_pct'],
                 'all_pct' => $run['summary']['all']['agreement_pct'],
+                'name' => basename($run['path'], '.json'),
                 'file' => 'runs/'.basename($run['path'], '.json').'.md',
+                'note' => $run['note'] ?? null,
             ])
             ->values()
             ->all();
     }
 
     /**
+     * The run whose holdout score is the headline number (config
+     * fraud.eval_headline_run). Later runs don't replace it automatically:
+     * a prompt changed after seeing holdout results can't claim a clean score.
+     *
+     * @param  list<array<string, mixed>>  $history
+     * @return array<string, mixed>|null
+     */
+    public function headline(array $history): ?array
+    {
+        return collect($history)->firstWhere('name', config('fraud.eval_headline_run'));
+    }
+
+    /**
      * @param  array<string, mixed>  $run
      * @param  list<array<string, mixed>>  $history
+     * @param  array<string, mixed>|null  $headline
      * @param  string  $root  relative path from the Markdown file back to the repo root
      */
-    public function markdown(array $run, array $history, string $root = '../../'): string
+    public function markdown(array $run, array $history, ?array $headline = null, string $root = '../../'): string
     {
         $s = $run['summary'];
         $date = Carbon::parse($run['run_at'])->format('F j, Y g:i A T');
         $pct = fn ($split) => $split['agreement_pct'] === null ? 'n/a' : "{$split['agreement_pct']}% ({$split['agree']}/{$split['cases']})";
 
         $md = "# Redemption Fraud Detection eval results\n\n";
+
+        if ($headline !== null) {
+            $md .= "**Headline: {$headline['holdout_pct']}% agreement on holdout cases**, from the run on "
+                .Carbon::parse($headline['run_at'])->format('F j, Y')." (prompt `{$headline['prompt_version']}`, [details]({$headline['file']})).\n\n";
+        }
+
+        if (! empty($run['note'])) {
+            $md .= "> **Note on this run:** {$run['note']}\n\n";
+        }
+
+        $md .= $headline === null ? '' : "## Latest run\n\n";
         $md .= "| | |\n|---|---|\n";
         $md .= "| Run | {$date} |\n";
         $md .= "| Model | `{$run['model']}` |\n";
@@ -87,7 +115,7 @@ class FraudEvalReport
 
         $md .= "## Agreement with the human labels\n\n";
         $md .= "| Split | Agreement |\n|---|---|\n";
-        $md .= "| **Holdout** (never used to change the prompt) | **{$pct($s['holdout'])}** |\n";
+        $md .= "| **Holdout** (not used to change the prompt) | **{$pct($s['holdout'])}** |\n";
         $md .= "| Dev (may be used to improve the prompt) | {$pct($s['dev'])} |\n";
         $md .= "| All cases | {$pct($s['all'])} |\n\n";
         $md .= "The AI's `hold` counts as *suspicious* and `clear` as *normal*.";
@@ -125,9 +153,9 @@ class FraudEvalReport
 
         if ($history !== []) {
             $md .= "\n## Run history\n\nEvery run is kept. A new prompt version means the prompt file changed between runs.\n\n";
-            $md .= "| Run | Model | Prompt version | Dev | Holdout | All | Details |\n|---|---|---|---|---|---|---|\n";
+            $md .= "| Run | Model | Prompt version | Dev | Holdout | All | Details | Note |\n|---|---|---|---|---|---|---|---|\n";
             foreach ($history as $h) {
-                $md .= '| '.Carbon::parse($h['run_at'])->format('Y-m-d H:i')." | `{$h['model']}` | `{$h['prompt_version']}` | {$h['dev_pct']}% | {$h['holdout_pct']}% | {$h['all_pct']}% | [{$h['file']}]({$h['file']}) |\n";
+                $md .= '| '.Carbon::parse($h['run_at'])->format('Y-m-d H:i')." | `{$h['model']}` | `{$h['prompt_version']}` | {$h['dev_pct']}% | {$h['holdout_pct']}% | {$h['all_pct']}% | [{$h['file']}]({$h['file']}) | {$this->cell($h['note'] ?? '')} |\n";
             }
         }
 

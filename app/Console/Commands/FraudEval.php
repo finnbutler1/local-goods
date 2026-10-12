@@ -17,7 +17,8 @@ class FraudEval extends Command
     protected $signature = 'fraud:eval
         {--cases=data/fraud_eval_cases.csv : Hand-labeled cases (CSV)}
         {--out=docs/evals : Where to save the results}
-        {--cache= : Cache folder for AI replies (default storage/app/fraud-eval-cache)}';
+        {--cache= : Cache folder for AI replies (default storage/app/fraud-eval-cache)}
+        {--note= : A sentence saved with this run, e.g. what changed since the last one}';
 
     protected $description = 'Run the hand-labeled fraud eval cases through Redemption Fraud Detection and report agreement';
 
@@ -40,6 +41,8 @@ class FraudEval extends Command
             $this->option('cache') ?: storage_path('app/fraud-eval-cache'),
             fn (string $line) => $this->line("  {$line}"),
         );
+
+        $run['note'] = $this->option('note');
 
         $this->newLine();
         $this->line("Model: {$run['model']} · prompt {$run['prompt_version']} · new API calls: {$run['api_calls']}");

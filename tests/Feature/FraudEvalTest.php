@@ -170,6 +170,36 @@ class FraudEvalTest extends TestCase
         $this->assertCount(2, File::glob("{$this->dir}/out/runs/*.json"));
     }
 
+    public function test_the_configured_headline_run_stays_the_headline_and_notes_are_saved(): void
+    {
+        $this->cases();
+
+        Carbon::setTestNow('2026-10-11 10:00');
+        $this->useFake(FakeClaudeClient::verdict(85, 'hold'));
+        $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
+        config(['fraud.eval_headline_run' => '2026-10-11-claude-opus-5-5-prompt-'.FraudEvalRunner::promptVersion()]);
+
+        // A later run (a different cache, as if the prompt changed) does not replace the headline.
+        Carbon::setTestNow('2026-10-12 10:00');
+        $this->useFake(FakeClaudeClient::verdict(10, 'clear'));
+        $this->artisan('fraud:eval', ['--note' => 'Prompt changed after holdout was seen.', '--cache' => "{$this->dir}/cache2"] + $this->evalCommand())->assertSuccessful();
+
+        $latest = json_decode(file_get_contents("{$this->dir}/out/fraud-eval-latest.json"), true);
+        $this->assertSame('Prompt changed after holdout was seen.', $latest['note']);
+        $this->assertSame('2026-10-11', substr($latest['headline']['run_at'], 0, 10));
+        $this->assertSame(50.0, $latest['headline']['holdout_pct']);
+
+        $md = file_get_contents("{$this->dir}/out/fraud-eval-results.md");
+        $this->assertStringContainsString('**Headline: 50% agreement on holdout cases**', $md);
+        $this->assertStringContainsString('Prompt changed after holdout was seen.', $md);
+
+        config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
+        $this->get('/demo/bid-admin/eval')
+            ->assertSee('50% agreement on holdout cases')
+            ->assertSee('Note on this run:')
+            ->assertSee('Earlier runs');
+    }
+
     public function test_the_real_cases_file_is_fully_labeled_and_valid(): void
     {
         $cases = app(FraudEvalRunner::class)->loadCases(base_path('data/fraud_eval_cases.csv'));

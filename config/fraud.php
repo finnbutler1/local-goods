@@ -30,4 +30,9 @@ return [
 
     // Latest results written by `php artisan fraud:eval`, shown at /demo/bid-admin/eval.
     'eval_latest_path' => base_path('docs/evals/fraud-eval-latest.json'),
+
+    // The run whose holdout score is the headline. It is the first run, made
+    // before any prompt change; later runs used a prompt changed after the
+    // holdout results had been seen, so they don't replace it.
+    'eval_headline_run' => '2026-10-11-claude-opus-5-5-prompt-e5bcf207',
 ];

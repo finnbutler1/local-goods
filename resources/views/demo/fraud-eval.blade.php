@@ -32,14 +32,30 @@
             $disagreements = array_values(array_filter($run['results'], fn ($r) => ! $r['agree']));
         @endphp
 
-        <section aria-labelledby="headline-heading">
-            <h2 id="headline-heading" class="sr-only">Headline numbers</h2>
-            <dl class="grid gap-3 sm:grid-cols-3">
+        @php $headline = $run['headline'] ?? null; @endphp
+        @if ($headline)
+            <section aria-labelledby="headline-heading" class="rounded-2xl bg-forest p-5 text-cream">
+                <h2 id="headline-heading" class="text-sm font-semibold uppercase tracking-widest">Headline result</h2>
+                <p class="mt-1 text-3xl font-semibold">{{ $headline['holdout_pct'] }}% agreement on holdout cases</p>
+                <p class="mt-1 text-sm">
+                    From the first run on {{ Carbon::parse($headline['run_at'])->format('M j, Y') }}
+                    (prompt version <code>{{ $headline['prompt_version'] }}</code>), before any change to the prompt.
+                </p>
+            </section>
+        @endif
+
+        <section aria-labelledby="latest-heading">
+            <h2 id="latest-heading" class="text-xl font-semibold">Latest run</h2>
+            @if (! empty($run['note']))
+                <p class="mt-2 rounded-xl bg-hold-bg p-4 text-hold"><strong>Note on this run:</strong> {{ $run['note'] }}</p>
+            @endif
+            <dl class="mt-3 grid gap-3 sm:grid-cols-3">
                 @foreach (['holdout' => 'Holdout agreement', 'dev' => 'Dev agreement', 'all' => 'All cases'] as $key => $label)
-                    <div @class(['rounded-xl p-4', 'bg-forest text-cream' => $key === 'holdout', 'bg-white ring-1 ring-cream-deep' => $key !== 'holdout'])>
-                        <dt @class(['text-sm', 'text-muted' => $key !== 'holdout'])>{{ $label }}</dt>
+                    @php $dark = $key === 'holdout' && ! $headline; @endphp
+                    <div @class(['rounded-xl p-4', 'bg-forest text-cream' => $dark, 'bg-white ring-1 ring-cream-deep' => ! $dark])>
+                        <dt @class(['text-sm', 'text-muted' => ! $dark])>{{ $label }}</dt>
                         <dd class="text-3xl font-semibold">{{ $s[$key]['agreement_pct'] }}%</dd>
-                        <dd @class(['text-sm', 'text-muted' => $key !== 'holdout'])>{{ $s[$key]['agree'] }} of {{ $s[$key]['cases'] }} cases</dd>
+                        <dd @class(['text-sm', 'text-muted' => ! $dark])>{{ $s[$key]['agree'] }} of {{ $s[$key]['cases'] }} cases</dd>
                     </div>
                 @endforeach
             </dl>
@@ -122,6 +138,7 @@
                                 <th scope="col" class="px-4 py-2">Prompt version</th>
                                 <th scope="col" class="px-4 py-2">Dev</th>
                                 <th scope="col" class="px-4 py-2">Holdout</th>
+                                <th scope="col" class="px-4 py-2">Note</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -131,6 +148,7 @@
                                     <td class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
                                     <td class="px-4 py-2">{{ $h['dev_pct'] }}%</td>
                                     <td class="px-4 py-2">{{ $h['holdout_pct'] }}%</td>
+                                    <td class="px-4 py-2 text-sm">{{ $h['note'] ?? '' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
