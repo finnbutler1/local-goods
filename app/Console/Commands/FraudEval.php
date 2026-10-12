@@ -43,6 +43,7 @@ class FraudEval extends Command
         );
 
         $run['note'] = $this->option('note');
+        $run['cases_version'] = substr(hash_file('sha256', $this->path('cases')), 0, 8);
 
         $this->newLine();
         $this->line("Model: {$run['model']} · prompt {$run['prompt_version']} · new API calls: {$run['api_calls']}");

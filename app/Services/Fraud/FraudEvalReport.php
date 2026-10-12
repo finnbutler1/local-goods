@@ -23,7 +23,9 @@ class FraudEvalReport
     {
         File::ensureDirectoryExists("{$dir}/runs");
 
-        $name = Carbon::parse($run['run_at'])->format('Y-m-d').'-'.$run['model'].'-prompt-'.$run['prompt_version'];
+        // Runs on different cases get their own file, even with the same prompt on the same day.
+        $name = Carbon::parse($run['run_at'])->format('Y-m-d').'-'.$run['model'].'-prompt-'.$run['prompt_version']
+            .(isset($run['cases_version']) ? '-cases-'.$run['cases_version'] : '');
         $runJson = "{$dir}/runs/{$name}.json";
         file_put_contents($runJson, json_encode($run, self::JSON_FLAGS)."\n");
 
@@ -112,7 +114,8 @@ class FraudEvalReport
         $md .= "| Run | {$date} |\n";
         $md .= "| Model | `{$run['model']}` |\n";
         $md .= "| Prompt version | `{$run['prompt_version']}` (first 8 characters of the SHA-256 of [`redemption-fraud-detection.md`]({$root}resources/prompts/redemption-fraud-detection.md)) |\n";
-        $md .= "| Cases | {$run['case_count']} hand-labeled synthetic redemptions ([`data/fraud_eval_cases.csv`]({$root}data/fraud_eval_cases.csv)) |\n\n";
+        $casesVersion = isset($run['cases_version']) ? ", version `{$run['cases_version']}`" : '';
+        $md .= "| Cases | {$run['case_count']}{$casesVersion} hand-labeled synthetic redemptions ([`data/fraud_eval_cases.csv`]({$root}data/fraud_eval_cases.csv)) |\n\n";
 
         $md .= "## Agreement with the human labels\n\n";
         $md .= "| Split | Agreement |\n|---|---|\n";

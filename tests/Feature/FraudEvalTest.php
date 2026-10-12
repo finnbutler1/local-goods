@@ -165,9 +165,13 @@ class FraudEvalTest extends TestCase
         Carbon::setTestNow('2026-10-12 10:00');
         $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
 
+        // Same prompt and day but different cases: a separate run file, not an overwrite.
+        $this->writeCases('FE-01,Farragut Grind,cafe,6.50,08:40,120.00,"x",1,2,12,13.87,normal,coffee,dev');
+        $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
+
         $latest = json_decode(file_get_contents("{$this->dir}/out/fraud-eval-latest.json"), true);
-        $this->assertCount(2, $latest['history']);
-        $this->assertCount(2, File::glob("{$this->dir}/out/runs/*.json"));
+        $this->assertCount(3, $latest['history']);
+        $this->assertCount(3, File::glob("{$this->dir}/out/runs/*.json"));
     }
 
     public function test_the_configured_headline_run_stays_the_headline_and_notes_are_saved(): void
@@ -177,7 +181,7 @@ class FraudEvalTest extends TestCase
         Carbon::setTestNow('2026-10-11 10:00');
         $this->useFake(FakeClaudeClient::verdict(85, 'hold'));
         $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
-        config(['fraud.eval_headline_run' => '2026-10-11-claude-opus-5-5-prompt-'.FraudEvalRunner::promptVersion()]);
+        config(['fraud.eval_headline_run' => basename(File::glob("{$this->dir}/out/runs/*.json")[0], '.json')]);
 
         // A later run (a different cache, as if the prompt changed) does not replace the headline.
         Carbon::setTestNow('2026-10-12 10:00');
