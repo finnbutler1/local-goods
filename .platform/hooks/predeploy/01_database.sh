@@ -6,8 +6,9 @@
 # If anything here fails, the deployment stops and the running site keeps its
 # old code and old database settings instead of breaking.
 #
-# Applies new migrations and seeds the demo ONLY if the demo tables are
-# empty. It never drops or wipes tables: a deploy must not delete data.
+# Applies new migrations, creates or updates the demo logins (one per role,
+# passwords from DEMO_PASSWORD_* properties), and seeds the demo ONLY if the
+# demo tables are empty. It never drops or wipes tables: a deploy must not delete data.
 set -Eeuo pipefail
 
 # Work in the app folder this script shipped in (Beanstalk's staging folder,
@@ -63,6 +64,7 @@ if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
 fi
 
 php artisan migrate --force --no-interaction
+php artisan demo:seed-accounts --no-interaction
 php artisan demo:seed-if-empty --no-interaction
 
 # This script runs as root, but the web server runs as "webapp". Artisan may

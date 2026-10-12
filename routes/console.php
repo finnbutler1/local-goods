@@ -2,6 +2,7 @@
 
 use App\Services\DemoResetter;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\DemoAccountSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -24,3 +25,17 @@ Artisan::command('demo:seed-if-empty', function () {
         $this->warn('Some demo tables are empty and some are not ('.implode(', ', $filled).' have rows). Left everything as is; use Reset demo to restore it.');
     }
 })->purpose('Seed the demo data only if the demo tables are empty');
+
+// Run by the Beanstalk deploy hook. Creates or updates one login per role.
+// Passwords come from DEMO_PASSWORD_* and are never printed.
+Artisan::command('demo:seed-accounts', function () {
+    $result = (new DemoAccountSeeder)->run();
+
+    if ($result['saved'] !== []) {
+        $this->info('Demo logins ready for: '.implode(', ', $result['saved']).'.');
+    }
+
+    foreach ($result['skipped'] as $role) {
+        $this->warn("Skipped {$role}: DEMO_PASSWORD_".strtoupper($role).' is not set.');
+    }
+})->purpose('Create or update the demo login for each role from DEMO_PASSWORD_* settings');

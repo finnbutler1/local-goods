@@ -48,7 +48,9 @@ class DeployHookTest extends TestCase
         $script = $this->code(self::HOOK);
 
         $this->assertStringContainsString('php artisan migrate --force', $script);
+        $this->assertStringContainsString('php artisan demo:seed-accounts', $script);
         $this->assertStringContainsString('php artisan demo:seed-if-empty', $script);
+        $this->assertLessThan(strpos($script, 'demo:seed-accounts'), strpos($script, 'migrate --force'), 'migrate before creating logins');
         $this->assertStringContainsString('trap on_error ERR', $script);
         $this->assertStringContainsString('config:clear', $script);
     }
