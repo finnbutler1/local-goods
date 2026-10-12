@@ -3,6 +3,17 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-12: BID review of held redemptions
+
+- Held redemptions on `/demo/bid-admin` now have **Approve** and **Reject**
+  buttons. Approve spends the reserved credits; reject returns them to the
+  employee. Each decision adds a ledger entry with who decided and when, and a
+  redemption can't be decided twice.
+- Landing page: the "person makes the final call" bullet now says held
+  redemptions wait for BID review; the sample stats are replaced by one worked,
+  labeled scenario (2,000 × $50 × 12 = $1.2M a year); the how-it-works
+  connector runs exactly from step 1 to step 3.
+
 ## 2026-10-12: Brand system, landing page and app shell
 
 - New visual identity: Fraunces headings and Public Sans body text, both

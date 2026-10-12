@@ -79,8 +79,13 @@ yet**:
   credits stay reserved, so neither side loses anything while it waits. The
   redemption appears on the BID admin view with the AI's score, decision and
   explanation, and the admin view counts how many are waiting.
-- **Planned:** buttons that let a BID or HR reviewer approve or reject a held
-  redemption, with their name and reason recorded next to the AI's decision.
+- **Today:** a person at the BID approves or rejects each held redemption on
+  the admin view. Approving spends the reserved credits; rejecting returns
+  them to the employee. Who decided and when are recorded on the redemption
+  and in the append-only ledger, shown next to the AI's decision, and a
+  redemption can only be decided once.
+- **Planned:** a written reason with each decision, and the same buttons for
+  HR reviewers.
 - **Planned:** once Stripe Connect is built, no money will move to a merchant
   for a held redemption until a person clears it. **Today no money moves at
   all**, whether a redemption is cleared or held. Redemptions only update the

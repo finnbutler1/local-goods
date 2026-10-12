@@ -2,7 +2,7 @@
 
 **An employee perk program designed to keep employer spending in the neighborhood: credits meant to be spent only at independent local merchants.**
 
-> **Status:** working demo. Redemptions and AI fraud scoring are live. Payouts, independence checks and human approve/reject are **planned**: no money moves yet, and the demo merchants are seeded by hand.
+> **Status:** working demo. Redemptions, AI fraud scoring and human approve/reject of held redemptions are live. Payouts and independence checks are **planned**: no money moves yet, and the demo merchants are seeded by hand.
 
 **Live app:** http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com
 
@@ -31,9 +31,9 @@ employers want a perk their staff will actually use.
    hand-seeded list. Automatic checks that a merchant is independent
    (Merchant Eligibility Matching) are planned.*
 3. **AI checks every redemption.** *Live: suspicious redemptions are held and
-   shown on the BID admin view. Planned: approve/reject buttons for a person,
-   and Stripe Connect payouts that only go out for cleared redemptions. No
-   money moves yet.*
+   shown on the BID admin view, where a person approves or rejects them.
+   Planned: Stripe Connect payouts that only go out for cleared redemptions.
+   No money moves yet.*
 
 **Try it:** open the [employee wallet](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/employee),
 redeem a normal amount, then click **Try a suspicious redemption**. After that,
@@ -60,8 +60,10 @@ The following all produce a hold with risk score 100:
 
 If Claude says `clear` but gives a score of 70 or higher, the app holds it
 anyway. A held redemption keeps the employee's credits reserved and appears on
-the BID admin view. The buttons a person would use to approve or reject it are
-planned, and because payouts are planned too, no money moves either way. See
+the BID admin view, where a person approves it (the reserved credits are spent)
+or rejects it (the credits go back to the employee). Each decision is recorded in
+the append-only ledger with who decided and when, and a redemption can only be
+decided once. Payouts are planned, so no money moves either way yet. See
 [`RedemptionFraudDetector.php`](app/Services/Fraud/RedemptionFraudDetector.php),
 its [tests](tests/Feature/RedemptionFraudDetectorTest.php) and
 [ADR 0003](docs/adr/0003-fail-closed-fraud-detection.md).
@@ -72,13 +74,13 @@ Only what exists today is claimed. Everything else is marked **planned**.
 
 | Category | Points | Evidence |
 |---|---|---|
-| **Functionality** | 25 | **Live:** the [employee wallet](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/employee) shows a balance, a redeem form and recent redemptions; the [BID admin view](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/bid-admin) shows every AI decision; a Reset demo button; an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode), approve/reject buttons for held redemptions. |
+| **Functionality** | 25 | **Live:** the [employee wallet](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/employee) shows a balance, a redeem form and recent redemptions; the [BID admin view](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/bid-admin) shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode). |
 | **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
 | **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Measured:** [80% agreement on 10 unseen cases with the current prompt, and 0 suspicious cases missed](docs/evals/fraud-eval-results.md). Every disagreement is a false alarm that goes to human review, never a wrong approval. Small sample: one case is 10 points. 40 synthetic cases in all, each labeled by a person before the AI saw it; every run is kept; method in [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it). **Planned:** Merchant Eligibility Matching. |
 | **Code quality / GitHub** | 15 | Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php), so they need no secrets. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
 | **UX** | 10 | A custom brand system (Fraunces + Public Sans, self-hosted; forest/cream/amber tokens with every text pair tested for WCAG AA in [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)), an employer-first landing page, a shared app shell (sidebar on desktop, bottom tabs on mobile), one-click demo flow, plain-English AI explanations, all businesses labeled fictional. A local-only `/styleguide` shows every token and component. **Planned:** the employer/HR dashboard (an empty shell is at `/dashboard`). |
 | **Business impact** | 10 | Designed to keep perk spending with independent merchants. [Civic Economics](https://www.civiceconomics.com/) studies found that independent businesses recirculate roughly 48% of their revenue locally, versus under 14% for chains: roughly 3x more per dollar. BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, and **planned** Stripe payouts will only go out for cleared ones. Metrics like local spend captured are **planned**. |
-| **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, synthetic data only. See [TRANSPARENCY.md](TRANSPARENCY.md). **Planned:** a human approve/reject action that records the reviewer's reason. |
+| **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, a person approves or rejects every hold (name and time recorded), synthetic data only. See [TRANSPARENCY.md](TRANSPARENCY.md). **Planned:** recording the reviewer's written reason. |
 
 ## How I built it with Claude Code
 
@@ -123,8 +125,7 @@ php artisan test
   Redemption Fraud Detection ([ADR 0001](docs/adr/0001-stripe-connect-instead-of-self-built-escrow.md))
 - Merchant Eligibility Matching, checked against manual review of the seeded
   merchants (target: at least 90% agreement)
-- Approve/reject buttons for held redemptions, recording the reviewer's name
-  and reason
+- A written reason with each approve/reject decision
 - An employer/HR dashboard
 - HTTPS for production
 
