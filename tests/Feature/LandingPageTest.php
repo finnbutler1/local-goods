@@ -61,11 +61,15 @@ class LandingPageTest extends TestCase
         $this->get('/')->assertOk()->assertSee('Eval results not yet published.');
     }
 
-    public function test_impact_figures_are_labeled_as_samples(): void
+    public function test_impact_is_one_labeled_illustrative_scenario_with_visible_arithmetic(): void
     {
         $this->get('/')
-            ->assertSee('Sample figures — live numbers coming soon.')
-            ->assertSee('sample figure, not real data');
+            ->assertSee('Illustrative scenario')
+            ->assertSeeInOrder(['2,000', 'employees', '×', '$50', 'per month', '×', '12', 'months', '=', '$1.2M', 'a year'])
+            ->assertSee('$1.2M a year spent at independent district businesses')
+            ->assertDontSee('of employees redeeming')
+            ->assertDontSee('neighborhood visits per employee')
+            ->assertDontSee('independent merchants accepting credits');
     }
 
     public function test_footer_states_the_contest_and_non_affiliation(): void

@@ -173,30 +173,39 @@
         </div>
     </section>
 
-    {{-- Impact: sample figures only --}}
+    {{-- Impact: one worked, illustrative scenario (not real data) --}}
     <section aria-labelledby="impact-heading" class="border-b border-line bg-cream-deep">
         <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div class="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 id="impact-heading" class="text-3xl font-semibold text-forest">What a district program could look like</h2>
-                <p class="flex items-center gap-2 rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">
-                    Sample figures — live numbers coming soon.
-                </p>
+                <h2 id="impact-heading" class="text-3xl font-semibold text-forest">What one district program could add up to</h2>
+                <p class="rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">Illustrative scenario</p>
             </div>
-            <dl class="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
-                @foreach ([
-                    ['$1.2M', 'a year spent at independent district businesses'],
-                    ['68%', 'of employees redeeming in a typical month'],
-                    ['140', 'independent merchants accepting credits'],
-                    ['3.4', 'neighborhood visits per employee each month'],
-                ] as [$figure, $label])
-                    <div class="flex flex-col border-t-2 border-forest pt-4">
-                        <dt class="text-sm text-muted">{{ $label }} <span class="sr-only">(sample figure, not real data)</span></dt>
-                        <dd class="tabular order-first mt-1 font-display text-4xl font-semibold text-forest sm:text-5xl">
-                            {{ $figure }}<span class="ml-1 align-super text-xs font-sans font-semibold text-muted" aria-hidden="true">sample</span>
-                        </dd>
+            <p class="mt-3 max-w-2xl text-muted">
+                A worked example, not a result: suppose employers in the district enroll 2,000 employees at $50 a month.
+            </p>
+
+            <div class="mt-10 flex flex-wrap items-end gap-x-5 gap-y-6 font-display text-forest" role="group"
+                 aria-label="2,000 employees times $50 a month times 12 months equals $1.2 million a year">
+                @foreach ([['2,000', 'employees'], ['$50', 'per month'], ['12', 'months']] as $i => [$figure, $unit])
+                    @if ($i > 0)
+                        <span class="pb-7 text-3xl text-muted sm:text-4xl" aria-hidden="true">×</span>
+                    @endif
+                    <div aria-hidden="true">
+                        <p class="tabular text-4xl font-semibold sm:text-5xl">{{ $figure }}</p>
+                        <p class="mt-1 font-sans text-sm text-muted">{{ $unit }}</p>
                     </div>
                 @endforeach
-            </dl>
+                <span class="pb-7 text-3xl text-muted sm:text-4xl" aria-hidden="true">=</span>
+                <div aria-hidden="true">
+                    <p class="tabular rounded-xl bg-amber px-3 text-4xl font-semibold text-ink sm:text-5xl">$1.2M</p>
+                    <p class="mt-1 font-sans text-sm text-muted">a year</p>
+                </div>
+            </div>
+
+            <p class="mt-8 max-w-2xl text-lg text-ink">
+                That is <strong class="font-semibold">$1.2M a year spent at independent district businesses</strong>,
+                because credits can't be spent anywhere else.
+            </p>
         </div>
     </section>
 
