@@ -54,8 +54,13 @@ class FraudEval extends Command
             return self::FAILURE;
         }
 
-        foreach (['dev' => 'Dev', 'holdout' => 'Holdout', 'all' => 'All'] as $key => $title) {
+        foreach (FraudEvalRunner::SPLITS + ['all' => 'All'] as $key => $title) {
             $s = $run['summary'][$key];
+
+            if ($s['cases'] === 0) {
+                continue;
+            }
+
             $m = $s['matrix'];
             $this->newLine();
             $this->info("{$title}: {$s['agreement_pct']}% agreement ({$s['agree']}/{$s['cases']})");

@@ -17,7 +17,8 @@ class FraudEvalRunner
 {
     public const LABELS = ['normal', 'suspicious'];
 
-    public const SPLITS = ['dev', 'holdout'];
+    // holdout_2 cases were labeled after the last prompt change and never seen while changing it.
+    public const SPLITS = ['dev' => 'Dev', 'holdout' => 'Holdout', 'holdout_2' => 'Holdout 2'];
 
     private const COLUMNS = [
         'case_id', 'merchant', 'category', 'amount', 'local_time', 'balance_before', 'recent_history',
@@ -77,8 +78,8 @@ class FraudEvalRunner
             if (! in_array($case['my_label'], self::LABELS, true)) {
                 $problems[] = "{$id}: my_label must be normal or suspicious";
             }
-            if (! in_array($case['split'], self::SPLITS, true)) {
-                $problems[] = "{$id}: split must be dev or holdout";
+            if (! array_key_exists($case['split'], self::SPLITS)) {
+                $problems[] = "{$id}: split must be dev, holdout or holdout_2";
             }
             if (config("fraud.category_ticket_ranges.{$case['category']}") === null) {
                 $problems[] = "{$id}: unknown category {$case['category']}";
@@ -203,11 +204,10 @@ class FraudEvalRunner
             'case_count' => count($cases),
             'api_calls' => $apiCalls,
             'errors' => $errors,
-            'summary' => [
-                'dev' => self::summarize(array_filter($results, fn ($r) => $r['split'] === 'dev')),
-                'holdout' => self::summarize(array_filter($results, fn ($r) => $r['split'] === 'holdout')),
-                'all' => self::summarize($results),
-            ],
+            'summary' => collect(self::SPLITS)
+                ->map(fn ($title, $split) => self::summarize(array_filter($results, fn ($r) => $r['split'] === $split)))
+                ->put('all', self::summarize($results))
+                ->all(),
             'results' => $results,
         ];
     }

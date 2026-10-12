@@ -98,7 +98,7 @@ class FraudEvalTest extends TestCase
         $this->artisan('fraud:eval', $this->evalCommand())
             ->expectsOutputToContain('FE-01: my_label must be normal or suspicious')
             ->expectsOutputToContain('FE-02: unknown category bakery')
-            ->expectsOutputToContain('FE-02: split must be dev or holdout')
+            ->expectsOutputToContain('FE-02: split must be dev, holdout or holdout_2')
             ->assertFailed();
 
         $this->assertSame([], $fake->calls);
@@ -200,12 +200,37 @@ class FraudEvalTest extends TestCase
             ->assertSee('Earlier runs');
     }
 
+    public function test_holdout_2_is_reported_as_its_own_group(): void
+    {
+        $this->useFake(FakeClaudeClient::verdict(85, 'hold'));
+        $this->writeCases(
+            'FE-01,Farragut Grind,cafe,6.50,08:40,120.00,"x",1,2,12,13.87,normal,coffee,dev',
+            'FE-02,Triangle Stems,retail,150.00,23:40,150.00,"x",0,1,12,13.87,suspicious,drains,holdout',
+            'FE-31,K Street Cuts,salon,200.00,01:30,260.00,"x",0,0,12,13.87,suspicious,never there,holdout_2',
+            'FE-32,Farragut Grind,cafe,8.40,07:50,57.25,"x",2,5,12,13.87,normal,coffee,holdout_2',
+        );
+
+        $this->artisan('fraud:eval', $this->evalCommand())
+            ->expectsOutputToContain('Holdout: 100% agreement (1/1)')
+            ->expectsOutputToContain('Holdout 2: 50% agreement (1/2)')
+            ->assertSuccessful();
+
+        $latest = json_decode(file_get_contents("{$this->dir}/out/fraud-eval-latest.json"), true);
+        $this->assertSame(2, $latest['summary']['holdout_2']['cases']);
+        $this->assertSame(50.0, $latest['history'][0]['holdout_2_pct']);
+        $this->assertStringContainsString('**Holdout 2**', file_get_contents("{$this->dir}/out/fraud-eval-results.md"));
+
+        config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
+        $this->get('/demo/bid-admin/eval')->assertSee('Holdout 2 agreement')->assertSee('Holdout 2 cases');
+    }
+
     public function test_the_real_cases_file_is_fully_labeled_and_valid(): void
     {
         $cases = app(FraudEvalRunner::class)->loadCases(base_path('data/fraud_eval_cases.csv'));
 
-        $this->assertCount(30, $cases);
+        $this->assertCount(40, $cases);
         $this->assertCount(20, array_filter($cases, fn ($c) => $c['split'] === 'dev'));
+        $this->assertCount(10, array_filter($cases, fn ($c) => $c['split'] === 'holdout_2'));
     }
 
     public function test_loading_a_missing_file_fails_clearly(): void

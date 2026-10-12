@@ -18,7 +18,8 @@
             We wrote 30 synthetic redemptions and a person labeled each one <em>normal</em> or <em>suspicious</em>
             by hand, before the AI saw them. Then the real fraud check (the same prompt and model as production)
             scored every case. An AI <em>hold</em> counts as suspicious and a <em>clear</em> counts as normal.
-            The <strong>holdout</strong> cases were never used to change the prompt, so they are the fairest test.
+            The <strong>holdout</strong> cases were never used to change the prompt. The <strong>holdout 2</strong> cases were
+            labeled after the last prompt change and never seen while changing it, so they are the cleanest test of the current prompt.
         </p>
     </header>
 
@@ -49,8 +50,8 @@
             @if (! empty($run['note']))
                 <p class="mt-2 rounded-xl bg-hold-bg p-4 text-hold"><strong>Note on this run:</strong> {{ $run['note'] }}</p>
             @endif
-            <dl class="mt-3 grid gap-3 sm:grid-cols-3">
-                @foreach (['holdout' => 'Holdout agreement', 'dev' => 'Dev agreement', 'all' => 'All cases'] as $key => $label)
+            <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach (array_filter(['holdout_2' => 'Holdout 2 agreement', 'holdout' => 'Holdout agreement', 'dev' => 'Dev agreement', 'all' => 'All cases'], fn ($label, $key) => ($s[$key]['cases'] ?? 0) > 0, ARRAY_FILTER_USE_BOTH) as $key => $label)
                     @php $dark = $key === 'holdout' && ! $headline; @endphp
                     <div @class(['rounded-xl p-4', 'bg-forest text-cream' => $dark, 'bg-white ring-1 ring-cream-deep' => ! $dark])>
                         <dt @class(['text-sm', 'text-muted' => ! $dark])>{{ $label }}</dt>
@@ -69,7 +70,7 @@
         <section aria-labelledby="matrix-heading">
             <h2 id="matrix-heading" class="text-xl font-semibold">Where they agreed and disagreed</h2>
             <div class="mt-3 grid gap-4 md:grid-cols-2">
-                @foreach (['dev' => 'Dev cases', 'holdout' => 'Holdout cases'] as $key => $title)
+                @foreach (array_filter(['dev' => 'Dev cases', 'holdout' => 'Holdout cases', 'holdout_2' => 'Holdout 2 cases'], fn ($title, $key) => ($s[$key]['cases'] ?? 0) > 0, ARRAY_FILTER_USE_BOTH) as $key => $title)
                     @php $m = $s[$key]['matrix']; @endphp
                     <table class="w-full rounded-xl bg-white text-left ring-1 ring-cream-deep">
                         <caption class="px-4 pt-3 text-left font-semibold">{{ $title }}: person's label (rows) vs the AI's call (columns)</caption>
@@ -138,6 +139,7 @@
                                 <th scope="col" class="px-4 py-2">Prompt version</th>
                                 <th scope="col" class="px-4 py-2">Dev</th>
                                 <th scope="col" class="px-4 py-2">Holdout</th>
+                                <th scope="col" class="px-4 py-2">Holdout 2</th>
                                 <th scope="col" class="px-4 py-2">Note</th>
                             </tr>
                         </thead>
@@ -148,6 +150,7 @@
                                     <td class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
                                     <td class="px-4 py-2">{{ $h['dev_pct'] }}%</td>
                                     <td class="px-4 py-2">{{ $h['holdout_pct'] }}%</td>
+                                    <td class="px-4 py-2">{{ ($h['holdout_2_pct'] ?? null) === null ? 'n/a' : $h['holdout_2_pct'].'%' }}</td>
                                     <td class="px-4 py-2 text-sm">{{ $h['note'] ?? '' }}</td>
                                 </tr>
                             @endforeach

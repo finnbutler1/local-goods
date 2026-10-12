@@ -61,6 +61,7 @@ class FraudEvalReport
                 'prompt_version' => $run['prompt_version'],
                 'dev_pct' => $run['summary']['dev']['agreement_pct'],
                 'holdout_pct' => $run['summary']['holdout']['agreement_pct'],
+                'holdout_2_pct' => $run['summary']['holdout_2']['agreement_pct'] ?? null,
                 'all_pct' => $run['summary']['all']['agreement_pct'],
                 'name' => basename($run['path'], '.json'),
                 'file' => 'runs/'.basename($run['path'], '.json').'.md',
@@ -118,6 +119,9 @@ class FraudEvalReport
         // Bold the holdout score only when it is the headline (or no headline is set).
         $bold = $headline === null || $headline['prompt_version'] === $run['prompt_version'] ? '**' : '';
         $md .= "| {$bold}Holdout{$bold} (not used to change the prompt) | {$bold}{$pct($s['holdout'])}{$bold} |\n";
+        if (($s['holdout_2']['cases'] ?? 0) > 0) {
+            $md .= "| **Holdout 2** (labeled after the last prompt change, never seen while changing it) | **{$pct($s['holdout_2'])}** |\n";
+        }
         $md .= "| Dev (may be used to improve the prompt) | {$pct($s['dev'])} |\n";
         $md .= "| All cases | {$pct($s['all'])} |\n\n";
         $md .= "The AI's `hold` counts as *suspicious* and `clear` as *normal*.";
@@ -128,7 +132,11 @@ class FraudEvalReport
 
         $md .= "\n\n## Confusion matrices\n\nRows are the human label, columns are the AI's call.\n\n";
 
-        foreach (['dev' => 'Dev', 'holdout' => 'Holdout'] as $key => $title) {
+        foreach (FraudEvalRunner::SPLITS as $key => $title) {
+            if (($s[$key]['cases'] ?? 0) === 0) {
+                continue;
+            }
+
             $m = $s[$key]['matrix'];
             $md .= "**{$title}**\n\n| Human ↓ / AI → | normal (clear) | suspicious (hold) |\n|---|---|---|\n";
             $md .= "| normal | {$m['normal']['normal']} | {$m['normal']['suspicious']} (false alarm) |\n";
@@ -155,9 +163,9 @@ class FraudEvalReport
 
         if ($history !== []) {
             $md .= "\n## Run history\n\nEvery run is kept. A new prompt version means the prompt file changed between runs.\n\n";
-            $md .= "| Run | Model | Prompt version | Dev | Holdout | All | Details | Note |\n|---|---|---|---|---|---|---|---|\n";
+            $md .= "| Run | Model | Prompt version | Dev | Holdout | Holdout 2 | All | Details | Note |\n|---|---|---|---|---|---|---|---|---|\n";
             foreach ($history as $h) {
-                $md .= '| '.Carbon::parse($h['run_at'])->format('Y-m-d H:i')." | `{$h['model']}` | `{$h['prompt_version']}` | {$h['dev_pct']}% | {$h['holdout_pct']}% | {$h['all_pct']}% | [{$h['file']}]({$h['file']}) | {$this->cell($h['note'] ?? '')} |\n";
+                $md .= '| '.Carbon::parse($h['run_at'])->format('Y-m-d H:i')." | `{$h['model']}` | `{$h['prompt_version']}` | {$h['dev_pct']}% | {$h['holdout_pct']}% | ".($h['holdout_2_pct'] === null ? 'n/a' : "{$h['holdout_2_pct']}%")." | {$h['all_pct']}% | [{$h['file']}]({$h['file']}) | {$this->cell($h['note'] ?? '')} |\n";
             }
         }
 
