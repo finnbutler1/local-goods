@@ -86,6 +86,35 @@ yet**:
   all**, whether a redemption is cleared or held. Redemptions only update the
   credit ledger.
 
+### How we measure it
+
+We test Redemption Fraud Detection against a person's judgment, not our own
+expectations:
+
+1. We wrote 30 synthetic redemptions
+   ([`data/fraud_eval_cases.csv`](data/fraud_eval_cases.csv)): clearly normal,
+   clearly suspicious, and some genuine close calls.
+2. **A person labeled every case** *normal* or *suspicious*, with a short
+   reason, **before the AI saw any of them**. The labels were committed to Git
+   first, so the history shows they came before the results.
+3. `php artisan fraud:eval` sends each case through the **real production
+   check**: the same prompt file, the same model, and the same signal rules
+   ([`SignalCalculator::fromFacts`](app/Services/Fraud/SignalCalculator.php)).
+   A `hold` counts as suspicious and a `clear` counts as normal.
+4. The cases are split into 20 **dev** cases and 10 **holdout** cases. We may
+   change the prompt to fix mistakes on dev cases, but **never** because of a
+   holdout case, so the holdout number is the honest one.
+5. We publish the real numbers, low or not, with every disagreement shown next
+   to the person's reason. Every run is kept with its date, model and prompt
+   version (a fingerprint of the prompt file), so results before and after a
+   prompt change can be compared.
+
+Results: [`docs/evals/fraud-eval-results.md`](docs/evals/fraud-eval-results.md),
+also shown on the `/demo/bid-admin/eval` page. Limits: 30 cases is a small
+sample, the cases are synthetic, and one person's labels are one opinion.
+Agreement shows how closely the AI matches that person, not whether either of
+them is right about real fraud.
+
 ### Which merchants are eligible (planned)
 
 Today employees can only redeem at the demo's merchants, which were seeded by

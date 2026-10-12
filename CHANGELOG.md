@@ -3,6 +3,17 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-11: Redemption Fraud Detection eval
+
+- 30 synthetic redemptions, each labeled *normal* or *suspicious* by a person
+  before the AI saw them ([`data/fraud_eval_cases.csv`](data/fraud_eval_cases.csv)).
+- `php artisan fraud:eval` runs them through the production fraud check and
+  reports agreement separately for dev and holdout cases. Replies are cached,
+  so re-running an unchanged eval costs nothing.
+- First run (`claude-opus-5-5`, prompt `e5bcf207`): **80% holdout, 85% dev**.
+  See [the results](docs/evals/fraud-eval-results.md) and the
+  `/demo/bid-admin/eval` page.
+
 ## 2026-10-11: Production database moves to Amazon RDS MySQL
 
 - Production reads its MySQL connection from Beanstalk environment
