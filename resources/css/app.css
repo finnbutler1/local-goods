@@ -1,19 +1,32 @@
 @import 'tailwindcss';
 
+/* Self-hosted fonts: Vite copies the .woff2 files from these npm packages into
+   public/build, so browsers never contact Google or any other font server. */
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/public-sans/wght.css';
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Fraunces Variable', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
 
-    /* Brand palette. Every text/background pairing used in the views passes WCAG AA (4.5:1). */
-    --color-forest: #1f3d2b;
-    --color-forest-soft: #2c5440;
-    --color-cream: #fbf6ea;
-    --color-cream-deep: #f1e8d3;
-    --color-amber: #e0a43a;
-    --color-muted: #4a5a50;
+    /* Brand palette. Approved text/background pairs are checked against WCAG AA
+       in tests/Unit/ColorContrastTest.php; change a color there too. */
+    --color-forest: #1f3d2b;       /* primary: dark panels, primary actions */
+    --color-forest-soft: #2c5440;  /* hover on forest */
+    --color-forest-tint: #e4ede6;  /* light green surface */
+    --color-sage: #c9d6cc;         /* secondary text on forest */
+    --color-cream: #fbf6ea;        /* page background */
+    --color-cream-deep: #f1e8d3;   /* section bands */
+    --color-paper: #fffdf8;        /* card surface */
+    --color-line: #d9cdb2;         /* decorative rules only, never a UI boundary */
+    --color-ink: #17201b;          /* near-black body text */
+    --color-muted: #4a5a50;        /* secondary text, form borders */
+    --color-amber: #e0a43a;        /* money and highlights; pair with ink or forest text */
+    --color-amber-ink: #8a5a0b;    /* amber-toned text on light backgrounds */
     --color-ok: #1f5e3a;
     --color-ok-bg: #e3f0e6;
     --color-hold: #8a3b12;
@@ -21,8 +34,52 @@
 }
 
 @layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        font-feature-settings: 'kern', 'liga';
+    }
+
+    h1, h2, h3, h4, .font-display {
+        font-family: var(--font-display);
+        font-optical-sizing: auto;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+    }
+
+    code {
+        font-size: 0.9em;
+    }
+
     :focus-visible {
         outline: 3px solid var(--color-amber);
         outline-offset: 2px;
     }
+
+    /* Amber outline would vanish on amber or light amber surfaces. */
+    .focus-forest:focus-visible,
+    .bg-amber:focus-visible {
+        outline-color: var(--color-forest);
+    }
+}
+
+@layer components {
+    /* Thin dotted "ledger" leader, used between label and figure. */
+    .ledger-rule {
+        background-image: radial-gradient(circle, var(--color-line) 1px, transparent 1.5px);
+        background-size: 8px 3px;
+        background-repeat: repeat-x;
+        background-position: left center;
+    }
+
+    /* Storefront awning stripe: the brand mark. */
+    .awning {
+        background-image: repeating-linear-gradient(90deg, var(--color-forest) 0 14px, var(--color-cream) 14px 28px);
+    }
+}
+
+@utility tabular {
+    font-variant-numeric: tabular-nums;
 }
