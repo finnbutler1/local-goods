@@ -1,0 +1,49 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\Role;
+use Database\Seeders\DatabaseSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class JudgeLandingTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_the_landing_page_explains_local_goods_and_numbers_the_tour(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $this->signIn(Role::Judge);
+
+        $page = $this->get('/judge')->assertOk()
+            ->assertSee('What Local Goods is')
+            ->assertSee('Redemption Fraud Detection')
+            ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Employer dashboard', 'Merchant dashboard'])
+            ->assertSee('Coming in a later build');
+
+        // The five tour links all open for a judge.
+        preg_match_all('/<a href="([^"]+)" class="text-forest underline decoration-amber/', $page->getContent(), $links);
+        $this->assertCount(5, $links[1]);
+
+        foreach ($links[1] as $link) {
+            $this->followingRedirects()->get($link)->assertOk();
+        }
+    }
+
+    public function test_only_unbuilt_screens_say_coming_later(): void
+    {
+        $this->signIn(Role::Judge);
+        $html = $this->get('/judge')->getContent();
+
+        $this->assertSame(2, substr_count($html, 'Coming in a later build'));
+    }
+
+    public function test_opening_the_landing_page_leaves_view_as_mode(): void
+    {
+        $this->signIn(Role::Judge);
+        $this->get('/judge/view-as/merchant');
+
+        $this->get('/judge')->assertSessionMissing('view_as');
+    }
+}
