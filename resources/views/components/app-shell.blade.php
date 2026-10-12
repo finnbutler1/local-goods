@@ -122,6 +122,10 @@
         </footer>
     </div>
 
+    @if ($user)
+        <x-feedback-widget />
+    @endif
+
     {{-- Mobile bottom tab bar --}}
     <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-forest-soft bg-forest pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul class="grid {{ $tabColumns }}">

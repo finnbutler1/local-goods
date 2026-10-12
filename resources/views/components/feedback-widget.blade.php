@@ -1,0 +1,38 @@
+{{-- Floating Feedback button on every signed-in page. Opens a small form that
+     records this page's address automatically. --}}
+@php $hasErrors = $errors->getBag('feedback')->any(); @endphp
+
+<div class="fixed right-4 bottom-24 z-30 lg:right-6 lg:bottom-6">
+    <div aria-live="polite">
+        @if (session('feedback_status'))
+            <p class="mb-2 max-w-xs rounded-xl bg-ok-bg px-4 py-2 text-sm font-semibold text-ok shadow">{{ session('feedback_status') }}</p>
+        @endif
+    </div>
+    <x-button variant="accent" data-dialog-open="feedback-dialog" aria-haspopup="dialog" class="ml-auto shadow-lg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-5" aria-hidden="true"><path d="M7.5 8.25h9m-9 3.75h6M3.75 19.5V6a1.5 1.5 0 0 1 1.5-1.5h13.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H8.25L3.75 19.5Z"/></svg>
+        Feedback
+    </x-button>
+</div>
+
+<dialog id="feedback-dialog" aria-labelledby="feedback-heading" @if ($hasErrors) data-open-on-load @endif
+        class="m-auto w-[min(100%-2rem,32rem)] rounded-2xl bg-paper p-0 text-ink shadow-xl backdrop:bg-ink/50">
+    <form method="POST" action="{{ route('feedback.store') }}" class="space-y-4 p-6">
+        @csrf
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h2 id="feedback-heading" class="text-2xl font-semibold text-forest">Leave feedback</h2>
+                <p class="mt-1 text-sm text-muted break-all">About this page: {{ request()->path() === '/' ? '/' : '/'.request()->path() }}</p>
+            </div>
+            <button type="button" data-dialog-close class="rounded-full p-1 text-muted hover:text-ink" aria-label="Close feedback form">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+
+        <x-feedback-fields prefix="fb" bag="feedback" :page-url="request()->fullUrl()" />
+
+        <div class="flex justify-end gap-2 pt-2">
+            <x-button variant="ghost" data-dialog-close>Cancel</x-button>
+            <x-button type="submit">Send feedback</x-button>
+        </div>
+    </form>
+</dialog>

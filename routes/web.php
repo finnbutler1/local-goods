@@ -5,6 +5,7 @@ use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\JudgeController;
@@ -35,7 +36,13 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard');
 
     // Every role: change your own password (the form posts to Fortify's user-password.update).
-    Route::view('/account', 'account.show')->name('account');
+    Route::get('/account', fn (Request $request) => view('account.show', [
+        'feedback' => $request->user()->feedback()->latest()->latest('id')->get(),
+    ]))->name('account');
+
+    // The Feedback button on every signed-in page, and editing your own items.
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+    Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])->name('feedback.update');
 
     Route::middleware('role:employee')->group(function () {
         Route::get('/employee', [EmployeeWalletController::class, 'show'])->name('employee.wallet');

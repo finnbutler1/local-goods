@@ -8,6 +8,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -54,6 +55,11 @@ class User extends Authenticatable
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
+    }
+
+    public function feedback(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
     }
 
     /** The wallet an employee login belongs to (only for the employee role). */

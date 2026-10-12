@@ -35,5 +35,37 @@
             <x-button type="submit">Change password</x-button>
         </form>
     </x-card>
+
+    <section aria-labelledby="my-feedback-heading">
+        <h2 id="my-feedback-heading" class="text-2xl font-semibold text-forest">Your feedback</h2>
+        @if ($feedback->isEmpty())
+            <p class="mt-2 text-muted">Nothing yet. Use the Feedback button on any page.</p>
+        @else
+            <ul class="mt-3 space-y-3">
+                @foreach ($feedback as $item)
+                    <x-card as="li" id="feedback-{{ $item->id }}" class="scroll-mt-24">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <p class="font-semibold">{{ $item->category->label() }} · {{ $item->rating }}/5 · {{ $item->severity->label() }}</p>
+                            <x-badge :tone="$item->status === \App\Enums\FeedbackStatus::Fixed ? 'ok' : 'neutral'">{{ $item->status->label() }}</x-badge>
+                        </div>
+                        <p class="mt-1 text-sm text-muted break-all">{{ $item->page_url }}</p>
+                        <p class="mt-2 whitespace-pre-line">{{ $item->comment }}</p>
+                        @if ($item->fixed_commit_sha)
+                            <p class="mt-2 text-sm text-muted">Fixed in commit <code class="font-mono">{{ $item->fixed_commit_sha }}</code></p>
+                        @endif
+                        <details class="mt-3" @if ($errors->getBag('feedback-'.$item->id)->any()) open @endif>
+                            <summary class="cursor-pointer text-sm font-semibold text-forest">Edit</summary>
+                            <form method="POST" action="{{ route('feedback.update', $item) }}" class="mt-3 space-y-4">
+                                @csrf
+                                @method('PATCH')
+                                <x-feedback-fields :prefix="'fb'.$item->id" :bag="'feedback-'.$item->id" :feedback="$item" :page-url="$item->page_url" />
+                                <x-button type="submit" size="sm">Save changes</x-button>
+                            </form>
+                        </details>
+                    </x-card>
+                @endforeach
+            </ul>
+        @endif
+    </section>
 </div>
 </x-app-shell>
