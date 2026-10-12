@@ -19,32 +19,56 @@ class SignalCalculator
     {
         $at ??= Carbon::now();
         $local = $at->copy()->setTimezone(config('fraud.timezone'));
-        $balance = $employee->balanceCents();
-
         $pastAmounts = $employee->redemptions()->pluck('amount_cents')->all();
-        $median = $this->median($pastAmounts);
-
-        [$typicalMin, $typicalMax] = config("fraud.category_ticket_ranges.{$merchant->category}", [null, null]);
 
         $visitsSince = fn (Carbon $since) => $employee->redemptions()
             ->where('merchant_id', $merchant->id)
             ->where('created_at', '>=', $since)
             ->count();
 
+        return $this->fromFacts(
+            amountCents: $amountCents,
+            balanceCents: $employee->balanceCents(),
+            pastRedemptions: count($pastAmounts),
+            medianCents: $this->median($pastAmounts),
+            visitsLast7Days: $visitsSince($at->copy()->subDays(7)),
+            visitsLast30Days: $visitsSince($at->copy()->subDays(30)),
+            category: $merchant->category,
+            localHour: $local->hour,
+        );
+    }
+
+    /**
+     * The signal rules themselves, given plain facts. The live check and the
+     * fraud:eval command both go through here, so they cannot drift apart.
+     *
+     * @return array<string, mixed>
+     */
+    public function fromFacts(
+        int $amountCents,
+        int $balanceCents,
+        int $pastRedemptions,
+        ?int $medianCents,
+        int $visitsLast7Days,
+        int $visitsLast30Days,
+        string $category,
+        int $localHour,
+    ): array {
+        [$typicalMin, $typicalMax] = config("fraud.category_ticket_ranges.{$category}", [null, null]);
         $hours = config('fraud.business_hours');
 
         return [
             'amount_cents' => $amountCents,
-            'balance_before_cents' => $balance,
+            'balance_before_cents' => $balanceCents,
             'is_round_number' => $amountCents >= config('fraud.round_number_min_cents')
                 && $amountCents % config('fraud.round_number_step_cents') === 0,
-            'is_full_balance' => $balance > 0 && $amountCents >= $balance * config('fraud.full_balance_ratio'),
-            'same_merchant_visits_last_7_days' => $visitsSince($at->copy()->subDays(7)),
-            'same_merchant_visits_last_30_days' => $visitsSince($at->copy()->subDays(30)),
-            'employee_past_redemptions' => count($pastAmounts),
-            'employee_median_cents' => $median,
-            'amount_vs_employee_median' => $median ? round($amountCents / $median, 2) : null,
-            'merchant_category' => $merchant->category,
+            'is_full_balance' => $balanceCents > 0 && $amountCents >= $balanceCents * config('fraud.full_balance_ratio'),
+            'same_merchant_visits_last_7_days' => $visitsLast7Days,
+            'same_merchant_visits_last_30_days' => $visitsLast30Days,
+            'employee_past_redemptions' => $pastRedemptions,
+            'employee_median_cents' => $medianCents,
+            'amount_vs_employee_median' => $medianCents ? round($amountCents / $medianCents, 2) : null,
+            'merchant_category' => $category,
             'category_typical_range_cents' => $typicalMin === null ? null : [$typicalMin, $typicalMax],
             'amount_vs_category_range' => match (true) {
                 $typicalMin === null => 'unknown',
@@ -52,8 +76,8 @@ class SignalCalculator
                 $amountCents > $typicalMax => 'above',
                 default => 'within',
             },
-            'local_hour' => $local->hour,
-            'outside_business_hours' => $local->hour < $hours['open'] || $local->hour >= $hours['close'],
+            'local_hour' => $localHour,
+            'outside_business_hours' => $localHour < $hours['open'] || $localHour >= $hours['close'],
         ];
     }
 
