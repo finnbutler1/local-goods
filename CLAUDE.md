@@ -5,9 +5,21 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Week 2: judge access and feedback (Prompt 3).**
+**Week 2: judge access and feedback — done (Prompt 3).** Next milestone not set yet.
 
-Done: Prompts 0, S, R, DB, E, 1 and 2.
+Done: Prompts 0, S, R, DB, E, 1, 2 and 3.
+- 3 (reviewers and feedback): invited reviewers get a judge-role login from a
+  signed, single-use, 7-day link (`App\Services\ReviewerInvites`; only a hash
+  of the token is stored). Judges are read-only: `BlockJudgeWrites` (allowlist:
+  logout, feedback.store, feedback.update, user-password.update) plus gates
+  and policies; `JudgeReadOnlyTest` sweeps every write route, so **any new
+  write route must pass it**. Judges can GET the BID admin, employer, employee
+  and merchant pages ("view as", `App\Support\ViewAs`) but never `/admin/*`,
+  which holds real reviewers' names and emails. Feedback button on every
+  signed-in page (`feedback` table), inbox at `/admin/feedback`, changelog for
+  reviewers at `/admin/changelog`, "What's new" on `/judge`. ADR 0008.
+  Production is still plain HTTP: turn on HTTPS before sending invite links
+  outside the team.
 - 2 (logins and roles): Laravel Fortify login (no registration, 5 tries a
   minute, "contact the admin" instead of reset emails while there is no mail
   service). Six roles in `users.role` (`App\Enums\Role`), each with its own

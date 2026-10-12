@@ -3,6 +3,31 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-12: Reviewer logins and in-app feedback
+
+- **Invite reviewers** (platform admin, `/admin/reviewers`): enter a name,
+  email and reviewer type to create a read-only login and get a link to copy.
+  The link is signed, works once and expires in 7 days; the reviewer chooses
+  their own password ([ADR 0008](docs/adr/0008-read-only-reviewers-with-single-use-invite-links.md)).
+  New link, Revoke, and invited / first login / last seen times.
+- **Read-only judges**, enforced by middleware and by policies. A test sends
+  every write route as a judge and checks it gets 403 and nothing changes.
+- **View as**: judges can look at the app as a BID admin, employer admin,
+  employee or merchant, with a "This is read-only" banner and no Approve,
+  Reject, Reset demo or Confirm redemption.
+- **Judge landing page**: what Local Goods is, a numbered guided tour, and
+  "What's new since your last visit" (changelog entries from
+  `/admin/changelog` plus the reviewer's own feedback marked fixed).
+- **Feedback button** on every signed-in page: rubric category, 1–5 rating,
+  severity and comment, with the page address recorded automatically.
+  Reviewers edit their own items at `/account`, where everyone can also change
+  their password.
+- **Feedback inbox** (`/admin/feedback`): filters, status, the commit that
+  fixed it, average rating per rubric category, unread count in the sidebar.
+- BID admin cards now label the AI's call and the person's call separately:
+  "AI decision: hold (risk 82)" and "Final decision: approved by Sam Taylor
+  on …".
+
 ## 2026-10-12: Logins and roles
 
 - Log in with Laravel Fortify ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)).
