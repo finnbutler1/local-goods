@@ -15,9 +15,15 @@ class CreditLedgerEntry extends Model
     public const TYPE_ALLOWANCE = 'allowance';
     public const TYPE_REDEMPTION = 'redemption';
 
+    /** A person approved a held redemption: the reserved credits are spent (amount 0, already debited). */
+    public const TYPE_REVIEW_APPROVED = 'review_approved';
+
+    /** A person rejected a held redemption: the reserved credits go back to the employee. */
+    public const TYPE_REVIEW_REJECTED = 'review_rejected';
+
     public const UPDATED_AT = null;
 
-    protected $fillable = ['employee_id', 'amount_cents', 'type', 'redemption_id', 'description', 'created_at'];
+    protected $fillable = ['employee_id', 'amount_cents', 'type', 'redemption_id', 'description', 'decided_by', 'created_at'];
 
     protected static function booted(): void
     {

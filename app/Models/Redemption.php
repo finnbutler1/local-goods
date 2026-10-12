@@ -9,15 +9,17 @@ class Redemption extends Model
 {
     public const STATUS_APPROVED = 'approved';
     public const STATUS_UNDER_REVIEW = 'under_review';
+    public const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [
         'employee_id', 'merchant_id', 'amount_cents', 'status', 'risk_score',
         'ai_decision', 'ai_explanation', 'signals', 'scored_by', 'created_at',
+        'reviewed_by', 'reviewed_at',
     ];
 
     protected function casts(): array
     {
-        return ['signals' => 'array'];
+        return ['signals' => 'array', 'reviewed_at' => 'datetime'];
     }
 
     public function employee(): BelongsTo
@@ -33,5 +35,15 @@ class Redemption extends Model
     public function isApproved(): bool
     {
         return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isUnderReview(): bool
+    {
+        return $this->status === self::STATUS_UNDER_REVIEW;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
     }
 }
