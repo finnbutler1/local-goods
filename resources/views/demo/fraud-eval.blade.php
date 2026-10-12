@@ -1,20 +1,17 @@
 @php use Illuminate\Support\Carbon; @endphp
-@extends('layouts.app')
 
-@section('title', 'Fraud check eval · Local Goods')
-
-@section('content')
-<div class="mx-auto max-w-5xl px-4 py-8 space-y-8">
-    <nav aria-label="Demo pages" class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold">
-        <a href="{{ route('demo.bid-admin') }}" class="underline underline-offset-4 hover:no-underline">
+<x-app-shell title="Fraud check eval" active="eval" user-name="Sam Taylor (demo)" role="BID admin">
+<div class="space-y-10">
+    <nav aria-label="Demo pages" class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-forest">
+        <a href="{{ route('demo.bid-admin') }}" class="underline decoration-line decoration-2 underline-offset-4 hover:decoration-forest">
             <span aria-hidden="true">←</span> Back to the BID admin view
         </a>
     </nav>
 
-    <header>
-        <p class="text-sm font-semibold uppercase tracking-widest text-muted">Redemption Fraud Detection</p>
-        <h1 class="mt-1 text-3xl font-semibold tracking-tight">How often does the AI agree with a person?</h1>
-        <p class="mt-2 max-w-2xl text-muted">
+    <header class="max-w-3xl">
+        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Redemption Fraud Detection</p>
+        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">How often does the AI agree with a person?</h1>
+        <p class="mt-3 text-lg text-muted">
             We wrote 30 synthetic redemptions and a person labeled each one <em>normal</em> or <em>suspicious</em>
             by hand, before the AI saw them. Then the real fraud check (the same prompt and model as production)
             scored every case. An AI <em>hold</em> counts as suspicious and a <em>clear</em> counts as normal.
@@ -24,7 +21,7 @@
     </header>
 
     @if ($run === null)
-        <p class="rounded-xl bg-white p-5 ring-1 ring-cream-deep">
+        <p class="rounded-2xl bg-paper p-5 ring-1 ring-line/70">
             No eval results yet. Run <code>php artisan fraud:eval</code> to create them.
         </p>
     @else
@@ -35,13 +32,14 @@
 
         @php $headline = $run['headline'] ?? null; @endphp
         @if ($headline)
-            <section aria-labelledby="headline-heading" class="rounded-2xl bg-forest p-5 text-cream">
-                <h2 id="headline-heading" class="text-sm font-semibold uppercase tracking-widest">Headline result</h2>
-                <p class="mt-1 text-2xl font-semibold sm:text-3xl">{{ $headline['text'] }}</p>
+            <section aria-labelledby="headline-heading" class="relative overflow-hidden rounded-3xl bg-forest p-6 text-cream sm:p-8">
+                <div class="awning absolute inset-x-0 top-0 h-1.5 opacity-60" aria-hidden="true"></div>
+                <h2 id="headline-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-amber">Headline result</h2>
+                <p class="mt-2 max-w-3xl font-display text-2xl font-semibold sm:text-4xl">{{ $headline['text'] }}</p>
                 @if ($headline['note'])
-                    <p class="mt-3">{{ $headline['note'] }}</p>
+                    <p class="mt-4 max-w-3xl">{{ $headline['note'] }}</p>
                 @endif
-                <p class="mt-3 text-sm">
+                <p class="mt-4 max-w-3xl text-sm text-sage">
                     {{ $headline['sample'] }}
                     From the run on {{ Carbon::parse($headline['run_at'])->format('M j, Y') }}
                     (prompt version <code>{{ $headline['prompt_version'] }}</code>, <code>{{ $headline['split'] }}</code> cases).
@@ -50,17 +48,17 @@
         @endif
 
         <section aria-labelledby="latest-heading">
-            <h2 id="latest-heading" class="text-xl font-semibold">Latest run</h2>
+            <h2 id="latest-heading" class="text-2xl font-semibold text-forest">Latest run</h2>
             @if (! empty($run['note']))
-                <p class="mt-2 rounded-xl bg-hold-bg p-4 text-hold"><strong>Note on this run:</strong> {{ $run['note'] }}</p>
+                <p class="mt-3 rounded-2xl bg-hold-bg p-4 text-hold"><strong>Note on this run:</strong> {{ $run['note'] }}</p>
             @endif
             <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach (array_filter(['holdout_2' => 'Holdout 2 agreement', 'holdout' => 'Holdout agreement', 'dev' => 'Dev agreement', 'all' => 'All cases'], fn ($label, $key) => ($s[$key]['cases'] ?? 0) > 0, ARRAY_FILTER_USE_BOTH) as $key => $label)
                     @php $dark = $key === 'holdout' && ! $headline; @endphp
-                    <div @class(['rounded-xl p-4', 'bg-forest text-cream' => $dark, 'bg-white ring-1 ring-cream-deep' => ! $dark])>
-                        <dt @class(['text-sm', 'text-muted' => ! $dark])>{{ $label }}</dt>
-                        <dd class="text-3xl font-semibold">{{ $s[$key]['agreement_pct'] }}%</dd>
-                        <dd @class(['text-sm', 'text-muted' => ! $dark])>{{ $s[$key]['agree'] }} of {{ $s[$key]['cases'] }} cases</dd>
+                    <div @class(['rounded-2xl p-5', 'bg-forest text-cream' => $dark, 'bg-paper ring-1 ring-line/70' => ! $dark])>
+                        <dt @class(['text-sm font-semibold', 'text-muted' => ! $dark, 'text-sage' => $dark])>{{ $label }}</dt>
+                        <dd @class(['tabular mt-1 font-display text-4xl font-semibold', 'text-forest' => ! $dark])>{{ $s[$key]['agreement_pct'] }}%</dd>
+                        <dd @class(['text-sm', 'text-muted' => ! $dark, 'text-sage' => $dark])>{{ $s[$key]['agree'] }} of {{ $s[$key]['cases'] }} cases</dd>
                     </div>
                 @endforeach
             </dl>
@@ -72,26 +70,26 @@
         </section>
 
         <section aria-labelledby="matrix-heading">
-            <h2 id="matrix-heading" class="text-xl font-semibold">Where they agreed and disagreed</h2>
+            <h2 id="matrix-heading" class="text-2xl font-semibold text-forest">Where they agreed and disagreed</h2>
             <div class="mt-3 grid gap-4 md:grid-cols-2">
                 @foreach (array_filter(['dev' => 'Dev cases', 'holdout' => 'Holdout cases', 'holdout_2' => 'Holdout 2 cases'], fn ($title, $key) => ($s[$key]['cases'] ?? 0) > 0, ARRAY_FILTER_USE_BOTH) as $key => $title)
                     @php $m = $s[$key]['matrix']; @endphp
-                    <table class="w-full rounded-xl bg-white text-left ring-1 ring-cream-deep">
-                        <caption class="px-4 pt-3 text-left font-semibold">{{ $title }}: person's label (rows) vs the AI's call (columns)</caption>
+                    <table class="tabular w-full overflow-hidden rounded-2xl bg-paper text-left ring-1 ring-line/70">
+                        <caption class="px-4 pt-4 pb-1 text-left font-semibold">{{ $title }}: person's label (rows) vs the AI's call (columns)</caption>
                         <thead>
-                            <tr class="text-sm text-muted">
+                            <tr class="bg-cream-deep/60 text-sm text-muted">
                                 <td class="px-4 py-2"></td>
                                 <th scope="col" class="px-4 py-2 font-semibold">AI: clear</th>
                                 <th scope="col" class="px-4 py-2 font-semibold">AI: hold</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="border-t border-cream-deep">
+                            <tr class="border-t border-line/70">
                                 <th scope="row" class="px-4 py-2 font-semibold">Person: normal</th>
                                 <td class="px-4 py-2">{{ $m['normal']['normal'] }} <span class="text-sm text-muted">agree</span></td>
                                 <td class="px-4 py-2">{{ $m['normal']['suspicious'] }} <span class="text-sm text-muted">false alarm</span></td>
                             </tr>
-                            <tr class="border-t border-cream-deep">
+                            <tr class="border-t border-line/70">
                                 <th scope="row" class="px-4 py-2 font-semibold">Person: suspicious</th>
                                 <td class="px-4 py-2">{{ $m['suspicious']['normal'] }} <span class="text-sm text-muted">missed</span></td>
                                 <td class="px-4 py-2">{{ $m['suspicious']['suspicious'] }} <span class="text-sm text-muted">agree</span></td>
@@ -103,24 +101,24 @@
         </section>
 
         <section aria-labelledby="disagree-heading">
-            <h2 id="disagree-heading" class="text-xl font-semibold">Every disagreement ({{ count($disagreements) }})</h2>
+            <h2 id="disagree-heading" class="text-2xl font-semibold text-forest">Every disagreement ({{ count($disagreements) }})</h2>
             @if ($disagreements === [])
                 <p class="mt-3">The AI agreed with the person on every case.</p>
             @else
                 <ul class="mt-3 space-y-3">
                     @foreach ($disagreements as $r)
-                        <li class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-cream-deep">
+                        <li class="rounded-2xl border-l-4 border-l-amber bg-paper p-5 ring-1 ring-line/70 sm:p-6">
                             <p class="font-semibold">
                                 {{ $r['case_id'] }} · ${{ $r['amount'] }} at {{ $r['merchant'] }}, {{ $r['local_time'] }}
-                                <span class="ml-2 rounded-full bg-cream-deep px-2.5 py-0.5 text-xs">{{ $r['split'] }}</span>
+                                <x-badge class="ml-2">{{ $r['split'] }}</x-badge>
                             </p>
-                            <div class="mt-3 grid gap-4 md:grid-cols-2">
+                            <div class="mt-4 grid gap-4 border-t border-line/70 pt-4 md:grid-cols-2">
                                 <div>
-                                    <h3 class="text-sm font-semibold uppercase tracking-wider text-muted">Person: {{ $r['my_label'] }}</h3>
+                                    <h3 class="font-sans text-xs font-semibold uppercase tracking-widest text-muted">Person: {{ $r['my_label'] }}</h3>
                                     <p class="mt-1">{{ $r['notes'] }}</p>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-semibold uppercase tracking-wider text-muted">AI: {{ $r['ai_decision'] }}, risk {{ $r['risk_score'] }}/100</h3>
+                                    <h3 class="font-sans text-xs font-semibold uppercase tracking-widest text-muted">AI: {{ $r['ai_decision'] }}, risk {{ $r['risk_score'] }}/100</h3>
                                     <p class="mt-1">{{ $r['explanation'] }}</p>
                                 </div>
                             </div>
@@ -132,13 +130,13 @@
 
         @if (count($run['history'] ?? []) > 1)
             <section aria-labelledby="history-heading">
-                <h2 id="history-heading" class="text-xl font-semibold">Earlier runs</h2>
+                <h2 id="history-heading" class="text-2xl font-semibold text-forest">Earlier runs</h2>
                 <p class="mt-1 text-sm text-muted">Every run is kept. A new prompt version means the prompt was changed between runs.</p>
                 <div class="mt-3 overflow-x-auto">
-                    <table class="w-full rounded-xl bg-white text-left ring-1 ring-cream-deep">
+                    <table class="tabular w-full min-w-xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
                         <caption class="sr-only">Agreement for every eval run</caption>
                         <thead>
-                            <tr class="text-sm text-muted">
+                            <tr class="bg-cream-deep/60 text-sm text-muted">
                                 <th scope="col" class="px-4 py-2">Run</th>
                                 <th scope="col" class="px-4 py-2">Prompt version</th>
                                 <th scope="col" class="px-4 py-2">Dev</th>
@@ -149,7 +147,7 @@
                         </thead>
                         <tbody>
                             @foreach ($run['history'] as $h)
-                                <tr class="border-t border-cream-deep">
+                                <tr class="border-t border-line/70">
                                     <td class="px-4 py-2">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
                                     <td class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
                                     <td class="px-4 py-2">{{ $h['dev_pct'] }}%</td>
@@ -165,4 +163,4 @@
         @endif
     @endif
 </div>
-@endsection
+</x-app-shell>
