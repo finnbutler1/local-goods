@@ -12,6 +12,8 @@ commit history.
 - Redemptions lock the employee's row so simultaneous redemptions can't
   overspend on MySQL.
 - CI runs every push on both SQLite and MySQL.
+- The database hook runs before PHP restarts and checks the DB_ settings
+  first, so a mistyped setting stops the change instead of breaking the site.
 - Decision record: [ADR 0006](docs/adr/0006-amazon-rds-mysql-in-production.md).
 
 ## 2026-10-11: CI and project documentation

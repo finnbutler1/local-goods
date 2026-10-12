@@ -16,7 +16,7 @@ Host on **AWS Elastic Beanstalk** with the PHP platform, as a single instance.
 - Config lives in [`.ebextensions/`](../../.ebextensions) and
   [`.platform/`](../../.platform).
 - Elastic Beanstalk runs `composer install` on deploy.
-- A postdeploy hook runs migrations and seeds the demo only into an empty database ([ADR 0006](0006-amazon-rds-mysql-in-production.md)).
+- A predeploy hook runs migrations and seeds the demo only into an empty database ([ADR 0006](0006-amazon-rds-mysql-in-production.md)).
 - Deploys are a zip built by `scripts/build-deploy-zip.sh` and uploaded in the
   console.
 

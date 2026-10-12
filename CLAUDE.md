@@ -73,9 +73,11 @@ Use these exact names in code, UI, and docs.
   (database `local_goods`), configured only through Beanstalk environment
   properties (`DB_CONNECTION=mysql`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`,
   `DB_USERNAME`, `DB_PASSWORD`). CI runs the tests on both SQLite and MySQL.
-- **Deploys never wipe data.** The postdeploy hook
-  (`.platform/hooks/postdeploy/01_database.sh`, also run on config changes via
-  `.platform/confighooks/`) runs `migrate --force`, then `demo:seed-if-empty`.
+- **Deploys never wipe data.** The predeploy hook
+  (`.platform/hooks/predeploy/01_database.sh`, also run on config changes via
+  `.platform/confighooks/`) checks the DB_ settings, then runs `migrate --force`
+  and `demo:seed-if-empty`. It runs before PHP restarts, so a failure stops the
+  deployment and the running site is unchanged. Never cache config in it.
   Never put `migrate:fresh`, `db:wipe` or `--seed` back in it
   (`tests/Unit/DeployHookTest.php` enforces this). Every migration must work on
   both SQLite and MySQL. Reset demo clears only `DemoResetter::DEMO_TABLES`.

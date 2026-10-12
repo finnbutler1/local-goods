@@ -18,9 +18,15 @@ fine for a throwaway demo but not for anything that must keep its data.
   busy-timeout and IMMEDIATE-transaction settings live only on the `sqlite`
   connection.
 - **Deploys never wipe data.** The hook
-  ([`01_database.sh`](../../.platform/hooks/postdeploy/01_database.sh)) runs
+  ([`01_database.sh`](../../.platform/hooks/predeploy/01_database.sh)) runs
   `migrate --force`, then `demo:seed-if-empty`, which seeds only when every
-  demo table is empty. A unit test fails if a wipe command is ever added back.
+  demo table is empty.
+- **The hook runs at predeploy**, for deploys and for configuration changes,
+  before Beanstalk restarts PHP. It first checks that `DB_CONNECTION` is exactly
+  `mysql` or `sqlite` and that the other DB_ properties are set. If anything
+  fails, the deployment stops and the running site keeps its old settings.
+  (A first attempt ran it at postdeploy; a typo in `DB_CONNECTION` then broke
+  the database pages until a redeploy.) A unit test fails if a wipe command is ever added back.
 - **Reset demo** clears only the six demo tables, never users, sessions or
   future tables.
 - **Redemptions lock the employee row** (`SELECT ... FOR UPDATE`) so two
