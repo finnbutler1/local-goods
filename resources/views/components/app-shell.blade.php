@@ -1,27 +1,23 @@
 @props([
     'title',
     'active' => null,
-    'userName' => 'Demo user',
-    'role' => 'Guest',
     'context' => 'Golden Triangle BID · Washington, DC',
+    // Only for the signed-out /styleguide: which role's menu to show.
+    'preview' => null,
 ])
 
-{{-- Signed-in app layout: sidebar on desktop, bottom tab bar on mobile,
-     top bar with the current user and role. Real login arrives later; for now
-     each demo page passes in its demo persona. --}}
+{{-- Signed-in app layout: sidebar on desktop, bottom tab bar on mobile, top
+     bar with the signed-in user, their role and Log out. The menu items come
+     from the user's role (App\Enums\Role::navigation()). --}}
 @php
-    $nav = [
-        'dashboard' => ['label' => 'Dashboard', 'short' => 'Home', 'route' => 'dashboard',
-            'icon' => 'M3.75 12 12 4.5l8.25 7.5M5.25 10.5v9h4.5v-5.25h4.5v5.25h4.5v-9'],
-        'employee' => ['label' => 'Employee wallet', 'short' => 'Wallet', 'route' => 'demo.employee',
-            'icon' => 'M3.75 7.5h15a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 2.25 18V6a1.5 1.5 0 0 1 1.5-1.5h12M16.5 13.5h.01'],
-        'bid-admin' => ['label' => 'BID admin', 'short' => 'Admin', 'route' => 'demo.bid-admin',
-            'icon' => 'M12 3 4.5 6v5.25c0 4.5 3.2 8.4 7.5 9.75 4.3-1.35 7.5-5.25 7.5-9.75V6L12 3Zm-3 9 2.25 2.25L15 10.5'],
-        'eval' => ['label' => 'AI eval', 'short' => 'AI eval', 'route' => 'demo.bid-admin.eval',
-            'icon' => 'M4.5 19.5h15M7.5 16.5v-4.5M12 16.5V7.5M16.5 16.5v-7.5'],
-    ];
-    $initials = collect(explode(' ', preg_replace('/\s*\(.*\)$/', '', $userName)))
+    $user = auth()->user();
+    $userName = $user?->name ?? 'Design system';
+    $role = $user?->role ?? $preview;
+    $nav = $role->navigation();
+    $initials = collect(explode(' ', $userName))
         ->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+    // Literal class names so Tailwind includes them in the build.
+    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4'][count($nav)];
 @endphp
 
 <!DOCTYPE html>
@@ -63,6 +59,10 @@
             <p class="mt-1">All people and transactions are fictional.</p>
             <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-cream underline underline-offset-4 hover:no-underline">Back to the public site</a>
         </div>
+        <form method="POST" action="{{ route('logout') }}" class="mx-3 mb-4">
+            @csrf
+            <x-button type="submit" variant="inverse-outline" class="w-full">Log out</x-button>
+        </form>
     </aside>
 
     <div class="lg:pl-64">
@@ -76,9 +76,13 @@
                 <div class="flex min-w-0 items-center gap-3">
                     <div class="min-w-0 text-right">
                         <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>{{ $userName }}</p>
-                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role }}</x-badge>
+                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}</x-badge>
                     </div>
                     <span class="grid size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink" aria-hidden="true">{{ $initials }}</span>
+                    <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
+                        @csrf
+                        <x-button type="submit" variant="ghost" size="sm">Log out</x-button>
+                    </form>
                 </div>
             </div>
         </header>
@@ -94,7 +98,7 @@
 
     {{-- Mobile bottom tab bar --}}
     <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-forest-soft bg-forest pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <ul class="grid grid-cols-4">
+        <ul class="grid {{ $tabColumns }}">
             @foreach ($nav as $key => $item)
                 <li>
                     <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif

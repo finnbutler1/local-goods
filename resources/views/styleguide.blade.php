@@ -1,4 +1,4 @@
-<x-app-shell title="Styleguide" user-name="Design system" role="Local only" context="Local Goods design tokens and components">
+<x-app-shell title="Styleguide" :preview="App\Enums\Role::BidAdmin" context="Local Goods design tokens and components">
 <div class="space-y-16">
     <header class="max-w-3xl">
         <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Internal</p>

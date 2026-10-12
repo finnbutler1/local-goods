@@ -20,7 +20,7 @@
             </p>
             <div class="mt-10 flex flex-col gap-3 sm:flex-row">
                 <x-button variant="accent" size="lg" href="#request-demo">Request a demo</x-button>
-                <x-button variant="secondary" size="lg" :href="route('demo.employee')">Log in</x-button>
+                <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
             </div>
             <p class="mt-4 text-sm text-muted">For HR and people teams at employers in the Golden Triangle BID.</p>
         </div>
@@ -169,7 +169,7 @@
                     <figcaption class="mt-5 text-muted">We publish how often the AI agrees with a person once the eval has been run.</figcaption>
                 @endif
                 <div class="mt-8">
-                    <x-button :href="route('demo.bid-admin.eval')">See the full eval results</x-button>
+                    <x-button :href="route('eval')">See the full eval results</x-button>
                 </div>
             </figure>
         </div>
@@ -217,13 +217,14 @@
             <div>
                 <h2 id="request-heading" class="text-4xl font-semibold text-forest">Request a demo</h2>
                 <p class="mt-3 max-w-xl text-lg text-muted">
-                    Online demo booking is coming soon. In the meantime, the working product is right here: redeem
-                    credits as an employee, then watch the AI fraud check from the BID's side.
+                    Online demo booking is coming soon. The working product is live: demo logins for an employee,
+                    a BID admin and contest judges are available on request. Already have one? Log in to redeem
+                    credits as an employee or review the AI fraud check from the BID's side.
                 </p>
             </div>
             <div class="flex flex-col gap-3">
-                <x-button size="lg" :href="route('demo.employee')">See an employee's wallet</x-button>
-                <x-button variant="secondary" size="lg" :href="route('demo.bid-admin')">See the BID admin view</x-button>
+                <x-button size="lg" :href="route('login')">Log in</x-button>
+                <x-button variant="secondary" size="lg" :href="route('eval')">See the AI eval results</x-button>
             </div>
         </x-card>
     </section>

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Demo;
+namespace App\Http\Controllers\BidAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bid;
@@ -20,7 +20,7 @@ class BidAdminController extends Controller
             ->take(25)
             ->get();
 
-        return view('demo.bid-admin', [
+        return view('bid-admin.dashboard', [
             'bid' => Bid::firstOrFail(),
             'redemptions' => $redemptions,
             'heldCount' => Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->count(),

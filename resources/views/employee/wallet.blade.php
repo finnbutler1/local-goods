@@ -1,11 +1,8 @@
 @php use App\Support\Money; @endphp
 
-<x-app-shell title="Employee wallet" active="employee"
-             :user-name="$employee->display_name" role="Employee"
+<x-app-shell title="My wallet" active="wallet"
              :context="$employee->employer->name.' · Golden Triangle BID'">
 <div class="mx-auto max-w-xl space-y-6">
-    <x-demo-nav current="employee" />
-
     {{-- Result of the last redemption, announced to screen readers --}}
     <div aria-live="polite">
         @if ($result)
@@ -47,7 +44,7 @@
             </p>
         @endif
 
-        <form method="POST" action="{{ route('demo.employee.redeem') }}" class="mt-5 space-y-5">
+        <form method="POST" action="{{ route('employee.redeem') }}" class="mt-5 space-y-5">
             @csrf
             <div>
                 <label for="merchant_id" class="block font-semibold">Merchant</label>
@@ -81,7 +78,7 @@
             <x-button type="submit" variant="accent" size="lg" class="w-full">Confirm redemption</x-button>
         </form>
 
-        <x-button variant="danger" size="sm" :href="route('demo.employee', ['suspicious' => 1]).'#redeem'" class="mt-3 w-full">
+        <x-button variant="danger" size="sm" :href="route('employee.wallet', ['suspicious' => 1]).'#redeem'" class="mt-3 w-full">
             Try a suspicious redemption
         </x-button>
     </x-card>

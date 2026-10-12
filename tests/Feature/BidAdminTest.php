@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\Merchant;
 use App\Services\Ai\ClaudeClient;
 use Database\Seeders\DatabaseSeeder;
@@ -19,9 +20,11 @@ class BidAdminTest extends TestCase
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(91, 'hold', 'The full balance was redeemed as a round number.'));
 
         $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
-        $this->post('/demo/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '20']);
+        $this->signIn(Role::Employee);
+        $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '20']);
 
-        $this->get('/demo/bid-admin')
+        $this->signIn(Role::BidAdmin);
+        $this->get('/bid-admin')
             ->assertOk()
             ->assertSee('Redemption Fraud Detection')
             ->assertSee('$20.00 at Press Room Deli')

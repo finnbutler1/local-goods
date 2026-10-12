@@ -1,11 +1,8 @@
-@php use App\Http\Controllers\Demo\BidAdminController; use App\Support\Money; use App\Support\SignalPresenter; @endphp
+@php use App\Support\Money; use App\Support\SignalPresenter; @endphp
 
-<x-app-shell title="BID admin" active="bid-admin"
-             :user-name="BidAdminController::DEMO_ADMIN" role="BID admin"
+<x-app-shell title="Fraud review" active="bid-admin"
              :context="$bid->name.' BID · '.$bid->city">
 <div class="space-y-8">
-    <x-demo-nav current="bid-admin" />
-
     <header class="max-w-3xl">
         <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">{{ $bid->name }} BID · {{ $bid->city }}</p>
         <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Redemption Fraud Detection</h1>
@@ -15,7 +12,7 @@
             If the AI check fails for any reason, the redemption is held, never cleared.
         </p>
         <p class="mt-3">
-            <a href="{{ route('demo.bid-admin.eval') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
+            <a href="{{ route('bid-admin.eval') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
                 How often does the AI agree with a person? See the eval results <span aria-hidden="true">→</span>
             </a>
         </p>
@@ -42,7 +39,7 @@
             </div>
         </dl>
 
-        <form method="POST" action="{{ route('demo.reset') }}"
+        <form method="POST" action="{{ route('bid-admin.reset') }}"
               onsubmit="return confirm('Reset the demo? This removes every redemption made since the last deploy and restores the seeded data.');">
             @csrf
             <x-button type="submit" variant="secondary" aria-describedby="reset-help">Reset demo</x-button>
@@ -109,11 +106,11 @@
                                 The {{ Money::format($redemption->amount_cents) }} is reserved from the employee's balance.
                             </p>
                             <div class="flex flex-wrap gap-2">
-                                <form method="POST" action="{{ route('demo.bid-admin.approve', $redemption) }}">
+                                <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}">
                                     @csrf
                                     <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
                                 </form>
-                                <form method="POST" action="{{ route('demo.bid-admin.reject', $redemption) }}">
+                                <form method="POST" action="{{ route('bid-admin.reject', $redemption) }}">
                                     @csrf
                                     <x-button type="submit" size="sm" variant="danger" class="bg-paper" aria-label="Reject {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Reject</x-button>
                                 </form>

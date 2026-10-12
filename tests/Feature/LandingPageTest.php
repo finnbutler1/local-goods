@@ -11,8 +11,8 @@ class LandingPageTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Spend local. Prove it.')
-            ->assertSee("See an employee's wallet", false)
-            ->assertSee('See the BID admin view')
+            ->assertSee('See the AI eval results')
+            ->assertDontSee('/demo/')
             ->assertSee('All businesses, people, and transactions are fictional.')
             ->assertDontSee('public records');
     }
@@ -25,7 +25,7 @@ class LandingPageTest extends TestCase
             ->assertSee('id="request-demo"', false)
             ->getContent();
 
-        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('demo.employee'), '#').'"[^>]*>\s*Log in\s*</a>#', $html);
+        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('login'), '#').'"[^>]*>\s*Log in\s*</a>#', $html);
     }
 
     public function test_audience_cards_are_employers_then_bid_then_merchants(): void
@@ -46,7 +46,7 @@ class LandingPageTest extends TestCase
             $this->get('/')
                 ->assertSee('73% agreement on 11 unseen cases with the current prompt, and 1 suspicious case missed.')
                 ->assertSee('one case moves the score by 9.1 points')
-                ->assertSee('href="'.route('demo.bid-admin.eval').'"', false)
+                ->assertSee('href="'.route('eval').'"', false)
                 ->assertSee('fails closed')
                 ->assertSee('A held redemption is never approved automatically; it waits for review by the BID.');
         } finally {

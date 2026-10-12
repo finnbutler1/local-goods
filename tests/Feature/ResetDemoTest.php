@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
@@ -42,12 +43,14 @@ class ResetDemoTest extends TestCase
         // Make a held redemption during the "demo".
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(95, 'hold', 'Full balance.'));
         $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
-        $this->post('/demo/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '120']);
+        $this->signIn(Role::Employee);
+        $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '120']);
         $this->assertSame(0, Employee::firstOrFail()->balanceCents());
         $this->assertSame(13, Redemption::count());
 
+        $this->signIn(Role::BidAdmin);
         $this->followingRedirects()
-            ->post('/demo/reset')
+            ->post('/bid-admin/reset')
             ->assertOk()
             ->assertSee('Demo data has been reset')
             ->assertDontSee('Full balance.');
@@ -77,15 +80,17 @@ class ResetDemoTest extends TestCase
 
     public function test_admin_view_has_the_reset_button(): void
     {
-        $this->get('/demo/bid-admin')
+        $this->signIn(Role::BidAdmin);
+        $this->get('/bid-admin')
             ->assertOk()
             ->assertSee('Reset demo')
-            ->assertSee(route('demo.reset'), false);
+            ->assertSee(route('bid-admin.reset'), false);
     }
 
     public function test_reset_requires_post(): void
     {
-        $this->get('/demo/reset')->assertMethodNotAllowed();
+        $this->signIn(Role::BidAdmin);
+        $this->get('/bid-admin/reset')->assertMethodNotAllowed();
         $this->assertSame(12, Redemption::count());
     }
 }

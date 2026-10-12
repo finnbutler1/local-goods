@@ -1,12 +1,6 @@
-@php use App\Http\Controllers\Demo\BidAdminController; use Illuminate\Support\Carbon; @endphp
-
-<x-app-shell title="Fraud check eval" active="eval" :user-name="BidAdminController::DEMO_ADMIN" role="BID admin">
-<div class="space-y-10">
-    <nav aria-label="Demo pages" class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-forest">
-        <a href="{{ route('demo.bid-admin') }}" class="underline decoration-line decoration-2 underline-offset-4 hover:decoration-forest">
-            <span aria-hidden="true">←</span> Back to the BID admin view
-        </a>
-    </nav>
+{{-- The Redemption Fraud Detection eval results. Shown publicly at /eval and
+     inside the app shell at /bid-admin/eval. Needs $run. --}}
+@php use Illuminate\Support\Carbon; @endphp
 
     <header class="max-w-3xl">
         <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Redemption Fraud Detection</p>
@@ -162,5 +156,3 @@
             </section>
         @endif
     @endif
-</div>
-</x-app-shell>

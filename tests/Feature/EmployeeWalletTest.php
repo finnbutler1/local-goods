@@ -2,14 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Services\Ai\ClaudeClient;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
@@ -24,6 +25,7 @@ class EmployeeWalletTest extends TestCase
         // Oct 20, 2026 at noon in DC: two allowances minus $180 seeded spending = $120.00.
         Carbon::setTestNow(Carbon::parse('2026-10-20 12:00', 'America/New_York'));
         $this->seed(DatabaseSeeder::class);
+        $this->signIn(Role::Employee);
     }
 
     protected function tearDown(): void
@@ -44,7 +46,7 @@ class EmployeeWalletTest extends TestCase
 
     public function test_wallet_shows_balance_and_allowance(): void
     {
-        $this->get('/demo/employee')
+        $this->get('/employee')
             ->assertOk()
             ->assertSee('$120.00')
             ->assertSee('$150.00 added each month by Meridian Policy Group')
@@ -56,7 +58,7 @@ class EmployeeWalletTest extends TestCase
         $this->fakeClaude(FakeClaudeClient::verdict(6, 'clear', 'A $6.50 coffee is typical.'));
 
         $this->followingRedirects()
-            ->post('/demo/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50'])
+            ->post('/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50'])
             ->assertOk()
             ->assertSee('Approved')
             ->assertSee('$113.50');
@@ -74,7 +76,7 @@ class EmployeeWalletTest extends TestCase
         // RefreshDatabase wraps each test in its own transaction; that is the baseline.
         $baseline = DB::transactionLevel();
 
-        $this->post('/demo/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50']);
+        $this->post('/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50']);
 
         $this->assertCount(1, $fake->calls);
         $this->assertSame($baseline, $fake->calls[0]['transaction_level']);
@@ -82,7 +84,7 @@ class EmployeeWalletTest extends TestCase
 
     public function test_suspicious_button_prefills_full_balance_round_number(): void
     {
-        $this->get('/demo/employee?suspicious=1')
+        $this->get('/employee?suspicious=1')
             ->assertOk()
             ->assertSee('value="120"', false)
             ->assertSee('Try a suspicious redemption');
@@ -93,7 +95,7 @@ class EmployeeWalletTest extends TestCase
         $this->fakeClaude(FakeClaudeClient::verdict(92, 'hold', 'The whole $120 balance as a round number.'));
 
         $this->followingRedirects()
-            ->post('/demo/employee/redeem', ['merchant_id' => $this->merchant('Press Room Deli')->id, 'amount' => '120'])
+            ->post('/employee/redeem', ['merchant_id' => $this->merchant('Press Room Deli')->id, 'amount' => '120'])
             ->assertOk()
             ->assertSee('Under review')
             ->assertSee('$0.00');
@@ -109,7 +111,7 @@ class EmployeeWalletTest extends TestCase
         $this->fakeClaude(new FakeClaudeClient(new RuntimeException('503 Service Unavailable')));
 
         $this->followingRedirects()
-            ->post('/demo/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50'])
+            ->post('/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50'])
             ->assertSee('Under review');
 
         $redemption = Redemption::latest('id')->firstOrFail();
@@ -123,7 +125,7 @@ class EmployeeWalletTest extends TestCase
         $this->fakeClaude($fake);
         $before = Redemption::count();
 
-        $this->post('/demo/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '500'])
+        $this->post('/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '500'])
             ->assertSessionHasErrors('amount');
 
         $this->assertSame($before, Redemption::count());
@@ -134,7 +136,7 @@ class EmployeeWalletTest extends TestCase
     {
         $id = $this->merchant('Farragut Grind')->id;
 
-        $this->post('/demo/employee/redeem', ['merchant_id' => $id, 'amount' => '0'])->assertSessionHasErrors('amount');
-        $this->post('/demo/employee/redeem', ['merchant_id' => $id, 'amount' => 'ten'])->assertSessionHasErrors('amount');
+        $this->post('/employee/redeem', ['merchant_id' => $id, 'amount' => '0'])->assertSessionHasErrors('amount');
+        $this->post('/employee/redeem', ['merchant_id' => $id, 'amount' => 'ten'])->assertSessionHasErrors('amount');
     }
 }

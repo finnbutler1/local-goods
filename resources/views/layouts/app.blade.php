@@ -23,7 +23,11 @@
                     <li><a href="{{ route('home') }}#who-its-for" class="underline-offset-4 hover:underline">Who it's for</a></li>
                     <li><a href="{{ route('home') }}#trust" class="underline-offset-4 hover:underline">Trust &amp; AI</a></li>
                 </ul>
-                <x-button variant="secondary" size="sm" :href="route('demo.employee')">Log in</x-button>
+                @auth
+                    <x-button variant="secondary" size="sm" :href="route('dashboard')">My dashboard</x-button>
+                @else
+                    <x-button variant="secondary" size="sm" :href="route('login')">Log in</x-button>
+                @endauth
             </nav>
         </div>
     </header>

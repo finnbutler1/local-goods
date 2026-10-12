@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Demo;
+namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
@@ -14,16 +14,21 @@ use Illuminate\View\View;
 class EmployeeWalletController extends Controller
 {
     /**
-     * No logins in the demo: the wallet always belongs to the one seeded employee.
+     * The signed-in employee's own wallet. A login with no wallet linked yet
+     * (for example before the demo data is seeded) gets 403.
      */
-    private function employee(): Employee
+    private function employee(Request $request): Employee
     {
-        return Employee::with('employer')->firstOrFail();
+        $employee = $request->user()->employee()->with('employer')->first();
+
+        abort_if($employee === null, 403, 'No wallet is linked to this login yet.');
+
+        return $employee;
     }
 
     public function show(Request $request): View
     {
-        $employee = $this->employee();
+        $employee = $this->employee($request);
         $balance = $employee->balanceCents();
         $recent = $employee->redemptions()->with('merchant')->latest()->latest('id')->take(8)->get();
 
@@ -38,7 +43,7 @@ class EmployeeWalletController extends Controller
             ];
         }
 
-        return view('demo.employee', [
+        return view('employee.wallet', [
             'employee' => $employee,
             'balance' => $balance,
             'merchants' => Merchant::orderBy('name')->get(),
@@ -60,11 +65,11 @@ class EmployeeWalletController extends Controller
         ]);
 
         $redemption = $service->redeem(
-            $this->employee(),
+            $this->employee($request),
             Merchant::findOrFail($data['merchant_id']),
             (int) round(((float) $data['amount']) * 100),
         );
 
-        return redirect()->route('demo.employee')->with('redemption_id', $redemption->id);
+        return redirect()->route('employee.wallet')->with('redemption_id', $redemption->id);
     }
 }

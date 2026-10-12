@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Demo;
+namespace App\Http\Controllers\BidAdmin;
 
 use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Http\Controllers\Controller;
@@ -31,7 +31,7 @@ class ReviewRedemptionController extends Controller
 
     private function decide(Redemption $redemption, string $action, callable $message): RedirectResponse
     {
-        $back = redirect()->to(route('demo.bid-admin')."#redemption-{$redemption->id}");
+        $back = redirect()->to(route('bid-admin.dashboard')."#redemption-{$redemption->id}");
 
         try {
             $this->reviews->{$action}($redemption, BidAdminController::DEMO_ADMIN);

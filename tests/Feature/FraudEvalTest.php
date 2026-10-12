@@ -205,7 +205,7 @@ class FraudEvalTest extends TestCase
         $this->assertStringContainsString('Prompt changed after holdout was seen.', $md);
 
         config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
-        $this->get('/demo/bid-admin/eval')
+        $this->get('/eval')
             ->assertSee('50% agreement on 2 unseen cases with the current prompt, and 0 suspicious cases missed.')
             ->assertSee('Every disagreement is a false alarm.')
             ->assertSee('one case moves the score by 50 points')
@@ -234,7 +234,7 @@ class FraudEvalTest extends TestCase
         $this->assertStringContainsString('**Holdout 2**', file_get_contents("{$this->dir}/out/fraud-eval-results.md"));
 
         config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
-        $this->get('/demo/bid-admin/eval')->assertSee('Holdout 2 agreement')->assertSee('Holdout 2 cases');
+        $this->get('/eval')->assertSee('Holdout 2 agreement')->assertSee('Holdout 2 cases');
     }
 
     public function test_the_real_cases_file_is_fully_labeled_and_valid(): void
@@ -256,7 +256,7 @@ class FraudEvalTest extends TestCase
     {
         config(['fraud.eval_latest_path' => "{$this->dir}/missing.json"]);
 
-        $this->get('/demo/bid-admin/eval')
+        $this->get('/eval')
             ->assertOk()
             ->assertSee('No eval results yet');
     }
@@ -268,7 +268,7 @@ class FraudEvalTest extends TestCase
         $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
         config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
 
-        $this->get('/demo/bid-admin/eval')
+        $this->get('/eval')
             ->assertOk()
             ->assertSee('Holdout agreement')
             ->assertSee('50%')

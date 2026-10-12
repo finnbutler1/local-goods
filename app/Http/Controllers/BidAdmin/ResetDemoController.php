@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Demo;
+namespace App\Http\Controllers\BidAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Services\DemoResetter;
@@ -12,6 +12,6 @@ class ResetDemoController extends Controller
     {
         $resetter->reset();
 
-        return redirect()->route('demo.bid-admin')->with('status', 'Demo data has been reset to the seeded starting point.');
+        return redirect()->route('bid-admin.dashboard')->with('status', 'Demo data has been reset to the seeded starting point.');
     }
 }

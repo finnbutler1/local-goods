@@ -1,9 +1,9 @@
 <x-app-shell title="Dashboard" active="dashboard"
-             user-name="Alex Morgan (demo)" role="Employer admin" context="Meridian Policy Group · Golden Triangle BID">
+             context="Meridian Policy Group · Golden Triangle BID">
     <div class="space-y-8">
         <header>
             <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Employer dashboard</p>
-            <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Welcome back, Alex.</h1>
+            <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Welcome back, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             <p class="mt-3 max-w-2xl text-lg text-muted">
                 This is where your team's neighborhood perk will live: credits funded, credits spent, and the
                 local businesses your people discovered.
@@ -28,12 +28,7 @@
             <h2 id="empty-heading" class="mt-4 text-2xl font-semibold text-forest">Your program dashboard is on its way</h2>
             <p class="mx-auto mt-2 max-w-md text-muted">
                 Funding, participation and spending reports appear here once employer accounts launch.
-                In the meantime, try the parts that already work.
             </p>
-            <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                <x-button :href="route('demo.employee')">Open the employee wallet</x-button>
-                <x-button variant="secondary" :href="route('demo.bid-admin')">See fraud checks</x-button>
-            </div>
         </x-card>
     </div>
 </x-app-shell>

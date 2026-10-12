@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Models\CreditLedgerEntry;
 use App\Models\Employee;
@@ -39,7 +40,9 @@ class RedemptionReviewTest extends TestCase
     {
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(91, 'hold', 'Round number.'));
         $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
-        $this->post('/demo/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '20']);
+        $this->signIn(Role::Employee);
+        $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '20']);
+        $this->signIn(Role::BidAdmin);
 
         $redemption = Redemption::latest('id')->firstOrFail();
         $this->assertTrue($redemption->isUnderReview());
@@ -154,14 +157,14 @@ class RedemptionReviewTest extends TestCase
         $held = $this->heldRedemption();
         $cleared = Redemption::where('status', Redemption::STATUS_APPROVED)->firstOrFail();
 
-        $this->get('/demo/bid-admin')
+        $this->get('/bid-admin')
             ->assertOk()
             ->assertSee('Waiting for your decision.')
-            ->assertSee('action="'.route('demo.bid-admin.approve', $held).'"', false)
-            ->assertSee('action="'.route('demo.bid-admin.reject', $held).'"', false)
+            ->assertSee('action="'.route('bid-admin.approve', $held).'"', false)
+            ->assertSee('action="'.route('bid-admin.reject', $held).'"', false)
             ->assertSee('aria-label="Approve $20.00 at Press Room Deli"', false)
-            ->assertDontSee('action="'.route('demo.bid-admin.approve', $cleared).'"', false)
-            ->assertDontSee('action="'.route('demo.bid-admin.reject', $cleared).'"', false);
+            ->assertDontSee('action="'.route('bid-admin.approve', $cleared).'"', false)
+            ->assertDontSee('action="'.route('bid-admin.reject', $cleared).'"', false);
     }
 
     public function test_approve_button_approves_and_shows_who_decided(): void
@@ -169,14 +172,14 @@ class RedemptionReviewTest extends TestCase
         $held = $this->heldRedemption();
         Carbon::setTestNow(Carbon::parse('2026-10-12 15:04', 'America/New_York'));
 
-        $this->post(route('demo.bid-admin.approve', $held))
-            ->assertRedirect(route('demo.bid-admin')."#redemption-{$held->id}")
+        $this->post(route('bid-admin.approve', $held))
+            ->assertRedirect(route('bid-admin.dashboard')."#redemption-{$held->id}")
             ->assertSessionHas('status', 'Approved $20.00 at Press Room Deli. The reserved credits are spent.');
 
         $this->assertSame(Redemption::STATUS_APPROVED, $held->fresh()->status);
         $this->assertSame('Sam Taylor (demo)', $held->fresh()->reviewed_by);
 
-        $this->get('/demo/bid-admin')
+        $this->get('/bid-admin')
             ->assertSee('Approved by')
             ->assertSee('Sam Taylor (demo)')
             ->assertSee('Oct 12, 3:04 PM')
@@ -189,26 +192,27 @@ class RedemptionReviewTest extends TestCase
         $before = $employee->balanceCents();
         $held = $this->heldRedemption();
 
-        $this->post(route('demo.bid-admin.reject', $held))
+        $this->post(route('bid-admin.reject', $held))
             ->assertSessionHas('status', "Rejected \$20.00 at Press Room Deli. The credits are back in the employee's balance.");
 
         $this->assertSame(Redemption::STATUS_REJECTED, $held->fresh()->status);
         $this->assertSame($before, $employee->balanceCents());
 
-        $this->get('/demo/bid-admin')->assertSee('Rejected by')->assertSee('The credits went back to the employee.');
-        $this->get('/demo/employee')->assertSee('Rejected');
+        $this->get('/bid-admin')->assertSee('Rejected by')->assertSee('The credits went back to the employee.');
+        $this->signIn(Role::Employee);
+        $this->get('/employee')->assertSee('Rejected');
     }
 
     public function test_a_second_click_is_refused_and_changes_nothing(): void
     {
         $held = $this->heldRedemption();
-        $this->post(route('demo.bid-admin.approve', $held));
+        $this->post(route('bid-admin.approve', $held));
         $entries = CreditLedgerEntry::count();
 
-        $this->post(route('demo.bid-admin.reject', $held))
-            ->assertRedirect(route('demo.bid-admin')."#redemption-{$held->id}")
+        $this->post(route('bid-admin.reject', $held))
+            ->assertRedirect(route('bid-admin.dashboard')."#redemption-{$held->id}")
             ->assertSessionHas('error', 'Nothing changed: this redemption is already approved.');
-        $this->post(route('demo.bid-admin.approve', $held))
+        $this->post(route('bid-admin.approve', $held))
             ->assertSessionHas('error', 'Nothing changed: this redemption is already approved.');
 
         $this->assertSame(Redemption::STATUS_APPROVED, $held->fresh()->status);
