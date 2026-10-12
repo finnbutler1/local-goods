@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml/badge.svg)](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml)
 
-**Stack:** Laravel 13 · PHP 8.3+ (CI on 8.4) · Tailwind CSS 4 (Vite 8) · SQLite · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect (planned)
+**Stack:** Laravel 13 · PHP 8.3+ (CI on 8.4) · Tailwind CSS 4 (Vite 8) · SQLite (local) / Amazon RDS MySQL (production) · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect (planned)
 
 ---
 
@@ -75,7 +75,7 @@ Only what exists today is claimed. Everything else is marked **planned**.
 | **Functionality** | 25 | **Live:** the [employee wallet](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/employee) shows a balance, a redeem form and recent redemptions; the [BID admin view](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/bid-admin) shows every AI decision; a Reset demo button; an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode), approve/reject buttons for held redemptions. |
 | **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
 | **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Planned:** Merchant Eligibility Matching. |
-| **Code quality / GitHub** | 15 | 36 automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php), so they need no secrets. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
+| **Code quality / GitHub** | 15 | Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php), so they need no secrets. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
 | **UX** | 10 | One-click demo flow (normal, then suspicious redemption), plain-English AI explanations, status badges, navigation between demo views, all businesses labeled fictional. **Planned:** the employer/HR dashboard. |
 | **Business impact** | 10 | Designed to keep perk spending with independent merchants. [Civic Economics](https://www.civiceconomics.com/) studies found that independent businesses recirculate roughly 48% of their revenue locally, versus under 14% for chains: roughly 3x more per dollar. BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, and **planned** Stripe payouts will only go out for cleared ones. Metrics like local spend captured are **planned**. |
 | **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, synthetic data only. See [TRANSPARENCY.md](TRANSPARENCY.md). **Planned:** a human approve/reject action that records the reviewer's reason. |
@@ -123,7 +123,7 @@ php artisan test
 - Approve/reject buttons for held redemptions, recording the reviewer's name
   and reason
 - An employer/HR dashboard
-- Amazon RDS and HTTPS for production ([ADR 0005](docs/adr/0005-sqlite-now-rds-for-production-next.md))
+- HTTPS for production
 
 ---
 

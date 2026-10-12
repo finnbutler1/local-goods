@@ -68,9 +68,17 @@ Use these exact names in code, UI, and docs.
 
 - **Laravel** — check `composer.json` for the version (currently `^13.17`, PHP `^8.3`).
 - **Tailwind via Vite** (`npm run dev` / `npm run build`).
-- **SQLite** at `storage/database.sqlite` (gitignored), locally and on Beanstalk.
-  A postdeploy hook (`.platform/hooks/postdeploy/01_reset_database.sh`) runs
-  `migrate:fresh --seed --force` on every deploy, so demo data resets each deploy.
+- **Database:** SQLite at `storage/database.sqlite` (gitignored) for local
+  development; tests use in-memory SQLite. **Production uses Amazon RDS MySQL**
+  (database `local_goods`), configured only through Beanstalk environment
+  properties (`DB_CONNECTION=mysql`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`,
+  `DB_USERNAME`, `DB_PASSWORD`). CI runs the tests on both SQLite and MySQL.
+- **Deploys never wipe data.** The postdeploy hook
+  (`.platform/hooks/postdeploy/01_database.sh`, also run on config changes via
+  `.platform/confighooks/`) runs `migrate --force`, then `demo:seed-if-empty`.
+  Never put `migrate:fresh`, `db:wipe` or `--seed` back in it
+  (`tests/Unit/DeployHookTest.php` enforces this). Every migration must work on
+  both SQLite and MySQL. Reset demo clears only `DemoResetter::DEMO_TABLES`.
 - **Claude API** via the official `anthropic-ai/sdk` package, wrapped in
   `App\Services\Ai\ClaudeClient`. Key from `ANTHROPIC_API_KEY`; model from
   `ANTHROPIC_MODEL` (default `claude-opus-5-5`). Prompts live in `resources/prompts/`.

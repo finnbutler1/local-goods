@@ -3,6 +3,17 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-11: Production database moves to Amazon RDS MySQL
+
+- Production reads its MySQL connection from Beanstalk environment
+  properties; local development and tests stay on SQLite.
+- **Deploys no longer wipe data.** The deploy hook runs `migrate --force` and
+  seeds the demo only if its tables are empty.
+- Redemptions lock the employee's row so simultaneous redemptions can't
+  overspend on MySQL.
+- CI runs every push on both SQLite and MySQL.
+- Decision record: [ADR 0006](docs/adr/0006-amazon-rds-mysql-in-production.md).
+
 ## 2026-10-11: CI and project documentation
 
 - GitHub Actions CI runs the full test suite and front-end build on every push

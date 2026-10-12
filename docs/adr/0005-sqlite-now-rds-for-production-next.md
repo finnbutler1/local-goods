@@ -1,6 +1,6 @@
 # 0005. SQLite now, Amazon RDS for production next
 
-**Status:** Accepted. SQLite is in use; RDS is planned.
+**Status:** Superseded by [0006](0006-amazon-rds-mysql-in-production.md).
 
 ## Context
 

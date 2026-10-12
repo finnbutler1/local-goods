@@ -10,4 +10,5 @@ trade-off in under a minute.
 | [0002](0002-one-bid-and-one-employer-for-the-mvp.md) | One BID and one employer for the MVP | Accepted |
 | [0003](0003-fail-closed-fraud-detection.md) | Fail-closed fraud detection | Accepted, implemented |
 | [0004](0004-elastic-beanstalk-instead-of-amplify.md) | Elastic Beanstalk instead of Amplify | Accepted, implemented |
-| [0005](0005-sqlite-now-rds-for-production-next.md) | SQLite now, Amazon RDS for production next | Accepted (SQLite in use; RDS planned) |
+| [0005](0005-sqlite-now-rds-for-production-next.md) | SQLite now, Amazon RDS for production next | Superseded by 0006 |
+| [0006](0006-amazon-rds-mysql-in-production.md) | Amazon RDS MySQL in production, SQLite for development and tests | Accepted, implemented |
