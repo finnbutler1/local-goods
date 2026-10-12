@@ -17,6 +17,8 @@ commit history.
   a merchant not visited in 30 days. Second run (prompt `8d5e1e70`): 90%
   holdout, 90% dev. The headline stays at 80% because the holdout results had
   already been seen when the prompt was changed.
+- Ten new hand-labeled cases (`holdout_2`, FE-31 to FE-40), never seen while
+  changing the prompt: 80% agreement with prompt `8d5e1e70`.
 
 ## 2026-10-11: Production database moves to Amazon RDS MySQL
 

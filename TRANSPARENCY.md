@@ -115,15 +115,22 @@ expectations:
 |---|---|---|---|---|
 | 1 | `e5bcf207` (original) | 85% (17/20) | **80% (8/10)** | **Headline number** |
 | 2 | `8d5e1e70` (change 1) | 90% (18/20) | 90% (9/10) | Not fully independent (see below) |
+| 3 | `8d5e1e70` (change 1) | 90% (18/20) | 90% (9/10) | **Holdout 2: 80% (8/10)**, a clean test of change 1 |
 
 Change 1 added one rule to the prompt: using all or nearly all of the balance
 at a merchant not visited in the last 30 days is enough to hold on its own. It
 was written to fix one dev case (FE-18). **But the holdout results from run 1
 had already been seen when it was made**, and holdout case FE-23 is a similar
 pattern. So run 2's holdout score is not a fully independent test, and the
-headline stays at run 1's **80%**. Ten new holdout cases (FE-31 to FE-40),
-labeled by hand and never shown to the AI before, will give a clean test of
-the changed prompt.
+headline stays at run 1's **80%**.
+
+To test change 1 cleanly, ten new cases (FE-31 to FE-40, split `holdout_2`)
+were written and labeled by hand after the change, committed before the AI
+saw them, and scored in run 3 with the prompt unchanged: **80% agreement
+(8/10)**. Both misses were false alarms. The AI held a round, above-usual
+amount from a frequent customer that the person judged normal (FE-34,
+FE-38). The prompt will not be changed because of holdout 2 results. Any
+future prompt change needs a fresh set of unseen cases to measure it.
 
 Full results: [`docs/evals/fraud-eval-results.md`](docs/evals/fraud-eval-results.md),
 also shown on the `/demo/bid-admin/eval` page. Limits: 30 cases is a small

@@ -4,22 +4,23 @@
 
 ## Latest run
 
-> **Note on this run:** Prompt change 1 (hold full-balance redemptions at a merchant not visited in 30 days) was based on dev case FE-18 only, but it was made after the first run's holdout results had been seen, so this run's holdout score is not fully independent.
+> **Note on this run:** First run including holdout_2 (FE-31 to FE-40): hand-labeled after prompt 8d5e1e70 was written and never seen while changing it. Same prompt as run 2. The holdout (FE-21 to FE-30 group) score is still not fully independent.
 
 | | |
 |---|---|
-| Run | October 11, 2026 9:49 PM GMT-0400 |
+| Run | October 11, 2026 9:59 PM GMT-0400 |
 | Model | `claude-opus-5-5` |
 | Prompt version | `8d5e1e70` (first 8 characters of the SHA-256 of [`redemption-fraud-detection.md`](../../resources/prompts/redemption-fraud-detection.md)) |
-| Cases | 30 hand-labeled synthetic redemptions ([`data/fraud_eval_cases.csv`](../../data/fraud_eval_cases.csv)) |
+| Cases | 40, version `3b40d7c8` hand-labeled synthetic redemptions ([`data/fraud_eval_cases.csv`](../../data/fraud_eval_cases.csv)) |
 
 ## Agreement with the human labels
 
 | Split | Agreement |
 |---|---|
 | Holdout (not used to change the prompt) | 90% (9/10) |
+| **Holdout 2** (labeled after the last prompt change, never seen while changing it) | **80% (8/10)** |
 | Dev (may be used to improve the prompt) | 90% (18/20) |
-| All cases | 90% (27/30) |
+| All cases | 87.5% (35/40) |
 
 The AI's `hold` counts as *suspicious* and `clear` as *normal*.
 
@@ -41,13 +42,22 @@ Rows are the human label, columns are the AI's call.
 | normal | 5 | 1 (false alarm) |
 | suspicious | 0 (missed) | 4 |
 
-## Disagreements (3)
+**Holdout 2**
+
+| Human ↓ / AI → | normal (clear) | suspicious (hold) |
+|---|---|---|
+| normal | 4 | 2 (false alarm) |
+| suspicious | 0 (missed) | 4 |
+
+## Disagreements (5)
 
 | Case | Split | Redemption | Human | Human notes | AI | AI explanation |
 |---|---|---|---|---|---|---|
 | FE-08 | dev | $40.00 at Farragut Grind, 13:00 | normal | regular customer | hold (85) | This is a round $40.00 charge at a cafe, more than six times this employee's usual $6.40 spend and well above the normal $3–$15 cafe ticket. The employee has also made 9 visits to this same cafe in the past 7 days (22 in 30 days). |
 | FE-15 | dev | $100.00 at Connecticut Noodle Bar, 14:00 | normal | treating oneself | hold (88) | This $100.00 redemption is a round amount, about 7 times the employee's usual $13.87 spend, and well above the typical $10–$45 restaurant ticket. It also follows 6 visits to the same merchant in the past 7 days (14 in 30 days). |
 | FE-21 | holdout | $60.00 at Press Room Deli, 12:30 | normal | previous customer making a bigger purchase | hold (82) | This $60.00 restaurant redemption is a round amount, about 4.3 times the employee's usual $13.87 spend, and above the normal $10–$45 restaurant ticket. The employee has also made 5 prior redemptions at this same merchant in the last 7 days (11 in 30 days), so several signals point the same way. |
+| FE-34 | holdout_2 | $50.00 at Press Room Deli, 12:10 | normal | large amount but has visited here previously and the account is not drained | hold (82) | This is a round $50.00 charge, about 4 times the employee's usual $12.00 spend and above the normal $10–$45 restaurant ticket. It also follows 7 prior visits to the same restaurant in the last 7 days (15 in 30 days), so several signals point to possible collusion. |
+| FE-38 | holdout_2 | $20.00 at Farragut Grind, 09:15 | normal | recurring customer at a reasonable time in the morning | hold (72) | Several signals point the same way: an exactly $20.00 charge at a cafe is above the normal $3–$15 ticket and about 3.5 times this employee's usual $5.80 spend, and this is their 4th visit to the same cafe in 7 days (10th in 30). On its own this would be a small amount, but the round, inflated figure combined with frequent repeat visits warrants a review. |
 
 ## Every case
 
@@ -83,14 +93,25 @@ Rows are the human label, columns are the AI's call.
 | FE-28 | dev | $40.00 at Lafayette Cycle Studio, 06:00 | normal | clear | 38 | yes |
 | FE-29 | dev | $6.25 at Farragut Grind, 08:35 | normal | clear | 4 | yes |
 | FE-30 | holdout | $48.60 at Seventeenth Street Kitchen, 20:15 | normal | clear | 45 | yes |
+| FE-31 | holdout_2 | $18.75 at Page & Quill Books, 12:20 | normal | clear | 10 | yes |
+| FE-32 | holdout_2 | $8.40 at Farragut Grind, 07:50 | normal | clear | 8 | yes |
+| FE-33 | holdout_2 | $140.00 at Connecticut Noodle Bar, 21:45 | suspicious | hold | 95 | yes |
+| FE-34 | holdout_2 | $50.00 at Press Room Deli, 12:10 | normal | hold | 82 | **no** |
+| FE-35 | holdout_2 | $200.00 at K Street Cuts, 01:30 | suspicious | hold | 92 | yes |
+| FE-36 | holdout_2 | $120.00 at Lafayette Cycle Studio, 12:00 | suspicious | hold | 78 | yes |
+| FE-37 | holdout_2 | $38.90 at Seventeenth Street Kitchen, 21:50 | normal | clear | 30 | yes |
+| FE-38 | holdout_2 | $20.00 at Farragut Grind, 09:15 | normal | hold | 72 | **no** |
+| FE-39 | holdout_2 | $32.00 at Lafayette Cycle Studio, 18:15 | normal | clear | 18 | yes |
+| FE-40 | holdout_2 | $72.50 at Triangle Stems, 17:40 | suspicious | hold | 75 | yes |
 
 ## Run history
 
 Every run is kept. A new prompt version means the prompt file changed between runs.
 
-| Run | Model | Prompt version | Dev | Holdout | All | Details | Note |
-|---|---|---|---|---|---|---|---|
-| 2026-10-11 21:44 | `claude-opus-5-5` | `e5bcf207` | 85% | 80% | 83.3% | [runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md](runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md) |  |
-| 2026-10-11 21:49 | `claude-opus-5-5` | `8d5e1e70` | 90% | 90% | 90% | [runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70.md](runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70.md) | Prompt change 1 (hold full-balance redemptions at a merchant not visited in 30 days) was based on dev case FE-18 only, but it was made after the first run's holdout results had been seen, so this run's holdout score is not fully independent. |
+| Run | Model | Prompt version | Dev | Holdout | Holdout 2 | All | Details | Note |
+|---|---|---|---|---|---|---|---|---|
+| 2026-10-11 21:44 | `claude-opus-5-5` | `e5bcf207` | 85% | 80% | n/a | 83.3% | [runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md](runs/2026-10-11-claude-opus-5-5-prompt-e5bcf207.md) |  |
+| 2026-10-11 21:49 | `claude-opus-5-5` | `8d5e1e70` | 90% | 90% | n/a | 90% | [runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70.md](runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70.md) | Prompt change 1 (hold full-balance redemptions at a merchant not visited in 30 days) was based on dev case FE-18 only, but it was made after the first run's holdout results had been seen, so this run's holdout score is not fully independent. |
+| 2026-10-11 21:59 | `claude-opus-5-5` | `8d5e1e70` | 90% | 90% | 80% | 87.5% | [runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70-cases-3b40d7c8.md](runs/2026-10-11-claude-opus-5-5-prompt-8d5e1e70-cases-3b40d7c8.md) | First run including holdout_2 (FE-31 to FE-40): hand-labeled after prompt 8d5e1e70 was written and never seen while changing it. Same prompt as run 2. The holdout (FE-21 to FE-30 group) score is still not fully independent. |
 
 Generated by `php artisan fraud:eval`. Method: see [TRANSPARENCY.md](../../TRANSPARENCY.md#how-we-measure-it).
