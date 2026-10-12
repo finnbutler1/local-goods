@@ -36,6 +36,8 @@ class DemoResetter
                 // Restart ids at 1 so the reset demo looks like a fresh deploy.
                 DB::table('sqlite_sequence')->whereIn('name', self::DEMO_TABLES)->delete();
             }
+            // On MySQL ids keep counting up after a reset. Resetting them needs
+            // ALTER TABLE, which silently commits this transaction midway.
 
             (new DatabaseSeeder)->run();
         });

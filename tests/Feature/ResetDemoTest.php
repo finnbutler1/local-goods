@@ -7,6 +7,7 @@ use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Services\Ai\ClaudeClient;
+use App\Services\DemoResetter;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -36,6 +37,7 @@ class ResetDemoTest extends TestCase
         // Non-demo data that must survive the reset.
         $user = User::factory()->create();
         DB::table('cache')->insert(['key' => 'keep-me', 'value' => 'x', 'expiration' => 0]);
+        DB::table('sessions')->insert(['id' => 'keep-me', 'payload' => 'x', 'last_activity' => 0]);
 
         // Make a held redemption during the "demo".
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(95, 'hold', 'Full balance.'));
@@ -60,6 +62,17 @@ class ResetDemoTest extends TestCase
         // Non-demo tables untouched.
         $this->assertTrue(User::whereKey($user->id)->exists());
         $this->assertTrue(DB::table('cache')->where('key', 'keep-me')->exists());
+        $this->assertTrue(DB::table('sessions')->where('id', 'keep-me')->exists());
+    }
+
+    public function test_reset_only_ever_clears_the_six_demo_tables(): void
+    {
+        // Adding a table here (users, sessions, feedback...) would let Reset
+        // demo delete real data. Change this list only on purpose.
+        $this->assertSame(
+            ['credit_ledger_entries', 'redemptions', 'merchants', 'employees', 'employers', 'bids'],
+            DemoResetter::DEMO_TABLES,
+        );
     }
 
     public function test_admin_view_has_the_reset_button(): void
