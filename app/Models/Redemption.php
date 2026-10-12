@@ -48,4 +48,29 @@ class Redemption extends Model
     {
         return $this->status === self::STATUS_REJECTED;
     }
+
+    /** What the AI decided, e.g. "hold (risk 82)". Kept apart from the person's call. */
+    public function aiDecisionLabel(): string
+    {
+        if ($this->scored_by === 'fallback') {
+            return 'automatic hold (the AI check did not complete)';
+        }
+
+        return $this->ai_decision.($this->risk_score !== null ? " (risk {$this->risk_score})" : '');
+    }
+
+    /** Who made the final call, e.g. "approved by Sam Taylor on Oct 12, 3:04 PM". */
+    public function finalDecisionLabel(): string
+    {
+        if ($this->isUnderReview()) {
+            return 'waiting for a BID admin';
+        }
+
+        if ($this->reviewed_by) {
+            return "{$this->status} by {$this->reviewed_by} on "
+                .$this->reviewed_at->setTimezone('America/New_York')->format('M j, g:i A');
+        }
+
+        return 'approved automatically: the AI cleared it';
+    }
 }

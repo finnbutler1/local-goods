@@ -183,9 +183,8 @@ class RedemptionReviewTest extends TestCase
         $this->assertSame($this->reviewer->id, $held->fresh()->reviewed_by_user_id);
 
         $this->get('/bid-admin')
-            ->assertSee('Approved by')
-            ->assertSee('<span class="font-semibold text-ink">Sam Taylor</span>', false)
-            ->assertSee('Oct 12, 3:04 PM')
+            ->assertSee('Final decision:')
+            ->assertSee('approved by Sam Taylor on Oct 12, 3:04 PM')
             ->assertDontSee('Waiting for your decision.');
     }
 
@@ -201,7 +200,7 @@ class RedemptionReviewTest extends TestCase
         $this->assertSame(Redemption::STATUS_REJECTED, $held->fresh()->status);
         $this->assertSame($before, $employee->balanceCents());
 
-        $this->get('/bid-admin')->assertSee('Rejected by')->assertSee('The credits went back to the employee.');
+        $this->get('/bid-admin')->assertSee('rejected by Sam Taylor on')->assertSee('The credits went back to the employee.');
         $this->signIn(Role::Employee);
         $this->get('/employee')->assertSee('Rejected');
     }

@@ -75,13 +75,10 @@
                             <div>
                                 <h3 class="font-sans text-xs font-semibold uppercase tracking-widest text-muted">AI explanation</h3>
                                 <p class="mt-1">{{ $redemption->ai_explanation }}</p>
-                                <p class="mt-2 text-sm text-muted">
-                                    @if ($redemption->scored_by === 'fallback')
-                                        Automatic hold: the AI check did not complete.
-                                    @else
-                                        Decision: {{ $redemption->ai_decision }} · scored by {{ $redemption->scored_by }}
-                                    @endif
-                                </p>
+                                <dl class="mt-2 space-y-0.5 text-sm">
+                                    <div><dt class="inline font-semibold">AI decision:</dt> <dd class="inline">{{ $redemption->aiDecisionLabel() }}</dd>@if ($redemption->scored_by !== 'fallback')<span class="text-muted"> · scored by {{ $redemption->scored_by }}</span>@endif</div>
+                                    <div><dt class="inline font-semibold">Final decision:</dt> <dd class="inline">{{ $redemption->finalDecisionLabel() }}</dd></div>
+                                </dl>
                             </div>
                             <div>
                                 <h3 class="font-sans text-xs font-semibold uppercase tracking-widest text-muted">Signals sent to the AI</h3>
@@ -120,9 +117,6 @@
                         </div>
                     @elseif ($redemption->reviewed_by)
                         <p class="mt-4 text-sm text-muted">
-                            {{ $redemption->isApproved() ? 'Approved' : 'Rejected' }} by
-                            <span class="font-semibold text-ink">{{ $redemption->reviewed_by }}</span>
-                            on {{ $redemption->reviewed_at->setTimezone('America/New_York')->format('M j, g:i A') }}.
                             {{ $redemption->isApproved() ? 'The reserved credits were spent.' : 'The credits went back to the employee.' }}
                         </p>
                     @endif

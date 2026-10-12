@@ -34,4 +34,27 @@ class BidAdminTest extends TestCase
             ->assertSee('Round number')
             ->assertSee('Historical demo data');
     }
+
+    public function test_cards_label_the_ai_call_and_the_final_call_separately(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
+        $this->signIn(Role::Employee);
+
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(12, 'clear'));
+        $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '4']);
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(82, 'hold', 'Odd.'));
+        $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '5']);
+        $this->app->instance(ClaudeClient::class, new FakeClaudeClient(new \RuntimeException('API down')));
+        $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '6']);
+
+        $this->signIn(Role::BidAdmin);
+        $this->get('/bid-admin')
+            ->assertSee('AI decision:')
+            ->assertSee('clear (risk 12)')
+            ->assertSee('hold (risk 82)')
+            ->assertSee('automatic hold (the AI check did not complete)')
+            ->assertSee('approved automatically: the AI cleared it')
+            ->assertSee('waiting for a BID admin');
+    }
 }
