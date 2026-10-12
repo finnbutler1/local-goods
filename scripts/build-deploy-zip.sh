@@ -30,6 +30,7 @@ zip -r -q deploy.zip . \
     -x "storage/framework/views/*.php" \
     -x "storage/framework/sessions/*" \
     -x "storage/framework/cache/data/*" \
+    -x "storage/app/fraud-eval-cache/*" \
     -x "bootstrap/cache/*.php"
 
 # Add back files that are safe and needed:
