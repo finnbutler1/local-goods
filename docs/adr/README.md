@@ -12,3 +12,4 @@ trade-off in under a minute.
 | [0004](0004-elastic-beanstalk-instead-of-amplify.md) | Elastic Beanstalk instead of Amplify | Accepted, implemented |
 | [0005](0005-sqlite-now-rds-for-production-next.md) | SQLite now, Amazon RDS for production next | Superseded by 0006 |
 | [0006](0006-amazon-rds-mysql-in-production.md) | Amazon RDS MySQL in production, SQLite for development and tests | Accepted, implemented |
+| [0007](0007-fortify-for-login-and-a-role-column.md) | Laravel Fortify for login, and one role column instead of a permissions package | Accepted, implemented |

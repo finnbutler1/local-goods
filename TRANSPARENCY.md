@@ -42,7 +42,7 @@ Claude replies in a fixed JSON format with three things:
 - a **plain-English explanation** that an HR manager can read
 
 The app saves all three, along with the signals and the model that scored it.
-The [BID admin view](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/bid-admin)
+The BID admin view (after [logging in](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/login))
 shows them for every redemption, so the AI's reasoning is never hidden.
 
 ### The score-70 override
@@ -144,7 +144,7 @@ pattern. So the 90% holdout score in runs 2 and 3 is not a fully independent
 test. That is why the 10 `holdout_2` cases were added.
 
 Full results: [`docs/evals/fraud-eval-results.md`](docs/evals/fraud-eval-results.md),
-also shown on the `/demo/bid-admin/eval` page. Limits: 30 cases is a small
+also shown on the public `/eval` page. Limits: 30 cases is a small
 sample, the cases are synthetic, and one person's labels are one opinion.
 Agreement shows how closely the AI matches that person, not whether either of
 them is right about real fraud.

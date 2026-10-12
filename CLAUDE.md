@@ -5,11 +5,20 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Week 2: logins and roles (Prompt 2), then judge access and feedback (Prompt 3).**
+**Week 2: judge access and feedback (Prompt 3).**
 
-Done: Prompts 0, S, R, DB, E and 1.
-- S (October working slice): employee wallet at `/demo/employee`, BID admin
-  view at `/demo/bid-admin`, Claude API fraud check that fails closed (any AI
+Done: Prompts 0, S, R, DB, E, 1 and 2.
+- 2 (logins and roles): Laravel Fortify login (no registration, 5 tries a
+  minute, "contact the admin" instead of reset emails while there is no mail
+  service). Six roles in `users.role` (`App\Enums\Role`), each with its own
+  dashboard and menu; `role:` middleware and `RedemptionPolicy` (only
+  bid_admin and platform_admin approve or reject). Wallet at `/employee`,
+  BID admin at `/bid-admin`, both behind login; `/eval` stays public; old
+  `/demo` URLs redirect to `/login`. Demo logins come from
+  `php artisan demo:seed-accounts` with `DEMO_PASSWORD_*` settings (local
+  `.env` and Beanstalk environment properties; never commit or print them).
+  The deploy hook runs it after migrating.
+- S (October working slice): employee wallet and BID admin view, Claude API fraud check that fails closed (any AI
   failure holds the redemption), append-only credit ledger, deployed to
   Elastic Beanstalk.
 - R (repo trophy case): README with live link, stack and rubric table, CI
@@ -18,7 +27,7 @@ Done: Prompts 0, S, R, DB, E and 1.
 - Redemption Fraud Detection eval: 80% agreement on the unseen `holdout_2`
   cases, 0 suspicious cases missed.
 - Brand redesign: theme tokens, self-hosted fonts, employer-first landing
-  page, app shell, `/dashboard` placeholder, local-only `/styleguide`.
+  page, app shell, local-only `/styleguide`.
 
 Update this section whenever the milestone changes.
 
@@ -94,8 +103,8 @@ Use these exact names in code, UI, and docs.
   `DB_USERNAME`, `DB_PASSWORD`). CI runs the tests on both SQLite and MySQL.
 - **Deploys never wipe data.** The predeploy hook
   (`.platform/hooks/predeploy/01_database.sh`, also run on config changes via
-  `.platform/confighooks/`) checks the DB_ settings, then runs `migrate --force`
-  and `demo:seed-if-empty`. It runs before PHP restarts, so a failure stops the
+  `.platform/confighooks/`) checks the DB_ settings, then runs `migrate --force`,
+  `demo:seed-accounts` and `demo:seed-if-empty`. It runs before PHP restarts, so a failure stops the
   deployment and the running site is unchanged. Never cache config in it.
   Never put `migrate:fresh`, `db:wipe` or `--seed` back in it
   (`tests/Unit/DeployHookTest.php` enforces this). Every migration must work on

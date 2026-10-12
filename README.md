@@ -35,10 +35,11 @@ employers want a perk their staff will actually use.
    Planned: Stripe Connect payouts that only go out for cleared redemptions.
    No money moves yet.*
 
-**Try it:** open the [employee wallet](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/employee),
-redeem a normal amount, then click **Try a suspicious redemption**. After that,
-open the [BID admin view](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/bid-admin)
-to see the AI's score, decision and explanation for each one.
+**Try it:** [log in](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/login) with a demo account (available on
+request; there is no public sign-up). As the employee, redeem a normal amount,
+then click **Try a suspicious redemption**. As the BID admin, see the AI's
+score, decision and explanation for each one, and approve or reject held
+redemptions. The [AI eval results](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/eval) are public.
 
 ## The two AI functions
 
@@ -74,11 +75,11 @@ Only what exists today is claimed. Everything else is marked **planned**.
 
 | Category | Points | Evidence |
 |---|---|---|
-| **Functionality** | 25 | **Live:** the [employee wallet](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/employee) shows a balance, a redeem form and recent redemptions; the [BID admin view](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/demo/bid-admin) shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode). |
+| **Functionality** | 25 | **Live:** after [logging in](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/login), the employee wallet shows a balance, a redeem form and recent redemptions; the BID admin view shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; logins with six roles, each with its own dashboard ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)); an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode). |
 | **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
 | **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Measured:** [80% agreement on 10 unseen cases with the current prompt, and 0 suspicious cases missed](docs/evals/fraud-eval-results.md). Every disagreement is a false alarm that goes to human review, never a wrong approval. Small sample: one case is 10 points. 40 synthetic cases in all, each labeled by a person before the AI saw it; every run is kept; method in [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it). **Planned:** Merchant Eligibility Matching. |
 | **Code quality / GitHub** | 15 | Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php), so they need no secrets. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
-| **UX** | 10 | A custom brand system (Fraunces + Public Sans, self-hosted; forest/cream/amber tokens with every text pair tested for WCAG AA in [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)), an employer-first landing page, a shared app shell (sidebar on desktop, bottom tabs on mobile), one-click demo flow, plain-English AI explanations, all businesses labeled fictional. A local-only `/styleguide` shows every token and component. **Planned:** the employer/HR dashboard (an empty shell is at `/dashboard`). |
+| **UX** | 10 | A custom brand system (Fraunces + Public Sans, self-hosted; forest/cream/amber tokens with every text pair tested for WCAG AA in [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)), an employer-first landing page, a shared app shell (sidebar on desktop, bottom tabs on mobile), one-click demo flow, plain-English AI explanations, all businesses labeled fictional. A local-only `/styleguide` shows every token and component. **Planned:** the employer/HR dashboard (an empty shell is at `/employer`). |
 | **Business impact** | 10 | Designed to keep perk spending with independent merchants. [Civic Economics](https://www.civiceconomics.com/) studies found that independent businesses recirculate roughly 48% of their revenue locally, versus under 14% for chains: roughly 3x more per dollar. BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, and **planned** Stripe payouts will only go out for cleared ones. Metrics like local spend captured are **planned**. |
 | **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, a person approves or rejects every hold (name and time recorded), synthetic data only. See [TRANSPARENCY.md](TRANSPARENCY.md). **Planned:** recording the reviewer's written reason. |
 
@@ -104,6 +105,8 @@ git clone https://github.com/finnbutler1/local-goods.git
 cd local-goods
 composer setup          # installs dependencies, creates .env, migrates, builds assets
 php artisan db:seed     # loads the synthetic demo data
+# set the DEMO_PASSWORD_* values in .env, then:
+php artisan demo:seed-accounts   # creates one demo login per role
 composer dev            # runs the app at http://localhost:8000
 ```
 

@@ -3,6 +3,22 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-12: Logins and roles
+
+- Log in with Laravel Fortify ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)).
+  There is no public sign-up: accounts are created by an admin. Logins are
+  limited to five tries a minute. Without a mail service, the login page says
+  to contact the admin to reset a password.
+- Six roles, each with its own dashboard and menu: platform admin, BID admin,
+  employer admin, employee, merchant and judge. The demo logins come from
+  `php artisan demo:seed-accounts`, with passwords from `DEMO_PASSWORD_*`
+  settings (never in the repo).
+- The employee wallet moved to `/employee` and the BID admin view to
+  `/bid-admin`, both behind login. Old `/demo` links go to Log in. The eval
+  results stay public at `/eval`.
+- Approve and Reject now record the signed-in BID admin, and only BID admins
+  and the platform admin can use them; judges and other roles get 403.
+
 ## 2026-10-12: BID review of held redemptions
 
 - Held redemptions on `/demo/bid-admin` now have **Approve** and **Reject**
