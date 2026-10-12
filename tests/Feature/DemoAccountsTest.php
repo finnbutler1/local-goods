@@ -80,13 +80,20 @@ class DemoAccountsTest extends TestCase
 
     public function test_role_middleware_lets_only_listed_roles_in(): void
     {
+        // Judges may look at (GET) a BID admin page, but never a platform-admin-only one.
         Route::middleware(['web', 'auth', 'role:bid_admin,platform_admin'])->get('/_role-check', fn () => 'ok');
+        Route::middleware(['web', 'auth', 'role:platform_admin'])->get('/_admin-check', fn () => 'ok');
 
         foreach (Role::cases() as $role) {
-            $response = $this->actingAs(User::factory()->role($role)->create())->get('/_role-check');
-            in_array($role, [Role::BidAdmin, Role::PlatformAdmin], true)
+            $this->actingAs(User::factory()->role($role)->create());
+
+            $response = $this->get('/_role-check');
+            in_array($role, [Role::BidAdmin, Role::PlatformAdmin, Role::Judge], true)
                 ? $response->assertOk()
                 : $response->assertForbidden();
+
+            $response = $this->get('/_admin-check');
+            $role === Role::PlatformAdmin ? $response->assertOk() : $response->assertForbidden();
         }
     }
 

@@ -17,15 +17,16 @@ class DashboardTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Every signed-in page, and the roles allowed on it. */
+    /** Every signed-in page, and the roles allowed on it. Judges may look at every page but the platform admin's. */
     private const PAGES = [
-        '/employee' => [Role::Employee],
-        '/bid-admin' => [Role::BidAdmin, Role::PlatformAdmin],
-        '/bid-admin/eval' => [Role::BidAdmin, Role::PlatformAdmin],
-        '/employer' => [Role::EmployerAdmin],
-        '/merchant' => [Role::Merchant],
+        '/employee' => [Role::Employee, Role::Judge],
+        '/bid-admin' => [Role::BidAdmin, Role::PlatformAdmin, Role::Judge],
+        '/bid-admin/eval' => [Role::BidAdmin, Role::PlatformAdmin, Role::Judge],
+        '/employer' => [Role::EmployerAdmin, Role::Judge],
+        '/merchant' => [Role::Merchant, Role::Judge],
         '/judge' => [Role::Judge],
         '/admin' => [Role::PlatformAdmin],
+        '/admin/reviewers' => [Role::PlatformAdmin],
     ];
 
     protected function setUp(): void
@@ -65,7 +66,7 @@ class DashboardTest extends TestCase
 
     public function test_guests_are_sent_to_log_in(): void
     {
-        foreach (['/dashboard', ...array_keys(self::PAGES)] as $url) {
+        foreach (['/dashboard', '/account', ...array_keys(self::PAGES)] as $url) {
             $this->get($url)->assertRedirect('/login');
         }
         $this->post('/employee/redeem')->assertRedirect('/login');

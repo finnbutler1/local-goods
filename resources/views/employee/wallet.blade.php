@@ -75,7 +75,12 @@
                 @error('amount') <p id="amount-error" class="mt-1.5 text-sm font-semibold text-hold">{{ $message }}</p> @enderror
             </div>
 
-            <x-button type="submit" variant="accent" size="lg" class="w-full">Confirm redemption</x-button>
+            @can('redeem')
+                <x-button type="submit" variant="accent" size="lg" class="w-full">Confirm redemption</x-button>
+            @else
+                <x-button type="submit" variant="accent" size="lg" class="w-full" disabled aria-describedby="read-only-note">Confirm redemption</x-button>
+                <p id="read-only-note" class="text-sm text-muted">Read-only: judges can't make redemptions.</p>
+            @endcan
         </form>
 
         <x-button variant="danger" size="sm" :href="route('employee.wallet', ['suspicious' => 1]).'#redeem'" class="mt-3 w-full">

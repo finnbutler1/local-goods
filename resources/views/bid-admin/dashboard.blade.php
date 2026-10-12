@@ -39,12 +39,14 @@
             </div>
         </dl>
 
-        <form method="POST" action="{{ route('bid-admin.reset') }}"
-              onsubmit="return confirm('Reset the demo? This removes every redemption made since the last deploy and restores the seeded data.');">
-            @csrf
-            <x-button type="submit" variant="secondary" aria-describedby="reset-help">Reset demo</x-button>
-            <p id="reset-help" class="mt-1.5 text-sm text-muted">Restores the seeded demo data only.</p>
-        </form>
+        @can('reset-demo')
+            <form method="POST" action="{{ route('bid-admin.reset') }}"
+                  onsubmit="return confirm('Reset the demo? This removes every redemption made since the last deploy and restores the seeded data.');">
+                @csrf
+                <x-button type="submit" variant="secondary" aria-describedby="reset-help">Reset demo</x-button>
+                <p id="reset-help" class="mt-1.5 text-sm text-muted">Restores the seeded demo data only.</p>
+            </form>
+        @endcan
     </div>
 
     <section aria-labelledby="recent-heading">
@@ -99,7 +101,7 @@
                     @if ($redemption->isUnderReview())
                         <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-hold-bg p-4">
                             <p class="text-sm text-hold">
-                                <span class="font-semibold">Waiting for your decision.</span>
+                                <span class="font-semibold">@can('review', $redemption) Waiting for your decision. @else Waiting for a BID admin's decision. @endcan</span>
                                 The {{ Money::format($redemption->amount_cents) }} is reserved from the employee's balance.
                             </p>
                             @can('review', $redemption)

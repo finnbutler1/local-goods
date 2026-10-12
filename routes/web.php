@@ -7,6 +7,7 @@ use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StyleguideController;
 use App\Models\User;
@@ -51,7 +52,11 @@ Route::middleware('auth')->group(function () {
 
     Route::view('/employer', 'dashboards.employer')->middleware('role:employer_admin')->name('employer.dashboard');
     Route::view('/merchant', 'dashboards.merchant')->middleware('role:merchant')->name('merchant.dashboard');
-    Route::view('/judge', 'dashboards.judge')->middleware('role:judge')->name('judge.dashboard');
+    Route::middleware('role:judge')->group(function () {
+        Route::view('/judge', 'dashboards.judge')->name('judge.dashboard');
+        // Read-only "view as" switcher. With no role, goes back to the judge's own view.
+        Route::get('/judge/view-as/{role?}', [JudgeController::class, 'viewAs'])->name('judge.view-as');
+    });
     Route::middleware('role:platform_admin')->group(function () {
         Route::get('/admin', fn () => view('dashboards.admin', ['users' => User::orderBy('id')->get()]))->name('admin.dashboard');
 

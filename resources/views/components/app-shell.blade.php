@@ -13,11 +13,16 @@
     $user = auth()->user();
     $userName = $user?->name ?? 'Design system';
     $role = $user?->role ?? $preview;
-    $nav = $role->navigation();
+    // A judge viewing as another role sees that role's menu, read-only.
+    $viewAs = \App\Support\ViewAs::current(request());
+    $nav = ($viewAs ?? $role)->navigation();
+    if ($role === \App\Enums\Role::Judge && $viewAs) {
+        $nav = ['judge-home' => ['label' => 'Judge home', 'short' => 'Judge', 'route' => 'judge.dashboard', 'icon' => 'M3.75 12 12 4.5l8.25 7.5M5.25 10.5v9h4.5v-5.25h4.5v5.25h4.5v-9']] + $nav;
+    }
     $initials = collect(explode(' ', $userName))
         ->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
     // Literal class names so Tailwind includes them in the build.
-    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4'][count($nav)];
+    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4', 5 => 'grid-cols-5'][count($nav)];
 @endphp
 
 <!DOCTYPE html>
@@ -78,8 +83,20 @@
                 <div class="flex min-w-0 items-center gap-3">
                     <div class="min-w-0 text-right">
                         <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>{{ $userName }}</p>
-                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}</x-badge>
+                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs) · viewing as {{ $viewAs->label() }}@endif</x-badge>
                     </div>
+                    @if ($role === \App\Enums\Role::Judge)
+                        <details class="relative">
+                            <summary class="cursor-pointer list-none rounded-full border-2 border-forest px-3 py-1.5 text-sm font-semibold text-forest hover:bg-forest hover:text-cream">View as<span aria-hidden="true"> ▾</span></summary>
+                            <ul class="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-line bg-paper p-2 shadow-lg">
+                                @foreach (\App\Support\ViewAs::ROLES as $option)
+                                    <li><a href="{{ route('judge.view-as', $option->value) }}" @if ($viewAs === $option) aria-current="true" @endif
+                                           class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream aria-[current=true]:bg-cream-deep">{{ $option->label() }}</a></li>
+                                @endforeach
+                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream">Back to judge home</a></li>
+                            </ul>
+                        </details>
+                    @endif
                     <span class="grid size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink" aria-hidden="true">{{ $initials }}</span>
                     <a href="{{ route('account') }}" class="text-sm font-semibold text-forest underline-offset-4 hover:underline lg:hidden">Account</a>
                     <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
@@ -91,6 +108,12 @@
         </header>
 
         <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-28 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
+            @if ($viewAs)
+                <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-amber bg-amber/20 px-4 py-3">
+                    <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
+                    <a href="{{ route('judge.view-as') }}" class="text-sm font-semibold text-forest underline underline-offset-4 hover:no-underline">Back to judge home</a>
+                </div>
+            @endif
             {{ $slot }}
         </main>
 
