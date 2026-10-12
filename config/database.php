@@ -38,7 +38,8 @@ return [
             'database' => env('DB_DATABASE', storage_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            // Concurrency settings for the demo's single SQLite file:
+            // SQLite-only concurrency settings (local development and tests;
+            // production uses the mysql connection below, which ignores them):
             // WAL lets readers keep reading while one request writes; the busy
             // timeout makes a second writer wait (ms) instead of failing with
             // "database is locked"; IMMEDIATE takes the write lock at BEGIN so a
@@ -65,6 +66,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Store and read timestamps in UTC, matching the app and SQLite.
+            'timezone' => env('DB_TIMEZONE', '+00:00'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
