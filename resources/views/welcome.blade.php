@@ -4,7 +4,7 @@
 
 @section('content')
     {{-- Hero --}}
-    <section aria-labelledby="hero-heading" class="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
+    <section aria-labelledby="hero-heading" class="mx-auto grid overflow-x-clip max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
         <div>
             <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">An employee perk for the Golden Triangle · Washington, DC</p>
             <h1 id="hero-heading" class="mt-4 text-6xl leading-[0.95] font-semibold text-forest sm:text-7xl lg:text-8xl">
@@ -54,7 +54,7 @@
                     @endforeach
                 </ul>
             </div>
-            <div aria-hidden="true" class="absolute -bottom-5 -left-4 flex items-center gap-2 rounded-full bg-forest py-2 pr-4 pl-2 text-sm font-semibold text-cream shadow-lg sm:-left-10">
+            <div aria-hidden="true" class="absolute -bottom-5 -left-1 flex items-center gap-2 rounded-full bg-forest py-2 pr-4 pl-2 text-sm font-semibold text-cream shadow-lg sm:-left-10">
                 <span class="grid size-7 place-items-center rounded-full bg-amber text-ink">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
                 </span>

@@ -3,6 +3,19 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-12: Brand system, landing page and app shell
+
+- New visual identity: Fraunces headings and Public Sans body text, both
+  self-hosted from npm (no font CDN), and forest/cream/amber theme tokens in
+  `resources/css/app.css`. `ColorContrastTest` checks every approved
+  text/background pair passes WCAG AA.
+- Landing page rebuilt for employers: hero with Request a demo and Log in,
+  how it works, audience cards (employers first), a Trust and AI section that
+  quotes the saved eval headline, and impact figures clearly labeled as samples.
+- Shared app shell (sidebar on desktop, bottom tab bar on mobile, signed-in
+  name and role). The demo pages now use it; their behavior is unchanged.
+- Empty employer `/dashboard` and a local-only `/styleguide`.
+
 ## 2026-10-11: Redemption Fraud Detection eval
 
 - 30 synthetic redemptions, each labeled *normal* or *suspicious* by a person
