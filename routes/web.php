@@ -33,6 +33,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', fn (Request $request) => redirect()->route($request->user()->role->dashboardRoute()))
         ->name('dashboard');
 
+    // Every role: change your own password (the form posts to Fortify's user-password.update).
+    Route::view('/account', 'account.show')->name('account');
+
     Route::middleware('role:employee')->group(function () {
         Route::get('/employee', [EmployeeWalletController::class, 'show'])->name('employee.wallet');
         Route::post('/employee/redeem', [EmployeeWalletController::class, 'redeem'])->name('employee.redeem');

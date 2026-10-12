@@ -59,6 +59,8 @@
             <p class="mt-1">All people and transactions are fictional.</p>
             <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-cream underline underline-offset-4 hover:no-underline">Back to the public site</a>
         </div>
+        <a href="{{ route('account') }}" @if ($active === 'account') aria-current="page" @endif
+           class="mx-3 mb-2 rounded-xl px-3 py-2 text-sm font-semibold text-sage hover:bg-forest-soft hover:text-cream aria-[current=page]:bg-cream aria-[current=page]:text-forest">Your account</a>
         <form method="POST" action="{{ route('logout') }}" class="mx-3 mb-4">
             @csrf
             <x-button type="submit" variant="inverse-outline" class="w-full">Log out</x-button>
@@ -79,6 +81,7 @@
                         <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}</x-badge>
                     </div>
                     <span class="grid size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink" aria-hidden="true">{{ $initials }}</span>
+                    <a href="{{ route('account') }}" class="text-sm font-semibold text-forest underline-offset-4 hover:underline lg:hidden">Account</a>
                     <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
                         @csrf
                         <x-button type="submit" variant="ghost" size="sm">Log out</x-button>

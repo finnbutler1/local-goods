@@ -146,6 +146,8 @@ return [
         // Accounts are created by an admin only: no self-registration.
         // No email verification, profile editing, two-factor or passkeys yet.
         Features::resetPasswords(),
+        // Everyone, judges included, can change their own password at /account.
+        Features::updatePasswords(),
     ],
 
 ];
