@@ -8,6 +8,12 @@ building, for whom, and the rules for working in this repo.
 **Week 2: logins and roles (Prompt 2), then judge access and feedback (Prompt 3).**
 
 Done: Prompts 0, S, R, DB, E and 1.
+- S (October working slice): employee wallet at `/demo/employee`, BID admin
+  view at `/demo/bid-admin`, Claude API fraud check that fails closed (any AI
+  failure holds the redemption), append-only credit ledger, deployed to
+  Elastic Beanstalk.
+- R (repo trophy case): README with live link, stack and rubric table, CI
+  badge, `TRANSPARENCY.md`, `CHANGELOG.md`, decision records in `docs/adr/`.
 - Production runs on Amazon RDS MySQL.
 - Redemption Fraud Detection eval: 80% agreement on the unseen `holdout_2`
   cases, 0 suspicious cases missed.
