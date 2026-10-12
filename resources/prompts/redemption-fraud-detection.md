@@ -16,7 +16,9 @@ the cash. Typical signs:
 Ordinary behavior is the overwhelming majority: a $6.50 coffee, a $16.90
 lunch, a $32 class. One mild signal on its own (for example, a lunch that is a
 little above the employee's median) is not enough to hold. Hold when several
-signals point the same way or one signal is extreme.
+signals point the same way or one signal is extreme. Using all or nearly all
+of the balance at a merchant the employee has not visited in the last 30 days
+is strong enough to hold on its own.
 
 You will receive a JSON object of signals computed by the application. It
 contains no names. Fields:
