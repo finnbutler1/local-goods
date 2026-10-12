@@ -19,6 +19,9 @@
     if ($role === \App\Enums\Role::Judge && $viewAs) {
         $nav = ['judge-home' => ['label' => 'Judge home', 'short' => 'Judge', 'route' => 'judge.dashboard', 'icon' => 'M3.75 12 12 4.5l8.25 7.5M5.25 10.5v9h4.5v-5.25h4.5v5.25h4.5v-9']] + $nav;
     }
+    // Unread (status New) feedback, shown on the platform admin's Feedback item.
+    $unreadFeedback = $role === \App\Enums\Role::PlatformAdmin && ! $viewAs
+        ? \App\Models\Feedback::where('status', \App\Enums\FeedbackStatus::New)->count() : 0;
     $initials = collect(explode(' ', $userName))
         ->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
     // Literal class names so Tailwind includes them in the build.
@@ -54,6 +57,9 @@
                            class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-sage hover:bg-forest-soft hover:text-cream aria-[current=page]:bg-cream aria-[current=page]:text-forest">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
                             {{ $item['label'] }}
+                            @if ($key === 'feedback' && $unreadFeedback > 0)
+                                <span class="tabular ml-auto rounded-full bg-amber px-2 py-0.5 text-xs font-semibold text-ink">{{ $unreadFeedback }}<span class="sr-only"> unread</span></span>
+                            @endif
                         </a>
                     </li>
                 @endforeach
@@ -133,7 +139,12 @@
                 <li>
                     <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
                        class="flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-sage hover:text-cream aria-[current=page]:text-amber">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-6" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
+                        <span class="relative">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-6" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
+                            @if ($key === 'feedback' && $unreadFeedback > 0)
+                                <span class="tabular absolute -top-1.5 -right-2.5 rounded-full bg-amber px-1.5 text-[0.65rem] font-semibold text-ink">{{ $unreadFeedback }}<span class="sr-only"> unread</span></span>
+                            @endif
+                        </span>
                         {{ $item['short'] }}
                     </a>
                 </li>

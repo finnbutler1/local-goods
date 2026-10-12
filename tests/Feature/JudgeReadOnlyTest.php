@@ -45,7 +45,13 @@ class JudgeReadOnlyTest extends TestCase
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(90, 'hold'));
         $this->signIn(Role::Employee);
         $this->post('/employee/redeem', ['merchant_id' => Merchant::firstOrFail()->id, 'amount' => '5']);
-        $this->signIn(Role::PlatformAdmin);
+        $admin = $this->signIn(Role::PlatformAdmin);
+
+        // A feedback item from someone else, for the inbox's update route.
+        $admin->feedback()->create([
+            'page_url' => url('/admin'), 'category' => 'functionality', 'rating' => 3,
+            'severity' => 'should_fix', 'comment' => 'Synthetic.',
+        ]);
 
         $this->judge = $this->signIn(Role::Judge);
     }

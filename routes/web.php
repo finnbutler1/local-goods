@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
@@ -73,6 +74,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/{user}/link', [ReviewerController::class, 'link'])->name('link');
             Route::post('/{user}/revoke', [ReviewerController::class, 'revoke'])->name('revoke');
         });
+
+        Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
+        Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');
     });
 });
 
