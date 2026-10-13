@@ -48,10 +48,13 @@ class ReviewerInvites
             'invited_at' => $user->invited_at ?? now(),
         ])->save();
 
-        return URL::temporarySignedRoute('invite.show', now()->addDays(self::LINK_DAYS), [
+        // Only the path is signed, not the host: behind CloudFront the app sees
+        // the Beanstalk host over http, not the https address in the link.
+        // The signature still covers the reviewer, the token and the expiry.
+        return URL::to(URL::temporarySignedRoute('invite.show', now()->addDays(self::LINK_DAYS), [
             'user' => $user->id,
             'token' => $token,
-        ]);
+        ], absolute: false));
     }
 
     /** Whether $token is this reviewer's current, unused invite token. */

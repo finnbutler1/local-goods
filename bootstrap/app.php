@@ -4,9 +4,12 @@ use App\Http\Middleware\BlockJudgeWrites;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\LogOutRevokedUsers;
 use App\Http\Middleware\TrackLastSeen;
+use App\Http\Middleware\TrustCloudFront;
+use App\Http\Middleware\UseAppUrl;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -16,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind CloudFront: production URLs use APP_URL, and the visitor's
+        // real IP is believed only from CloudFront itself (ADR 0009).
+        $middleware->prepend(UseAppUrl::class);
+        $middleware->replace(TrustProxies::class, TrustCloudFront::class);
         $middleware->alias(['role' => EnsureUserHasRole::class]);
         $middleware->appendToGroup('web', [LogOutRevokedUsers::class, BlockJudgeWrites::class, TrackLastSeen::class]);
     })

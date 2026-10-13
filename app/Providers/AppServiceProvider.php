@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Support\AppUrl;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -24,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Production is reached through CloudFront over HTTPS: links built
+        // anywhere, artisan commands included, use APP_URL (see UseAppUrl).
+        if ($this->app->isProduction()) {
+            AppUrl::force();
+        }
+
         // Who may change what. Judges pass none of these; BlockJudgeWrites
         // also stops them at the door, so both layers must agree.
         Gate::define('reset-demo', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));

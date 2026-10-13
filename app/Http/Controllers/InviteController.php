@@ -27,7 +27,8 @@ class InviteController extends Controller
             return $this->invalid();
         }
 
-        return view('invite.accept', ['user' => $user, 'action' => $request->fullUrl()]);
+        // A relative address, so the form posts back to whichever host the page came from.
+        return view('invite.accept', ['user' => $user, 'action' => $request->getRequestUri()]);
     }
 
     public function store(Request $request, User $user, string $token): RedirectResponse|Response
@@ -47,7 +48,7 @@ class InviteController extends Controller
 
     private function valid(Request $request, User $user, string $token): bool
     {
-        return $request->hasValidSignature() && $this->invites->tokenMatches($user, $token);
+        return $request->hasValidRelativeSignature() && $this->invites->tokenMatches($user, $token);
     }
 
     private function invalid(): Response

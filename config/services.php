@@ -42,4 +42,11 @@ return [
         ],
     ],
 
+    // CloudFront adds this secret as the X-Origin-Verify header on every
+    // request it sends to Beanstalk. Only then is its X-Forwarded-For (the
+    // visitor's real IP) believed. See App\Http\Middleware\TrustCloudFront.
+    'cloudfront' => [
+        'origin_secret' => env('CLOUDFRONT_ORIGIN_SECRET'),
+    ],
+
 ];
