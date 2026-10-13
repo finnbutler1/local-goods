@@ -18,8 +18,12 @@ Done: Prompts 0, S, R, DB, E, 1, 2 and 3.
   which holds real reviewers' names and emails. Feedback button on every
   signed-in page (`feedback` table), inbox at `/admin/feedback`, changelog for
   reviewers at `/admin/changelog`, "What's new" on `/judge`. ADR 0008.
-  Production is still plain HTTP: turn on HTTPS before sending invite links
-  outside the team.
+- HTTPS (ADR 0009): CloudFront (`cloudfront.net` address) in front of
+  Beanstalk, talking to it over http without the Host header. In production
+  `UseAppUrl` pins URLs and the request itself to APP_URL; invite links are
+  signed by path; `TrustCloudFront` believes X-Forwarded-For only with the
+  `X-Origin-Verify` secret (`CLOUDFRONT_ORIGIN_SECRET`); session cookie is
+  Secure. `BehindCloudFrontTest` covers it. Never trust proxies with `*`.
 - 2 (logins and roles): Laravel Fortify login (no registration, 5 tries a
   minute, "contact the admin" instead of reset emails while there is no mail
   service). Six roles in `users.role` (`App\Enums\Role`), each with its own

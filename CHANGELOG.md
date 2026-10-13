@@ -3,6 +3,17 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-13: HTTPS through CloudFront
+
+- The live site is served over HTTPS by CloudFront
+  ([ADR 0009](docs/adr/0009-https-through-cloudfront.md)). Every link,
+  redirect and invite link uses the CloudFront address; the login cookie is
+  only sent over HTTPS.
+- Invite links are signed by path, so they still validate behind CloudFront.
+  Links issued before this change need a "New link".
+- Login rate limits count each real visitor, using the IP CloudFront reports,
+  and only believe it from requests carrying CloudFront's secret header.
+
 ## 2026-10-12: Reviewer logins and in-app feedback
 
 - **Invite reviewers** (platform admin, `/admin/reviewers`): enter a name,

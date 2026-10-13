@@ -14,3 +14,4 @@ trade-off in under a minute.
 | [0006](0006-amazon-rds-mysql-in-production.md) | Amazon RDS MySQL in production, SQLite for development and tests | Accepted, implemented |
 | [0007](0007-fortify-for-login-and-a-role-column.md) | Laravel Fortify for login, and one role column instead of a permissions package | Accepted, implemented |
 | [0008](0008-read-only-reviewers-with-single-use-invite-links.md) | Read-only reviewers with single-use invite links | Accepted, implemented |
+| [0009](0009-https-through-cloudfront.md) | HTTPS through CloudFront in front of Beanstalk | Accepted, implemented |
