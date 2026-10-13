@@ -42,7 +42,7 @@ Claude replies in a fixed JSON format with three things:
 - a **plain-English explanation** that an HR manager can read
 
 The app saves all three, along with the signals and the model that scored it.
-The BID admin view (after [logging in](http://LocalGoods-env.eba-fih22s6v.us-east-1.elasticbeanstalk.com/login))
+The BID admin view (after [logging in](https://d4ghrpm72uczx.cloudfront.net/login))
 shows them for every redemption, so the AI's reasoning is never hidden.
 
 ### The score-70 override
