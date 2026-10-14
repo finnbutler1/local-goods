@@ -1,5 +1,6 @@
 {{-- The Redemption Fraud Detection eval results. Shown publicly at /eval and
-     inside the app shell at /bid-admin/eval. Needs $run and $lock. --}}
+     inside the app shell at /bid-admin/eval. Needs $run, $lock, $hideCaseDetails
+     and the blind adjudication data (FraudEvalController::data). --}}
 @php
     use App\Services\Fraud\FraudEvalPatterns;
     use App\Services\Fraud\FraudEvalReport;
@@ -87,7 +88,8 @@
                                         <td class="px-4 py-2">{{ $r['suspicious'] }}</td>
                                         <td class="px-4 py-2">{{ $r['missed'] }}</td>
                                         <td class="px-4 py-2">{{ $r['false_alarms'] }}</td>
-                                        <td class="px-4 py-2 text-sm">{{ $headline['pattern_notes'][$name] ?? '' }}</td>
+                                        {{-- The notes name cases and the AI's calls, so they wait until a blind adjudicator has voted. --}}
+                                        <td class="px-4 py-2 text-sm">{{ $hideCaseDetails ? 'Shown after you submit your votes.' : ($headline['pattern_notes'][$name] ?? '') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -152,9 +154,19 @@
             </div>
         </section>
 
+        @if ($adjudication)
+            @include('partials.adjudication-results')
+        @endif
+
         <section aria-labelledby="disagree-heading">
             <h2 id="disagree-heading" class="text-2xl font-semibold text-forest">Every disagreement ({{ count($disagreements) }})</h2>
-            @if ($disagreements === [])
+            @if ($hideCaseDetails)
+                <p class="mt-3 rounded-2xl border-2 border-line bg-cream-deep p-4">
+                    Hidden for now: you're invited to
+                    <a href="{{ route('adjudication.show') }}" class="font-semibold text-forest underline underline-offset-4">help check the AI</a>,
+                    and this list would show you the answers. It appears here once you press Submit all.
+                </p>
+            @elseif ($disagreements === [])
                 <p class="mt-3">The AI agreed with the person on every case.</p>
             @else
                 <ul class="mt-3 space-y-3">

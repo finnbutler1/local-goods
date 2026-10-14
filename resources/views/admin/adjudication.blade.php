@@ -149,6 +149,12 @@
 
             @include('admin.partials.adjudication-participants')
         </section>
+
+        @if ($adjudication)
+            @include('partials.adjudication-results', ['adjudicationSet' => $current, 'showNames' => true, 'showCases' => true])
+        @else
+            <p class="text-muted">Results appear here once a reviewer presses Submit all.</p>
+        @endif
     @endif
 </div>
 </x-app-shell>

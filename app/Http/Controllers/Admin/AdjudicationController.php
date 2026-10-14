@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdjudicationCase;
 use App\Models\AdjudicationSet;
+use App\Services\Adjudication\AdjudicationResults;
 use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Fraud\FraudEvalRunner;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +22,7 @@ class AdjudicationController extends Controller
 {
     public function __construct(private AdjudicationSetBuilder $builder) {}
 
-    public function index(): View
+    public function index(AdjudicationResults $results): View
     {
         Gate::authorize('manage-adjudication');
 
@@ -35,6 +36,8 @@ class AdjudicationController extends Controller
             'current' => $current,
             'addable' => $draft ? array_diff_key($this->builder->candidates(), array_flip($inDraft)) : [],
             'splits' => FraudEvalRunner::SPLITS,
+            // Admin sees names and every case's votes, even while voting is open.
+            'adjudication' => $current ? $results->for($current) : null,
         ]);
     }
 
