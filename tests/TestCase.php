@@ -5,6 +5,8 @@ namespace Tests;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\User;
+use App\Services\ReviewerLinks;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -29,5 +31,26 @@ abstract class TestCase extends BaseTestCase
         $this->actingAs($user);
 
         return $user;
+    }
+
+    /**
+     * Reviewers (judges) only ever sign in with their magic link, and their
+     * session is ended unless it carries that link's fingerprint. Acting as a
+     * judge in a test gives them a link and that fingerprint, like a real
+     * sign-in. Use be() for a judge session without one.
+     */
+    public function actingAs(Authenticatable $user, $guard = null)
+    {
+        if ($user instanceof User && $user->isReadOnly()) {
+            $links = app(ReviewerLinks::class);
+
+            if ($user->invite_token_hash === null && ! $user->isRevoked()) {
+                $links->newLink($user);
+            }
+
+            $this->withSession([ReviewerLinks::SESSION_KEY => $links->sessionFingerprint($user)]);
+        }
+
+        return parent::actingAs($user, $guard);
     }
 }

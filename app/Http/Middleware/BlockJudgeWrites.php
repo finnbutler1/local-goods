@@ -15,12 +15,12 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class BlockJudgeWrites
 {
-    /** The only routes a judge may send changes to: their own session, feedback and password. */
+    /** The only routes a judge may send changes to: their own session (magic link, log out) and feedback. */
     public const ALLOWED_ROUTES = [
+        'judge-access.store',
         'logout',
         'feedback.store',
         'feedback.update',
-        'user-password.update',
     ];
 
     public function handle(Request $request, Closure $next): Response

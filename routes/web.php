@@ -9,8 +9,8 @@ use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
-use App\Http\Controllers\InviteController;
 use App\Http\Controllers\JudgeController;
+use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StyleguideController;
 use App\Models\User;
@@ -28,9 +28,12 @@ Route::redirect('/demo/{any?}', '/login')->where('any', '.*');
 // Login, logout and password reset routes come from Laravel Fortify
 // (see App\Providers\FortifyServiceProvider). There is no registration.
 
-// Invite links for reviewers: signed, 7 days, single use (checked in the controller).
-Route::get('/invite/{user}/{token}', [InviteController::class, 'show'])->name('invite.show');
-Route::post('/invite/{user}/{token}', [InviteController::class, 'store'])->middleware('throttle:10,1')->name('invite.store');
+// Reviewers' magic links: /judge-access#<id>.<token> signs them straight in,
+// read-only, until judging ends. Rate-limited per visitor IP.
+Route::get('/judge-access', [JudgeLinkController::class, 'show'])->middleware('throttle:20,1')->name('judge-access.show');
+Route::post('/judge-access', [JudgeLinkController::class, 'store'])->middleware('throttle:10,1')->name('judge-access.store');
+// The old single-use password invite links no longer work.
+Route::get('/invite/{any}', [JudgeLinkController::class, 'ended'])->where('any', '.*');
 
 Route::middleware('auth')->group(function () {
     // Where Fortify sends people after logging in: each role's own dashboard.

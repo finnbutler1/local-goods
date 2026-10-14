@@ -8,6 +8,8 @@
         <p class="mt-3 text-lg text-muted break-all">{{ auth()->user()->email }}</p>
     </header>
 
+    {{-- Reviewers have no password: they sign in with their magic link. --}}
+    @unless (auth()->user()->isReadOnly())
     <x-card as="section" aria-labelledby="password-heading" class="max-w-xl">
         <h2 id="password-heading" class="text-2xl font-semibold text-forest">Change your password</h2>
         <div aria-live="polite">
@@ -35,6 +37,7 @@
             <x-button type="submit">Change password</x-button>
         </form>
     </x-card>
+    @endunless
 
     <section aria-labelledby="my-feedback-heading">
         <h2 id="my-feedback-heading" class="text-2xl font-semibold text-forest">Your feedback</h2>

@@ -28,11 +28,12 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
 
-        // Normal email + password check, except a revoked reviewer can't log in.
+        // Normal email + password check. Reviewers (judges) never use a
+        // password: they sign in only with their magic link (ReviewerLinks).
         Fortify::authenticateUsing(function (Request $request) {
             $user = User::where('email', Str::lower($request->input(Fortify::username())))->first();
 
-            return $user && ! $user->isRevoked() && Hash::check($request->input('password'), $user->password) ? $user : null;
+            return $user && ! $user->isReadOnly() && ! $user->isRevoked() && Hash::check($request->input('password'), $user->password) ? $user : null;
         });
 
         // Five tries a minute for each email + IP address pair.

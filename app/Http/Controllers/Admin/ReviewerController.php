@@ -6,7 +6,7 @@ use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\ReviewerInvites;
+use App\Services\ReviewerLinks;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -14,12 +14,12 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Platform admin only: invite reviewers, make a new link, revoke access.
- * The invite link is shown once, right after it is made.
+ * Platform admin only: invite reviewers, make a new magic link, revoke access.
+ * A link is shown once, right after it is made: only its hash is kept.
  */
 class ReviewerController extends Controller
 {
-    public function __construct(private ReviewerInvites $invites) {}
+    public function __construct(private ReviewerLinks $links) {}
 
     public function index(): View
     {
@@ -28,6 +28,7 @@ class ReviewerController extends Controller
         return view('admin.reviewers', [
             'reviewers' => User::where('role', Role::Judge)->latest('invited_at')->latest('id')->get(),
             'types' => ReviewerType::cases(),
+            'endsAt' => $this->links->endsAt(),
         ]);
     }
 
@@ -41,10 +42,10 @@ class ReviewerController extends Controller
             'reviewer_type' => ['required', Rule::enum(ReviewerType::class)],
         ]);
 
-        [$user, $link] = $this->invites->invite($data['name'], $data['email'], ReviewerType::from($data['reviewer_type']));
+        [$user, $link] = $this->links->invite($data['name'], $data['email'], ReviewerType::from($data['reviewer_type']));
 
         return redirect()->route('admin.reviewers.index')
-            ->with('invite_link', ['name' => $user->name, 'url' => $link]);
+            ->with('reviewer_link', ['name' => $user->name, 'url' => $link]);
     }
 
     public function link(User $user): RedirectResponse
@@ -53,7 +54,7 @@ class ReviewerController extends Controller
         abort_unless($user->role === Role::Judge, 404);
 
         return redirect()->route('admin.reviewers.index')
-            ->with('invite_link', ['name' => $user->name, 'url' => $this->invites->newLink($user)]);
+            ->with('reviewer_link', ['name' => $user->name, 'url' => $this->links->newLink($user)]);
     }
 
     public function revoke(User $user): RedirectResponse
@@ -61,9 +62,9 @@ class ReviewerController extends Controller
         Gate::authorize('manage-reviewers');
         abort_unless($user->role === Role::Judge, 404);
 
-        $this->invites->revoke($user);
+        $this->links->revoke($user);
 
         return redirect()->route('admin.reviewers.index')
-            ->with('status', "{$user->name} can no longer log in. Any open session was closed.");
+            ->with('status', "{$user->name}'s link no longer works, and any open session ends on its next click.");
     }
 }

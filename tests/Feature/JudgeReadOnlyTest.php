@@ -20,8 +20,8 @@ use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
 
 /**
- * Judges can look at everything but change nothing except their own feedback
- * and password. This walks the whole route list, so a write route added later
+ * Judges can look at everything but change nothing except their own
+ * feedback. This walks the whole route list, so a write route added later
  * is covered without touching this file.
  */
 class JudgeReadOnlyTest extends TestCase
@@ -90,7 +90,7 @@ class JudgeReadOnlyTest extends TestCase
     public function test_the_allowlist_is_short_and_known(): void
     {
         $this->assertSame(
-            ['logout', 'feedback.store', 'feedback.update', 'user-password.update'],
+            ['judge-access.store', 'logout', 'feedback.store', 'feedback.update'],
             BlockJudgeWrites::ALLOWED_ROUTES,
         );
     }

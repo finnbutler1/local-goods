@@ -7,8 +7,10 @@ use App\Enums\Role;
 use App\Models\ChangelogEntry;
 use App\Models\Feedback;
 use App\Models\User;
+use App\Services\ReviewerLinks;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class WhatsNewTest extends TestCase
@@ -45,7 +47,8 @@ class WhatsNewTest extends TestCase
 
     public function test_only_entries_and_fixes_since_the_last_visit_show(): void
     {
-        $judge = User::factory()->role(Role::Judge)->create(['password' => 'test-only-password']);
+        $judge = User::factory()->role(Role::Judge)->create();
+        $link = Str::after(app(ReviewerLinks::class)->newLink($judge), '#');
         $other = User::factory()->role(Role::Judge)->create();
 
         Carbon::setTestNow('2026-10-01 12:00');
@@ -55,7 +58,7 @@ class WhatsNewTest extends TestCase
 
         // First visit on Oct 2.
         Carbon::setTestNow('2026-10-02 12:00');
-        $this->post('/login', ['email' => $judge->email, 'password' => 'test-only-password']);
+        $this->post('/judge-access', ['link' => $link]);
         $this->post('/logout');
 
         Carbon::setTestNow('2026-10-05 12:00');
@@ -65,7 +68,7 @@ class WhatsNewTest extends TestCase
         $this->feedbackFrom($judge, 'Still open.');
 
         Carbon::setTestNow('2026-10-06 12:00');
-        $this->post('/login', ['email' => $judge->email, 'password' => 'test-only-password']);
+        $this->post('/judge-access', ['link' => $link]);
 
         $this->get('/judge')->assertOk()
             ->assertSee("What's new since your last visit", false)

@@ -26,3 +26,20 @@ document.addEventListener('click', (event) => {
 
 // Reopen a dialog whose form came back with errors.
 document.querySelectorAll('dialog[data-open-on-load]').forEach((dialog) => dialog.showModal());
+
+// Reviewer magic links: /judge-access#<id>.<token>. The part after # never
+// reaches the server's logs. Move it into the form body, clear it from the
+// address bar (and history), then sign in.
+const magicLinkForm = document.querySelector('form[data-magic-link]');
+if (magicLinkForm) {
+    const link = window.location.hash.slice(1);
+    history.replaceState(null, '', window.location.pathname);
+
+    if (link) {
+        magicLinkForm.elements.link.value = link;
+        magicLinkForm.submit();
+    } else {
+        document.getElementById('magic-link-missing').hidden = false;
+        magicLinkForm.hidden = true;
+    }
+}

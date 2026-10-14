@@ -40,7 +40,13 @@ class DashboardTest extends TestCase
         return collect(Role::cases())->mapWithKeys(fn (Role $role) => [$role->value => [$role]])->all();
     }
 
-    #[DataProvider('roles')]
+    /** Every role but judges, who sign in only with their magic link (ReviewerMagicLinkTest). */
+    public static function passwordRoles(): array
+    {
+        return collect(self::roles())->reject(fn ($args) => $args[0] === Role::Judge)->all();
+    }
+
+    #[DataProvider('passwordRoles')]
     public function test_each_role_logs_in_to_its_own_dashboard(Role $role): void
     {
         $user = User::factory()->role($role)->create(['password' => 'test-only-password']);

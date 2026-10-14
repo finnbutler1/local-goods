@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Middleware\BlockJudgeWrites;
+use App\Http\Middleware\EndReviewerSessions;
 use App\Http\Middleware\EnsureUserHasRole;
-use App\Http\Middleware\LogOutRevokedUsers;
 use App\Http\Middleware\TrackLastSeen;
 use App\Http\Middleware\TrustCloudFront;
 use App\Http\Middleware\UseAppUrl;
@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(UseAppUrl::class);
         $middleware->replace(TrustProxies::class, TrustCloudFront::class);
         $middleware->alias(['role' => EnsureUserHasRole::class]);
-        $middleware->appendToGroup('web', [LogOutRevokedUsers::class, BlockJudgeWrites::class, TrackLastSeen::class]);
+        $middleware->appendToGroup('web', [EndReviewerSessions::class, BlockJudgeWrites::class, TrackLastSeen::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

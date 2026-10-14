@@ -9,7 +9,6 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -106,62 +105,36 @@ class BehindCloudFrontTest extends TestCase
         $this->assertTrue($cookie->isHttpOnly());
     }
 
-    /** The platform admin invites a reviewer through CloudFront; returns the link shown to copy. */
-    private function inviteLink(): string
+    /** The platform admin invites a reviewer through CloudFront; returns the magic link shown to copy. */
+    private function magicLink(): string
     {
         $this->signIn(Role::PlatformAdmin);
         $this->viaCloudFront('POST', '/admin/reviewers', data: ['name' => 'Casey Morgan', 'email' => 'casey.judge@example.test', 'reviewer_type' => 'contest_judge'])
             ->assertRedirect(self::APP_URL.'/admin/reviewers');
-        $link = session('invite_link')['url'];
+        $link = session('reviewer_link')['url'];
         auth()->logout();
 
         return $link;
     }
 
-    /** The path and query of the link: what Beanstalk receives when someone opens it through CloudFront. */
-    private function path(string $link): string
+    public function test_magic_links_point_at_app_url_and_work_through_cloudfront(): void
     {
-        $this->assertStringStartsWith(self::APP_URL.'/invite/', $link);
+        $link = $this->magicLink();
+        $this->assertStringStartsWith(self::APP_URL.'/judge-access#', $link);
 
-        return substr($link, strlen(self::APP_URL));
-    }
+        // The browser sends only the path; the part after # goes in the form body.
+        $this->viaCloudFront('GET', '/judge-access')->assertOk()
+            ->assertSee('action="'.self::APP_URL.'/judge-access"', false);
 
-    public function test_invite_links_work_through_cloudfront_and_only_once(): void
-    {
-        $path = $this->path($this->inviteLink());
-        $password = ['password' => 'a-long-test-password-123', 'password_confirmation' => 'a-long-test-password-123'];
+        $secret = substr($link, strpos($link, '#') + 1);
+        foreach (range(1, 2) as $_) {
+            $this->viaCloudFront('POST', '/judge-access', data: ['link' => $secret])->assertRedirect(self::APP_URL.'/judge');
+            $this->assertAuthenticatedAs(User::where('email', 'casey.judge@example.test')->first());
+            auth()->logout();
+        }
 
-        $this->viaCloudFront('GET', $path)->assertOk()->assertSee('action="'.e($path).'"', false);
-
-        $this->viaCloudFront('POST', $path, data: $password)->assertRedirect(self::APP_URL.'/judge');
-        $this->assertAuthenticatedAs(User::where('email', 'casey.judge@example.test')->first());
-
-        auth()->logout();
-        $this->viaCloudFront('GET', $path)->assertForbidden();
-        $this->viaCloudFront('POST', $path, data: $password)->assertForbidden();
-    }
-
-    public function test_tampered_or_expired_invite_links_are_refused_through_cloudfront(): void
-    {
-        $path = $this->path($this->inviteLink());
-        $user = User::where('email', 'casey.judge@example.test')->first();
-        $other = User::factory()->role(Role::Judge)->create();
-
-        $this->viaCloudFront('GET', str_replace("/invite/{$user->id}/", "/invite/{$other->id}/", $path))->assertForbidden();
-        $this->viaCloudFront('GET', preg_replace('/expires=\d+/', 'expires=9999999999', $path))->assertForbidden();
-
-        $this->travel(8)->days();
-        $this->viaCloudFront('GET', $path)->assertForbidden();
-    }
-
-    public function test_invite_signatures_cover_the_path_not_the_host(): void
-    {
-        $link = $this->inviteLink();
-        $asBeanstalkSeesIt = Request::create(str_replace(self::APP_URL, self::BEANSTALK, $link));
-
-        $this->assertTrue(URL::hasValidRelativeSignature($asBeanstalkSeesIt));
-        // A full-URL check would fail here, which is why links are signed by path.
-        $this->assertFalse(URL::hasValidSignature($asBeanstalkSeesIt));
+        $this->viaCloudFront('POST', '/judge-access', data: ['link' => $secret.'x'])->assertStatus(410);
+        $this->assertGuest();
     }
 
     public function test_the_visitor_ip_comes_from_cloudfront_only_with_the_secret(): void

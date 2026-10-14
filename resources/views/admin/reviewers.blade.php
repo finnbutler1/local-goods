@@ -9,21 +9,21 @@
         <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin</p>
         <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Reviewers</h1>
         <p class="mt-3 text-lg text-muted">
-            Invite contest judges, HR managers, merchants, BID staff and friends. Each gets a read-only login.
-            You get a link to copy and send yourself: it works once and expires in {{ \App\Services\ReviewerInvites::LINK_DAYS }} days.
-            The reviewer chooses their own password; nobody else ever sees it.
+            Invite contest judges, HR managers, merchants, BID staff and friends. Each gets a personal magic link
+            that signs them straight into a read-only reviewer view: no password, no account to set up.
+            Links work as often as needed until judging ends on {{ $endsAt->format('M j, Y \a\t g:i A') }} Eastern.
         </p>
     </header>
 
     <div aria-live="polite">
-        @if (session('invite_link'))
+        @if (session('reviewer_link'))
             <x-card class="border-2 border-ok">
-                <p class="font-semibold text-ok">Invite link for {{ session('invite_link')['name'] }}. Copy it now: it won't be shown again.</p>
+                <p class="font-semibold text-ok">Magic link for {{ session('reviewer_link')['name'] }}. Copy it now: only a fingerprint of it is kept, so it can't be shown again.</p>
                 <div class="mt-3 flex flex-col gap-2 sm:flex-row">
-                    <label for="invite-link" class="sr-only">Invite link</label>
-                    <input id="invite-link" type="text" readonly value="{{ session('invite_link')['url'] }}"
+                    <label for="reviewer-link" class="sr-only">Magic link</label>
+                    <input id="reviewer-link" type="text" readonly value="{{ session('reviewer_link')['url'] }}"
                            class="{{ $input }} border-muted font-mono text-sm" onfocus="this.select()">
-                    <x-button data-copy="#invite-link" class="shrink-0">Copy link</x-button>
+                    <x-button data-copy="#reviewer-link" class="shrink-0">Copy link</x-button>
                 </div>
             </x-card>
         @endif
@@ -100,13 +100,13 @@
                                     <div class="flex flex-wrap justify-end gap-2">
                                         <form method="POST" action="{{ route('admin.reviewers.link', $reviewer) }}">
                                             @csrf
-                                            <x-button type="submit" size="sm" variant="secondary" aria-label="New invite link for {{ $reviewer->name }}">
+                                            <x-button type="submit" size="sm" variant="secondary" aria-label="New magic link for {{ $reviewer->name }}">
                                                 {{ $reviewer->isRevoked() ? 'Restore with new link' : 'New link' }}
                                             </x-button>
                                         </form>
                                         @unless ($reviewer->isRevoked())
                                             <form method="POST" action="{{ route('admin.reviewers.revoke', $reviewer) }}"
-                                                  onsubmit="return confirm('Revoke {{ e(addslashes($reviewer->name)) }}? They will be logged out and can no longer log in.');">
+                                                  onsubmit="return confirm('Revoke {{ e(addslashes($reviewer->name)) }}? Their link stops working and any open session ends.');">
                                                 @csrf
                                                 <x-button type="submit" size="sm" variant="danger" aria-label="Revoke access for {{ $reviewer->name }}">Revoke</x-button>
                                             </form>
