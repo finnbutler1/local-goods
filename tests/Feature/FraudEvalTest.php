@@ -98,7 +98,7 @@ class FraudEvalTest extends TestCase
         $this->artisan('fraud:eval', $this->evalCommand())
             ->expectsOutputToContain('FE-01: my_label must be normal or suspicious')
             ->expectsOutputToContain('FE-02: unknown category bakery')
-            ->expectsOutputToContain('FE-02: split must be dev, holdout or holdout_2')
+            ->expectsOutputToContain('FE-02: split must be dev, holdout, holdout_2 or holdout_3')
             ->assertFailed();
 
         $this->assertSame([], $fake->calls);
@@ -241,8 +241,8 @@ class FraudEvalTest extends TestCase
     {
         $cases = app(FraudEvalRunner::class)->loadCases(base_path('data/fraud_eval_cases.csv'));
 
-        $this->assertCount(40, $cases);
         $this->assertCount(20, array_filter($cases, fn ($c) => $c['split'] === 'dev'));
+        $this->assertCount(10, array_filter($cases, fn ($c) => $c['split'] === 'holdout'));
         $this->assertCount(10, array_filter($cases, fn ($c) => $c['split'] === 'holdout_2'));
     }
 

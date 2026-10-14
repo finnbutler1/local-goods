@@ -17,8 +17,8 @@ class FraudEvalRunner
 {
     public const LABELS = ['normal', 'suspicious'];
 
-    // holdout_2 cases were labeled after the last prompt change and never seen while changing it.
-    public const SPLITS = ['dev' => 'Dev', 'holdout' => 'Holdout', 'holdout_2' => 'Holdout 2'];
+    // holdout_2 and holdout_3 cases were labeled after the last prompt change and never seen while changing it.
+    public const SPLITS = ['dev' => 'Dev', 'holdout' => 'Holdout', 'holdout_2' => 'Holdout 2', 'holdout_3' => 'Holdout 3'];
 
     private const COLUMNS = [
         'case_id', 'merchant', 'category', 'amount', 'local_time', 'balance_before', 'recent_history',
@@ -79,7 +79,7 @@ class FraudEvalRunner
                 $problems[] = "{$id}: my_label must be normal or suspicious";
             }
             if (! array_key_exists($case['split'], self::SPLITS)) {
-                $problems[] = "{$id}: split must be dev, holdout or holdout_2";
+                $problems[] = "{$id}: split must be dev, holdout, holdout_2 or holdout_3";
             }
             if (config("fraud.category_ticket_ranges.{$case['category']}") === null) {
                 $problems[] = "{$id}: unknown category {$case['category']}";
