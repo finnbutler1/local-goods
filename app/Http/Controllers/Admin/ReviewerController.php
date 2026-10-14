@@ -25,8 +25,12 @@ class ReviewerController extends Controller
     {
         Gate::authorize('manage-reviewers');
 
+        $reviewers = User::where('role', Role::Judge)->latest('invited_at')->latest('id')->get();
+
         return view('admin.reviewers', [
-            'reviewers' => User::where('role', Role::Judge)->latest('invited_at')->latest('id')->get(),
+            'public' => $reviewers->first(fn (User $user) => $user->isPublicReviewer()),
+            'reviewers' => $reviewers->reject(fn (User $user) => $user->isPublicReviewer()),
+            'ended' => $this->links->hasEnded(),
             'types' => array_filter(ReviewerType::cases(), fn (ReviewerType $type) => $type !== ReviewerType::Public),
             'endsAt' => $this->links->endsAt(),
         ]);

@@ -3,6 +3,10 @@
 <x-guest-shell title="Log in">
     <h1 class="text-3xl font-semibold text-forest">Log in</h1>
     <p class="mt-1 text-muted">Accounts are created by the Local Goods team. There is no public sign-up.</p>
+    <p class="mt-3 rounded-xl bg-cream-deep p-3 text-sm">
+        <span class="font-semibold">Reviewing Local Goods?</span>
+        Open the personal link Finn sent you, or the public judge link in the README. No password needed.
+    </p>
 
     @if (session('status'))
         <p role="status" class="mt-5 rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>

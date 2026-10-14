@@ -84,7 +84,7 @@ class ReviewerMagicLinkTest extends TestCase
         $this->assertStringNotContainsString($token, json_encode(User::all()->map->getAttributes()));
 
         $this->signIn(Role::PlatformAdmin);
-        $this->get('/admin/reviewers')->assertOk()->assertSee('Casey Morgan')->assertSee('Contest judge')->assertDontSee($token);
+        $this->get('/admin/reviewers')->assertOk()->assertSee('Casey Morgan')->assertSee('Contest judge')->assertSee('Link ready')->assertDontSee($token);
     }
 
     #[DataProvider('otherRoles')]
@@ -155,6 +155,10 @@ class ReviewerMagicLinkTest extends TestCase
 
         config(['reviewers.judging_ends_at' => '2026-12-31 23:59']);
         $this->open($link)->assertRedirect('/judge');
+
+        config(['reviewers.judging_ends_at' => '2026-10-20 07:00']);
+        $this->signIn(Role::PlatformAdmin);
+        $this->get('/admin/reviewers')->assertSee('Judging has ended')->assertSee('Ended');
     }
 
     public function test_revoking_ends_the_link_and_open_sessions(): void

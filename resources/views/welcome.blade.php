@@ -217,9 +217,10 @@
             <div>
                 <h2 id="request-heading" class="text-4xl font-semibold text-forest">Request a demo</h2>
                 <p class="mt-3 max-w-xl text-lg text-muted">
-                    Online demo booking is coming soon. The working product is live: demo logins for an employee,
-                    a BID admin and contest judges are available on request. Already have one? Log in to redeem
-                    credits as an employee or review the AI fraud check from the BID's side.
+                    Online demo booking is coming soon. The working product is live: demo logins for an employee
+                    and a BID admin are available on request, and contest judges get a personal sign-in link with
+                    no password. Already have a login? Log in to redeem credits as an employee or review the AI
+                    fraud check from the BID's side.
                 </p>
             </div>
             <div class="flex flex-col gap-3">

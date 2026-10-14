@@ -109,6 +109,18 @@ class PublicJudgeAccessTest extends TestCase
         $this->post('/feedback', $this->feedback())->assertStatus(429);
     }
 
+    public function test_the_admin_page_shows_it_separately_with_its_own_new_link_button(): void
+    {
+        $this->signIn(Role::PlatformAdmin);
+
+        $this->get('/admin/reviewers')->assertOk()
+            ->assertSeeInOrder(['Public judge access', 'No link yet', 'New public link', 'Invite a reviewer', 'Named reviewers'])
+            ->assertDontSee('<option value="public"', false);
+
+        $this->post("/admin/reviewers/{$this->public->id}/link")->assertSessionHas('reviewer_link');
+        $this->assertStringContainsString('/judge-access#'.$this->public->id.'.', session('reviewer_link')['url']);
+    }
+
     public function test_the_invite_form_cannot_make_a_second_public_account(): void
     {
         $this->signIn(Role::PlatformAdmin);
