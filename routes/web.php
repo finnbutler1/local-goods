@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AdjudicationController;
 use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReviewerController;
@@ -86,6 +87,16 @@ Route::middleware('auth')->group(function () {
         Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');
         Route::get('/admin/changelog', [ChangelogController::class, 'index'])->name('admin.changelog.index');
         Route::post('/admin/changelog', [ChangelogController::class, 'store'])->name('admin.changelog.store');
+
+        // Blind adjudication of the fraud eval (ADR 0011): build, publish, close, results.
+        Route::prefix('admin/adjudication')->name('admin.adjudication.')->group(function () {
+            Route::get('/', [AdjudicationController::class, 'index'])->name('index');
+            Route::post('/', [AdjudicationController::class, 'store'])->name('store');
+            Route::post('/cases', [AdjudicationController::class, 'addCase'])->name('cases.store');
+            Route::delete('/cases/{adjudicationCase}', [AdjudicationController::class, 'removeCase'])->name('cases.destroy');
+            Route::post('/publish', [AdjudicationController::class, 'publish'])->name('publish');
+            Route::post('/close', [AdjudicationController::class, 'close'])->name('close');
+        });
     });
 });
 

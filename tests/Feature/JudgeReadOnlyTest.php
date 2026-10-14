@@ -8,6 +8,7 @@ use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Policies\RedemptionPolicy;
+use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Ai\ClaudeClient;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,6 +53,9 @@ class JudgeReadOnlyTest extends TestCase
             'page_url' => url('/admin'), 'category' => 'functionality', 'rating' => 3,
             'severity' => 'should_fix', 'comment' => 'Synthetic.',
         ]);
+
+        // A draft adjudication set, so its edit routes have a case to change.
+        app(AdjudicationSetBuilder::class)->newDraft();
 
         $this->judge = $this->signIn(Role::Judge);
     }
