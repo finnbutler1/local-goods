@@ -220,3 +220,12 @@ AI decisions, let a human override, show confidence) in mind on every screen.
 - **Explain changes in plain English.** The owner is a beginner: say what
   changed, why, and how to check it worked, without jargon.
 - **Ask before deleting files or adding paid services.**
+- **Never touch a real database without asking first.** Never delete,
+  overwrite or re-create `storage/database.sqlite` or any other database
+  (local, RDS or otherwise) without asking Finn first. Never run
+  `migrate:fresh`, `migrate:reset`, `migrate:refresh`, `migrate:rollback`,
+  `db:wipe`, `db:seed`, Reset demo or anything similar against one, and
+  don't use `--env` or `DB_*` overrides as a workaround. If you need a
+  database to try something, make a new SQLite file in the scratchpad and
+  point `DB_DATABASE` at it. `php artisan test` is fine: tests use an
+  in-memory database.
