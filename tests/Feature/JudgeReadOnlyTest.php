@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Http\Middleware\BlockJudgeWrites;
 use App\Models\Merchant;
@@ -84,7 +85,7 @@ class JudgeReadOnlyTest extends TestCase
 
     public function test_policies_and_gates_refuse_a_judge_on_their_own(): void
     {
-        foreach (['reset-demo', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog'] as $ability) {
+        foreach (['reset-demo', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
             $this->assertTrue(Gate::forUser($this->judge)->denies($ability), "Gate {$ability} let a judge through.");
         }
 
@@ -94,9 +95,34 @@ class JudgeReadOnlyTest extends TestCase
     public function test_the_allowlist_is_short_and_known(): void
     {
         $this->assertSame(
-            ['judge-access.store', 'logout', 'feedback.store', 'feedback.update'],
+            [
+                'judge-access.store', 'logout', 'feedback.store', 'feedback.update',
+                'adjudication.start', 'adjudication.vote', 'adjudication.submit',
+            ],
             BlockJudgeWrites::ALLOWED_ROUTES,
         );
+    }
+
+    public function test_adjudication_routes_still_refuse_a_judge_who_may_not_vote(): void
+    {
+        // A plain judge (no reviewer type) and the public and friend types pass
+        // the allowlist but not the adjudicate gate.
+        $set = app(AdjudicationSetBuilder::class)->newDraft();
+        app(AdjudicationSetBuilder::class)->publish($set);
+        $case = $set->cases()->firstOrFail();
+        $before = $this->snapshot();
+
+        foreach ([null, ReviewerType::Public, ReviewerType::Friend] as $type) {
+            $this->judge->forceFill(['reviewer_type' => $type])->save();
+            $this->actingAs($this->judge);
+
+            $this->post('/adjudicate/start', ['seen_eval_before' => 'no'])->assertForbidden();
+            $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'Synthetic.'])->assertForbidden();
+            $this->post('/adjudicate/submit')->assertForbidden();
+        }
+
+        $this->judge->forceFill(['reviewer_type' => null])->save();
+        $this->assertEquals($before, $this->snapshot(), 'A refused adjudication request changed data.');
     }
 
     /** Route parameters filled with ids that exist, so a missed check would really change something. */

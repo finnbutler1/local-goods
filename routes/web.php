@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdjudicateController;
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AdjudicationController;
 use App\Http\Controllers\Admin\ChangelogController;
@@ -72,6 +73,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/judge', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
         // Read-only "view as" switcher. With no role, goes back to the judge's own view.
         Route::get('/judge/view-as/{role?}', [JudgeController::class, 'viewAs'])->name('judge.view-as');
+
+        // "Help check the AI": blind votes on eval cases (ADR 0011). Every judge
+        // can open the page; only named BID and contest-judge reviewers can vote.
+        Route::get('/adjudicate', [AdjudicateController::class, 'show'])->name('adjudication.show');
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('/adjudicate/start', [AdjudicateController::class, 'start'])->name('adjudication.start');
+            Route::post('/adjudicate/cases/{adjudicationCase}', [AdjudicateController::class, 'vote'])->name('adjudication.vote');
+            Route::post('/adjudicate/submit', [AdjudicateController::class, 'submit'])->name('adjudication.submit');
+        });
     });
     Route::middleware('role:platform_admin')->group(function () {
         Route::get('/admin', AccountController::class)->name('admin.dashboard');

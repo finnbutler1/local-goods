@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\FeedbackStatus;
 use App\Enums\Role;
+use App\Models\AdjudicationSet;
+use App\Models\AdjudicationVote;
 use App\Models\ChangelogEntry;
 use App\Models\User;
 use App\Support\ViewAs;
@@ -82,7 +84,35 @@ class JudgeController extends Controller
         // Landing here means the judge is back in their own view.
         $request->session()->forget(ViewAs::SESSION_KEY);
 
-        return view('dashboards.judge', ['tour' => self::tour(), ...self::whatsNew($request->user())]);
+        return view('dashboards.judge', [
+            'tour' => self::tour(),
+            'adjudication' => self::adjudicationStatus($request->user()),
+            ...self::whatsNew($request->user()),
+        ]);
+    }
+
+    /**
+     * The "Help check the AI" card: shown while a blind adjudication set is
+     * open (ADR 0011), with this reviewer's progress.
+     *
+     * @return array{can_vote: bool, total: int, answered: int, submitted: bool}|null
+     */
+    public static function adjudicationStatus(User $user): ?array
+    {
+        $set = AdjudicationSet::current();
+
+        if (! $set?->isOpen()) {
+            return null;
+        }
+
+        $caseIds = $set->cases()->pluck('id');
+
+        return [
+            'can_vote' => $user->canAdjudicate(),
+            'total' => $caseIds->count(),
+            'answered' => AdjudicationVote::where('user_id', $user->id)->whereIn('adjudication_case_id', $caseIds)->count(),
+            'submitted' => $set->hasSubmitted($user),
+        ];
     }
 
     /** Switch which role the judge is viewing the app as, then open that role's home page. */

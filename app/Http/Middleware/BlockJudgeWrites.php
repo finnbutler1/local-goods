@@ -15,12 +15,19 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class BlockJudgeWrites
 {
-    /** The only routes a judge may send changes to: their own session (magic link, log out) and feedback. */
+    /**
+     * The only routes a judge may send changes to: their own session (magic
+     * link, log out), feedback, and blind adjudication votes (ADR 0011; the
+     * `adjudicate` gate then lets only BID and contest-judge reviewers through).
+     */
     public const ALLOWED_ROUTES = [
         'judge-access.store',
         'logout',
         'feedback.store',
         'feedback.update',
+        'adjudication.start',
+        'adjudication.vote',
+        'adjudication.submit',
     ];
 
     public function handle(Request $request, Closure $next): Response

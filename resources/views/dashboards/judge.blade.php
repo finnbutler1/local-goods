@@ -9,6 +9,25 @@
             </p>
         </header>
 
+        @if ($adjudication)
+            <x-card as="section" tone="forest" aria-labelledby="adjudicate-heading" class="max-w-3xl">
+                <h2 id="adjudicate-heading" class="text-2xl font-semibold text-cream">
+                    <a href="{{ route('adjudication.show') }}" class="underline decoration-amber decoration-2 underline-offset-4 hover:decoration-cream">Help check the AI, about 15 minutes</a>
+                </h2>
+                <p class="mt-2 text-sage">
+                    @if (! $adjudication['can_vote'])
+                        Where our hand labels and the AI disagree, BID staff and contest judges vote, blind, on who was right. You can look at the cases; voting is for named BID and contest-judge reviewers.
+                    @elseif ($adjudication['submitted'])
+                        Thank you: your votes are submitted.
+                    @elseif ($adjudication['answered'] > 0)
+                        {{ $adjudication['answered'] }} of {{ $adjudication['total'] }} answered. Pick up where you left off, then press Submit all.
+                    @else
+                        Look at {{ $adjudication['total'] }} synthetic redemptions, one at a time, and say whether each looks normal or suspicious. You won't see the AI's answer or ours.
+                    @endif
+                </p>
+            </x-card>
+        @endif
+
         <section aria-labelledby="new-heading" class="max-w-3xl">
             <h2 id="new-heading" class="text-2xl font-semibold text-forest">
                 What's new {{ $since ? 'since your last visit' : 'lately' }}
