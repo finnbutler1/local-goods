@@ -9,21 +9,39 @@
             </p>
         </header>
 
-        @if ($adjudication)
+        @if ($adjudication && $adjudication['can_vote'])
             <x-card as="section" tone="forest" aria-labelledby="adjudicate-heading" class="max-w-3xl">
                 <h2 id="adjudicate-heading" class="text-2xl font-semibold text-cream">
                     <a href="{{ route('adjudication.show') }}" class="underline decoration-amber decoration-2 underline-offset-4 hover:decoration-cream">Help check the AI, about 15 minutes</a>
                 </h2>
                 <p class="mt-2 text-sage">
-                    @if (! $adjudication['can_vote'])
-                        Where our hand labels and the AI disagree, BID staff and contest judges vote, blind, on who was right. You can look at the cases; voting is for named BID and contest-judge reviewers.
-                    @elseif ($adjudication['submitted'])
+                    @if ($adjudication['submitted'])
                         Thank you: your votes are submitted.
                     @elseif ($adjudication['answered'] > 0)
                         {{ $adjudication['answered'] }} of {{ $adjudication['total'] }} answered. Pick up where you left off, then press Submit all.
                     @else
                         Look at {{ $adjudication['total'] }} synthetic redemptions, one at a time, and say whether each looks normal or suspicious. You won't see the AI's answer or ours.
                     @endif
+                </p>
+            </x-card>
+        @elseif ($adjudication)
+            <x-card as="section" aria-labelledby="independent-check-heading" class="max-w-3xl border-l-4 border-l-forest">
+                <h2 id="independent-check-heading" class="text-2xl font-semibold text-forest">Independent check of the AI</h2>
+                <p class="mt-2">
+                    Where my hand labels and the AI disagree, invited BID staff and contest judges rate each disputed case blind: they see the redemption's facts, never my label or the AI's call.
+                    Cases where we agreed are mixed in as hidden controls, to check how reliable the raters themselves are.
+                </p>
+                <p class="mt-3 font-semibold">
+                    {{ $adjudication['submitted_count'] }} {{ Str::plural('adjudicator', $adjudication['submitted_count']) }} {{ $adjudication['submitted_count'] === 1 ? 'has' : 'have' }} submitted so far.
+                    @if ($adjudication['open'])
+                        Voting closes {{ $adjudication['ends_at']->format('M j') }}.
+                    @else
+                        Voting is closed.
+                    @endif
+                </p>
+                <p class="mt-2 text-muted">Voting is limited to invited reviewers, so you can't vote from this login.</p>
+                <p class="mt-3">
+                    <a href="{{ route('eval') }}#adjudication" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">See the adjudication results on the eval page</a>
                 </p>
             </x-card>
         @endif

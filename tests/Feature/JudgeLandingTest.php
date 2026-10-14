@@ -19,15 +19,15 @@ class JudgeLandingTest extends TestCase
         $page = $this->get('/judge')->assertOk()
             ->assertSee('What Local Goods is')
             ->assertSee('Redemption Fraud Detection')
-            ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Employer dashboard', 'Merchant dashboard'])
+            ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
             ->assertSee('Coming in a later build')
             ->assertSee('Payments will run through Stripe Connect in test mode in a later build')
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
 
-        // The five tour links all open for a judge.
+        // The six tour links all open for a judge.
         preg_match_all('/<a href="([^"]+)" class="text-forest underline decoration-amber/', $page->getContent(), $links);
-        $this->assertCount(5, $links[1]);
+        $this->assertCount(6, $links[1]);
 
         foreach ($links[1] as $link) {
             $this->followingRedirects()->get($link)->assertOk();
@@ -40,6 +40,15 @@ class JudgeLandingTest extends TestCase
         $html = $this->get('/judge')->getContent();
 
         $this->assertSame(2, substr_count($html, 'Coming in a later build'));
+    }
+
+    public function test_no_adjudication_card_before_a_set_is_published(): void
+    {
+        $this->signIn(Role::Judge);
+
+        $this->get('/judge')->assertOk()
+            ->assertDontSee('id="independent-check-heading"', false)
+            ->assertDontSee('Help check the AI');
     }
 
     public function test_opening_the_landing_page_leaves_view_as_mode(): void

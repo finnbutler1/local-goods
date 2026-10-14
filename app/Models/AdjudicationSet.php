@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * One version of the blind adjudication set (ADR 0011). A draft can be edited
@@ -57,6 +58,12 @@ class AdjudicationSet extends Model
         return $set !== null && $set->isOpen() && ! $set->hasSubmitted($user);
     }
 
+    /** The voting deadline shown to reviewers, in Washington DC time (config/reviewers.php). */
+    public static function votingEndsAt(): Carbon
+    {
+        return Carbon::parse(config('reviewers.adjudication_ends_at'), config('reviewers.timezone'));
+    }
+
     public function isDraft(): bool
     {
         return $this->status === self::DRAFT;
@@ -90,6 +97,12 @@ class AdjudicationSet extends Model
     public function hasSubmitted(User $user): bool
     {
         return $this->participants()->where('user_id', $user->id)->whereNotNull('submitted_at')->exists();
+    }
+
+    /** How many adjudicators have pressed Submit all. */
+    public function submittedCount(): int
+    {
+        return $this->participants()->whereNotNull('submitted_at')->count();
     }
 
     /**

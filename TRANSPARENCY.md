@@ -195,7 +195,11 @@ judges check the disagreements, blind
   suspicious and write a short reason, and can change their mind until they
   press Submit all.
 - **Who votes:** only BID staff and contest judges with their own personal
-  link. The public judge link, friends and Finn can't vote.
+  link. The public judge link, friends and Finn can't vote. They see an
+  "Independent check of the AI" card on the reviewer home page instead: what
+  the check is, how many adjudicators have submitted, when voting closes
+  (shown as November 13, 2026; Finn ends voting by pressing Close voting) and
+  a link to the results on `/eval`.
 - **One question first:** "Have you looked at the Local Goods eval results
   page before today?" Someone who has may already know the answers, so results
   are shown for everyone and again for only those who said no. While voting is

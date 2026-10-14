@@ -12,7 +12,7 @@
     $th = 'px-4 py-2';
 @endphp
 
-<section aria-labelledby="adjudication-heading" class="space-y-5">
+<section id="adjudication" aria-labelledby="adjudication-heading" class="scroll-mt-24 space-y-5">
     <div class="max-w-3xl">
         <h2 id="adjudication-heading" class="text-2xl font-semibold text-forest">Blind adjudication of the disagreements</h2>
         <p class="mt-1 text-muted">

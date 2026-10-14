@@ -15,7 +15,10 @@ adjudication (ADR 0011).
   with reviewer type BID or contest judge vote (`adjudicate` gate,
   `User::canAdjudicate`) at `/adjudicate`; `adjudication.start/vote/submit`
   are on the judge write allowlist. Results (`AdjudicationResults`) on the
-  admin page and `/eval`; they never change labels or the headline.
+  admin page and `/eval#adjudication`; they never change labels or the
+  headline. Judges who can't vote get an "Independent check of the AI" card
+  on `/judge`; the voting end date it shows is `reviewers.adjudication_ends_at`
+  (display only: voting ends when the admin presses Close voting).
 - Magic links (ADR 0010, supersedes 0008's invites): judges never create
   accounts or set passwords. `App\Services\ReviewerLinks` makes a reusable
   link `/judge-access#<id>.<token>` (token after `#`, so never in logs; the

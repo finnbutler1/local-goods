@@ -141,7 +141,10 @@ class AdjudicationResultsTest extends TestCase
 
     public function test_the_eval_page_shows_the_summary_after_the_first_submission_and_votes_only_after_close(): void
     {
-        $this->get('/eval')->assertOk()->assertDontSee('Blind adjudication of the disagreements');
+        // Before anyone submits: only a placeholder that the judge home page links to.
+        $this->get('/eval')->assertOk()
+            ->assertSee('Results appear here once the first adjudicator submits.')
+            ->assertDontSee('adjudicators sided with the AI');
 
         $this->adjudicator('finn', name: 'Pat Synthetic');
 

@@ -17,6 +17,10 @@ commit history.
   like "7 of 32", and Submit all.
 - Voting is the only new write a reviewer can make. The public judge account,
   friends and other reviewer types can look but get 403 on voting.
+- **"Independent check of the AI"** card for reviewers who can't vote (the
+  public judge link, friends): what the blind check is, how many adjudicators
+  have submitted so far, voting closes Nov 13, and a link to the adjudication
+  section of `/eval`. A new guided-tour step points to it.
 - **Results** on the admin page and in a separate section of `/eval`: per-case
   votes and majority, "sided with the AI in X, with Finn in Y, split in Z" for
   all adjudicators and for those who hadn't seen the eval page, agreement on

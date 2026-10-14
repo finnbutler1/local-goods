@@ -156,6 +156,21 @@
 
         @if ($adjudication)
             @include('partials.adjudication-results')
+        @elseif (! $hideCaseDetails)
+            {{-- Where the judge home page's "Independent check of the AI" links to, before anyone has submitted. --}}
+            <section id="adjudication" aria-labelledby="adjudication-heading" class="max-w-3xl scroll-mt-24">
+                <h2 id="adjudication-heading" class="text-2xl font-semibold text-forest">Blind adjudication of the disagreements</h2>
+                <p class="mt-1 text-muted">
+                    Where the person's label and the AI disagree, invited BID staff and contest judges rate each case blind, with agreed cases mixed in as hidden controls.
+                    @if ($adjudicationSet?->isOpen())
+                        Voting is open until {{ \App\Models\AdjudicationSet::votingEndsAt()->format('M j') }}. Results appear here once the first adjudicator submits.
+                    @elseif ($adjudicationSet?->isClosed())
+                        Voting closed before anyone submitted.
+                    @else
+                        Voting hasn't started yet.
+                    @endif
+                </p>
+            </section>
         @endif
 
         <section aria-labelledby="disagree-heading">

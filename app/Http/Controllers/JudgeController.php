@@ -22,8 +22,14 @@ class JudgeController extends Controller
      *
      * @return list<array{title: string, look_for: string, url: string, available: bool}>
      */
-    public static function tour(): array
+    public static function tour(?User $user = null): array
     {
+        // Reviewers who can vote go straight to voting; everyone else to the
+        // results section on /eval (ADR 0011).
+        $adjudicationUrl = $user?->canAdjudicate() && AdjudicationSet::current()?->isOpen()
+            ? route('adjudication.show')
+            : route('eval').'#adjudication';
+
         return [
             [
                 'title' => 'Employee wallet',
@@ -41,6 +47,12 @@ class JudgeController extends Controller
                 'title' => 'AI eval results',
                 'look_for' => 'How often the AI agrees with hand-labeled cases, including cases it never saw while the prompt was written, and every disagreement.',
                 'url' => route('bid-admin.eval'),
+                'available' => true,
+            ],
+            [
+                'title' => 'Independent check of the AI',
+                'look_for' => 'Where my hand labels and the AI disagree, invited BID staff and contest judges rate the cases blind, with agreed cases mixed in as hidden controls. Their verdict is reported next to the eval, never in place of it.',
+                'url' => $adjudicationUrl,
                 'available' => true,
             ],
             [
@@ -85,33 +97,38 @@ class JudgeController extends Controller
         $request->session()->forget(ViewAs::SESSION_KEY);
 
         return view('dashboards.judge', [
-            'tour' => self::tour(),
+            'tour' => self::tour($request->user()),
             'adjudication' => self::adjudicationStatus($request->user()),
             ...self::whatsNew($request->user()),
         ]);
     }
 
     /**
-     * The "Help check the AI" card: shown while a blind adjudication set is
-     * open (ADR 0011), with this reviewer's progress.
+     * The adjudication card on the judge home page (ADR 0011). Reviewers who
+     * may vote get "Help check the AI" with their progress while voting is
+     * open; everyone else gets "Independent check of the AI", which explains
+     * the check and counts submissions. Null before any set is published.
      *
-     * @return array{can_vote: bool, total: int, answered: int, submitted: bool}|null
+     * @return array{can_vote: bool, open: bool, total: int, answered: int, submitted: bool, submitted_count: int, ends_at: \Illuminate\Support\Carbon}|null
      */
     public static function adjudicationStatus(User $user): ?array
     {
         $set = AdjudicationSet::current();
 
-        if (! $set?->isOpen()) {
+        if ($set === null) {
             return null;
         }
 
         $caseIds = $set->cases()->pluck('id');
 
         return [
-            'can_vote' => $user->canAdjudicate(),
+            'can_vote' => $user->canAdjudicate() && $set->isOpen(),
+            'open' => $set->isOpen(),
             'total' => $caseIds->count(),
             'answered' => AdjudicationVote::where('user_id', $user->id)->whereIn('adjudication_case_id', $caseIds)->count(),
             'submitted' => $set->hasSubmitted($user),
+            'submitted_count' => $set->submittedCount(),
+            'ends_at' => AdjudicationSet::votingEndsAt(),
         ];
     }
 

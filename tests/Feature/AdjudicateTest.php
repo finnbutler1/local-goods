@@ -260,10 +260,82 @@ class AdjudicateTest extends TestCase
         $this->get('/judge')->assertOk()->assertDontSee('Help check the AI');
     }
 
-    public function test_the_public_judge_sees_the_card_but_is_told_voting_is_for_named_reviewers(): void
+    public function test_reviewers_who_cannot_vote_see_the_independent_check_card_instead(): void
+    {
+        foreach ([ReviewerType::Public, ReviewerType::Friend] as $type) {
+            $this->actingAs($this->reviewer($type));
+
+            $this->get('/judge')->assertOk()
+                ->assertSee('id="independent-check-heading"', false)
+                ->assertSee('invited BID staff and contest judges rate each disputed case blind')
+                ->assertSee('never my label or the AI\'s call', false)
+                ->assertSee('hidden controls')
+                ->assertSee('0 adjudicators have submitted so far.')
+                ->assertSee('Voting closes Nov 13.')
+                ->assertSee('Voting is limited to invited reviewers')
+                ->assertSee(route('eval').'#adjudication')
+                ->assertDontSee('Help check the AI');
+        }
+    }
+
+    public function test_reviewers_who_can_vote_keep_the_help_check_card(): void
+    {
+        $this->actingAs($this->reviewer(ReviewerType::ContestJudge));
+
+        $this->get('/judge')->assertOk()
+            ->assertSee('Help check the AI, about 15 minutes')
+            ->assertDontSee('id="independent-check-heading"', false);
+    }
+
+    public function test_the_independent_check_card_counts_submissions_and_shows_when_voting_ends(): void
+    {
+        $voter = $this->reviewer(ReviewerType::Bid);
+        $this->actingAs($voter);
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+        $this->voteOnEverything($voter);
+        $this->post('/adjudicate/submit')->assertRedirect();
+
+        // Someone who started but didn't submit doesn't count.
+        $this->actingAs($this->reviewer(ReviewerType::ContestJudge));
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'yes']);
+
+        $friend = $this->reviewer(ReviewerType::Friend);
+        $this->actingAs($friend);
+        $this->get('/judge')->assertOk()->assertSee('1 adjudicator has submitted so far.');
+
+        config(['reviewers.adjudication_ends_at' => '2026-11-20 23:59']);
+        $this->get('/judge')->assertSee('Voting closes Nov 20.');
+
+        app(AdjudicationSetBuilder::class)->close($this->set);
+        $this->get('/judge')->assertOk()->assertSee('Voting is closed.')->assertDontSee('Voting closes');
+    }
+
+    public function test_the_card_link_lands_on_the_adjudication_section_of_eval(): void
     {
         $this->actingAs($this->reviewer(ReviewerType::Public));
 
-        $this->get('/judge')->assertOk()->assertSee('Help check the AI')->assertSee('voting is for named BID and contest-judge reviewers');
+        // Before anyone submits, a short placeholder holds the anchor.
+        $this->get('/eval')->assertOk()->assertSee('id="adjudication"', false)
+            ->assertSee('Voting is open until Nov 13.');
+
+        $voter = $this->reviewer(ReviewerType::Bid);
+        $this->actingAs($voter);
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+        $this->voteOnEverything($voter);
+        $this->post('/adjudicate/submit');
+
+        $this->actingAs($this->reviewer(ReviewerType::Public));
+        $this->get('/eval')->assertOk()->assertSee('id="adjudication"', false)
+            ->assertSee('adjudicators sided with the AI')
+            ->assertDontSee('Results appear here once the first adjudicator submits');
+    }
+
+    public function test_the_tour_step_sends_voters_to_vote_and_everyone_else_to_the_results(): void
+    {
+        $this->actingAs($this->reviewer(ReviewerType::Bid));
+        $this->get('/judge')->assertSeeInOrder(['AI eval results', route('adjudication.show'), 'Independent check of the AI', 'Employer dashboard'], false);
+
+        $this->actingAs($this->reviewer(ReviewerType::Friend));
+        $this->get('/judge')->assertSeeInOrder(['AI eval results', route('eval').'#adjudication', 'Independent check of the AI', 'Employer dashboard'], false);
     }
 }
