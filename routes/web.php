@@ -46,8 +46,11 @@ Route::middleware('auth')->group(function () {
     ]))->name('account');
 
     // The Feedback button on every signed-in page, and editing your own items.
-    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
-    Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])->name('feedback.update');
+    // Rate-limited, more tightly for the shared public reviewer (AppServiceProvider).
+    Route::middleware('throttle:feedback')->group(function () {
+        Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+        Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])->name('feedback.update');
+    });
 
     Route::middleware('role:employee')->group(function () {
         Route::get('/employee', [EmployeeWalletController::class, 'show'])->name('employee.wallet');

@@ -5,6 +5,10 @@
 | Names are synthetic. Passwords come only from the environment (.env locally,
 | Beanstalk environment properties in production): an account whose password
 | is blank is skipped, never given a made-up one.
+|
+| The judge account is the shared "Public judge access" reviewer linked from
+| the README. Reviewers never have a password: it signs in only with the
+| magic link the platform admin makes on /admin/reviewers.
 */
 
 return [
@@ -35,9 +39,8 @@ return [
             'password' => env('DEMO_PASSWORD_MERCHANT'),
         ],
         'judge' => [
-            'name' => 'Casey Brooks',
-            'email' => 'casey.brooks@example.com',
-            'password' => env('DEMO_PASSWORD_JUDGE'),
+            'name' => 'Public judge access',
+            'email' => 'public.judge@example.com',
         ],
     ],
 ];

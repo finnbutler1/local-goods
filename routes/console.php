@@ -27,7 +27,8 @@ Artisan::command('demo:seed-if-empty', function () {
 })->purpose('Seed the demo data only if the demo tables are empty');
 
 // Run by the Beanstalk deploy hook. Creates or updates one login per role.
-// Passwords come from DEMO_PASSWORD_* and are never printed.
+// Passwords come from DEMO_PASSWORD_* and are never printed. The judge is
+// the shared Public judge access reviewer, which has no password.
 Artisan::command('demo:seed-accounts', function () {
     $result = (new DemoAccountSeeder)->run();
 

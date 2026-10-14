@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\User;
 use App\Services\DemoResetter;
+use App\Services\ReviewerLinks;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DemoAccountsTest extends TestCase
@@ -19,7 +22,9 @@ class DemoAccountsTest extends TestCase
     private function setPasswords(?string $value = 'test-only-password'): void
     {
         foreach (array_keys(config('demo.accounts')) as $role) {
-            config(["demo.accounts.$role.password" => $value]);
+            if ($role !== Role::Judge->value) {
+                config(["demo.accounts.$role.password" => $value]);
+            }
         }
     }
 
@@ -31,6 +36,9 @@ class DemoAccountsTest extends TestCase
 
         $this->assertSame(count(Role::cases()), User::count());
         foreach (Role::cases() as $role) {
+            if ($role === Role::Judge) {
+                continue; // the public reviewer has no known password (test below)
+            }
             $user = User::where('role', $role)->sole();
             $this->assertNotSame('test-only-password', $user->password);
             $this->assertTrue(Hash::check('test-only-password', $user->password));
@@ -42,14 +50,45 @@ class DemoAccountsTest extends TestCase
     public function test_skips_accounts_without_a_password_and_never_prints_one(): void
     {
         $this->setPasswords(null);
-        config(['demo.accounts.judge.password' => 'test-only-password']);
+        config(['demo.accounts.merchant.password' => 'test-only-password']);
 
         $this->artisan('demo:seed-accounts')
             ->expectsOutputToContain('Skipped bid_admin: DEMO_PASSWORD_BID_ADMIN is not set.')
             ->doesntExpectOutputToContain('test-only-password')
             ->assertSuccessful();
 
-        $this->assertSame([Role::Judge], User::pluck('role')->all());
+        // The merchant, and the public reviewer, which never needs a password.
+        $this->assertEqualsCanonicalizing([Role::Merchant, Role::Judge], User::pluck('role')->all());
+    }
+
+    public function test_the_judge_account_is_the_one_public_reviewer_with_no_usable_password(): void
+    {
+        $this->setPasswords();
+        $this->artisan('demo:seed-accounts')->assertSuccessful();
+
+        $public = User::where('role', Role::Judge)->sole();
+        $this->assertSame('Public judge access', $public->name);
+        $this->assertSame(ReviewerType::Public, $public->reviewer_type);
+        $this->assertTrue($public->isPublicReviewer());
+        $this->assertFalse(Hash::check('test-only-password', $public->password));
+
+        // Running again keeps its magic link working and never makes a second one.
+        $link = app(ReviewerLinks::class)->newLink($public);
+        $public->forceFill(['name' => 'Renamed'])->save();
+        $this->artisan('demo:seed-accounts');
+        $this->assertSame(1, User::where('reviewer_type', ReviewerType::Public)->count());
+        $this->assertSame($public->id, app(ReviewerLinks::class)->userFor(Str::after($link, '#'))?->id);
+        $this->assertSame('Public judge access', $public->fresh()->name);
+    }
+
+    public function test_the_public_reviewer_never_takes_over_another_login(): void
+    {
+        $merchant = User::factory()->role(Role::Merchant)->create(['email' => config('demo.accounts.judge.email')]);
+
+        $this->artisan('demo:seed-accounts')->assertSuccessful();
+
+        $this->assertSame(Role::Merchant, $merchant->fresh()->role);
+        $this->assertNull($merchant->fresh()->reviewer_type);
     }
 
     public function test_running_again_updates_without_duplicating(): void
@@ -57,11 +96,11 @@ class DemoAccountsTest extends TestCase
         $this->setPasswords();
         $this->artisan('demo:seed-accounts');
 
-        config(['demo.accounts.judge.password' => 'rotated-password']);
+        config(['demo.accounts.merchant.password' => 'rotated-password']);
         $this->artisan('demo:seed-accounts');
 
         $this->assertSame(count(Role::cases()), User::count());
-        $this->assertTrue(Hash::check('rotated-password', User::where('role', Role::Judge)->value('password')));
+        $this->assertTrue(Hash::check('rotated-password', User::where('role', Role::Merchant)->value('password')));
     }
 
     public function test_employee_login_is_linked_to_the_wallet_in_either_order_and_after_reset(): void

@@ -2,17 +2,20 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Creates or updates one demo login per role from config/demo.php. Safe to run
  * on every deploy: accounts are matched by email, a changed password in the
  * environment replaces the old one, and nothing is ever deleted. Accounts with
- * a blank password are skipped.
+ * a blank password are skipped. The judge account is the shared Public
+ * judge access reviewer, which has no password at all (see seedPublicReviewer).
  */
 class DemoAccountSeeder extends Seeder
 {
@@ -25,7 +28,14 @@ class DemoAccountSeeder extends Seeder
         $skipped = [];
 
         foreach (config('demo.accounts') as $role => $account) {
-            if (blank($account['password'])) {
+            if ($role === Role::Judge->value) {
+                self::seedPublicReviewer($account);
+                $saved[] = $role;
+
+                continue;
+            }
+
+            if (blank($account['password'] ?? null)) {
                 $skipped[] = $role;
 
                 continue;
@@ -45,6 +55,31 @@ class DemoAccountSeeder extends Seeder
         self::linkDemoEmployee();
 
         return ['saved' => $saved, 'skipped' => $skipped];
+    }
+
+    /**
+     * The one shared "Public judge access" reviewer, found by its type so
+     * there is only ever one. Created if missing; an existing one keeps its
+     * magic link (so the README link keeps working) and its revoked state.
+     * Nobody knows its password, and reviewers can't log in with one anyway.
+     */
+    public static function seedPublicReviewer(array $account): void
+    {
+        $user = User::where('role', Role::Judge)->where('reviewer_type', ReviewerType::Public)->first()
+            ?? User::firstOrNew(['email' => $account['email']]);
+
+        if ($user->exists && $user->role !== Role::Judge) {
+            return; // never turn someone else's login into the public reviewer
+        }
+
+        $user->forceFill([
+            'name' => $account['name'],
+            'role' => Role::Judge,
+            'reviewer_type' => ReviewerType::Public,
+            'invited_at' => $user->invited_at ?? now(),
+        ]);
+        $user->password ??= Str::random(64);
+        $user->save();
     }
 
     /**

@@ -27,7 +27,7 @@ class ReviewerController extends Controller
 
         return view('admin.reviewers', [
             'reviewers' => User::where('role', Role::Judge)->latest('invited_at')->latest('id')->get(),
-            'types' => ReviewerType::cases(),
+            'types' => array_filter(ReviewerType::cases(), fn (ReviewerType $type) => $type !== ReviewerType::Public),
             'endsAt' => $this->links->endsAt(),
         ]);
     }
@@ -39,7 +39,8 @@ class ReviewerController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'reviewer_type' => ['required', Rule::enum(ReviewerType::class)],
+            // Named reviewers only: the one public account comes from demo:seed-accounts.
+            'reviewer_type' => ['required', Rule::enum(ReviewerType::class)->except(ReviewerType::Public)],
         ]);
 
         [$user, $link] = $this->links->invite($data['name'], $data['email'], ReviewerType::from($data['reviewer_type']));

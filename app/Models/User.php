@@ -52,6 +52,12 @@ class User extends Authenticatable
         return $this->role === Role::Judge;
     }
 
+    /** The one shared reviewer account behind the README's public judge link. */
+    public function isPublicReviewer(): bool
+    {
+        return $this->isReadOnly() && $this->reviewer_type === ReviewerType::Public;
+    }
+
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
