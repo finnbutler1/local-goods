@@ -53,7 +53,8 @@ class AdjudicationSetTest extends TestCase
     {
         $case = $this->builder->newDraft()->cases()->firstOrFail();
 
-        $this->assertSame(array_keys(AdjudicationCase::FACTS), array_keys($case->facts));
+        // MySQL stores JSON keys in its own order; the page shows them in FACTS order.
+        $this->assertEqualsCanonicalizing(array_keys(AdjudicationCase::FACTS), array_keys($case->facts));
         $this->assertArrayNotHasKey('notes', $case->facts);
         $this->assertArrayNotHasKey('my_label', $case->facts);
     }

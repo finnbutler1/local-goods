@@ -227,7 +227,7 @@ class ReviewerMagicLinkTest extends TestCase
 
         foreach ([
             $id.'.'.Str::random(48),                  // wrong token
-            $id.'.'.substr($token, 0, 47).'x',        // one character changed
+            $id.'.'.substr($token, 0, 47).($token[47] === 'x' ? 'y' : 'x'), // one character changed
             $otherJudge->id.'.'.$token,               // another reviewer's id
             $id.'.'.$token.'x',                       // too long
             $id.'.'.substr($token, 0, 20),            // too short
