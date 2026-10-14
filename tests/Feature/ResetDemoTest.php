@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\Employee;
+use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Models\User;
@@ -40,13 +41,15 @@ class ResetDemoTest extends TestCase
         DB::table('cache')->insert(['key' => 'keep-me', 'value' => 'x', 'expiration' => 0]);
         DB::table('sessions')->insert(['id' => 'keep-me', 'payload' => 'x', 'last_activity' => 0]);
 
+        $seeded = $this->demoState();
+
         // Make a held redemption during the "demo".
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(95, 'hold', 'Full balance.'));
         $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
         $this->signIn(Role::Employee);
         $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '120']);
         $this->assertSame(0, Employee::firstOrFail()->balanceCents());
-        $this->assertSame(13, Redemption::count());
+        $this->assertSame($seeded['redemptions'] + 1, Redemption::count());
 
         $this->signIn(Role::BidAdmin);
         $this->followingRedirects()
@@ -55,10 +58,10 @@ class ResetDemoTest extends TestCase
             ->assertSee('Demo data has been reset')
             ->assertDontSee('Full balance.');
 
-        // Seeded state is back, exactly once.
-        $this->assertSame(12, Redemption::count());
+        // Seeded state is back, exactly once: same rows, same balances.
+        $this->assertSame($seeded, $this->demoState());
         $this->assertSame(0, Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->count());
-        $this->assertSame(1, Employee::count());
+        $this->assertSame(DatabaseSeeder::ENROLLED, Employee::count());
         $this->assertSame(8, Merchant::count());
         $this->assertSame(12000, Employee::firstOrFail()->balanceCents());
 
@@ -68,12 +71,12 @@ class ResetDemoTest extends TestCase
         $this->assertTrue(DB::table('sessions')->where('id', 'keep-me')->exists());
     }
 
-    public function test_reset_only_ever_clears_the_six_demo_tables(): void
+    public function test_reset_only_ever_clears_the_demo_tables(): void
     {
         // Adding a table here (users, sessions, feedback...) would let Reset
         // demo delete real data. Change this list only on purpose.
         $this->assertSame(
-            ['credit_ledger_entries', 'redemptions', 'merchants', 'employees', 'employers', 'bids'],
+            ['credit_ledger_entries', 'merchant_payouts', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
     }
@@ -90,7 +93,25 @@ class ResetDemoTest extends TestCase
     public function test_reset_requires_post(): void
     {
         $this->signIn(Role::BidAdmin);
+        $redemptions = Redemption::count();
         $this->get('/bid-admin/reset')->assertMethodNotAllowed();
-        $this->assertSame(12, Redemption::count());
+        $this->assertSame($redemptions, Redemption::count());
+    }
+
+    /**
+     * Row counts per demo table and every balance, with ids left out (MySQL
+     * keeps counting ids up after a reset).
+     *
+     * @return array<string, mixed>
+     */
+    private function demoState(): array
+    {
+        return [
+            'redemptions' => Redemption::count(),
+            'tables' => collect(DemoResetter::DEMO_TABLES)->mapWithKeys(fn ($t) => [$t => DB::table($t)->count()])->all(),
+            'employees' => Employee::orderBy('id')->get()->map(fn ($e) => [$e->display_name, $e->balanceCents()])->all(),
+            'merchants' => Merchant::orderBy('id')->get()->map(fn ($m) => [$m->name, $m->payableCents()])->all(),
+            'employer' => Employer::firstOrFail()->balanceCents(),
+        ];
     }
 }

@@ -91,7 +91,7 @@ class CreditLedger
                 'amount_cents' => $amountCents,
                 'type' => CreditLedgerEntry::TYPE_ALLOWANCE,
                 'credit_allocation_id' => $allocation->id,
-                'description' => 'Allowance from '.$employer->name,
+                'description' => 'Allowance from '.$employer->name.' ('.$at->copy()->setTimezone(config('fraud.timezone'))->format('F').')',
                 'created_at' => $at,
             ]);
 

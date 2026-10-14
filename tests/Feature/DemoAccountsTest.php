@@ -110,10 +110,12 @@ class DemoAccountsTest extends TestCase
         (new DatabaseSeeder)->run();
         $this->artisan('demo:seed-accounts');
         $jordan = User::where('role', Role::Employee)->sole();
-        $this->assertSame($jordan->id, Employee::sole()->user_id);
+        $this->assertSame($jordan->id, Employee::orderBy('id')->firstOrFail()->user_id);
+        $this->assertSame(1, Employee::whereNotNull('user_id')->count());
 
         app(DemoResetter::class)->reset();
-        $this->assertSame($jordan->id, Employee::sole()->user_id);
+        $this->assertSame($jordan->id, Employee::orderBy('id')->firstOrFail()->user_id);
+        $this->assertSame(1, Employee::whereNotNull('user_id')->count());
         $this->assertSame(count(Role::cases()), User::count(), 'Reset demo never removes logins');
     }
 

@@ -16,6 +16,9 @@ class DemoResetter
      */
     public const DEMO_TABLES = [
         'credit_ledger_entries',
+        'merchant_payouts',
+        'credit_allocations',
+        'credit_purchases',
         'redemptions',
         'merchants',
         'employees',
