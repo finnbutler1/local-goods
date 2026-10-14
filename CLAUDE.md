@@ -5,10 +5,36 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Week 2: judge access and feedback — done (Prompt 3, then magic links).** Next milestone not set yet.
+**Merchant Eligibility Matching data foundation — waiting on Finn's labels.**
+Steps 1 (ledger), 5 (seed), 2 (candidates) and 3 (label file) are done; step 4
+(lock the labels) comes after Finn commits `data/merchant_labels.csv`.
 
-Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010) and blind
-adjudication (ADR 0011).
+Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
+adjudication (ADR 0011) and the three-account ledger (ADR 0012).
+- Ledger (ADR 0012): one append-only ledger, each entry on exactly one
+  account (employee, employer or merchant). `App\Services\CreditLedger` does
+  purchases, allocations, merchant earnings and payouts. A merchant earns a
+  redemption only once it clears, never while held. Invariant: purchases −
+  payouts − amounts under review = sum of all entries. Demo payouts are
+  `simulated` (no Stripe yet).
+- Seed: Meridian (120 staff, 40 enrolled). Jordan Rivera must stay the first
+  employee with the same 12 redemptions (fraud eval signal test and wallet
+  demo depend on it). `DemoHistorySeeder` adds 39 employees, 8 weeks of
+  deterministic history at the fictional merchants and two planted collusion
+  patterns (documented there). Reset demo clears `DemoResetter::DEMO_TABLES`
+  only.
+- Real merchant candidates: `data/merchant_candidates.csv` from
+  `php artisan eligibility:build-candidates` (DC Open Data licenses + DC GIS
+  boundary; kept only if the spatial query, the license's BID field and our
+  point-in-polygon check agree). Real candidates must never appear in
+  synthetic data or seeds, and any page showing one must label it
+  "Candidate — not a Local Goods participant." (`config('eligibility.candidate_label')`).
+  Never store owner or agent names.
+- Labels: `data/merchant_labels.csv`, 60 rows (40 dev, 20 holdout). Labels
+  are Finn's alone: never fill in, suggest or hint at `my_label`,
+  `fail_reason`, `evidence_url` or `my_note`. `fail_reason` is one of
+  local_chain, franchise, national_chain, outside_control (part 1 of the
+  rule). Checked by `App\Services\Eligibility\MerchantLabels`.
 - Blind adjudication (ADR 0011): `/admin/adjudication` builds a set from the
   latest eval run (every disagreement plus as many random agreed cases as
   blind controls; locked once published, new version to change). Only judges

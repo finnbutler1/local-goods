@@ -219,7 +219,26 @@ judges check the disagreements, blind
 Today employees can only redeem at the demo's merchants, which were seeded by
 hand as fictional independent businesses. The app does not yet check whether a
 merchant is independent. Merchant Eligibility Matching will do that, and it is
-**planned**.
+**planned**. The groundwork is in place:
+
+- **Real candidates from public data.** `data/merchant_candidates.csv` lists
+  224 real, consumer-facing businesses inside the Golden Triangle BID, built by
+  `php artisan eligibility:build-candidates` from DC Open Data (the BID
+  boundary from DC GIS, and active Basic Business Licenses). A business is kept
+  only if DC's spatial query, the license's own BID field and our own
+  point-in-polygon check all place it inside the boundary
+  (`data/sources/merchant_candidates_report.md` has the counts). We keep only
+  business names: owner names are never downloaded, and a license whose only
+  name is a person's is left out.
+- **Candidates are not participants.** None of these businesses has joined
+  Local Goods, and none appears in the demo's synthetic transactions. Any page
+  that ever shows one must label it "Candidate — not a Local Goods
+  participant."
+- **Ground truth before the AI.** Finn labels 60 of them by hand in
+  `data/merchant_labels.csv` (independent, not independent, or undetermined,
+  with the reason and a public source), split 40 dev and 20 holdout. The labels
+  are then locked with a fingerprint per row, the same way as the fraud eval,
+  before the AI sees them.
 
 ### How reviewers get in
 
@@ -244,7 +263,11 @@ shared, generic reviewer account.
 ### Synthetic data
 
 Every person, business and transaction in the demo is fictional. No real
-employee, customer or card data is used.
+employee, customer or card data is used. The demo has 40 synthetic Meridian
+employees and eight weeks of synthetic redemptions at the eight fictional
+merchants, including two planted collusion patterns for a future check to find
+(described in `database/seeders/DemoHistorySeeder.php`). The real merchant
+candidates above are kept out of all of it.
 
 ## How I built Local Goods with Claude Code
 
