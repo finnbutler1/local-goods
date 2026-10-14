@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Services\Ai\ClaudeClient;
+use App\Services\Fraud\FraudEvalLock;
 use App\Services\Fraud\FraudEvalRunner;
 use App\Services\Fraud\SignalCalculator;
 use Database\Seeders\DatabaseSeeder;
@@ -29,6 +30,8 @@ class FraudEvalTest extends TestCase
         parent::setUp();
         $this->dir = sys_get_temp_dir().'/fraud-eval-test-'.uniqid();
         File::ensureDirectoryExists($this->dir);
+        // The real lock covers the real cases file; test files start unlocked.
+        config(['fraud.eval_lock_path' => "{$this->dir}/lock.json"]);
     }
 
     protected function tearDown(): void
@@ -244,6 +247,57 @@ class FraudEvalTest extends TestCase
         $this->assertCount(20, array_filter($cases, fn ($c) => $c['split'] === 'dev'));
         $this->assertCount(10, array_filter($cases, fn ($c) => $c['split'] === 'holdout'));
         $this->assertCount(10, array_filter($cases, fn ($c) => $c['split'] === 'holdout_2'));
+        $this->assertCount(50, array_filter($cases, fn ($c) => $c['split'] === 'holdout_3'));
+    }
+
+    public function test_the_real_holdout_3_cases_still_match_their_lock(): void
+    {
+        $cases = app(FraudEvalRunner::class)->loadCases(base_path('data/fraud_eval_cases.csv'));
+        $lock = json_decode(file_get_contents(base_path('data/fraud_eval_lock.json')), true);
+
+        $this->assertSame([], FraudEvalLock::problems($cases, $lock), 'A locked holdout_3 case was changed after labeling.');
+        $this->assertSame(50, $lock['case_count']);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{40}$/', $lock['labeling_commit']);
+        $this->assertSame(
+            FraudEvalLock::build($cases, $lock['labeling_commit'], $lock['locked_at'])['combined_sha256'],
+            $lock['combined_sha256'],
+        );
+    }
+
+    public function test_fraud_eval_refuses_to_run_when_a_locked_case_changed(): void
+    {
+        $fake = $this->useFake(FakeClaudeClient::verdict(10, 'clear'));
+        $rows = [
+            'FE-41,Farragut Grind,cafe,5.40,08:05,92.30,"x",2,6,18,7.10,normal,small,holdout_3',
+            'FE-42,K Street Cuts,salon,180.00,21:40,184.50,"x",0,0,9,16.20,suspicious,drains,holdout_3',
+        ];
+        $cases = app(FraudEvalRunner::class)->loadCases($this->writeCases(...$rows));
+        file_put_contents("{$this->dir}/lock.json", json_encode(FraudEvalLock::build($cases, str_repeat('a', 40), '2026-10-14T12:00:00-04:00')));
+
+        // Unchanged: runs.
+        $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
+
+        // A relabel, a new case and a removed case are each refused before any AI call.
+        $fake->calls = [];
+        $this->writeCases(
+            'FE-41,Farragut Grind,cafe,5.40,08:05,92.30,"x",2,6,18,7.10,suspicious,small,holdout_3',
+            'FE-43,Press Room Deli,restaurant,12.75,12:20,66.00,"x",1,3,14,11.40,normal,lunch,holdout_3',
+        );
+        $this->artisan('fraud:eval', ['--cache' => "{$this->dir}/cache2"] + $this->evalCommand())
+            ->expectsOutputToContain('FE-41: changed since it was locked')
+            ->expectsOutputToContain('FE-42: locked case is missing')
+            ->expectsOutputToContain('FE-43: not in the lock')
+            ->assertFailed();
+
+        $this->assertSame([], $fake->calls);
+    }
+
+    public function test_an_existing_lock_is_never_replaced_without_force(): void
+    {
+        file_put_contents("{$this->dir}/lock.json", '{"rows":{}}');
+
+        $this->artisan('fraud:lock')->expectsOutputToContain('already locked')->assertFailed();
+        $this->assertSame('{"rows":{}}', file_get_contents("{$this->dir}/lock.json"));
     }
 
     public function test_loading_a_missing_file_fails_clearly(): void

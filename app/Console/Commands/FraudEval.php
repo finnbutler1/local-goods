@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Fraud\FraudEvalLock;
 use App\Services\Fraud\FraudEvalReport;
 use App\Services\Fraud\FraudEvalRunner;
 use Illuminate\Console\Command;
@@ -30,6 +31,16 @@ class FraudEval extends Command
             foreach (explode("\n", $e->getMessage()) as $line) {
                 $this->error($line);
             }
+
+            return self::FAILURE;
+        }
+
+        if (($lock = FraudEvalLock::load()) !== null && ($problems = FraudEvalLock::problems($cases, $lock)) !== []) {
+            $this->error('The locked '.FraudEvalLock::SPLIT." cases no longer match data/fraud_eval_lock.json (labeling commit {$lock['labeling_commit']}):");
+            foreach ($problems as $problem) {
+                $this->error("- {$problem}");
+            }
+            $this->error('Nothing was scored. Restore the cases from that commit.');
 
             return self::FAILURE;
         }

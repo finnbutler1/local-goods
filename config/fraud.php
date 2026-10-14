@@ -28,6 +28,10 @@ return [
         'fitness' => [2000, 4000],
     ],
 
+    // SHA-256 of every holdout_3 row and the labeling commit, written once by
+    // `php artisan fraud:lock`. fraud:eval refuses to run if a locked row changed.
+    'eval_lock_path' => base_path('data/fraud_eval_lock.json'),
+
     // Latest results written by `php artisan fraud:eval`, shown at /demo/bid-admin/eval.
     'eval_latest_path' => base_path('docs/evals/fraud-eval-latest.json'),
 
