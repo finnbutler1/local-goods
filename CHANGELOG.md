@@ -3,6 +3,26 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-14: Blind adjudication of the fraud eval
+
+- **BID staff and contest judges check the disagreements.** Where Finn's label
+  and the AI disagree, named BID and contest-judge reviewers vote, blind, on
+  who was right ([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md)).
+- **Admin setup** at `/admin/adjudication`: the draft starts with every
+  disputed case (all splits, grouped by split) plus as many random agreed cases
+  as blind controls. Publishing locks it; changes need a new version.
+- **"Help check the AI, about 15 minutes"** on the reviewer home page: one
+  opening question ("Have you looked at the eval results page before today?"),
+  then one case at a time with only the facts, a required reason, progress
+  like "7 of 32", and Submit all.
+- Voting is the only new write a reviewer can make. The public judge account,
+  friends and other reviewer types can look but get 403 on voting.
+- **Results** on the admin page and in a separate section of `/eval`: per-case
+  votes and majority, "sided with the AI in X, with Finn in Y, split in Z" for
+  all adjudicators and for those who hadn't seen the eval page, agreement on
+  control cases, and breakdowns by split and pattern. The headline and labels
+  are unchanged.
+
 ## 2026-10-14: A bigger, locked fraud eval
 
 - **50 new hand-labeled cases** (`holdout_3`, FE-41 to FE-90, 26 labeled

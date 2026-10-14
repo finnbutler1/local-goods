@@ -16,3 +16,4 @@ trade-off in under a minute.
 | [0008](0008-read-only-reviewers-with-single-use-invite-links.md) | Read-only reviewers with single-use invite links | Partly superseded by 0010 |
 | [0009](0009-https-through-cloudfront.md) | HTTPS through CloudFront in front of Beanstalk | Accepted, implemented |
 | [0010](0010-magic-links-for-reviewers.md) | Magic links for reviewers, and one public judge account | Accepted, implemented |
+| [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Accepted, implemented |

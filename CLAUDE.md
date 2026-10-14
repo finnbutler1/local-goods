@@ -7,7 +7,15 @@ building, for whom, and the rules for working in this repo.
 
 **Week 2: judge access and feedback — done (Prompt 3, then magic links).** Next milestone not set yet.
 
-Done: Prompts 0, S, R, DB, E, 1, 2 and 3, and magic links (ADR 0010).
+Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010) and blind
+adjudication (ADR 0011).
+- Blind adjudication (ADR 0011): `/admin/adjudication` builds a set from the
+  latest eval run (every disagreement plus as many random agreed cases as
+  blind controls; locked once published, new version to change). Only judges
+  with reviewer type BID or contest judge vote (`adjudicate` gate,
+  `User::canAdjudicate`) at `/adjudicate`; `adjudication.start/vote/submit`
+  are on the judge write allowlist. Results (`AdjudicationResults`) on the
+  admin page and `/eval`; they never change labels or the headline.
 - Magic links (ADR 0010, supersedes 0008's invites): judges never create
   accounts or set passwords. `App\Services\ReviewerLinks` makes a reusable
   link `/judge-access#<id>.<token>` (token after `#`, so never in logs; the

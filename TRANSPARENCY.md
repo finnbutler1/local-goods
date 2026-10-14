@@ -178,6 +178,38 @@ sample (the confidence intervals above are wide), the cases are synthetic, and
 one person's labels are one opinion. Agreement shows how closely the AI matches
 that person, not whether either of them is right about real fraud.
 
+### Checking the person's labels: blind adjudication
+
+One person's labels are one opinion, and where the person and the AI
+disagree, the person may be the one who is wrong. So BID staff and contest
+judges check the disagreements, blind
+([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md)):
+
+- **What they vote on:** every case, in every split, where Finn's label and the
+  AI's call disagree, mixed with the same number of randomly chosen cases where
+  both agreed, so nobody can tell which cases are disputed. Finn can adjust the
+  set before publishing it; after that it is locked.
+- **What they see:** only the facts of each redemption, one at a time, in a
+  random order of their own. Never Finn's label or note, the AI's decision,
+  score or explanation, or anyone else's vote. They choose normal or
+  suspicious and write a short reason, and can change their mind until they
+  press Submit all.
+- **Who votes:** only BID staff and contest judges with their own personal
+  link. The public judge link, friends and Finn can't vote.
+- **One question first:** "Have you looked at the Local Goods eval results
+  page before today?" Someone who has may already know the answers, so results
+  are shown for everyone and again for only those who said no. While voting is
+  open, the eval pages hide the per-case answers from adjudicators who haven't
+  submitted. Anyone not signed in can still see them, which is why the question
+  is asked.
+- **How it's reported:** a separate section on `/eval`, never mixed into the
+  headline. "On N disputed cases, adjudicators sided with the AI in X, with
+  Finn in Y, split in Z", how many adjudicators voted, how often they agreed
+  with the shared label on the control cases (a reliability check), and
+  results by split and by pattern. Each case's votes and reasons, without
+  names, appear once voting closes. **Adjudication never changes Finn's
+  labels or any headline number.**
+
 ### Which merchants are eligible (planned)
 
 Today employees can only redeem at the demo's merchants, which were seeded by
