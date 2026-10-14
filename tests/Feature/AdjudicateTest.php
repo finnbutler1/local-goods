@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\ReviewerType;
 use App\Enums\Role;
-use App\Models\AdjudicationCase;
 use App\Models\AdjudicationSet;
 use App\Models\AdjudicationVote;
 use App\Models\User;
