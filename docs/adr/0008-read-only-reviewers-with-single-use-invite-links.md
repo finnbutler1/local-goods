@@ -1,6 +1,8 @@
 # 0008. Read-only reviewers with single-use invite links
 
-**Status:** Accepted, implemented.
+**Status:** Partly superseded by [ADR 0010](0010-magic-links-for-reviewers.md):
+reviewers now sign in with reusable magic links and never set a password. The
+judge role, read-only enforcement and view as below still apply.
 
 ## Context
 

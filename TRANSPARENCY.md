@@ -156,6 +156,26 @@ hand as fictional independent businesses. The app does not yet check whether a
 merchant is independent. Merchant Eligibility Matching will do that, and it is
 **planned**.
 
+### How reviewers get in
+
+Judges and other reviewers never create an account or choose a password. Finn
+makes each one a personal **magic link**; opening it signs them into a
+read-only view of the app. The README also has one **public judge link** to a
+shared, generic reviewer account.
+
+- **What a link can do:** look at every screen and leave feedback. It can't
+  change data, approve or reject a redemption, or open the admin pages that list
+  reviewers' names and emails. It can only ever sign in to a reviewer account.
+- **How long it lasts:** until judging closes (November 30, 2026, 11:59 PM
+  Eastern), unless Finn switches it off or replaces it sooner. Either way, any
+  open session ends on its next click.
+- **What we keep:** a fingerprint (hash) of each link, never the link itself,
+  plus when each reviewer first and last visited and the feedback they send. The
+  link's secret part never reaches our server logs.
+- **Attribution:** feedback from a personal link carries that reviewer's name.
+  Feedback from the public link is anonymous, labeled "Public judge access",
+  and limited to a few notes a minute so one visitor can't flood the inbox.
+
 ### Synthetic data
 
 Every person, business and transaction in the demo is fictional. No real

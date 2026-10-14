@@ -1,5 +1,21 @@
 # Local Goods
 
+## For judges
+
+**Public judge link:** *coming with the next deploy. The link will go here.*
+It signs you straight into a read-only reviewer view of the live app: no
+account, no password. Works until judging closes on November 30, 2026.
+
+**Demo video (2–3 min):** *coming soon.*
+
+Inside, a guided tour walks through each role, **View as** shows the app as an
+employee, BID admin, employer or merchant, and the **Feedback** button on every
+page sends notes scored against the rubric. Named reviewers get a personal link
+instead, so their feedback carries their name
+([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
+
+---
+
 **An employee perk program designed to keep employer spending in the neighborhood: credits meant to be spent only at independent local merchants.**
 
 > **Status:** working demo. Redemptions, AI fraud scoring and human approve/reject of held redemptions are live. Payouts and independence checks are **planned**: no money moves yet, and the demo merchants are seeded by hand.
@@ -40,9 +56,10 @@ request; there is no public sign-up). As the employee, redeem a normal amount,
 then click **Try a suspicious redemption**. As the BID admin, see the AI's
 score, decision and explanation for each one, and approve or reject held
 redemptions. The [AI eval results](https://d4ghrpm72uczx.cloudfront.net/eval) are public.
-Judges and other reviewers get their own read-only login from a single-use
-invite link, a guided tour, a "view as" switcher for each role, and a Feedback
-button on every page ([ADR 0008](docs/adr/0008-read-only-reviewers-with-single-use-invite-links.md)).
+Judges and other reviewers sign in with a magic link (no account, no password;
+see **For judges** above) to a read-only view with a guided tour, a "view as"
+switcher for each role, and a Feedback button on every page
+([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
 
 ## The two AI functions
 
@@ -78,7 +95,7 @@ Only what exists today is claimed. Everything else is marked **planned**.
 
 | Category | Points | Evidence |
 |---|---|---|
-| **Functionality** | 25 | **Live:** after [logging in](https://d4ghrpm72uczx.cloudfront.net/login), the employee wallet shows a balance, a redeem form and recent redemptions; the BID admin view shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; logins with six roles, each with its own dashboard ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)); read-only reviewer logins from single-use invite links, with a guided tour, "view as" for each role and in-app feedback scored against this rubric ([ADR 0008](docs/adr/0008-read-only-reviewers-with-single-use-invite-links.md)); an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode). |
+| **Functionality** | 25 | **Live:** after [logging in](https://d4ghrpm72uczx.cloudfront.net/login), the employee wallet shows a balance, a redeem form and recent redemptions; the BID admin view shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; logins with six roles, each with its own dashboard ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)); read-only reviewer access from magic links (no passwords, valid until judging ends, revocable), with a guided tour, "view as" for each role and in-app feedback scored against this rubric ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)); an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)). **Planned:** employer credit purchase, Stripe Connect payouts (test mode). |
 | **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
 | **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Measured:** [80% agreement on 10 unseen cases with the current prompt, and 0 suspicious cases missed](docs/evals/fraud-eval-results.md). Every disagreement is a false alarm that goes to human review, never a wrong approval. Small sample: one case is 10 points. 40 synthetic cases in all, each labeled by a person before the AI saw it; every run is kept; method in [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it). **Planned:** Merchant Eligibility Matching. |
 | **Code quality / GitHub** | 15 | A [test that sends every write route as a judge](tests/Feature/JudgeReadOnlyTest.php) and checks nothing changes. Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php), so they need no secrets. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
@@ -109,7 +126,7 @@ cd local-goods
 composer setup          # installs dependencies, creates .env, migrates, builds assets
 php artisan db:seed     # loads the synthetic demo data
 # set the DEMO_PASSWORD_* values in .env, then:
-php artisan demo:seed-accounts   # creates one demo login per role
+php artisan demo:seed-accounts   # one demo login per role, plus the public judge account (no password)
 composer dev            # runs the app at http://localhost:8000
 ```
 

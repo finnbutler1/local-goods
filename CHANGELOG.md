@@ -3,6 +3,26 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-14: Magic links for reviewers
+
+- **Reviewers never set a password.** Each one gets a personal magic link from
+  `/admin/reviewers` that signs them straight into their read-only reviewer
+  view. It works as often as needed until judging ends (`JUDGING_ENDS_AT`,
+  default November 30, 2026, 11:59 PM Eastern); after that, or after Revoke or
+  New link, it shows "This link has ended"
+  ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
+- The token in the link sits after `#`, so it never appears in server logs.
+  Only its hash is stored. The sign-in is rate-limited, can only ever open a
+  reviewer (judge) account, and New link or Revoke ends open sessions on their
+  next click.
+- **Public judge access:** one shared, generic read-only reviewer for the
+  README's "For judges" link. It is its own type in the feedback inbox, has
+  tighter feedback limits, and can't approve or reject anything. The demo judge
+  login it replaces no longer uses a password.
+- Removed the "choose a password" page, the password section of `/account` for
+  reviewers, and password logins for reviewers. Old invite links show the
+  ended page.
+
 ## 2026-10-13: HTTPS through CloudFront
 
 - The live site is served over HTTPS by CloudFront

@@ -5,23 +5,36 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Week 2: judge access and feedback — done (Prompt 3).** Next milestone not set yet.
+**Week 2: judge access and feedback — done (Prompt 3, then magic links).** Next milestone not set yet.
 
-Done: Prompts 0, S, R, DB, E, 1, 2 and 3.
-- 3 (reviewers and feedback): invited reviewers get a judge-role login from a
-  signed, single-use, 7-day link (`App\Services\ReviewerInvites`; only a hash
-  of the token is stored). Judges are read-only: `BlockJudgeWrites` (allowlist:
-  logout, feedback.store, feedback.update, user-password.update) plus gates
-  and policies; `JudgeReadOnlyTest` sweeps every write route, so **any new
-  write route must pass it**. Judges can GET the BID admin, employer, employee
-  and merchant pages ("view as", `App\Support\ViewAs`) but never `/admin/*`,
-  which holds real reviewers' names and emails. Feedback button on every
-  signed-in page (`feedback` table), inbox at `/admin/feedback`, changelog for
-  reviewers at `/admin/changelog`, "What's new" on `/judge`. ADR 0008.
+Done: Prompts 0, S, R, DB, E, 1, 2 and 3, and magic links (ADR 0010).
+- Magic links (ADR 0010, supersedes 0008's invites): judges never create
+  accounts or set passwords. `App\Services\ReviewerLinks` makes a reusable
+  link `/judge-access#<id>.<token>` (token after `#`, so never in logs; the
+  page posts it). Only its hash is stored, compared with `hash_equals`; valid
+  until `JUDGING_ENDS_AT` (`config/reviewers.php`, default 2026-11-30 23:59
+  America/New_York). Only ever opens a judge account; judges can't log in
+  with a password. `EndReviewerSessions` ends a judge session on its next
+  request after revoke, New link (session fingerprint mismatch) or the end
+  date. In tests, `actingAs($judge)` gives them a link-backed session
+  (`tests/TestCase.php`); use `be()` for one without. One shared "Public
+  judge access" reviewer (`ReviewerType::Public`, made by
+  `demo:seed-accounts`, no password) for the README link; tighter feedback
+  limits (`throttle:feedback`). After a new public link, update README's
+  "For judges" link.
+- 3 (reviewers and feedback): judges are read-only: `BlockJudgeWrites`
+  (allowlist: judge-access.store, logout, feedback.store, feedback.update)
+  plus gates and policies; `JudgeReadOnlyTest` sweeps every write route, so
+  **any new write route must pass it**. Judges can GET the BID admin,
+  employer, employee and merchant pages ("view as", `App\Support\ViewAs`)
+  but never `/admin/*`, which holds real reviewers' names and emails.
+  Feedback button on every signed-in page (`feedback` table), inbox at
+  `/admin/feedback`, changelog for reviewers at `/admin/changelog`, "What's
+  new" on `/judge`. ADR 0008.
 - HTTPS (ADR 0009): CloudFront (`cloudfront.net` address) in front of
   Beanstalk, talking to it over http without the Host header. In production
-  `UseAppUrl` pins URLs and the request itself to APP_URL; invite links are
-  signed by path; `TrustCloudFront` believes X-Forwarded-For only with the
+  `UseAppUrl` pins URLs and the request itself to APP_URL (magic links use
+  it too); `TrustCloudFront` believes X-Forwarded-For only with the
   `X-Origin-Verify` secret (`CLOUDFRONT_ORIGIN_SECRET`); session cookie is
   Secure. `BehindCloudFrontTest` covers it. Never trust proxies with `*`.
 - 2 (logins and roles): Laravel Fortify login (no registration, 5 tries a
