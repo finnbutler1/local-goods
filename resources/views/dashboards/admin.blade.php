@@ -15,7 +15,17 @@
         </header>
 
         <section aria-labelledby="accounts-heading">
-            <h2 id="accounts-heading" class="text-2xl font-semibold text-forest">Accounts</h2>
+            <div class="flex flex-wrap items-baseline justify-between gap-3">
+                <h2 id="accounts-heading" class="text-2xl font-semibold text-forest">Accounts</h2>
+                @if ($showRevoked)
+                    <a href="{{ route('admin.dashboard') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Hide revoked</a>
+                @elseif ($revokedCount > 0)
+                    <a href="{{ route('admin.dashboard', ['revoked' => 1]) }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show revoked ({{ $revokedCount }})</a>
+                @endif
+            </div>
+            <p class="mt-1 text-sm text-muted">
+                {{ $showRevoked ? 'Showing every account, revoked ones included.' : 'Revoked accounts are hidden.' }}
+            </p>
             <x-card class="mt-3 overflow-x-auto" padding="p-0">
                 <table class="w-full text-left">
                     <thead class="border-b border-line text-sm text-muted">
@@ -23,6 +33,7 @@
                             <th scope="col" class="px-5 py-3 font-semibold">Name</th>
                             <th scope="col" class="px-5 py-3 font-semibold">Email</th>
                             <th scope="col" class="px-5 py-3 font-semibold">Role</th>
+                            <th scope="col" class="px-5 py-3 font-semibold">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line">
@@ -31,6 +42,13 @@
                                 <td class="px-5 py-3 font-semibold">{{ $user->name }}</td>
                                 <td class="px-5 py-3 break-all">{{ $user->email }}</td>
                                 <td class="px-5 py-3"><x-badge tone="forest">{{ $user->role->label() }}</x-badge></td>
+                                <td class="px-5 py-3">
+                                    @if ($user->isRevoked())
+                                        <x-badge tone="neutral">Revoked</x-badge>
+                                    @else
+                                        <x-badge tone="ok">Active</x-badge>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReviewerController;
@@ -13,7 +14,6 @@ use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StyleguideController;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -73,7 +73,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/judge/view-as/{role?}', [JudgeController::class, 'viewAs'])->name('judge.view-as');
     });
     Route::middleware('role:platform_admin')->group(function () {
-        Route::get('/admin', fn () => view('dashboards.admin', ['users' => User::orderBy('id')->get()]))->name('admin.dashboard');
+        Route::get('/admin', AccountController::class)->name('admin.dashboard');
 
         Route::prefix('admin/reviewers')->name('admin.reviewers.')->group(function () {
             Route::get('/', [ReviewerController::class, 'index'])->name('index');
