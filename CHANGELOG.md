@@ -22,6 +22,10 @@ commit history.
 - Removed the "choose a password" page, the password section of `/account` for
   reviewers, and password logins for reviewers. Old invite links show the
   ended page.
+- The platform admin's Accounts table has a Status column (Active / Revoked)
+  and hides revoked accounts unless "Show revoked" is on.
+- The old "Casey Brooks" demo judge is removed once: deleted if nothing points
+  at it, otherwise left revoked. `demo:seed-accounts` never recreates it.
 
 ## 2026-10-13: HTTPS through CloudFront
 

@@ -6,6 +6,7 @@ use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\User;
+use App\Support\RetiredDemoAccounts;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -28,6 +29,13 @@ class DemoAccountSeeder extends Seeder
         $skipped = [];
 
         foreach (config('demo.accounts') as $role => $account) {
+            // Retired logins (the old Casey Brooks judge) are never created again.
+            if (RetiredDemoAccounts::isRetired($account['email'])) {
+                $skipped[] = $role;
+
+                continue;
+            }
+
             if ($role === Role::Judge->value) {
                 self::seedPublicReviewer($account);
                 $saved[] = $role;

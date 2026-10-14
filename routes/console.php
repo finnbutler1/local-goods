@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\DemoResetter;
+use App\Support\RetiredDemoAccounts;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoAccountSeeder;
 use Illuminate\Foundation\Inspiring;
@@ -37,6 +38,8 @@ Artisan::command('demo:seed-accounts', function () {
     }
 
     foreach ($result['skipped'] as $role) {
-        $this->warn("Skipped {$role}: DEMO_PASSWORD_".strtoupper($role).' is not set.');
+        $this->warn(RetiredDemoAccounts::isRetired(config("demo.accounts.$role.email"))
+            ? "Skipped {$role}: that demo login is retired."
+            : "Skipped {$role}: DEMO_PASSWORD_".strtoupper($role).' is not set.');
     }
 })->purpose('Create or update the demo login for each role from DEMO_PASSWORD_* settings');
