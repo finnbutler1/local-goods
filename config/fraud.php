@@ -35,6 +35,9 @@ return [
     // Public repo, so /eval can link the lock's labeling commit.
     'eval_repo_url' => 'https://github.com/finnbutler1/local-goods',
 
+    // The hand-labeled eval cases. Blind adjudication (ADR 0011) shows their facts.
+    'eval_cases_path' => base_path('data/fraud_eval_cases.csv'),
+
     // Latest results written by `php artisan fraud:eval`, shown at /demo/bid-admin/eval.
     'eval_latest_path' => base_path('docs/evals/fraud-eval-latest.json'),
 

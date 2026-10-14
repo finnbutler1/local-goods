@@ -45,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-changelog', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+        Gate::define('manage-adjudication', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+        // The one write some judges may make: blind votes on eval cases (ADR 0011).
+        Gate::define('adjudicate', fn (User $user) => $user->canAdjudicate());
 
         // Feedback: the shared public reviewer is anyone with the README link,
         // so it gets a tighter limit per visitor IP. Named reviewers and staff

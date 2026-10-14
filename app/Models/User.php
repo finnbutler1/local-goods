@@ -58,6 +58,18 @@ class User extends Authenticatable
         return $this->isReadOnly() && $this->reviewer_type === ReviewerType::Public;
     }
 
+    /**
+     * Blind adjudication of the fraud eval (ADR 0011): only named BID and
+     * contest-judge reviewers vote. Not the shared public account, friends,
+     * other reviewer types or staff (the person who labeled the cases).
+     */
+    public function canAdjudicate(): bool
+    {
+        return $this->isReadOnly()
+            && ! $this->isRevoked()
+            && in_array($this->reviewer_type, [ReviewerType::Bid, ReviewerType::ContestJudge], true);
+    }
+
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
