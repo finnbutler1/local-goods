@@ -3,6 +3,19 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-14: Purchases, allocations and merchant payouts in the ledger
+
+- **The employer side and the merchant side** are now in the same
+  append-only ledger as the employee wallet: the employer buys credits, hands
+  them to employees, and merchants are owed each redemption once it clears
+  ([ADR 0012](docs/adr/0012-one-ledger-three-account-kinds.md)).
+- **The fraud gate shows in the books:** a held redemption earns the merchant
+  nothing until a person approves it.
+- **Merchant payouts** can never exceed what the merchant is owed. Demo
+  payouts are marked simulated, since Stripe Connect is not built yet.
+- **Safe for live data:** the migration only adds columns, and a test proves
+  every existing employee's balance is unchanged.
+
 ## 2026-10-14: Blind adjudication of the fraud eval
 
 - **BID staff and contest judges check the disagreements.** Where Finn's label
