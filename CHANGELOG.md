@@ -3,6 +3,20 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-14: Groundwork for Merchant Eligibility Matching
+
+- **40 synthetic Meridian employees** (of 120 staff) and eight weeks of
+  synthetic history at the fictional merchants, with monthly credit purchases,
+  allowances on the 1st and simulated Friday payouts. Two collusion patterns
+  are planted for a future check. Reset demo restores exactly this state.
+- **Real merchant candidates:** 224 consumer-facing businesses inside the
+  Golden Triangle BID, from DC Open Data business licenses and the DC GIS
+  boundary, each checked three ways to be inside it
+  (`php artisan eligibility:build-candidates`). They are candidates only, not
+  Local Goods participants, and never appear in the demo.
+- **Label file** `data/merchant_labels.csv`: 60 candidates (40 dev, 20
+  holdout) for Finn to label by hand before any AI run.
+
 ## 2026-10-14: Purchases, allocations and merchant payouts in the ledger
 
 - **The employer side and the merchant side** are now in the same
