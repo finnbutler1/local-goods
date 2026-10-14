@@ -16,12 +16,14 @@ class RedemptionService
     public function __construct(
         private SignalCalculator $signals,
         private RedemptionFraudDetector $detector,
+        private CreditLedger $ledger,
     ) {}
 
     /**
      * Score a redemption with Redemption Fraud Detection, then record it and
      * debit the ledger. Held redemptions still debit, so the credits stay
-     * reserved while a person reviews them.
+     * reserved while a person reviews them. Only a cleared redemption
+     * credits the merchant; a held one earns it nothing until approved.
      */
     public function redeem(Employee $employee, Merchant $merchant, int $amountCents): Redemption
     {
@@ -61,6 +63,10 @@ class RedemptionService
                 'description' => 'Redemption at '.$merchant->name,
                 'created_at' => now(),
             ]);
+
+            if ($redemption->status === Redemption::STATUS_APPROVED) {
+                $this->ledger->creditMerchant($redemption);
+            }
 
             return $redemption;
         });

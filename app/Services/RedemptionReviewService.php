@@ -13,11 +13,14 @@ use Illuminate\Support\Facades\DB;
  * A person's decision on a redemption that Redemption Fraud Detection held.
  * The credits were already debited (reserved) when the redemption was made:
  * approving spends them, rejecting gives them back. Each decision adds one
- * ledger entry recording who decided; nothing is edited or deleted. Who may
+ * ledger entry recording who decided; nothing is edited or deleted. An
+ * approval also credits the merchant, which a held redemption never does. Who may
  * decide is checked by RedemptionPolicy::review before this is called.
  */
 class RedemptionReviewService
 {
+    public function __construct(private CreditLedger $ledger) {}
+
     public function approve(Redemption $redemption, User $reviewer): Redemption
     {
         return $this->decide($redemption, $reviewer, Redemption::STATUS_APPROVED, fn (Redemption $r) => [
@@ -67,6 +70,10 @@ class RedemptionReviewService
                 'decided_by' => $reviewer->name,
                 'created_at' => $now,
             ]);
+
+            if ($status === Redemption::STATUS_APPROVED) {
+                $this->ledger->creditMerchant($redemption, $now);
+            }
 
             return $redemption;
         });
