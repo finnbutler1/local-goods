@@ -53,8 +53,11 @@ Done: Prompts 0, S, R, DB, E, 1, 2 and 3, and magic links (ADR 0010).
 - R (repo trophy case): README with live link, stack and rubric table, CI
   badge, `TRANSPARENCY.md`, `CHANGELOG.md`, decision records in `docs/adr/`.
 - Production runs on Amazon RDS MySQL.
-- Redemption Fraud Detection eval: 80% agreement on the unseen `holdout_2`
-  cases, 0 suspicious cases missed.
+- Redemption Fraud Detection eval: headline is `holdout_3` (50 cases, 26
+  suspicious, locked in `data/fraud_eval_lock.json` at labeling commit
+  5f594c1): caught 17 of 26 suspicious; 17 of 19 holds were suspicious.
+  Prompt frozen at `8d5e1e70`. Never edit locked holdout_3 rows (CI fails and
+  `fraud:eval` refuses); a prompt change needs a fresh unseen split.
 - Brand redesign: theme tokens, self-hosted fonts, employer-first landing
   page, app shell, local-only `/styleguide`.
 

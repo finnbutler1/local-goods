@@ -1,0 +1,2373 @@
+{
+    "run_at": "2026-10-14T16:01:27-04:00",
+    "model": "claude-opus-5-5",
+    "prompt_version": "8d5e1e70",
+    "case_count": 90,
+    "api_calls": 0,
+    "errors": [],
+    "summary": {
+        "dev": {
+            "cases": 20,
+            "agree": 18,
+            "agreement_pct": 90.0,
+            "agreement_ci95": [
+                69.9,
+                97.2
+            ],
+            "matrix": {
+                "normal": {
+                    "normal": 11,
+                    "suspicious": 2
+                },
+                "suspicious": {
+                    "normal": 0,
+                    "suspicious": 7
+                }
+            },
+            "catch": {
+                "hits": 7,
+                "of": 7,
+                "pct": 100.0,
+                "ci95": [
+                    64.6,
+                    100.0
+                ]
+            },
+            "hold_precision": {
+                "hits": 7,
+                "of": 9,
+                "pct": 77.8,
+                "ci95": [
+                    45.3,
+                    93.7
+                ]
+            },
+            "patterns": {
+                "tags": {
+                    "round_amount": {
+                        "cases": 10,
+                        "suspicious": 6,
+                        "missed": 0,
+                        "false_alarms": 2
+                    },
+                    "triple_median": {
+                        "cases": 10,
+                        "suspicious": 7,
+                        "missed": 0,
+                        "false_alarms": 2
+                    },
+                    "most_of_balance": {
+                        "cases": 7,
+                        "suspicious": 7,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "new_merchant": {
+                        "cases": 4,
+                        "suspicious": 2,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "outside_hours": {
+                        "cases": 7,
+                        "suspicious": 5,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "frequent_visitor": {
+                        "cases": 2,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 2
+                    },
+                    "above_category": {
+                        "cases": 8,
+                        "suspicious": 5,
+                        "missed": 0,
+                        "false_alarms": 2
+                    }
+                },
+                "categories": {
+                    "cafe": {
+                        "cases": 4,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "fitness": {
+                        "cases": 3,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "restaurant": {
+                        "cases": 7,
+                        "suspicious": 2,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "retail": {
+                        "cases": 4,
+                        "suspicious": 2,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "salon": {
+                        "cases": 2,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    }
+                }
+            }
+        },
+        "holdout": {
+            "cases": 10,
+            "agree": 9,
+            "agreement_pct": 90.0,
+            "agreement_ci95": [
+                59.6,
+                98.2
+            ],
+            "matrix": {
+                "normal": {
+                    "normal": 5,
+                    "suspicious": 1
+                },
+                "suspicious": {
+                    "normal": 0,
+                    "suspicious": 4
+                }
+            },
+            "catch": {
+                "hits": 4,
+                "of": 4,
+                "pct": 100.0,
+                "ci95": [
+                    51.0,
+                    100.0
+                ]
+            },
+            "hold_precision": {
+                "hits": 4,
+                "of": 5,
+                "pct": 80.0,
+                "ci95": [
+                    37.6,
+                    96.4
+                ]
+            },
+            "patterns": {
+                "tags": {
+                    "round_amount": {
+                        "cases": 4,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "triple_median": {
+                        "cases": 5,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "most_of_balance": {
+                        "cases": 4,
+                        "suspicious": 4,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "new_merchant": {
+                        "cases": 3,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "outside_hours": {
+                        "cases": 4,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "frequent_visitor": {
+                        "cases": 1,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "above_category": {
+                        "cases": 5,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 1
+                    }
+                },
+                "categories": {
+                    "cafe": {
+                        "cases": 1,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "restaurant": {
+                        "cases": 5,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "retail": {
+                        "cases": 3,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "salon": {
+                        "cases": 1,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    }
+                }
+            }
+        },
+        "holdout_2": {
+            "cases": 10,
+            "agree": 8,
+            "agreement_pct": 80.0,
+            "agreement_ci95": [
+                49.0,
+                94.3
+            ],
+            "matrix": {
+                "normal": {
+                    "normal": 4,
+                    "suspicious": 2
+                },
+                "suspicious": {
+                    "normal": 0,
+                    "suspicious": 4
+                }
+            },
+            "catch": {
+                "hits": 4,
+                "of": 4,
+                "pct": 100.0,
+                "ci95": [
+                    51.0,
+                    100.0
+                ]
+            },
+            "hold_precision": {
+                "hits": 4,
+                "of": 6,
+                "pct": 66.7,
+                "ci95": [
+                    30.0,
+                    90.3
+                ]
+            },
+            "patterns": {
+                "tags": {
+                    "round_amount": {
+                        "cases": 5,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 2
+                    },
+                    "triple_median": {
+                        "cases": 6,
+                        "suspicious": 4,
+                        "missed": 0,
+                        "false_alarms": 2
+                    },
+                    "most_of_balance": {
+                        "cases": 2,
+                        "suspicious": 2,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "new_merchant": {
+                        "cases": 2,
+                        "suspicious": 2,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "outside_hours": {
+                        "cases": 1,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "frequent_visitor": {
+                        "cases": 1,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "above_category": {
+                        "cases": 5,
+                        "suspicious": 3,
+                        "missed": 0,
+                        "false_alarms": 2
+                    }
+                },
+                "categories": {
+                    "cafe": {
+                        "cases": 2,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "fitness": {
+                        "cases": 2,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "restaurant": {
+                        "cases": 3,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "retail": {
+                        "cases": 2,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "salon": {
+                        "cases": 1,
+                        "suspicious": 1,
+                        "missed": 0,
+                        "false_alarms": 0
+                    }
+                }
+            }
+        },
+        "holdout_3": {
+            "cases": 50,
+            "agree": 39,
+            "agreement_pct": 78.0,
+            "agreement_ci95": [
+                64.8,
+                87.2
+            ],
+            "matrix": {
+                "normal": {
+                    "normal": 22,
+                    "suspicious": 2
+                },
+                "suspicious": {
+                    "normal": 9,
+                    "suspicious": 17
+                }
+            },
+            "catch": {
+                "hits": 17,
+                "of": 26,
+                "pct": 65.4,
+                "ci95": [
+                    46.2,
+                    80.6
+                ]
+            },
+            "hold_precision": {
+                "hits": 17,
+                "of": 19,
+                "pct": 89.5,
+                "ci95": [
+                    68.6,
+                    97.1
+                ]
+            },
+            "patterns": {
+                "tags": {
+                    "round_amount": {
+                        "cases": 21,
+                        "suspicious": 18,
+                        "missed": 3,
+                        "false_alarms": 1
+                    },
+                    "triple_median": {
+                        "cases": 20,
+                        "suspicious": 18,
+                        "missed": 3,
+                        "false_alarms": 2
+                    },
+                    "most_of_balance": {
+                        "cases": 15,
+                        "suspicious": 15,
+                        "missed": 2,
+                        "false_alarms": 0
+                    },
+                    "new_merchant": {
+                        "cases": 16,
+                        "suspicious": 15,
+                        "missed": 2,
+                        "false_alarms": 0
+                    },
+                    "outside_hours": {
+                        "cases": 11,
+                        "suspicious": 8,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "frequent_visitor": {
+                        "cases": 3,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 2
+                    },
+                    "above_category": {
+                        "cases": 21,
+                        "suspicious": 19,
+                        "missed": 3,
+                        "false_alarms": 1
+                    }
+                },
+                "categories": {
+                    "cafe": {
+                        "cases": 7,
+                        "suspicious": 3,
+                        "missed": 1,
+                        "false_alarms": 1
+                    },
+                    "fitness": {
+                        "cases": 7,
+                        "suspicious": 2,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "restaurant": {
+                        "cases": 18,
+                        "suspicious": 8,
+                        "missed": 2,
+                        "false_alarms": 1
+                    },
+                    "retail": {
+                        "cases": 11,
+                        "suspicious": 7,
+                        "missed": 2,
+                        "false_alarms": 0
+                    },
+                    "salon": {
+                        "cases": 7,
+                        "suspicious": 6,
+                        "missed": 4,
+                        "false_alarms": 0
+                    }
+                }
+            }
+        },
+        "all": {
+            "cases": 90,
+            "agree": 74,
+            "agreement_pct": 82.2,
+            "agreement_ci95": [
+                73.1,
+                88.8
+            ],
+            "matrix": {
+                "normal": {
+                    "normal": 42,
+                    "suspicious": 7
+                },
+                "suspicious": {
+                    "normal": 9,
+                    "suspicious": 32
+                }
+            },
+            "catch": {
+                "hits": 32,
+                "of": 41,
+                "pct": 78.0,
+                "ci95": [
+                    63.3,
+                    88.0
+                ]
+            },
+            "hold_precision": {
+                "hits": 32,
+                "of": 39,
+                "pct": 82.1,
+                "ci95": [
+                    67.3,
+                    91.0
+                ]
+            },
+            "patterns": {
+                "tags": {
+                    "round_amount": {
+                        "cases": 40,
+                        "suspicious": 30,
+                        "missed": 3,
+                        "false_alarms": 6
+                    },
+                    "triple_median": {
+                        "cases": 41,
+                        "suspicious": 32,
+                        "missed": 3,
+                        "false_alarms": 7
+                    },
+                    "most_of_balance": {
+                        "cases": 28,
+                        "suspicious": 28,
+                        "missed": 2,
+                        "false_alarms": 0
+                    },
+                    "new_merchant": {
+                        "cases": 25,
+                        "suspicious": 22,
+                        "missed": 2,
+                        "false_alarms": 0
+                    },
+                    "outside_hours": {
+                        "cases": 23,
+                        "suspicious": 17,
+                        "missed": 0,
+                        "false_alarms": 1
+                    },
+                    "frequent_visitor": {
+                        "cases": 7,
+                        "suspicious": 0,
+                        "missed": 0,
+                        "false_alarms": 6
+                    },
+                    "above_category": {
+                        "cases": 39,
+                        "suspicious": 30,
+                        "missed": 3,
+                        "false_alarms": 6
+                    }
+                },
+                "categories": {
+                    "cafe": {
+                        "cases": 14,
+                        "suspicious": 4,
+                        "missed": 1,
+                        "false_alarms": 3
+                    },
+                    "fitness": {
+                        "cases": 12,
+                        "suspicious": 4,
+                        "missed": 0,
+                        "false_alarms": 0
+                    },
+                    "restaurant": {
+                        "cases": 33,
+                        "suspicious": 11,
+                        "missed": 2,
+                        "false_alarms": 4
+                    },
+                    "retail": {
+                        "cases": 20,
+                        "suspicious": 13,
+                        "missed": 2,
+                        "false_alarms": 0
+                    },
+                    "salon": {
+                        "cases": 11,
+                        "suspicious": 9,
+                        "missed": 4,
+                        "false_alarms": 0
+                    }
+                }
+            }
+        }
+    },
+    "results": [
+        {
+            "case_id": "FE-01",
+            "split": "dev",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "80.00",
+            "local_time": "10:30",
+            "my_label": "suspicious",
+            "notes": "almost drains his whole credit balance",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 78,
+            "explanation": "This $80.00 redemption is a round amount that uses nearly all of the employee's $82.00 balance and is about 5.8 times their usual $13.87 spend. Although it falls within the normal range for retail and occurred during business hours, these signals together warrant a review.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-02",
+            "split": "dev",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "14.20",
+            "local_time": "19:30",
+            "my_label": "normal",
+            "notes": "doesn't drain his entire credit balance",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This $14.20 restaurant purchase is in line with the employee's usual spending (median $13.87) and within the normal range for restaurants. It is not a round amount, uses only a small part of the $74.10 balance, and happened at 7 PM, so no fraud signals are present.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-03",
+            "split": "dev",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "36.50",
+            "local_time": "18:05",
+            "my_label": "normal",
+            "notes": "has been there before",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $36.50 retail purchase is about 2.6 times the employee's usual $13.87 spend, but it is a normal amount for a retail store, not a round number, uses only part of the $120.75 balance, and happened at 6 PM. That one mild signal is not enough to hold the payout.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-04",
+            "split": "holdout",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "9.60",
+            "local_time": "11:45",
+            "my_label": "normal",
+            "notes": "small purchase",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This $9.60 restaurant purchase at 11am is not a round amount, is below the employee's usual $13.87 spend, and uses only a small part of the $33.40 balance. One prior visit to this merchant in the last week is normal.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-05",
+            "split": "dev",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "22.80",
+            "local_time": "22:20",
+            "my_label": "normal",
+            "notes": "regular customer",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 45,
+            "explanation": "This $22.80 restaurant purchase is a normal amount for a restaurant and uses only a small part of the $140.00 balance. It was made at 10 PM, just past business hours, and it is the employee's fourth visit to this merchant in 7 days at about 1.6 times their usual $13.87 spend, but these mild signals don't add up to a likely cash-out.",
+            "agree": true,
+            "tags": [
+                "outside_hours"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-06",
+            "split": "dev",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "120.00",
+            "local_time": "02:15",
+            "my_label": "suspicious",
+            "notes": "drains entire account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 97,
+            "explanation": "This exactly $120.00 restaurant charge uses nearly all of the $122.30 balance, is about 8.7 times the employee's usual $13.87 spend and well above the normal $10–$45 restaurant ticket, and happened at 2 a.m. It also follows 3 visits to the same merchant in the past 7 days, so many collusion signals line up.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-07",
+            "split": "dev",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "17.40",
+            "local_time": "12:40",
+            "my_label": "normal",
+            "notes": "has been there",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 8,
+            "explanation": "This $17.40 lunch-hour restaurant purchase is within the normal range for restaurants and only slightly above the employee's usual $13.87 spend. It uses a small part of the $98.15 balance and is not a round amount, so nothing suggests abuse.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-08",
+            "split": "dev",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "40.00",
+            "local_time": "13:00",
+            "my_label": "normal",
+            "notes": "regular customer",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 85,
+            "explanation": "This is a round $40.00 charge at a cafe, more than six times this employee's usual $6.40 spend and well above the normal $3–$15 cafe ticket. The employee has also made 9 visits to this same cafe in the past 7 days (22 in 30 days).",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "frequent_visitor",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-09",
+            "split": "holdout",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "13.50",
+            "local_time": "06:45",
+            "my_label": "normal",
+            "notes": "regular customer",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 35,
+            "explanation": "This $13.50 restaurant purchase matches the employee's usual spending (median about $13.87), is within the normal range for restaurants, and uses only a small part of the $120.00 balance. It was made at 6 a.m., before normal business hours, and the employee has visited this merchant often (4 times in the last 7 days, 9 in the last 30), but these signals are not strong enough to hold an ordinary-sized purchase.",
+            "agree": true,
+            "tags": [
+                "outside_hours"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-10",
+            "split": "dev",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "150.00",
+            "local_time": "23:15",
+            "my_label": "suspicious",
+            "notes": "drains account late at night",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $150.00 redemption is a round amount that uses nearly all of the $152.50 balance at a salon the employee hasn't visited in the last 30 days, and it is about 11 times their usual $13.87 spend and above the typical $25–$90 salon ticket. It also happened at 11 PM, outside normal business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-11",
+            "split": "holdout",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "21.35",
+            "local_time": "13:10",
+            "my_label": "normal",
+            "notes": "lunch time purchase",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 12,
+            "explanation": "This $21.35 lunch-hour restaurant purchase is a normal, non-round amount within the typical $10–$45 range and uses only a small part of the $151.25 balance. It is somewhat above the employee's usual $13.87, but that mild signal alone is not a concern.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-12",
+            "split": "dev",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "80.00",
+            "local_time": "06:10",
+            "my_label": "suspicious",
+            "notes": "drains account even though they have been there before",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $80.00 cafe redemption is a round amount that uses nearly the entire $84.00 balance, is about 5.8 times the employee's usual $13.87 spend, and far exceeds a normal cafe ticket of $3 to $15. It also happened at 6 a.m., before normal business hours, and is the employee's third visit to this merchant in 30 days.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-13",
+            "split": "dev",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "11.85",
+            "local_time": "12:05",
+            "my_label": "normal",
+            "notes": "lunch time",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This $11.85 restaurant purchase at noon is a normal lunch amount, slightly below the employee's usual $13.87, and uses only a small part of the $143.60 balance. One prior visit to this merchant in the past week is not unusual, and no other risk signals are present.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-14",
+            "split": "dev",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "24.99",
+            "local_time": "17:30",
+            "my_label": "normal",
+            "notes": "purchase after work",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $24.99 retail purchase is a normal, non-round amount within the typical range for retail and uses only a small part of the $130.00 balance, made during business hours. It is about 1.8 times the employee's usual $13.87 spend, but that mild signal alone is not a concern.",
+            "agree": true,
+            "tags": [
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-15",
+            "split": "dev",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "100.00",
+            "local_time": "14:00",
+            "my_label": "normal",
+            "notes": "treating oneself",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 88,
+            "explanation": "This $100.00 redemption is a round amount, about 7 times the employee's usual $13.87 spend, and well above the typical $10–$45 restaurant ticket. It also follows 6 visits to the same merchant in the past 7 days (14 in 30 days).",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "frequent_visitor",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-16",
+            "split": "holdout",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "4.75",
+            "local_time": "15:20",
+            "my_label": "normal",
+            "notes": "looks like they're getting some coffee",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This is a small $4.75 cafe purchase at 3 PM, well within the normal cafe range and below the employee's typical $13.87 spend. It uses only a small part of the $61.90 balance, and visit frequency at this merchant is modest.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-17",
+            "split": "dev",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "200.00",
+            "local_time": "05:30",
+            "my_label": "suspicious",
+            "notes": "drains entire account while barely being there",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This $200.00 redemption is a round amount that uses nearly all of the $205.00 balance, is about 14 times the employee's usual $13.87 spend, and is well above the normal $20–$40 fitness ticket. It also occurred at 5 AM, outside normal business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-18",
+            "split": "dev",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "64.20",
+            "local_time": "12:50",
+            "my_label": "suspicious",
+            "notes": "drains entire account while never coming previously",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 75,
+            "explanation": "This $64.20 retail purchase uses the employee's entire $64.20 balance at a merchant they have not visited in the last 30 days, which is enough on its own to hold. It is also about 3.6 times the employee's usual $18.00 redemption, though the amount is normal for retail and was made at midday.",
+            "agree": true,
+            "tags": [
+                "triple_median",
+                "most_of_balance",
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-19",
+            "split": "holdout",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "270.00",
+            "local_time": "22:45",
+            "my_label": "suspicious",
+            "notes": "drains entire account while never coming previously",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 97,
+            "explanation": "This $270.00 redemption is a round amount that uses the employee's entire $270.00 balance at a retail merchant they haven't visited in the last 30 days. It is also about 19 times their usual $13.87 spend, well above the normal $10–$80 retail ticket, and was made at 10 PM, outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-20",
+            "split": "dev",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "28.00",
+            "local_time": "07:10",
+            "my_label": "normal",
+            "notes": "early morning workout",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $28.00 fitness redemption is within the normal $20–$40 range for fitness and uses only part of the $86.50 balance. It is about twice the employee's usual $13.87 spend, but that is a single mild signal with no other red flags.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-21",
+            "split": "holdout",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "60.00",
+            "local_time": "12:30",
+            "my_label": "normal",
+            "notes": "previous customer making a bigger purchase",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 82,
+            "explanation": "This $60.00 restaurant redemption is a round amount, about 4.3 times the employee's usual $13.87 spend, and above the normal $10–$45 restaurant ticket. The employee has also made 5 prior redemptions at this same merchant in the last 7 days (11 in 30 days), so several signals point the same way.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "frequent_visitor",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-22",
+            "split": "holdout",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "150.00",
+            "local_time": "03:05",
+            "my_label": "suspicious",
+            "notes": "no past redemptions while draining the entire account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $150.00 redemption uses the employee's entire $150.00 balance at a retail merchant they haven't visited in the last 30 days. It is also a round amount, well above the typical $10–$80 retail ticket, and was made at 3 a.m., outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-23",
+            "split": "holdout",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "85.00",
+            "local_time": "18:30",
+            "my_label": "suspicious",
+            "notes": "drains account without ever being there",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 78,
+            "explanation": "This $85.00 salon redemption uses nearly all of the employee's $88.00 balance at a merchant they haven't visited in the last 30 days, which is enough to hold on its own. It is also about 6 times their usual $13.87 spend, though the amount is within the normal range for a salon.",
+            "agree": true,
+            "tags": [
+                "triple_median",
+                "most_of_balance",
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-24",
+            "split": "dev",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "42.00",
+            "local_time": "11:00",
+            "my_label": "normal",
+            "notes": "not that big of a purchase relative to their account balance",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $42.00 salon redemption is about three times the employee's usual $13.87 spend, but it falls within the normal $25–$90 range for a salon. It is not a round amount, uses only part of the $175.80 balance, and happened at 11 a.m., so no other warning signs point to abuse.",
+            "agree": true,
+            "tags": [
+                "triple_median",
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-25",
+            "split": "holdout",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "150.00",
+            "local_time": "23:40",
+            "my_label": "suspicious",
+            "notes": "drains entire account late at night",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $150.00 redemption is a round amount that uses the employee's entire $150.00 balance, is about 11 times their usual $13.87 spend, and exceeds the normal $10–$80 range for retail. It also happened at 11 PM, outside normal business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-26",
+            "split": "dev",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "90.00",
+            "local_time": "23:50",
+            "my_label": "suspicious",
+            "notes": "drains entire account late at night with barely any previous visits",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This $90.00 round-number redemption uses nearly all of the $92.00 balance. It is about 6.5 times the employee's usual $13.87 spend, above the normal $10–$45 restaurant ticket, and was made at 11 PM, outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-27",
+            "split": "dev",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "30.00",
+            "local_time": "08:20",
+            "my_label": "normal",
+            "notes": "seems like a customer wanting to make a bigger purchase while not coming back for a while",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 45,
+            "explanation": "This $30.00 cafe redemption is a round amount, about double the employee's usual $13.87, and above a typical cafe ticket of $3.00-$15.00. However, it uses only a fraction of the $145.00 balance, happened at 8 AM, and follows a normal visit pattern, so the signals are not strong enough to hold.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-28",
+            "split": "dev",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "40.00",
+            "local_time": "06:00",
+            "my_label": "normal",
+            "notes": "matches up with median past amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 38,
+            "explanation": "This $40.00 fitness redemption is within the normal range for fitness businesses, is only modestly above the employee's $28.00 median, and uses a small part of the $210.00 balance. The round amount, 6 a.m. time and frequent visits (3 in the last 7 days, 8 in the last 30) are worth noting, but they fit a regular early-morning class routine rather than clear collusion.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "outside_hours"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-29",
+            "split": "dev",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "6.25",
+            "local_time": "08:35",
+            "my_label": "normal",
+            "notes": "grabbing coffee early in the morning",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 4,
+            "explanation": "This $6.25 cafe purchase at 8 AM is within the normal range for a cafe and below the employee's usual $13.87 spend, using only a small part of the $112.40 balance. Visit frequency at this merchant (1 in the past week, 2 in the past month) is ordinary.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-30",
+            "split": "holdout",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "48.60",
+            "local_time": "20:15",
+            "my_label": "normal",
+            "notes": "big purchase but looks to be dinner time",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 45,
+            "explanation": "This $48.60 restaurant bill is about 3.5 times the employee's usual $13.87 and slightly above the typical $10–$45 range. However, it is not a round number, uses only about half of the $96.20 balance, and took place at 8 PM, so it looks like an ordinary larger dinner.",
+            "agree": true,
+            "tags": [
+                "triple_median",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-31",
+            "split": "holdout_2",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "18.75",
+            "local_time": "12:20",
+            "my_label": "normal",
+            "notes": "small amount in the day time",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 10,
+            "explanation": "This $18.75 retail purchase at midday is within the normal range for retail and only modestly above the employee's typical $13.87 spend. It is not a round amount, uses a small part of the $139.90 balance, and there are no repeat visits in the past week.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-32",
+            "split": "holdout_2",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "8.40",
+            "local_time": "07:50",
+            "my_label": "normal",
+            "notes": "recurring customer getting coffee at a reasonable time",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 8,
+            "explanation": "This $8.40 cafe purchase is a normal amount for a cafe and below the employee's usual $13.87 spend. It uses only a small part of the $57.25 balance and was made during business hours; repeat visits to the same cafe (2 in the past week) are typical for coffee.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-33",
+            "split": "holdout_2",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "140.00",
+            "local_time": "21:45",
+            "my_label": "suspicious",
+            "notes": "drains entire account even while visiting here in the past",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $140.00 restaurant redemption is a round amount that uses nearly all of the $142.00 balance, is about 10 times the employee's usual $13.87 spend, and is well above the normal $10–$45 restaurant ticket. It also follows 2 visits to the same merchant in the past 7 days, so several collusion signals point the same way.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-34",
+            "split": "holdout_2",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "50.00",
+            "local_time": "12:10",
+            "my_label": "normal",
+            "notes": "large amount but has visited here previously and the account is not drained",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 82,
+            "explanation": "This is a round $50.00 charge, about 4 times the employee's usual $12.00 spend and above the normal $10–$45 restaurant ticket. It also follows 7 prior visits to the same restaurant in the last 7 days (15 in 30 days), so several signals point to possible collusion.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "frequent_visitor",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-35",
+            "split": "holdout_2",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "200.00",
+            "local_time": "01:30",
+            "my_label": "suspicious",
+            "notes": "large amount of money spent while never showing up at the establishment",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This is a round $200.00 salon redemption at 1 AM, about 14 times the employee's usual $13.87 spend and well above the normal $25–$90 salon ticket. It also uses $200 of a $260 balance at a merchant the employee hasn't visited in the last 30 days.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-36",
+            "split": "holdout_2",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "120.00",
+            "local_time": "12:00",
+            "my_label": "suspicious",
+            "notes": "very large purchase while not coming previosuly constantly",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 78,
+            "explanation": "This $120.00 fitness redemption is a round amount, about 8.7 times the employee's usual $13.87 spend, and well above the typical $20–$40 fitness ticket. It used 40% of the $300.00 balance at midday with two prior visits in 30 days, but the combined signals warrant review.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-37",
+            "split": "holdout_2",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "38.90",
+            "local_time": "21:50",
+            "my_label": "normal",
+            "notes": "does not drain account looks like they are just eating dinner",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 30,
+            "explanation": "This $38.90 restaurant charge is about 2.8 times the employee's usual $13.87, but it is a non-round amount within the normal range for a restaurant, uses only part of the $130.00 balance, and happened during business hours. The higher-than-usual amount is the only signal, which is not enough to hold.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-38",
+            "split": "holdout_2",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "20.00",
+            "local_time": "09:15",
+            "my_label": "normal",
+            "notes": "recurring customer at a reasonable time in the morning",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 72,
+            "explanation": "Several signals point the same way: an exactly $20.00 charge at a cafe is above the normal $3–$15 ticket and about 3.5 times this employee's usual $5.80 spend, and this is their 4th visit to the same cafe in 7 days (10th in 30). On its own this would be a small amount, but the round, inflated figure combined with frequent repeat visits warrants a review.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-39",
+            "split": "holdout_2",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "32.00",
+            "local_time": "18:15",
+            "my_label": "normal",
+            "notes": "recurring customer",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 18,
+            "explanation": "This $32.00 fitness redemption is within the normal range for fitness businesses, isn't a round amount, uses well under the $104.50 balance, and happened at 6 PM. It is about 2.3 times the employee's $13.87 median, and they have visited this merchant 3 times in the past 30 days, which fits regular class attendance rather than abuse.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-40",
+            "split": "holdout_2",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "72.50",
+            "local_time": "17:40",
+            "my_label": "suspicious",
+            "notes": "drains entire account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 75,
+            "explanation": "This $72.50 redemption uses nearly all of the $74.00 balance at a merchant the employee has not visited in the last 30 days, which is enough to hold on its own. It is also about 3.3 times the employee's usual $22.00 purchase, though it is within the normal range for a retail store.",
+            "agree": true,
+            "tags": [
+                "triple_median",
+                "most_of_balance",
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-41",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "5.40",
+            "local_time": "08:05",
+            "my_label": "normal",
+            "notes": "purchase made in the morning for a small amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "A $5.40 cafe purchase at 8 a.m. is within the normal range for a cafe and below this employee's usual $7.10 spend, using only a small part of the $92.30 balance. The repeat visits (2 in the past week, 6 in the past 30 days) look like a regular coffee habit rather than abuse.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-42",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "180.00",
+            "local_time": "21:40",
+            "my_label": "suspicious",
+            "notes": "drains account and well above the median",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This $180.00 salon redemption is a round amount that uses nearly the entire $184.50 balance at a merchant the employee hasn't visited in the last 30 days. It is also about 11 times the employee's usual $16.20 spend and well above the typical $25–$90 salon ticket.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-43",
+            "split": "holdout_3",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "12.75",
+            "local_time": "12:20",
+            "my_label": "normal",
+            "notes": "median amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This $12.75 restaurant purchase at noon is a normal lunch amount, close to the employee's usual $11.40 and well within the typical range for restaurants. It uses only a small part of the $66.00 balance, and visit frequency (1 in the past week, 3 in 30 days) is unremarkable.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-44",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "30.00",
+            "local_time": "06:15",
+            "my_label": "normal",
+            "notes": "median amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $30.00 fitness redemption matches the employee's usual $30.00 spend and is within the normal range for fitness, using only a small part of the $140.00 balance. The round amount, 6 a.m. timing, and frequent visits fit a regular early-morning class habit rather than collusion.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "outside_hours"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-45",
+            "split": "holdout_3",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "95.00",
+            "local_time": "13:30",
+            "my_label": "suspicious",
+            "notes": "no visits and way past median amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 58,
+            "explanation": "The $95.00 retail purchase is about 6.5 times this employee's usual $14.50 spend and somewhat above the typical $10–$80 retail range. However, it is not a round amount, uses less than half of the $210.00 balance, and happened at 1 PM with no repeat visits, so it does not warrant a hold.",
+            "agree": false,
+            "tags": [
+                "triple_median",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-46",
+            "split": "holdout_3",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "16.90",
+            "local_time": "19:10",
+            "my_label": "normal",
+            "notes": "at median amount and has been to the location before",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 8,
+            "explanation": "This $16.90 restaurant purchase is within the normal range for restaurants, is not a round amount, and uses only part of the $48.25 balance. It is only slightly above the employee's usual $13.87 spend and was made at 7 PM, so there are no meaningful warning signs.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-47",
+            "split": "holdout_3",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "110.00",
+            "local_time": "23:30",
+            "my_label": "suspicious",
+            "notes": "even though they have visited, balance is drained from this order",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This $110.00 redemption is a round amount that uses nearly all of the $115.00 balance, is about 5.8 times the employee's usual $19.00 spend and well above the normal $10–$45 restaurant ticket. It also happened at 11 PM, outside normal business hours, and is a repeat visit to this merchant within the past week.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-48",
+            "split": "holdout_3",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "42.00",
+            "local_time": "17:55",
+            "my_label": "normal",
+            "notes": "above median but doesn't seem like they were draining their account",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $42.00 retail purchase is about 2.8 times the employee's usual $15.00 spend, but it is within the normal range for retail, is not a round amount, uses only part of the $160.00 balance, and happened at 5 PM. The higher-than-usual amount is the only signal, which is not enough to hold.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-49",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "60.00",
+            "local_time": "07:20",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This $60.00 cafe redemption is a round amount that uses nearly all of the $63.00 balance. It is about 10 times the employee's usual $5.90 spend, well above the normal $3–$15 cafe ticket, and follows 4 visits to the same cafe in the past week (11 in 30 days).",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-50",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "65.00",
+            "local_time": "10:30",
+            "my_label": "suspicious",
+            "notes": "almost 3x the median amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $65.00 salon redemption is about three times the employee's usual $22.00 spend, but it falls within the normal $25–$90 range for a salon visit. It also happened at 10 AM, is not a round amount, and uses only part of the $190.00 balance, so there is no pattern of abuse.",
+            "agree": false,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-51",
+            "split": "holdout_3",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "70.00",
+            "local_time": "12:40",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 88,
+            "explanation": "This round $70.00 redemption uses nearly all of the $72.50 balance at a restaurant the employee has not visited in the last 30 days. It is also about 5.8 times their usual $12.00 spend and above the typical $10–$45 restaurant ticket.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-52",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "28.00",
+            "local_time": "17:30",
+            "my_label": "normal",
+            "notes": "at the median amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This $28.00 fitness redemption matches the employee's usual spend exactly and falls within the normal $20–$40 range for fitness. It is not a round amount, uses about half of the $55.00 balance, and happened at 5 PM; regular visits to this merchant are consistent with a class routine.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-53",
+            "split": "holdout_3",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "34.60",
+            "local_time": "20:05",
+            "my_label": "normal",
+            "notes": "even though higher than the median, they have been there in the past few days",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $34.60 restaurant bill is within the normal range for restaurants, is not a round number, and uses well under the $120.00 balance; it happened at 8 PM, within normal business hours. It is about 2.3 times this employee's usual $15.20 and is a repeat visit (1 prior visit in the last 7 days, 2 in the last 30), but those mild signals alone don't justify a hold.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-54",
+            "split": "holdout_3",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "150.00",
+            "local_time": "04:10",
+            "my_label": "suspicious",
+            "notes": "drains balance",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $150.00 redemption is a round amount that uses the employee's entire $150.00 balance at a retail merchant they haven't visited in the last 30 days, which is enough to hold on its own. It is also well above the normal $10–$80 retail ticket and happened at 4 a.m., outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-55",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "3.95",
+            "local_time": "14:45",
+            "my_label": "normal",
+            "notes": "below median and at a reasonable time of the day",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 10,
+            "explanation": "This $3.95 cafe purchase is within the normal range for a cafe, slightly below the employee's usual $4.60, and made at 2 PM from a $37.80 balance. Frequent visits to this cafe (3 in the past week) look like a regular coffee habit rather than collusion given the small, non-round amount.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-56",
+            "split": "holdout_3",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "52.30",
+            "local_time": "19:45",
+            "my_label": "suspicious",
+            "notes": "3x median amount with little visits",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 45,
+            "explanation": "This $52.30 restaurant bill is about 2.8 times the employee's usual $18.40 and somewhat above the typical $10–$45 restaurant range, but it is not a round amount, uses well under the $175.00 balance, and happened at 7 PM. It looks consistent with a larger dinner rather than collusion.",
+            "agree": false,
+            "tags": [
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-57",
+            "split": "holdout_3",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "200.00",
+            "local_time": "12:15",
+            "my_label": "suspicious",
+            "notes": "no past visits while way past the median",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 82,
+            "explanation": "This is a round $200.00 redemption, about 12 times the employee's usual $17.00 purchase and well above the normal $10–$80 range for a retail shop. It is also at a merchant the employee has not visited in the past 30 days, so several warning signs point the same way.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-58",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "40.00",
+            "local_time": "08:30",
+            "my_label": "suspicious",
+            "notes": "drains balance and double the median amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 55,
+            "explanation": "This $40.00 salon redemption is a round amount that uses nearly all of the $41.00 balance and is twice the employee's usual $20.00 spend. However, the employee has visited this merchant in the past 30 days, the amount is normal for a salon, and it happened during business hours, so it does not rise to a hold.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "most_of_balance"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-59",
+            "split": "holdout_3",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "10.20",
+            "local_time": "11:50",
+            "my_label": "normal",
+            "notes": "amount is at median with lots of past redemptions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $10.20 restaurant purchase at 11 a.m. is right in line with the employee's usual $10.50 spend and a normal ticket for a restaurant, with plenty of balance remaining ($85.60 before). The frequent visits to this merchant (5 in the last 7 days, 12 in 30 days) look like a regular lunch spot rather than collusion, since no other warning signs are present.",
+            "agree": true,
+            "tags": [
+                "frequent_visitor"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-60",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "120.00",
+            "local_time": "22:30",
+            "my_label": "suspicious",
+            "notes": "way past the median with no redemptions at this merchant",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 85,
+            "explanation": "This $120.00 fitness redemption is a round amount, about 8.7 times the employee's usual $13.87 spend, well above the normal $20–$40 range for fitness, and was made at 10 PM, outside business hours. It is also at a merchant the employee hasn't visited in the last 30 days, and several signals together point to possible collusion.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-61",
+            "split": "holdout_3",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "21.45",
+            "local_time": "12:35",
+            "my_label": "normal",
+            "notes": "frequent visiter in the last month",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 22,
+            "explanation": "This $21.45 lunch-hour restaurant charge is a normal, non-round bill within the typical range for restaurants and uses only part of the $102.00 balance. It is somewhat above the employee's $12.80 median and they have visited this restaurant twice this week, but these mild signals don't justify a hold.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-62",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "25.00",
+            "local_time": "06:40",
+            "my_label": "normal",
+            "notes": "frequent visitor",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 78,
+            "explanation": "Several signals point the same way: this $25.00 cafe redemption is about 4 times the employee's usual $6.20, above the normal $3–$15 cafe ticket, and made at 6 AM, outside business hours. It also follows 6 prior visits to the same merchant in the last 7 days (14 in 30 days).",
+            "agree": false,
+            "tags": [
+                "triple_median",
+                "outside_hours",
+                "frequent_visitor",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-63",
+            "split": "holdout_3",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "32.50",
+            "local_time": "18:20",
+            "my_label": "normal",
+            "notes": "past redemptions plus only double the median amount without draining the account",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $32.50 retail purchase is a normal, non-round amount within the typical range for retail, made during business hours and using only part of the $125.00 balance. It is about twice the employee's usual $16.00 spend, but that single mild signal is not enough to hold.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-64",
+            "split": "holdout_3",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "85.00",
+            "local_time": "02:45",
+            "my_label": "suspicious",
+            "notes": "even though they are a frequent visitor, they spent nearly 6x the median",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 85,
+            "explanation": "This $85.00 restaurant redemption came in at 2 AM, is about 6 times this employee's usual $14.00 spend and above the normal $10–$45 restaurant ticket. It is also the third visit to this merchant in the past 7 days. Several signals point the same way, so it is being held for review.",
+            "agree": true,
+            "tags": [
+                "triple_median",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-65",
+            "split": "holdout_3",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "24.00",
+            "local_time": "13:10",
+            "my_label": "normal",
+            "notes": "just around the median",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 10,
+            "explanation": "This $24.00 retail purchase at 1 PM is within the normal range for retail and only slightly above the employee's usual $19.50 spend. It uses about a third of the $70.00 balance, with no repeat visits or other warning signs.",
+            "agree": true,
+            "tags": [
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-66",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "230.00",
+            "local_time": "15:00",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This $230.00 round-number redemption uses nearly all of the $236.00 balance at a salon the employee hasn't visited in the last 30 days. It is also about 16.6 times the employee's usual $13.87 spend and well above the typical $25–$90 salon ticket.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-67",
+            "split": "holdout_3",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "9.35",
+            "local_time": "07:45",
+            "my_label": "normal",
+            "notes": "at median with multiple visits",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $9.35 purchase matches the employee's usual spending (median $9.80), isn't a round number, and uses only a small part of the $54.10 balance. Frequent visits to this restaurant (3 in the past week, 9 in 30 days) fit a regular breakfast habit and aren't enough to hold on their own.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-68",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "35.00",
+            "local_time": "18:45",
+            "my_label": "normal",
+            "notes": "at median with prior visits and redemptions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $35.00 fitness redemption is within the normal $20–$40 range for the category, close to the employee's usual $32.00 spend, and uses only part of the $98.00 balance at 6 PM. The 2 visits this week and 6 this month fit regular class attendance and are not a concern on their own.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-69",
+            "split": "holdout_3",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "90.00",
+            "local_time": "22:50",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $90.00 redemption is a round amount that uses nearly all of the $93.40 balance at a restaurant the employee hasn't visited in the last 30 days, which alone warrants a hold. It is also about 6.4 times the employee's usual $14.00 spend, above the normal $10–$45 restaurant ticket, and was made at 10 PM, outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-70",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "7.80",
+            "local_time": "09:25",
+            "my_label": "normal",
+            "notes": "at median with prior redemptions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 10,
+            "explanation": "This $7.80 cafe purchase at 9 AM is a normal ticket for a cafe and close to the employee's usual $6.90 spend, using only part of the $22.40 balance. Repeat visits (2 in the past week) are typical for a regular coffee stop and are not concerning on their own.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-71",
+            "split": "holdout_3",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "48.00",
+            "local_time": "11:15",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 45,
+            "explanation": "This $48.00 retail purchase uses nearly all of the $50.00 balance and is about twice the employee's usual $25.00. However, the employee visited this merchant once in the past 30 days, the amount is not round, it falls within the normal range for retail, and it happened at 11 a.m., so it does not warrant a hold.",
+            "agree": false,
+            "tags": [
+                "most_of_balance"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-72",
+            "split": "holdout_3",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "26.80",
+            "local_time": "12:50",
+            "my_label": "normal",
+            "notes": "past median but with prior visits",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $26.80 restaurant purchase at noon is within the normal range for restaurants, is not a round number, and uses only part of the $140.00 balance. It is somewhat above the employee's usual $17.10 and they have visited this merchant 3 times in 30 days, but these are mild signals consistent with ordinary lunches.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-73",
+            "split": "holdout_3",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "100.00",
+            "local_time": "23:55",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 92,
+            "explanation": "This is a round $100.00 redemption that uses nearly all of the $105.00 balance, is about 4.8 times the employee's usual $21.00 spend, and is above the normal $10–$80 range for retail. It also happened at 11 PM, outside business hours, and is the third visit to this merchant in 30 days.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-74",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "55.00",
+            "local_time": "12:00",
+            "my_label": "suspicious",
+            "notes": "2x the median with little past redemptions and a large chunk of the balance being taken out",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 20,
+            "explanation": "This $55.00 salon redemption is within the normal $25.00–$90.00 range for salons, uses about a third of the $160.00 balance, and happened at midday. It is about 2.3 times this employee's usual $24.00 spend, but that is the only signal and is expected for a salon visit.",
+            "agree": false,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-75",
+            "split": "holdout_3",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "40.00",
+            "local_time": "13:05",
+            "my_label": "normal",
+            "notes": "even though 4x the median, they have enough past redemptions and prior visits to be seen as normal",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 74,
+            "explanation": "This is a round $40.00 redemption, about 3.6 times the employee's usual $11.00 spend, at a restaurant they have already used 6 times in the past week and 13 times in the past month. The amount is within a normal restaurant bill and the time (1 PM) is ordinary, but the round amount, the jump above usual spending and the very frequent repeat visits together warrant a review.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "frequent_visitor"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-76",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "20.00",
+            "local_time": "07:00",
+            "my_label": "normal",
+            "notes": "at median with several past redemptions and visits",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $20.00 fitness charge is a round amount and the employee has visited this merchant often (3 times in the last 7 days, 9 in 30), but that pattern fits regular gym classes. The amount is in line with the employee's usual $22.00 spending and within the normal range for fitness, and it used only part of the $64.00 balance during business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-77",
+            "split": "holdout_3",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "120.00",
+            "local_time": "12:30",
+            "my_label": "suspicious",
+            "notes": "doesn't entirely drain account, but is very much higher than the median",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 78,
+            "explanation": "This $120.00 restaurant redemption is a round amount, about 7.7 times the employee's usual $15.50 spend, and well above the typical $10.00–$45.00 restaurant ticket. It is also at a merchant the employee hasn't visited in the last 30 days, so several signals point the same way even though it happened at lunchtime and used only part of the $380.00 balance.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-78",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "50.00",
+            "local_time": "05:50",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $50.00 cafe redemption uses nearly the entire $51.20 balance at a cafe the employee hasn't visited in the last 30 days, and it is a round amount about 7.8 times their usual $6.40 spend. It is also well above a normal $3–$15 cafe ticket and happened at 5 AM, outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-79",
+            "split": "holdout_3",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "15.99",
+            "local_time": "16:40",
+            "my_label": "normal",
+            "notes": "at median with past redemptions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 5,
+            "explanation": "This $15.99 retail purchase is a normal, non-round amount within the typical range for retail and only slightly above the employee's usual $14.20 median. It uses a small part of the $88.00 balance and was made during business hours with no unusual repeat visits.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-80",
+            "split": "holdout_3",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "41.20",
+            "local_time": "20:40",
+            "my_label": "suspicious",
+            "notes": "not enough past visits with 2.5x past the median",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 25,
+            "explanation": "This $41.20 restaurant redemption is about 2.45 times the employee's usual $16.80, but it falls within the normal range for a restaurant, is not a round amount, uses only part of the $72.00 balance, and happened at 8 PM. One elevated signal on its own is not enough to hold.",
+            "agree": false,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-81",
+            "split": "holdout_3",
+            "merchant": "Triangle Stems",
+            "category": "retail",
+            "amount": "68.00",
+            "local_time": "11:20",
+            "my_label": "suspicious",
+            "notes": "no past redemptions and draining the account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 72,
+            "explanation": "This $68.00 redemption uses nearly all of the $69.00 balance at a merchant the employee has not visited in the last 30 days, which is strong enough to hold on its own. The amount is within the normal range for retail and was made during business hours, but this is also the employee's first redemption, so there is no spending history to compare against.",
+            "agree": true,
+            "tags": [
+                "most_of_balance",
+                "new_merchant"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-82",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "34.00",
+            "local_time": "19:20",
+            "my_label": "normal",
+            "notes": "little higher than the median but has past visits and redepmtions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "This $34.00 salon redemption is within the normal range for salons, is not a round amount, and uses only part of the $108.00 balance during regular hours. It is somewhat above the employee's usual $23.50, and they have visited this salon twice in the past 30 days, but these are mild signals that do not suggest abuse.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-83",
+            "split": "holdout_3",
+            "merchant": "Press Room Deli",
+            "category": "restaurant",
+            "amount": "160.00",
+            "local_time": "01:15",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 96,
+            "explanation": "This $160.00 redemption uses nearly all of the employee's $162.00 balance at a restaurant they haven't visited in the last 30 days, which is enough to hold on its own. It is also a round amount, about 11.5 times their usual $13.87 spend, well above a normal restaurant bill of $10–$45, and was made at 1 a.m., outside business hours.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-84",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "45.00",
+            "local_time": "06:30",
+            "my_label": "normal",
+            "notes": "has visited even though the median is a bit lower than the amount",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 35,
+            "explanation": "This $45.00 fitness redemption is a bit above the employee's usual $30.00 and the typical $20.00–$40.00 range, and it happened at 6 AM, which is plausible for an early workout class. It is not a round amount, uses only about a quarter of the $190.00 balance, and fits a regular pattern of visits to this merchant, so no hold is warranted.",
+            "agree": true,
+            "tags": [
+                "outside_hours",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-85",
+            "split": "holdout_3",
+            "merchant": "Connecticut Noodle Bar",
+            "category": "restaurant",
+            "amount": "18.30",
+            "local_time": "13:15",
+            "my_label": "normal",
+            "notes": "at median with a low balance and past redemptions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 12,
+            "explanation": "This $18.30 restaurant lunch at 1 PM falls within the normal range for restaurants and is only modestly above the employee's $14.10 median. It is not a round amount, does not drain the $27.90 balance, and the 3 visits to this merchant in the past 30 days fit routine lunch habits.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-86",
+            "split": "holdout_3",
+            "merchant": "Farragut Grind",
+            "category": "cafe",
+            "amount": "30.00",
+            "local_time": "15:30",
+            "my_label": "suspicious",
+            "notes": "no past visits with the amount being 4x the median",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 62,
+            "explanation": "This $30.00 cafe redemption is a round amount, four times the employee's usual $7.50, and above the typical $3.00–$15.00 cafe ticket, so it is worth watching. It uses only a quarter of the $120.00 balance and happened at 3 PM with no repeat visits, so it does not reach the hold threshold.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-87",
+            "split": "holdout_3",
+            "merchant": "Page & Quill Books",
+            "category": "retail",
+            "amount": "210.00",
+            "local_time": "20:30",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 95,
+            "explanation": "This $210.00 redemption is a round number that uses nearly all of the $215.00 balance at a merchant the employee hasn't visited in the last 30 days. It is also about 15 times the employee's usual $13.87 spend and well above the normal $10–$80 retail ticket.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-88",
+            "split": "holdout_3",
+            "merchant": "Seventeenth Street Kitchen",
+            "category": "restaurant",
+            "amount": "23.40",
+            "local_time": "13:00",
+            "my_label": "normal",
+            "notes": "at median with past visits",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 15,
+            "explanation": "A $23.40 lunch at 1 PM is a normal restaurant bill, is not a round number, and uses only a small part of the $118.00 balance. It is somewhat above this employee's usual $16.40, and they have visited this restaurant twice in the past week, but these mild signals do not suggest abuse.",
+            "agree": true,
+            "tags": [],
+            "cached": true
+        },
+        {
+            "case_id": "FE-89",
+            "split": "holdout_3",
+            "merchant": "K Street Cuts",
+            "category": "salon",
+            "amount": "90.00",
+            "local_time": "17:00",
+            "my_label": "suspicious",
+            "notes": "high amount and significantly above the median with little past redemptions",
+            "ai_decision": "clear",
+            "ai_label": "normal",
+            "risk_score": 35,
+            "explanation": "The $90.00 salon charge is a round number and about 3.5 times this employee's usual $26.00 spend, but it falls within the normal range for a salon visit, uses only part of the $250.00 balance, and happened during business hours. These mild signals together are not enough to hold the payout.",
+            "agree": false,
+            "tags": [
+                "round_amount",
+                "triple_median"
+            ],
+            "cached": true
+        },
+        {
+            "case_id": "FE-90",
+            "split": "holdout_3",
+            "merchant": "Lafayette Cycle Studio",
+            "category": "fitness",
+            "amount": "80.00",
+            "local_time": "11:00",
+            "my_label": "suspicious",
+            "notes": "drains account",
+            "ai_decision": "hold",
+            "ai_label": "suspicious",
+            "risk_score": 88,
+            "explanation": "This $80.00 redemption uses nearly all of the $82.00 balance at a fitness merchant the employee hasn't visited in the last 30 days, which alone warrants a hold. It is also a round amount, 3.2 times the employee's usual $25.00 spend, and above the typical $20–$40 fitness ticket.",
+            "agree": true,
+            "tags": [
+                "round_amount",
+                "triple_median",
+                "most_of_balance",
+                "new_merchant",
+                "above_category"
+            ],
+            "cached": true
+        }
+    ],
+    "note": "Prompt unchanged (8d5e1e70). Adds 50 holdout_3 cases, labeled by hand and locked at commit 5f594c1 before the AI saw them; 26 are labeled suspicious.",
+    "cases_version": "33b70229"
+}

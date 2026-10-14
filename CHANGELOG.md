@@ -3,6 +3,20 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-14: A bigger, locked fraud eval
+
+- **50 new hand-labeled cases** (`holdout_3`, FE-41 to FE-90, 26 labeled
+  suspicious), labeled one at a time before the AI saw any of them.
+- **Locked:** [`data/fraud_eval_lock.json`](data/fraud_eval_lock.json) stores a
+  SHA-256 of every holdout_3 row and the labeling commit. `fraud:eval` refuses
+  to run if a locked row changes, and CI fails.
+- The eval now reports **catch rate** and **hold precision** with 95% Wilson
+  confidence intervals, and groups misses and false alarms by pattern tags
+  computed from the facts only.
+- **New headline**, same frozen prompt `8d5e1e70`: caught 17 of 26 suspicious
+  cases; 17 of 19 holds were suspicious. The old "0 suspicious cases missed"
+  was measured on only 4 suspicious cases and is no longer claimed.
+
 ## 2026-10-14: Magic links for reviewers
 
 - **Reviewers never set a password.** Each one gets a personal magic link from

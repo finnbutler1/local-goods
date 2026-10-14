@@ -96,58 +96,87 @@ yet**:
 We test Redemption Fraud Detection against a person's judgment, not our own
 expectations:
 
-1. We wrote 30 synthetic redemptions
+1. We wrote 90 synthetic redemptions
    ([`data/fraud_eval_cases.csv`](data/fraud_eval_cases.csv)): clearly normal,
    clearly suspicious, and some genuine close calls.
 2. **A person labeled every case** *normal* or *suspicious*, with a short
    reason, **before the AI saw any of them**. The labels were committed to Git
    first, so the history shows they came before the results.
-3. `php artisan fraud:eval` sends each case through the **real production
+3. **The newest 50 cases (`holdout_3`) are locked.**
+   [`data/fraud_eval_lock.json`](data/fraud_eval_lock.json) holds a SHA-256 of
+   every row (facts, label and note) and the commit the labels were made in
+   (`5f594c1`). It was committed before the AI saw those cases.
+   `php artisan fraud:eval` refuses to run if any locked row changes, and a
+   test fails in CI if one does.
+4. `php artisan fraud:eval` sends each case through the **real production
    check**: the same prompt file, the same model, and the same signal rules
    ([`SignalCalculator::fromFacts`](app/Services/Fraud/SignalCalculator.php)).
    A `hold` counts as suspicious and a `clear` counts as normal.
-4. The cases are split into 20 **dev** cases and 10 **holdout** cases. We may
-   change the prompt to fix mistakes on dev cases, but **never** because of a
-   holdout case, so the holdout number is the honest one.
-5. We publish the real numbers, low or not, with every disagreement shown next
+5. The cases come in groups. We may change the prompt to fix mistakes on the
+   20 **dev** cases, but **never** because of a holdout case. `holdout_2` (10)
+   and `holdout_3` (50) were labeled after the last prompt change and never
+   seen while changing it.
+6. We report two numbers, not just agreement. **Catch rate:** of the cases the
+   person labeled suspicious, how many the AI held. **Hold precision:** of the
+   cases the AI held, how many the person labeled suspicious. Each comes with a
+   95% Wilson confidence interval and always says how many suspicious cases it
+   was measured on.
+7. Every miss and false alarm is grouped by **pattern tags** worked out from
+   the case's facts only, never from the label or the AI's answer: round
+   amount, 3x or more the usual amount, 90%+ of the balance, a merchant not
+   visited in 30 days, outside business hours, 5+ visits in 7 days, above the
+   category's typical range, and the merchant category.
+8. We publish the real numbers, low or not, with every disagreement shown next
    to the person's reason. Every run is kept with its date, model and prompt
-   version (a fingerprint of the prompt file), so results before and after a
-   prompt change can be compared.
+   version (a fingerprint of the prompt file).
 
-**Headline: 80% agreement on 10 unseen cases with the current prompt, and 0
-suspicious cases missed.** Every disagreement is a false alarm on the same
-pattern (a frequent customer spending a round amount well above their usual),
-which the prompt treats as possible credit-to-cash collusion. A held
-redemption is never approved automatically: it waits under review for a
-person, so a false alarm costs a delay, not a wrong payout. This is a small
-sample: with 10 cases, one case moves the score by 10 points.
+**Headline: caught 17 of 26 suspicious cases; 17 of 19 holds were
+suspicious.** Measured on the 50 locked `holdout_3` cases (26 labeled
+suspicious) with the current prompt `8d5e1e70`. 95% confidence intervals:
+catch rate 46–81%, hold precision 69–97%. Overall agreement 78% (39 of 50).
 
-The headline comes from run 3's `holdout_2` cases (FE-31 to FE-40). They were
-written and labeled by hand after the last prompt change, committed before
-the AI saw them, and scored with the prompt unchanged. The prompt will not be
-changed because of these results. Any future prompt change needs a fresh set
-of unseen cases to measure it.
+**The weak spot is misses, not false alarms.** The AI cleared 9 of the 26
+suspicious cases, mostly ones with a single strong signal (a big jump over the
+employee's usual spend, or nearly the whole balance) at normal hours and
+inside the category's typical range. 4 of the 9 were at the salon, whose wide
+$25–$90 typical range made amounts 2 to 3.5 times the employee's usual look
+normal. A cleared redemption goes through without a person looking at it, so
+a miss is the costlier mistake. The 2 false alarms are frequent visitors
+spending a round amount well above their usual, which the prompt treats as
+possible credit-to-cash collusion. A held redemption waits for a person, so a
+false alarm costs a delay, not a wrong payout. The full per-pattern table, with
+the AI's reasoning for each, is in the
+[results](docs/evals/fraud-eval-results.md).
 
-Every run is kept (model `claude-opus-5-5`):
+The prompt was frozen for this measurement and will not be changed because of
+these results without a fresh set of unseen cases to measure the change.
 
-| Run | Prompt | Dev | Holdout | Holdout 2 | Note |
-|---|---|---|---|---|---|
-| 1 | `e5bcf207` (original) | 85% (17/20) | 80% (8/10) | n/a | First run. Its holdout cases were unseen at the time. |
-| 2 | `8d5e1e70` (change 1) | 90% (18/20) | 90% (9/10) | n/a | Holdout not fully independent (see below). |
-| 3 | `8d5e1e70` (change 1) | 90% (18/20) | 90% (9/10) | **80% (8/10)** | **Headline.** Holdout 2 is a clean test of change 1. |
+Every run is kept (model `claude-opus-5-5`). Each cell is agreement, then how
+many of the suspicious cases the AI caught:
+
+| Run | Prompt | Dev | Holdout | Holdout 2 | Holdout 3 | Note |
+|---|---|---|---|---|---|---|
+| 1 | `e5bcf207` (original) | 85% (17/20), caught 6 of 7 | 80% (8/10), caught 3 of 4 | n/a | n/a | First run. Its holdout cases were unseen at the time. |
+| 2 | `8d5e1e70` (change 1) | 90% (18/20), caught 7 of 7 | 90% (9/10), caught 4 of 4 | n/a | n/a | Holdout not fully independent (see below). |
+| 3 | `8d5e1e70` (change 1) | 90% (18/20), caught 7 of 7 | 90% (9/10), caught 4 of 4 | 80% (8/10), caught 4 of 4 | n/a | The earlier headline. Holdout 2 had only 4 suspicious cases. |
+| 4 | `8d5e1e70` (change 1) | 90% (18/20), caught 7 of 7 | 90% (9/10), caught 4 of 4 | 80% (8/10), caught 4 of 4 | **78% (39/50), caught 17 of 26** | **Headline.** 50 locked cases, 26 suspicious. |
+
+Run 3's "0 suspicious cases missed" was measured on only 4 suspicious cases.
+On 26 suspicious cases, the same prompt missed 9, which is why the headline
+moved to `holdout_3`.
 
 Change 1 added one rule to the prompt: using all or nearly all of the balance
 at a merchant not visited in the last 30 days is enough to hold on its own. It
 was written to fix one dev case (FE-18). **But the holdout results from run 1
 had already been seen when it was made**, and holdout case FE-23 is a similar
-pattern. So the 90% holdout score in runs 2 and 3 is not a fully independent
-test. That is why the 10 `holdout_2` cases were added.
+pattern. So the 90% holdout score in runs 2 to 4 is not a fully independent
+test. That is why the `holdout_2` and `holdout_3` cases were added.
 
 Full results: [`docs/evals/fraud-eval-results.md`](docs/evals/fraud-eval-results.md),
-also shown on the public `/eval` page. Limits: 30 cases is a small
-sample, the cases are synthetic, and one person's labels are one opinion.
-Agreement shows how closely the AI matches that person, not whether either of
-them is right about real fraud.
+also shown on the public `/eval` page. Limits: 50 cases is still a small
+sample (the confidence intervals above are wide), the cases are synthetic, and
+one person's labels are one opinion. Agreement shows how closely the AI matches
+that person, not whether either of them is right about real fraud.
 
 ### Which merchants are eligible (planned)
 
