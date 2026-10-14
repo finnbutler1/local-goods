@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Services\Ai\ClaudeClient;
 use App\Services\Fraud\FraudEvalLock;
+use App\Services\Fraud\FraudEvalPatterns;
 use App\Services\Fraud\FraudEvalRunner;
 use App\Services\Fraud\SignalCalculator;
 use Database\Seeders\DatabaseSeeder;
@@ -198,9 +199,10 @@ class FraudEvalTest extends TestCase
         $latest = json_decode(file_get_contents("{$this->dir}/out/fraud-eval-latest.json"), true);
         $this->assertSame('Prompt changed after holdout was seen.', $latest['note']);
         $this->assertSame('2026-10-11', substr($latest['headline']['run_at'], 0, 10));
-        $headline = '50% agreement on 2 unseen cases with the current prompt, and 0 suspicious cases missed.';
+        $headline = 'Caught 1 of 1 suspicious cases; 1 of 2 holds were suspicious.';
         $this->assertSame($headline, $latest['headline']['text']);
-        $this->assertSame('Small sample: with 2 cases, one case moves the score by 50 points.', $latest['headline']['sample']);
+        $this->assertStringStartsWith('Measured on 2 unseen cases, 1 of them labeled suspicious by a person, with the current prompt.', $latest['headline']['sample']);
+        $this->assertStringContainsString('overall agreement 50% (1 of 2, ', $latest['headline']['sample']);
 
         $md = file_get_contents("{$this->dir}/out/fraud-eval-results.md");
         $this->assertStringContainsString("**Headline: {$headline}**", $md);
@@ -209,9 +211,11 @@ class FraudEvalTest extends TestCase
 
         config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
         $this->get('/eval')
-            ->assertSee('50% agreement on 2 unseen cases with the current prompt, and 0 suspicious cases missed.')
+            ->assertSee('Caught 1 of 1 suspicious cases; 1 of 2 holds were suspicious.')
             ->assertSee('Every disagreement is a false alarm.')
-            ->assertSee('one case moves the score by 50 points')
+            ->assertSee('Measured on 2 unseen cases, 1 of them labeled suspicious')
+            ->assertSee('Misses and false alarms by pattern')
+            ->assertDontSee('suspicious cases missed')
             ->assertSee('Note on this run:')
             ->assertSee('Earlier runs');
     }
@@ -238,6 +242,70 @@ class FraudEvalTest extends TestCase
 
         config(['fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json"]);
         $this->get('/eval')->assertSee('Holdout 2 agreement')->assertSee('Holdout 2 cases');
+    }
+
+    public function test_catch_rate_and_hold_precision_are_reported_with_wilson_intervals(): void
+    {
+        // Labels: 3 suspicious, 2 normal. AI: holds 2 suspicious and 1 normal, clears the rest.
+        $results = array_map(fn ($pair) => ['my_label' => $pair[0], 'ai_label' => $pair[1], 'category' => 'cafe', 'tags' => []], [
+            ['suspicious', 'suspicious'], ['suspicious', 'suspicious'], ['suspicious', 'normal'],
+            ['normal', 'suspicious'], ['normal', 'normal'],
+        ]);
+
+        $s = FraudEvalRunner::summarize($results);
+
+        $this->assertSame(['hits' => 2, 'of' => 3, 'pct' => 66.7, 'ci95' => [20.8, 93.9]], $s['catch']);
+        $this->assertSame(['hits' => 2, 'of' => 3, 'pct' => 66.7, 'ci95' => [20.8, 93.9]], $s['hold_precision']);
+        $this->assertSame([23.1, 88.2], $s['agreement_ci95']);
+        $this->assertSame(['cases' => 5, 'suspicious' => 3, 'missed' => 1, 'false_alarms' => 1], $s['patterns']['categories']['cafe']);
+    }
+
+    public function test_pattern_tags_come_from_the_facts_only(): void
+    {
+        $runner = app(FraudEvalRunner::class);
+        $case = fn (string $row) => array_combine(explode(',', self::HEADER), str_getcsv($row, escape: ''));
+
+        // $60 round, 4x the $15 median, 96% of balance, new merchant, 23:00, salon range is $25-$90.
+        $busy = $case('FE-99,K Street Cuts,salon,60.00,23:00,62.50,"x",0,0,12,15.00,normal,x,dev');
+        $this->assertSame(
+            ['round_amount', 'triple_median', 'most_of_balance', 'new_merchant', 'outside_hours'],
+            FraudEvalPatterns::tags($busy, $runner->signalsFor($busy)),
+        );
+
+        // Same facts with the opposite label give the same tags.
+        $relabeled = ['my_label' => 'suspicious', 'notes' => 'other'] + $busy;
+        $this->assertSame(FraudEvalPatterns::tags($busy, $runner->signalsFor($busy)), FraudEvalPatterns::tags($relabeled, $runner->signalsFor($relabeled)));
+
+        // A $25 coffee from a 6-visits-a-week regular: frequent visitor, above the cafe range.
+        $regular = $case('FE-98,Farragut Grind,cafe,25.00,12:00,140.00,"x",6,14,30,6.20,normal,x,dev');
+        $this->assertSame(['triple_median', 'frequent_visitor', 'above_category'], FraudEvalPatterns::tags($regular, $runner->signalsFor($regular)));
+
+        // No past redemptions: no median, so never "3x the median".
+        $first = $case('FE-97,Triangle Stems,retail,12.00,12:00,100.00,"x",0,0,0,,normal,x,dev');
+        $this->assertSame(['new_merchant'], FraudEvalPatterns::tags($first, $runner->signalsFor($first)));
+    }
+
+    public function test_eval_page_shows_the_lock_for_the_headline_split(): void
+    {
+        $this->useFake(FakeClaudeClient::verdict(85, 'hold'));
+        $cases = app(FraudEvalRunner::class)->loadCases($this->writeCases(
+            'FE-41,Farragut Grind,cafe,5.40,08:05,92.30,"x",2,6,18,7.10,normal,small,holdout_3',
+            'FE-42,K Street Cuts,salon,180.00,21:40,184.50,"x",0,0,9,16.20,suspicious,drains,holdout_3',
+        ));
+        file_put_contents("{$this->dir}/lock.json", json_encode(FraudEvalLock::build($cases, str_repeat('ab', 20), '2026-10-14T12:00:00-04:00')));
+        $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
+        config([
+            'fraud.eval_latest_path' => "{$this->dir}/out/fraud-eval-latest.json",
+            'fraud.eval_headline' => ['run' => basename(File::glob("{$this->dir}/out/runs/*.json")[0], '.json'), 'split' => 'holdout_3', 'note' => null],
+        ]);
+        $this->artisan('fraud:eval', $this->evalCommand())->assertSuccessful();
+
+        $this->get('/eval')
+            ->assertSee('Caught 1 of 1 suspicious cases; 1 of 2 holds were suspicious.')
+            ->assertSee('Locked before the AI saw them:')
+            ->assertSee('/commit/'.str_repeat('ab', 20), false)
+            ->assertSee('Holdout 3 agreement');
+        $this->assertStringContainsString('labeled by hand in commit `ababab', file_get_contents("{$this->dir}/out/fraud-eval-results.md"));
     }
 
     public function test_the_real_cases_file_is_fully_labeled_and_valid(): void

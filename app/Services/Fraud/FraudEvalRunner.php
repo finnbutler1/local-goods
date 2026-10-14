@@ -3,6 +3,7 @@
 namespace App\Services\Fraud;
 
 use App\Services\Ai\ClaudeClient;
+use App\Support\WilsonInterval;
 use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 
@@ -191,6 +192,7 @@ class FraudEvalRunner
                 'risk_score' => $verdict['risk_score'],
                 'explanation' => $verdict['explanation'],
                 'agree' => $aiLabel === $case['my_label'],
+                'tags' => FraudEvalPatterns::tags($case, $signals),
                 'cached' => $cached,
             ];
 
@@ -213,7 +215,9 @@ class FraudEvalRunner
     }
 
     /**
-     * Agreement and a confusion matrix: matrix[my_label][ai_label] = count.
+     * Agreement, a confusion matrix (matrix[my_label][ai_label] = count),
+     * catch rate, hold precision, a 95% Wilson interval for each, and misses
+     * and false alarms by pattern tag and merchant category.
      *
      * @param  array<array<string, mixed>>  $results
      * @return array<string, mixed>
@@ -228,12 +232,25 @@ class FraudEvalRunner
 
         $total = count($results);
         $agree = $matrix['normal']['normal'] + $matrix['suspicious']['suspicious'];
+        $caught = $matrix['suspicious']['suspicious'];
+        $rate = fn (int $hits, int $of) => [
+            'hits' => $hits,
+            'of' => $of,
+            'pct' => $of ? round(100 * $hits / $of, 1) : null,
+            'ci95' => WilsonInterval::percent($hits, $of),
+        ];
 
         return [
             'cases' => $total,
             'agree' => $agree,
             'agreement_pct' => $total ? round(100 * $agree / $total, 1) : null,
+            'agreement_ci95' => WilsonInterval::percent($agree, $total),
             'matrix' => $matrix,
+            // Of the cases the person labeled suspicious, how many the AI held.
+            'catch' => $rate($caught, $caught + $matrix['suspicious']['normal']),
+            // Of the cases the AI held, how many the person labeled suspicious.
+            'hold_precision' => $rate($caught, $caught + $matrix['normal']['suspicious']),
+            'patterns' => FraudEvalPatterns::breakdown($results),
         ];
     }
 

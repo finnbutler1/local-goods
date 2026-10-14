@@ -70,13 +70,15 @@ class FraudEvalReport
         return collect(File::glob("{$dir}/runs/*.json"))
             ->map(fn ($path) => ['path' => $path] + json_decode(file_get_contents($path), true))
             ->sortBy('run_at')
+            ->map(fn ($run) => ['summary' => self::summaries($run['results'])] + $run)
             ->map(fn ($run) => [
                 'run_at' => $run['run_at'],
                 'model' => $run['model'],
                 'prompt_version' => $run['prompt_version'],
                 'dev_pct' => $run['summary']['dev']['agreement_pct'],
                 'holdout_pct' => $run['summary']['holdout']['agreement_pct'],
-                'holdout_2_pct' => $run['summary']['holdout_2']['agreement_pct'] ?? null,
+                'holdout_2_pct' => $run['summary']['holdout_2']['agreement_pct'],
+                'holdout_3_pct' => $run['summary']['holdout_3']['agreement_pct'],
                 'all_pct' => $run['summary']['all']['agreement_pct'],
                 'name' => basename($run['path'], '.json'),
                 'file' => 'runs/'.basename($run['path'], '.json').'.md',
@@ -88,10 +90,10 @@ class FraudEvalReport
     }
 
     /**
-     * The headline number: one split of one chosen run (config
-     * fraud.eval_headline). Later runs never replace it automatically,
-     * because a score only counts as clean if those cases were unseen when
-     * the prompt was last changed.
+     * The headline: catch rate and hold precision on one split of one chosen
+     * run (config fraud.eval_headline). Later runs never replace it
+     * automatically, because a score only counts as clean if those cases were
+     * unseen when the prompt was last changed.
      *
      * @param  list<array<string, mixed>>  $history
      * @return array<string, mixed>|null
@@ -107,20 +109,50 @@ class FraudEvalReport
         }
 
         $current = $row['prompt_version'] === FraudEvalRunner::promptVersion();
-        $missed = $split['matrix']['suspicious']['normal'];
+        $c = $split['catch'];
+        $p = $split['hold_precision'];
 
         return [
             'run_at' => $row['run_at'],
             'prompt_version' => $row['prompt_version'],
             'file' => $row['file'],
             'split' => $config['split'],
-            'text' => "{$split['agreement_pct']}% agreement on {$split['cases']} unseen cases with "
-                .($current ? 'the current prompt' : "prompt {$row['prompt_version']}")
-                .", and {$missed} suspicious ".($missed === 1 ? 'case' : 'cases').' missed.',
+            'text' => "Caught {$c['hits']} of {$c['of']} suspicious cases; {$p['hits']} of {$p['of']} holds were suspicious.",
             'note' => $config['note'] ?? null,
-            'sample' => "Small sample: with {$split['cases']} cases, one case moves the score by "
-                .round(100 / $split['cases'], 1).' points.',
+            'sample' => "Measured on {$split['cases']} unseen cases, {$c['of']} of them labeled suspicious by a person, with "
+                .($current ? 'the current prompt' : "prompt {$row['prompt_version']}").'. 95% confidence intervals: catch rate '
+                .self::ci($c['ci95']).', hold precision '.self::ci($p['ci95'])."; overall agreement {$split['agreement_pct']}% "
+                ."({$split['agree']} of {$split['cases']}, ".self::ci($split['agreement_ci95']).').',
+            'summary' => $split,
+            'pattern_notes' => $config['pattern_notes'] ?? [],
         ];
+    }
+
+    /** "46.2–80.6%" */
+    public static function ci(?array $ci): string
+    {
+        return $ci === null ? 'n/a' : "{$ci[0]}–{$ci[1]}%";
+    }
+
+    /** "17 of 26 (65.4%, 95% CI 46.2–80.6%)" */
+    public static function rate(array $rate): string
+    {
+        return $rate['of'] === 0 ? 'n/a (none)' : "{$rate['hits']} of {$rate['of']} ({$rate['pct']}%, 95% CI ".self::ci($rate['ci95']).')';
+    }
+
+    /**
+     * Per-split summaries rebuilt from a run's results, so runs saved before
+     * catch rate and hold precision existed report them too.
+     *
+     * @param  list<array<string, mixed>>  $results
+     * @return array<string, array<string, mixed>>
+     */
+    private static function summaries(array $results): array
+    {
+        return collect(FraudEvalRunner::SPLITS)
+            ->map(fn ($title, $split) => FraudEvalRunner::summarize(array_filter($results, fn ($r) => $r['split'] === $split)))
+            ->put('all', FraudEvalRunner::summarize($results))
+            ->all();
     }
 
     /**
@@ -138,10 +170,18 @@ class FraudEvalReport
         $md = "# Redemption Fraud Detection eval results\n\n";
 
         if ($headline !== null) {
-            $md .= "**Headline: {$headline['text']}**\n\n";
+            $md .= "**Headline: {$headline['text']}**\n\n{$headline['sample']}\n\n";
             $md .= 'From the run on '.Carbon::parse($headline['run_at'])->format('F j, Y')
                 ." (prompt `{$headline['prompt_version']}`, `{$headline['split']}` cases, [details]({$headline['file']})). "
-                .($headline['note'] ? "{$headline['note']} " : '')."{$headline['sample']}\n\n";
+                .($headline['note'] ?? '')."\n\n";
+
+            if (($lock = FraudEvalLock::load()) !== null) {
+                $md .= "**Locked before the AI saw them:** the {$lock['case_count']} `{$lock['split']}` cases were labeled by hand in commit "
+                    ."`".substr($lock['labeling_commit'], 0, 7)."` and locked in [`data/fraud_eval_lock.json`]({$root}data/fraud_eval_lock.json) "
+                    ."(SHA-256 of every row, combined `".substr($lock['combined_sha256'], 0, 12)."`). `fraud:eval` refuses to run if any locked row changes.\n\n";
+            }
+
+            $md .= $this->patternsMarkdown($headline);
         }
 
         $md .= $headline === null ? '' : "## Latest run\n\n";
@@ -157,8 +197,9 @@ class FraudEvalReport
         $md .= "| Cases | {$run['case_count']}{$casesVersion} hand-labeled synthetic redemptions ([`data/fraud_eval_cases.csv`]({$root}data/fraud_eval_cases.csv)) |\n\n";
 
         $md .= "## Agreement with the human labels\n\n";
-        $md .= "| Split | Agreement |\n|---|---|\n";
+        $md .= "| Split | Cases (labeled suspicious) | Agreement | Catch rate: suspicious cases the AI held | Hold precision: holds that were suspicious |\n|---|---|---|---|---|\n";
         $descriptions = [
+            'holdout_3' => 'labeled and locked after the last prompt change, never seen while changing it',
             'holdout_2' => 'labeled after the last prompt change, never seen while changing it',
             'holdout' => 'not used to change the prompt',
             'dev' => 'may be used to improve the prompt',
@@ -174,10 +215,10 @@ class FraudEvalReport
                 ? $key === 'holdout'
                 : $headline['run_at'] === $run['run_at'] && $headline['split'] === $key;
             $b = $isHeadline ? '**' : '';
-            $md .= '| '.$b.FraudEvalRunner::SPLITS[$key].$b." ({$description}) | {$b}{$pct($s[$key])}{$b} |\n";
+            $md .= '| '.$b.FraudEvalRunner::SPLITS[$key].$b." ({$description}) | {$this->counts($s[$key])} | {$pct($s[$key])} | {$b}".self::rate($s[$key]['catch'])."{$b} | {$b}".self::rate($s[$key]['hold_precision'])."{$b} |\n";
         }
 
-        $md .= "| All cases | {$pct($s['all'])} |\n\n";
+        $md .= "| All cases | {$this->counts($s['all'])} | {$pct($s['all'])} | ".self::rate($s['all']['catch']).' | '.self::rate($s['all']['hold_precision'])." |\n\n";
         $md .= "The AI's `hold` counts as *suspicious* and `clear` as *normal*.";
 
         if ($run['errors'] !== []) {
@@ -210,20 +251,57 @@ class FraudEvalReport
             $md .= "\n";
         }
 
-        $md .= "## Every case\n\n| Case | Split | Redemption | Human | AI | Score | Agree |\n|---|---|---|---|---|---|---|\n";
+        $md .= "## Every case\n\n| Case | Split | Redemption | Human | AI | Score | Agree | Pattern tags |\n|---|---|---|---|---|---|---|---|\n";
         foreach ($run['results'] as $r) {
-            $md .= "| {$r['case_id']} | {$r['split']} | \${$r['amount']} at {$this->cell($r['merchant'])}, {$r['local_time']} | {$r['my_label']} | {$r['ai_decision']} | {$r['risk_score']} | ".($r['agree'] ? 'yes' : '**no**')." |\n";
+            $tags = implode(', ', array_map(fn ($t) => FraudEvalPatterns::TAGS[$t], $r['tags'] ?? []));
+            $md .= "| {$r['case_id']} | {$r['split']} | \${$r['amount']} at {$this->cell($r['merchant'])}, {$r['local_time']} | {$r['my_label']} | {$r['ai_decision']} | {$r['risk_score']} | ".($r['agree'] ? 'yes' : '**no**')." | {$tags} |\n";
         }
 
         if ($history !== []) {
             $md .= "\n## Run history\n\nEvery run is kept. A new prompt version means the prompt file changed between runs.\n\n";
-            $md .= "| Run | Model | Prompt version | Dev | Holdout | Holdout 2 | All | Details | Note |\n|---|---|---|---|---|---|---|---|---|\n";
+            $md .= "Each cell: agreement (agreed/cases) and how many of the suspicious cases the AI caught.\n\n";
+            $md .= "| Run | Model | Prompt version | Dev | Holdout | Holdout 2 | Holdout 3 | Details | Note |\n|---|---|---|---|---|---|---|---|---|\n";
             foreach ($history as $h) {
-                $md .= '| '.Carbon::parse($h['run_at'])->format('Y-m-d H:i')." | `{$h['model']}` | `{$h['prompt_version']}` | {$h['dev_pct']}% | {$h['holdout_pct']}% | ".($h['holdout_2_pct'] === null ? 'n/a' : "{$h['holdout_2_pct']}%")." | {$h['all_pct']}% | [{$h['file']}]({$h['file']}) | {$this->cell($h['note'] ?? '')} |\n";
+                $md .= '| '.Carbon::parse($h['run_at'])->format('Y-m-d H:i')." | `{$h['model']}` | `{$h['prompt_version']}` | "
+                    .implode(' | ', array_map(fn ($split) => self::historyCell($h['summary'][$split]), ['dev', 'holdout', 'holdout_2', 'holdout_3']))
+                    ." | [{$h['file']}]({$h['file']}) | {$this->cell($h['note'] ?? '')} |\n";
             }
         }
 
         $md .= "\nGenerated by `php artisan fraud:eval`. Method: see [TRANSPARENCY.md]({$root}TRANSPARENCY.md#how-we-measure-it).\n";
+
+        return $md;
+    }
+
+    /** "90% (18/20), caught 7 of 7" or "n/a" for a split the run did not have. */
+    public static function historyCell(array $split): string
+    {
+        return $split['cases'] === 0
+            ? 'n/a'
+            : "{$split['agreement_pct']}% ({$split['agree']}/{$split['cases']}), caught {$split['catch']['hits']} of {$split['catch']['of']}";
+    }
+
+    private function counts(array $split): string
+    {
+        return "{$split['cases']} ({$split['catch']['of']})";
+    }
+
+    /** Misses and false alarms on the headline split, by pattern tag and merchant category. */
+    private function patternsMarkdown(array $headline): string
+    {
+        $patterns = $headline['summary']['patterns'];
+        $notes = $headline['pattern_notes'];
+        $md = "## Misses and false alarms by pattern (`{$headline['split']}`)\n\n";
+        $md .= "Tags are worked out from each case's facts only, never from the person's label or the AI's answer. A case can have several tags. "
+            ."*Missed*: labeled suspicious, AI cleared. *False alarm*: labeled normal, AI held. The \"why\" comes from the AI's own explanations.\n\n";
+
+        foreach (['tags' => ['Pattern', FraudEvalPatterns::TAGS], 'categories' => ['Merchant category', []]] as $key => [$heading, $names]) {
+            $md .= "| {$heading} | Cases | Labeled suspicious | Missed | False alarms | Why |\n|---|---|---|---|---|---|\n";
+            foreach ($patterns[$key] as $name => $r) {
+                $md .= '| '.($names[$name] ?? $name)." | {$r['cases']} | {$r['suspicious']} | {$r['missed']} | {$r['false_alarms']} | {$this->cell($notes[$name] ?? '')} |\n";
+            }
+            $md .= "\n";
+        }
 
         return $md;
     }

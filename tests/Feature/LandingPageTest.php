@@ -37,15 +37,15 @@ class LandingPageTest extends TestCase
     {
         $path = sys_get_temp_dir().'/landing-eval-'.uniqid().'.json';
         file_put_contents($path, json_encode(['headline' => [
-            'text' => '73% agreement on 11 unseen cases with the current prompt, and 1 suspicious case missed.',
-            'sample' => 'Small sample: with 11 cases, one case moves the score by 9.1 points.',
+            'text' => 'Caught 9 of 12 suspicious cases; 9 of 10 holds were suspicious.',
+            'sample' => 'Measured on 30 unseen cases, 12 of them labeled suspicious by a person, with the current prompt.',
         ]]));
         config(['fraud.eval_latest_path' => $path]);
 
         try {
             $this->get('/')
-                ->assertSee('73% agreement on 11 unseen cases with the current prompt, and 1 suspicious case missed.')
-                ->assertSee('one case moves the score by 9.1 points')
+                ->assertSee('Caught 9 of 12 suspicious cases; 9 of 10 holds were suspicious.')
+                ->assertSee('12 of them labeled suspicious by a person')
                 ->assertSee('href="'.route('eval').'"', false)
                 ->assertSee('fails closed')
                 ->assertSee('A held redemption is never approved automatically; it waits for review by the BID.');

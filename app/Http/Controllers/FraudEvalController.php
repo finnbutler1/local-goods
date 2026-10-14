@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Fraud\FraudEvalLock;
 use App\Services\Fraud\FraudEvalReport;
 use Illuminate\View\View;
 
@@ -15,11 +16,11 @@ class FraudEvalController extends Controller
 {
     public function public(FraudEvalReport $report): View
     {
-        return view('eval', ['run' => $report->latest()]);
+        return view('eval', ['run' => $report->latest(), 'lock' => FraudEvalLock::load()]);
     }
 
     public function admin(FraudEvalReport $report): View
     {
-        return view('bid-admin.eval', ['run' => $report->latest()]);
+        return view('bid-admin.eval', ['run' => $report->latest(), 'lock' => FraudEvalLock::load()]);
     }
 }

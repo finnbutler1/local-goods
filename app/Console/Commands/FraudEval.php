@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Fraud\FraudEvalLock;
+use App\Services\Fraud\FraudEvalPatterns;
 use App\Services\Fraud\FraudEvalReport;
 use App\Services\Fraud\FraudEvalRunner;
 use Illuminate\Console\Command;
@@ -80,6 +81,19 @@ class FraudEval extends Command
                 ['normal', $m['normal']['normal'], $m['normal']['suspicious']],
                 ['suspicious', $m['suspicious']['normal'], $m['suspicious']['suspicious']],
             ]);
+            $this->line('Catch rate: '.FraudEvalReport::rate($s['catch']).' · Hold precision: '.FraudEvalReport::rate($s['hold_precision']).' · Agreement 95% CI: '.FraudEvalReport::ci($s['agreement_ci95']));
+        }
+
+        if ($run['summary'][FraudEvalLock::SPLIT]['cases'] > 0) {
+            $patterns = $run['summary'][FraudEvalLock::SPLIT]['patterns'];
+            $this->newLine();
+            $this->info('Misses and false alarms on '.FraudEvalLock::SPLIT.' by pattern (tags come from the facts only)');
+            $table = fn (array $rows, array $names) => $this->table(
+                ['Pattern', 'Cases', 'Labeled suspicious', 'Missed', 'False alarms'],
+                array_map(fn ($key, $r) => [$names[$key] ?? $key, $r['cases'], $r['suspicious'], $r['missed'], $r['false_alarms']], array_keys($rows), $rows),
+            );
+            $table($patterns['tags'], FraudEvalPatterns::TAGS);
+            $table($patterns['categories'], []);
         }
 
         $disagreements = array_values(array_filter($run['results'], fn ($r) => ! $r['agree']));
