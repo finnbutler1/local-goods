@@ -105,6 +105,7 @@ class MerchantCandidatesTest extends TestCase
             'eligibility.candidates_path' => "{$dir}/candidates.csv",
             'eligibility.points_path' => "{$dir}/points.csv",
             'eligibility.report_path' => "{$dir}/report.md",
+            'eligibility.activity_path' => "{$dir}/activity.csv",
         ]);
         $ring = [[-77.05, 38.90], [-77.03, 38.90], [-77.03, 38.91], [-77.05, 38.91], [-77.05, 38.90]];
 
@@ -122,7 +123,39 @@ class MerchantCandidatesTest extends TestCase
         $this->artisan('eligibility:build-candidates')->expectsOutputToContain('1 candidates written')->assertSuccessful();
 
         $this->assertSame(['MC-001'], array_keys(MerchantCandidates::load()));
+        $this->assertSame(['MC-001' => 'Barber Shop'], MerchantCandidates::activity());
         $this->assertStringContainsString('Candidates kept** | **1', file_get_contents("{$dir}/report.md"));
         Http::assertSent(fn ($request) => ! str_contains($request->body(), 'OWNER') && ! str_contains($request->body(), 'AGENT'));
+    }
+
+    public function test_fetch_activity_adds_the_license_business_activity_and_nothing_else(): void
+    {
+        $dir = sys_get_temp_dir().'/lg-activity-'.uniqid();
+        mkdir($dir);
+        file_put_contents("{$dir}/points.csv", "candidate_id,lat,lng,license_number\nMC-001,38.9,-77.04,123\nMC-002,38.9,-77.04,456\n");
+        config(['eligibility.points_path' => "{$dir}/points.csv", 'eligibility.activity_path' => "{$dir}/activity.csv"]);
+
+        Http::fake([config('eligibility.licenses_url') => Http::response(['features' => [
+            ['attributes' => ['CUSTOMERNUMBER' => '123', 'BUSINESSACTIVITY' => 'Barber Shop']],
+            ['attributes' => ['CUSTOMERNUMBER' => '456', 'BUSINESSACTIVITY' => 'Restaurant']],
+        ]])]);
+
+        $this->artisan('eligibility:fetch-activity')->assertSuccessful();
+
+        $this->assertSame(['MC-001' => 'Barber Shop', 'MC-002' => 'Restaurant'], MerchantCandidates::activity());
+        Http::assertSent(fn ($request) => $request['outFields'] === 'CUSTOMERNUMBER,BUSINESSACTIVITY');
+    }
+
+    public function test_fetch_activity_writes_nothing_when_a_license_is_missing(): void
+    {
+        $dir = sys_get_temp_dir().'/lg-activity-'.uniqid();
+        mkdir($dir);
+        file_put_contents("{$dir}/points.csv", "candidate_id,lat,lng,license_number\nMC-001,38.9,-77.04,123\n");
+        config(['eligibility.points_path' => "{$dir}/points.csv", 'eligibility.activity_path' => "{$dir}/activity.csv"]);
+        Http::fake([config('eligibility.licenses_url') => Http::response(['features' => []])]);
+
+        $this->artisan('eligibility:fetch-activity')->assertFailed();
+
+        $this->assertFileDoesNotExist("{$dir}/activity.csv");
     }
 }

@@ -47,6 +47,7 @@ class BuildMerchantCandidates extends Command
 
         $this->writeCsv(config('eligibility.candidates_path'), MerchantCandidateBuilder::COLUMNS, $result['candidates']);
         $this->writeCsv(config('eligibility.points_path'), ['candidate_id', 'lat', 'lng', 'license_number'], $result['points']);
+        $this->writeCsv(config('eligibility.activity_path'), MerchantCandidates::ACTIVITY_COLUMNS, $result['activity']);
         file_put_contents(config('eligibility.report_path'), $this->report($builder->report, $result['candidates']));
 
         foreach ($builder->report as $line => $count) {

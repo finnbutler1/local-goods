@@ -43,7 +43,7 @@ class MerchantCandidateBuilder
     /**
      * @param  list<array{attributes: array<string, mixed>, geometry?: array{x: float, y: float}}>  $licenses
      * @param  array<string, string>  $existingIds  "name|address" => candidate_id from an earlier build
-     * @return array{candidates: list<array<string, string>>, points: list<array<string, string>>}
+     * @return array{candidates: list<array<string, string>>, points: list<array<string, string>>, activity: list<array<string, string>>}
      */
     public function build(array $licenses, BidBoundary $boundary, string $bidName, string $licensesUrl, array $existingIds = []): array
     {
@@ -110,6 +110,7 @@ class MerchantCandidateBuilder
                 'category' => $category,
                 'source_url' => $this->sourceUrl($licensesUrl, (string) $a['CUSTOMERNUMBER']),
                 'license' => (string) $a['CUSTOMERNUMBER'],
+                'business_activity' => trim((string) ($a['BUSINESSACTIVITY'] ?? '')),
                 'lat' => sprintf('%.6f', $point['y']),
                 'lng' => sprintf('%.6f', $point['x']),
             ];
@@ -124,7 +125,7 @@ class MerchantCandidateBuilder
      *
      * @param  array<string, array<string, mixed>>  $byKey
      * @param  array<string, string>  $existingIds
-     * @return array{candidates: list<array<string, string>>, points: list<array<string, string>>}
+     * @return array{candidates: list<array<string, string>>, points: list<array<string, string>>, activity: list<array<string, string>>}
      */
     private function number(array $byKey, array $existingIds): array
     {
@@ -145,6 +146,7 @@ class MerchantCandidateBuilder
         return [
             'candidates' => array_map(fn ($r) => array_intersect_key($r, array_flip(self::COLUMNS)) + array_fill_keys(self::COLUMNS, ''), $rows),
             'points' => array_map(fn ($r) => ['candidate_id' => $r['candidate_id'], 'lat' => $r['lat'], 'lng' => $r['lng'], 'license_number' => $r['license']], $rows),
+            'activity' => array_map(fn ($r) => ['candidate_id' => $r['candidate_id'], 'business_activity' => $r['business_activity']], $rows),
         ];
     }
 
