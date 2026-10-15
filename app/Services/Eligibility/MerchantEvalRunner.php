@@ -229,6 +229,8 @@ class MerchantEvalRunner
             ];
         }
 
+        $chains = array_filter($results, fn ($r) => $r['my_label'] === 'not_independent');
+
         $humanUndetermined = array_filter($results, fn ($r) => $r['my_label'] === 'undetermined');
         $decided = $total - count($humanUndetermined);
 
@@ -251,6 +253,14 @@ class MerchantEvalRunner
                 // Of the cases Finn could decide, how often the AI said undetermined.
                 'ai_undetermined_on_decided' => $rate($count(fn ($r) => $r['my_label'] !== 'undetermined' && $r['ai_outcome'] === 'undetermined'), $decided),
             ],
+            // Triage: how the AI handles the businesses Finn labeled not independent, and how much goes to a person.
+            'triage' => [
+                'chains_not_eligible' => $rate(count(array_filter($chains, fn ($r) => $r['ai_outcome'] === 'not_eligible')), count($chains)),
+                'chains_called_eligible' => $rate(count(array_filter($chains, fn ($r) => $r['ai_eligible'])), count($chains)),
+                'routed_to_review' => $rate($count(fn ($r) => $r['needs_human_review']), $total),
+            ],
+            // Both answers mean "not eligible", but the reason differs.
+            'category_disagreements' => count(array_filter($chains, fn ($r) => $r['ai_outcome'] === 'not_eligible' && ! $r['class_match'])),
             'needs_human_review' => $count(fn ($r) => $r['needs_human_review']),
             'disagreements' => $count(fn ($r) => ! $r['class_match']),
         ];

@@ -22,6 +22,9 @@ class MerchantEvalReport
 
     public const OUTCOME_NAMES = ['eligible' => 'Eligible', 'not_eligible' => 'Not eligible', 'undetermined' => 'Undetermined'];
 
+    /** Shown with the category disagreements. Finn's wording of the caveat; the labels stay locked. */
+    public const CATEGORY_NOTE = 'In these cases both answers mean "not eligible"; only the reason differs. Finn notes that some of Finn\'s own fail_reason labels may be inaccurate (for example, company-operated locations labeled franchise). The labels stay locked and unchanged, so these still count as classification disagreements.';
+
     public const CLASS_NAMES = [
         'independent' => 'Independent', 'local_chain' => 'Local chain', 'franchise' => 'Franchise',
         'national_chain' => 'National chain', 'outside_control' => 'Outside control', 'undetermined' => 'Undetermined',
@@ -32,6 +35,8 @@ class MerchantEvalReport
     {
         return collect(File::glob("{$dir}/merchant-runs/*.json"))
             ->map(fn ($path) => ['name' => basename($path, '.json')] + json_decode(file_get_contents($path), true))
+            // Rebuilt from the results, so runs saved before a measure existed report it too.
+            ->map(fn ($run) => ['summary' => MerchantEvalRunner::summarize($run['results'])] + $run)
             ->sortBy('run_at')
             ->values()
             ->all();
@@ -222,6 +227,9 @@ class MerchantEvalReport
             '| Of Finn\'s independent businesses, AI called eligible | '.self::rate($s['recall']).' |',
             '| Of the AI\'s eligible calls, Finn labeled independent | '.self::rate($s['precision']).' |',
             '| Exact classification match | '.self::rate($s['class_match']).' |',
+            '| Triage: chains and franchises correctly called not eligible | '.self::rate($s['triage']['chains_not_eligible']).' |',
+            '| Triage: chains and franchises wrongly called eligible | '.self::rate($s['triage']['chains_called_eligible']).' |',
+            '| Triage: share of all cases routed to human review | '.self::rate($s['triage']['routed_to_review']).' |',
             '| AI said undetermined on a case Finn decided | '.self::rate($s['undetermined']['ai_undetermined_on_decided']).' |',
             '| Finn undetermined: AI also said undetermined | '.($s['undetermined']['human_undetermined'] === 0 ? 'n/a: no case is labeled undetermined' : self::rate($s['undetermined']['ai_also_undetermined'])).' |',
             '',
@@ -243,9 +251,18 @@ class MerchantEvalReport
             $lines[] = '| '.self::CLASS_NAMES[$reason]." | {$r['cases']} | ".self::rate($r['not_eligible']).' | '.self::rate($r['same_reason'])." | {$r['undetermined']} | {$r['called_eligible']} |";
         }
 
+        $category = array_filter($run['results'], fn ($r) => self::isCategoryDisagreement($r));
+        $lines[] = '';
+        $lines[] = 'Category disagreements ('.count($category).'): '.self::CATEGORY_NOTE;
+        $lines[] = '';
+        $lines[] = count($category) === 0 ? 'None.' : implode(', ', array_map(
+            fn ($r) => "{$r['candidate_id']} {$r['name']} (Finn: ".self::CLASS_NAMES[$r['fail_reason']].', AI: '.self::CLASS_NAMES[$r['ai_classification']].')',
+            $category,
+        )).'.';
+
         $disagreements = array_filter($run['results'], fn ($r) => ! $r['class_match']);
         $lines[] = '';
-        $lines[] = 'Disagreements ('.count($disagreements).'): every case where the AI\'s classification differs from Finn\'s. **Bold** means the eligible yes/no answer differs too.';
+        $lines[] = 'Disagreements ('.count($disagreements).'): every case where the AI\'s classification differs from Finn\'s, including the category disagreements above. **Bold** means the eligible yes/no answer differs too.';
         foreach ($disagreements as $r) {
             $finn = self::LABEL_NAMES[$r['my_label']].($r['fail_reason'] ? ' ('.self::CLASS_NAMES[$r['fail_reason']].')' : '');
             $head = "{$r['candidate_id']} {$r['name']}";
@@ -256,6 +273,12 @@ class MerchantEvalReport
         }
 
         return implode("\n", $lines);
+    }
+
+    /** Both answers mean "not eligible", but the classification differs. @param  array<string, mixed>  $r */
+    public static function isCategoryDisagreement(array $r): bool
+    {
+        return $r['my_label'] === 'not_independent' && $r['ai_outcome'] === 'not_eligible' && ! $r['class_match'];
     }
 
     private static function short(array $rate): string
