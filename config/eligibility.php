@@ -37,6 +37,14 @@ return [
         'barrys' => 'fitness',
     ],
 
+    // merchant:eval results (docs/evals, linked from /eval/merchants) and the
+    // AI-only answers the BID review queue reads. Committed, so production
+    // never calls the API to show them.
+    'eval_dir' => base_path('docs/evals'),
+    'eval_latest_path' => base_path('docs/evals/merchant-eval-latest.json'),
+    'eval_cache_path' => storage_path('app/merchant-eval-cache'),
+    'assessments_path' => base_path('data/merchant_assessments.json'),
+
     // Merchant Eligibility Matching: an answer below this confidence, or
     // "undetermined", is always flagged for a person, whatever the AI said.
     'review_if_confidence_below' => 0.7,
