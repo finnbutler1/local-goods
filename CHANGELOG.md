@@ -3,6 +3,14 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-15: Merchant labels locked
+
+- **60 hand-labeled merchants** (40 dev, 20 holdout) in
+  `data/merchant_labels.csv`: 14 independent, 46 not independent.
+- **Locked before any AI run** in `data/merchant_labels_lock.json`: a
+  SHA-256 per row and the labeling commit. `php artisan merchant:lock`
+  writes it; CI fails if a labeled row changes, disappears or is added.
+
 ## 2026-10-14: Groundwork for Merchant Eligibility Matching
 
 - **40 synthetic Meridian employees** (of 120 staff) and eight weeks of

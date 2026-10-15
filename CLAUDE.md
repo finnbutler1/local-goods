@@ -5,9 +5,9 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Merchant Eligibility Matching data foundation — waiting on Finn's labels.**
-Steps 1 (ledger), 5 (seed), 2 (candidates) and 3 (label file) are done; step 4
-(lock the labels) comes after Finn commits `data/merchant_labels.csv`.
+**Merchant Eligibility Matching data foundation — done.** Ledger, seed,
+real candidates, Finn's 60 labels and the label lock are in. Next milestone
+not set yet.
 
 Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011) and the three-account ledger (ADR 0012).
@@ -35,6 +35,10 @@ adjudication (ADR 0011) and the three-account ledger (ADR 0012).
   `fail_reason`, `evidence_url` or `my_note`. `fail_reason` is one of
   local_chain, franchise, national_chain, outside_control (part 1 of the
   rule). Checked by `App\Services\Eligibility\MerchantLabels`.
+- Label lock: `data/merchant_labels_lock.json` (written by `merchant:lock`)
+  holds a SHA-256 of every labeled row and labeling commit 30b610e. Never
+  edit a locked row (CI fails via `MerchantLabelLockTest`); a deliberate
+  change needs Finn's say-so and `merchant:lock --force`.
 - Blind adjudication (ADR 0011): `/admin/adjudication` builds a set from the
   latest eval run (every disagreement plus as many random agreed cases as
   blind controls; locked once published, new version to change). Only judges
