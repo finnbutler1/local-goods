@@ -19,15 +19,15 @@ class JudgeLandingTest extends TestCase
         $page = $this->get('/judge')->assertOk()
             ->assertSee('What Local Goods is')
             ->assertSee('Redemption Fraud Detection')
-            ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
+            ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Merchant eligibility check', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
             ->assertSee('Coming in a later build')
             ->assertSee('Payments will run through Stripe Connect in test mode in a later build')
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
 
-        // The six tour links all open for a judge.
+        // The seven tour links all open for a judge.
         preg_match_all('/<a href="([^"]+)" class="text-forest underline decoration-amber/', $page->getContent(), $links);
-        $this->assertCount(6, $links[1]);
+        $this->assertCount(7, $links[1]);
 
         foreach ($links[1] as $link) {
             $this->followingRedirects()->get($link)->assertOk();

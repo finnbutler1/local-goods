@@ -50,6 +50,12 @@ class JudgeController extends Controller
                 'available' => true,
             ],
             [
+                'title' => 'Merchant eligibility check',
+                'look_for' => 'Real businesses in the BID, each marked as a candidate, not a participant. The AI says whether each looks independent, how sure it is and why, judging from its own knowledge (no web search); a BID admin approves, rejects or asks for research. Its eval against hand labels is at /eval/merchants.',
+                'url' => route('bid-admin.merchants'),
+                'available' => true,
+            ],
+            [
                 'title' => 'Independent check of the AI',
                 'look_for' => 'Where my hand labels and the AI disagree, invited BID staff and contest judges rate the cases blind, with agreed cases mixed in as hidden controls. Their verdict is reported next to the eval, never in place of it.',
                 'url' => $adjudicationUrl,

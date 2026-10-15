@@ -49,7 +49,8 @@ class LedgerMigrationSafetyTest extends TestCase
         $this->app->detectEnvironment(fn () => 'production');
 
         try {
-            $this->app->make('migrator')->rollback([database_path('migrations')], ['step' => 1]);
+            // Just this migration (later migrations in the batch are skipped), like the first test.
+            $this->app->make('migrator')->rollback([base_path(self::MIGRATION)]);
             $this->fail('The rollback was allowed.');
         } catch (RuntimeException $e) {
             $this->assertStringContainsString('Refusing to roll back', $e->getMessage());
