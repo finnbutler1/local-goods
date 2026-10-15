@@ -11,9 +11,9 @@ Local Goods has two named AI functions:
 | Function | Status | What it does |
 |---|---|---|
 | **Redemption Fraud Detection** | Live | Scores every redemption for abuse, such as credit-to-cash collusion. |
-| **Merchant Eligibility Matching** | Planned | Will decide whether a merchant counts as independent under the program's rule, with written reasoning and a confidence score. |
+| **Merchant Eligibility Matching** | Built, reviewed by a person | Suggests whether a real business in the BID counts as independent under the program's rule, with reasoning and a confidence score. A BID admin makes the decision. See [Which merchants are eligible](#which-merchants-are-eligible). |
 
-The rest of this section covers Redemption Fraud Detection, the function that runs today.
+The sections up to "Checking the person's labels" cover Redemption Fraud Detection.
 
 ### What goes to Claude: anonymous signals only
 
@@ -214,32 +214,100 @@ judges check the disagreements, blind
   names, appear once voting closes. **Adjudication never changes Finn's
   labels or any headline number.**
 
-### Which merchants are eligible (planned)
+### Which merchants are eligible
 
-Today employees can only redeem at the demo's merchants, which were seeded by
-hand as fictional independent businesses. The app does not yet check whether a
-merchant is independent. Merchant Eligibility Matching will do that, and it is
-**planned**. The groundwork is in place:
+Merchant Eligibility Matching suggests whether a real business inside the
+Golden Triangle BID is independent under the program's rule. **A person at the
+BID makes the decision.** Today employees can still only redeem at the demo's
+fictional merchants: approving a real candidate records a decision and nothing
+else ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)).
 
-- **Real candidates from public data.** `data/merchant_candidates.csv` lists
-  224 real, consumer-facing businesses inside the Golden Triangle BID, built by
-  `php artisan eligibility:build-candidates` from DC Open Data (the BID
-  boundary from DC GIS, and active Basic Business Licenses). A business is kept
-  only if DC's spatial query, the license's own BID field and our own
-  point-in-polygon check all place it inside the boundary
-  (`data/sources/merchant_candidates_report.md` has the counts). We keep only
-  business names: owner names are never downloaded, and a license whose only
-  name is a person's is left out.
-- **Candidates are not participants.** None of these businesses has joined
-  Local Goods, and none appears in the demo's synthetic transactions. Any page
-  that ever shows one must label it "Candidate — not a Local Goods
-  participant."
-- **Ground truth before the AI.** Finn labels 60 of them by hand in
-  `data/merchant_labels.csv` (independent, not independent, or undetermined,
-  with the reason and a public source), split 40 dev and 20 holdout. The labels
-  are locked in `data/merchant_labels_lock.json` with a fingerprint per row
-  and the labeling commit, the same way as the fraud eval, before the AI sees
-  them. CI fails if any labeled row changes.
+**Real candidates from public data.** `data/merchant_candidates.csv` lists
+224 real, consumer-facing businesses inside the BID, built by
+`php artisan eligibility:build-candidates` from DC Open Data (the BID boundary
+from DC GIS, and active Basic Business Licenses). A business is kept only if
+DC's spatial query, the license's own BID field and our own point-in-polygon
+check all place it inside the boundary
+(`data/sources/merchant_candidates_report.md` has the counts). Each license's
+business activity (for example "Restaurant" or "Barber Shop") is in
+`data/sources/merchant_candidate_activity.csv`. Owner names are never
+downloaded, and a license whose only name is a person's is left out.
+**None of these businesses has joined Local Goods**, none appears in the
+demo's synthetic transactions, and every page that shows one labels it
+"Candidate — not a Local Goods participant."
+
+**What goes to Claude: four public facts.** The business's name, address,
+category and license business activity, plus the independence rule word for
+word ([prompt](resources/prompts/merchant-eligibility.md)). Nothing else. Finn's
+labels, notes and sources are in a different file that the check never reads,
+and tests check that none of them reaches the AI or the prompt.
+
+**The AI has no web access.** It judges from what it already knows about the
+business from its training. That knowledge may be out of date, and it knows
+little or nothing about many small local businesses. The prompt tells it to
+answer *undetermined* instead of guessing when it doesn't recognize a
+business, and never to call a business independent just because it hasn't
+heard of other locations. Wherever its reasoning is shown, a fixed notice says
+it did not search the web and may not know about recent sales, closures or
+new owners.
+
+**What Claude returns.** `eligible` (yes or no), a `classification`
+(independent, local chain, franchise, national chain, outside control or
+undetermined), a `confidence` from 0 to 1, a few sentences of `reasoning`, and
+`needs_human_review`. The app rejects an answer whose `eligible` contradicts
+its classification, whose confidence is out of range, or whose reasoning is
+blank. *Undetermined*, or a confidence below 0.7, is always flagged for a
+person, whatever the AI said.
+
+**It fails closed.** If the API call fails, the model declines, or the answer
+is invalid, the business is marked *undetermined* and not eligible, with
+confidence 0, and flagged for a person. It is never a guess.
+
+**A person decides.** The BID admin's review queue lists every assessed
+candidate with the AI's classification, confidence and reasoning, flagged ones
+first. They choose Approve, Reject or Needs research, with an optional note.
+Each decision is a new row in an append-only log with who, when and which AI
+answer they saw. A change of mind is a new row; nothing is edited or deleted.
+Finn's labels are not shown in the queue, so they can't steer the decision.
+Judges see the queue read-only.
+
+**How we measure it.** Finn labeled 60 of the candidates by hand in
+`data/merchant_labels.csv` (independent, not independent, or undetermined, with
+the reason and a public source), split 40 dev and 20 holdout. The labels were
+locked in `data/merchant_labels_lock.json` (a SHA-256 per row and labeling
+commit `30b610e`) before the AI saw any of them, and CI fails if a labeled row
+changes. `php artisan merchant:eval` refuses to run if the labels don't match
+the lock, and:
+
+- **Dev and holdout are scored and reported separately, never pooled.** The
+  prompt may be changed using dev cases only. The holdout is scored **once
+  per prompt version**: a second holdout run with the same prompt is refused,
+  and the results list every prompt version that has seen the holdout.
+- **The labels are imbalanced** (14 independent, 46 not), so always answering
+  "not eligible" already scores well. Next to eligible yes/no agreement, each
+  split shows that baseline, **how many of Finn's independent businesses the
+  AI found**, and **how many of the AI's "eligible" calls were right**, each as
+  X of Y with a 95% Wilson interval.
+- Also per split: a confusion matrix, matches by the reason Finn gave
+  (franchise, local chain, national chain, outside control), how often the AI
+  said undetermined on a business Finn could decide, and every disagreement
+  with Finn's note and the AI's reasoning. No business is labeled undetermined,
+  so "when Finn said undetermined, did the AI too, or did it guess?" can't be
+  measured yet, and the results say so.
+- Answers are cached by model, prompt and input, so re-running costs nothing.
+  `--dry-run` reports the number of API calls first.
+
+Results: [`docs/evals/merchant-eval-results.md`](docs/evals/merchant-eval-results.md)
+and `/eval/merchants`.
+
+**Real names stay off public pages.** These are real businesses that never
+joined Local Goods. The public `/eval/merchants` page shows totals only, with
+no names, notes, sources or per-business tables. The same goes for the shared
+"Public judge access" account, whose link is in the README. Named reviewers
+and admins see the businesses, each labeled as a candidate. The committed
+files in the repo (`data/merchant_candidates.csv`, `data/merchant_labels.csv`,
+`data/merchant_assessments.json` and the results under `docs/evals/`) do name
+them, because the repo holds the public source data the eval is built from.
 
 ### How reviewers get in
 
