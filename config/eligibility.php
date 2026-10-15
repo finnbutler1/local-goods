@@ -19,6 +19,12 @@ return [
     'points_path' => base_path('data/sources/merchant_candidate_points.csv'),
     'report_path' => base_path('data/sources/merchant_candidates_report.md'),
 
+    // Each candidate's license "business activity" (e.g. "Restaurant",
+    // "Barber Shop"), one of the public facts Merchant Eligibility Matching
+    // sees. Written by eligibility:build-candidates and
+    // eligibility:fetch-activity.
+    'activity_path' => base_path('data/sources/merchant_candidate_activity.csv'),
+
     // The hand-labeled ground truth for the eval.
     'labels_path' => base_path('data/merchant_labels.csv'),
     'labels_lock_path' => base_path('data/merchant_labels_lock.json'),
