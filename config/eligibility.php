@@ -37,6 +37,10 @@ return [
         'barrys' => 'fitness',
     ],
 
+    // Merchant Eligibility Matching: an answer below this confidence, or
+    // "undetermined", is always flagged for a person, whatever the AI said.
+    'review_if_confidence_below' => 0.7,
+
     // Any page that ever shows a real candidate must carry this label.
     'candidate_label' => 'Candidate — not a Local Goods participant.',
 ];

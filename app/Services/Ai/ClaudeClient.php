@@ -46,7 +46,7 @@ class ClaudeClient
         );
 
         if ($message->stopReason === 'refusal') {
-            throw new RuntimeException('The model declined to score this redemption.');
+            throw new RuntimeException('The model declined to answer.');
         }
 
         foreach ($message->content as $block) {
