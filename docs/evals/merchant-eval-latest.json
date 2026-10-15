@@ -1,5 +1,5 @@
 {
-    "updated_at": "2026-10-15T18:21:53-04:00",
+    "updated_at": "2026-10-15T18:27:39-04:00",
     "current_prompt_version": "458e8c2d",
     "splits": {
         "dev": {
@@ -1098,9 +1098,663 @@
             ],
             "note": "Prompt change 1 (dev only): independent only when sure of local ownership and 5 or fewer locations."
         },
-        "holdout": null
+        "holdout": {
+            "summary": {
+                "cases": 20,
+                "agreement": {
+                    "hits": 17,
+                    "of": 20,
+                    "pct": 85.0,
+                    "ci95": [
+                        64.0,
+                        94.8
+                    ]
+                },
+                "baseline_always_not_eligible": {
+                    "hits": 17,
+                    "of": 20,
+                    "pct": 85.0,
+                    "ci95": [
+                        64.0,
+                        94.8
+                    ]
+                },
+                "recall": {
+                    "hits": 0,
+                    "of": 3,
+                    "pct": 0.0,
+                    "ci95": [
+                        0.0,
+                        56.1
+                    ]
+                },
+                "precision": {
+                    "hits": 0,
+                    "of": 0,
+                    "pct": null,
+                    "ci95": null
+                },
+                "class_match": {
+                    "hits": 8,
+                    "of": 20,
+                    "pct": 40.0,
+                    "ci95": [
+                        21.9,
+                        61.3
+                    ]
+                },
+                "matrix": {
+                    "independent": {
+                        "eligible": 0,
+                        "not_eligible": 1,
+                        "undetermined": 2
+                    },
+                    "not_independent": {
+                        "eligible": 0,
+                        "not_eligible": 15,
+                        "undetermined": 2
+                    },
+                    "undetermined": {
+                        "eligible": 0,
+                        "not_eligible": 0,
+                        "undetermined": 0
+                    }
+                },
+                "by_fail_reason": {
+                    "local_chain": {
+                        "cases": 3,
+                        "not_eligible": {
+                            "hits": 3,
+                            "of": 3,
+                            "pct": 100.0,
+                            "ci95": [
+                                43.9,
+                                100.0
+                            ]
+                        },
+                        "same_reason": {
+                            "hits": 1,
+                            "of": 3,
+                            "pct": 33.3,
+                            "ci95": [
+                                6.1,
+                                79.2
+                            ]
+                        },
+                        "undetermined": 0,
+                        "called_eligible": 0
+                    },
+                    "franchise": {
+                        "cases": 9,
+                        "not_eligible": {
+                            "hits": 8,
+                            "of": 9,
+                            "pct": 88.9,
+                            "ci95": [
+                                56.5,
+                                98.0
+                            ]
+                        },
+                        "same_reason": {
+                            "hits": 3,
+                            "of": 9,
+                            "pct": 33.3,
+                            "ci95": [
+                                12.1,
+                                64.6
+                            ]
+                        },
+                        "undetermined": 1,
+                        "called_eligible": 0
+                    },
+                    "national_chain": {
+                        "cases": 5,
+                        "not_eligible": {
+                            "hits": 4,
+                            "of": 5,
+                            "pct": 80.0,
+                            "ci95": [
+                                37.6,
+                                96.4
+                            ]
+                        },
+                        "same_reason": {
+                            "hits": 4,
+                            "of": 5,
+                            "pct": 80.0,
+                            "ci95": [
+                                37.6,
+                                96.4
+                            ]
+                        },
+                        "undetermined": 1,
+                        "called_eligible": 0
+                    },
+                    "outside_control": {
+                        "cases": 0,
+                        "not_eligible": {
+                            "hits": 0,
+                            "of": 0,
+                            "pct": null,
+                            "ci95": null
+                        },
+                        "same_reason": {
+                            "hits": 0,
+                            "of": 0,
+                            "pct": null,
+                            "ci95": null
+                        },
+                        "undetermined": 0,
+                        "called_eligible": 0
+                    }
+                },
+                "undetermined": {
+                    "human_undetermined": 0,
+                    "ai_also_undetermined": {
+                        "hits": 0,
+                        "of": 0,
+                        "pct": null,
+                        "ci95": null
+                    },
+                    "ai_undetermined_on_decided": {
+                        "hits": 4,
+                        "of": 20,
+                        "pct": 20.0,
+                        "ci95": [
+                            8.1,
+                            41.6
+                        ]
+                    }
+                },
+                "triage": {
+                    "chains_not_eligible": {
+                        "hits": 15,
+                        "of": 17,
+                        "pct": 88.2,
+                        "ci95": [
+                            65.7,
+                            96.7
+                        ]
+                    },
+                    "chains_called_eligible": {
+                        "hits": 0,
+                        "of": 17,
+                        "pct": 0.0,
+                        "ci95": [
+                            0.0,
+                            18.4
+                        ]
+                    },
+                    "routed_to_review": {
+                        "hits": 14,
+                        "of": 20,
+                        "pct": 70.0,
+                        "ci95": [
+                            48.1,
+                            85.5
+                        ]
+                    }
+                },
+                "category_disagreements": 7,
+                "needs_human_review": 14,
+                "disagreements": 12
+            },
+            "name": "2026-10-15-claude-opus-5-5-prompt-458e8c2d-holdout",
+            "run_at": "2026-10-15T18:27:39-04:00",
+            "model": "claude-opus-5-5",
+            "prompt_version": "458e8c2d",
+            "split": "holdout",
+            "case_count": 20,
+            "api_calls": 20,
+            "errors": [],
+            "results": [
+                {
+                    "candidate_id": "MC-016",
+                    "split": "holdout",
+                    "name": "Barry's",
+                    "address": "1350 CONNECTICUT AVE NW, 01200, WASHINGTON, DC, 20036",
+                    "category": "fitness",
+                    "business_activity": "Delicatessen",
+                    "my_label": "not_independent",
+                    "fail_reason": "national_chain",
+                    "evidence_url": "https://athletechnews.com/barrys-opens-100th-studio-wall-street-new-york-city/",
+                    "my_note": "only 2 DC stores but 100 national locations",
+                    "ai_classification": "undetermined",
+                    "ai_eligible": false,
+                    "ai_outcome": "undetermined",
+                    "confidence": 0.6,
+                    "reasoning": "The name suggests Barry's (formerly Barry's Bootcamp), a national fitness chain headquartered outside the DC area, which would fail part 1 of the rule. However, the license lists the business activity as \"Delicatessen\" rather than a fitness activity, so I cannot be sure this license belongs to that chain and not to an unrelated deli or a juice bar inside the studio. I am relying on the name alone, so ownership and location count cannot be confirmed.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-020",
+                    "split": "holdout",
+                    "name": "BOMBAY CLUB INC",
+                    "address": "815 CONNECTICUT AVE NW, WASHINGTON, DC, 20006",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "independent",
+                    "fail_reason": "",
+                    "evidence_url": "https://www.bombayclubdc.com/history",
+                    "my_note": "only one location right outside of the White House",
+                    "ai_classification": "local_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.75,
+                    "reasoning": "From my training, Bombay Club at 815 Connecticut Ave NW is owned by restaurateur Ashok Bajaj's Knightsbridge Restaurant Group, which is based in DC with no known outside parent or investor control. Its sister restaurants have included two Rasika locations, Bindaas locations, Annabelle, Sababa and Modena, which together appear to exceed five locations. That fails part 2 of the rule. My knowledge may be out of date, since restaurants in this group have opened and closed over time, so the current location count should be checked.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": false,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-021",
+                    "split": "holdout",
+                    "name": "BOQUERIA",
+                    "address": "1837 M ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "national_chain",
+                    "evidence_url": "https://boqueriarestaurant.com/our-roots/",
+                    "my_note": "10 nations worldwide",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.85,
+                    "reasoning": "Boqueria is a Spanish tapas restaurant group that started in New York City and is headquartered there, with locations in New York, DC and other cities. This M Street location appears to be part of that group, so it fails part 1 of the rule (ownership headquartered outside the DC metro area). It likely also exceeds five locations. This is based on my training knowledge, which may be out of date, so ownership should be confirmed.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-029",
+                    "split": "holdout",
+                    "name": "Capsule Pharmacy",
+                    "address": "1705 DE SALES ST NW, Washington, DC, 20036",
+                    "category": "retail",
+                    "business_activity": "General Business",
+                    "my_label": "not_independent",
+                    "fail_reason": "national_chain",
+                    "evidence_url": "https://www.capsule.com/locations",
+                    "my_note": "22 locations",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.8,
+                    "reasoning": "Capsule is, as far as I know, a venture-backed digital pharmacy company headquartered in New York City that operates in several U.S. cities, including Washington, DC. A DC location under that name is very likely part of that company, which fails part 1 of the rule because it is headquartered and controlled outside the DC metro area. This rests on my memory and the name matching, not the license itself, and the company's ownership or footprint may have changed.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-035",
+                    "split": "holdout",
+                    "name": "Chick-fil-A Dupont In-line",
+                    "address": "1214 18TH ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://www.chick-fil-a.com/locations",
+                    "my_note": "global company",
+                    "ai_classification": "franchise",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.9,
+                    "reasoning": "Chick-fil-A is a national fast-food chain headquartered in Atlanta, Georgia, and its restaurants are typically run by independent franchise operators under the company's operator model. That fails part 3 of the rule (no franchisees), and the brand would also fail part 1 as a chain headquartered outside the DC area. This is based on general knowledge of the brand, not on records specific to this Dupont location.",
+                    "needs_human_review": false,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-056",
+                    "split": "holdout",
+                    "name": "DISTRICT TACO",
+                    "address": "1919 M ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "local_chain",
+                    "evidence_url": "https://www.districttaco.com/pages/locations",
+                    "my_note": "20 locations",
+                    "ai_classification": "local_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.8,
+                    "reasoning": "District Taco is a fast-casual taco chain founded in the DC area (Arlington, VA) by local owners, and from my knowledge it operates well over five locations across DC, Virginia, Maryland and beyond. That fails part 2 of the rule (five or fewer locations). I am not aware of a franchise arrangement or outside parent or private-equity control, but my information may be out of date, and any such change would alter the classification, though not eligibility.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-076",
+                    "split": "holdout",
+                    "name": "GCDC",
+                    "address": "1730 PENNSYLVANIA AVE NW, WASHINGTON, DC, 20006",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "independent",
+                    "fail_reason": "",
+                    "evidence_url": "https://www.grilledcheesebar.com/",
+                    "my_note": "one location",
+                    "ai_classification": "undetermined",
+                    "ai_eligible": false,
+                    "ai_outcome": "undetermined",
+                    "confidence": 0.6,
+                    "reasoning": "GCDC appears to be the Grilled Cheese Bar near Pennsylvania Ave NW, which I recall as a single local DC restaurant. However, I am not confident in its current ownership or whether it has sister brands or additional locations, and my knowledge may be out of date. Because the rule requires certainty on both local ownership and a location count of five or fewer, this should be verified by a person.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": false,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-116",
+                    "split": "holdout",
+                    "name": "Mason's Famous Lobster Rolls",
+                    "address": "1330 CONNECTICUT AVE NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Delicatessen",
+                    "my_label": "not_independent",
+                    "fail_reason": "local_chain",
+                    "evidence_url": "https://www.masonslobster.com/",
+                    "my_note": "prominent DMV locations",
+                    "ai_classification": "franchise",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.75,
+                    "reasoning": "From my training, Mason's Famous Lobster Rolls is a lobster roll brand that started in Annapolis, Maryland and has grown through franchising, with locations in several states. Many of its locations, likely including this one, are run by franchisees, which fails part 3 of the rule. Even if this location were company-run, the brand has well over five locations, so it would still not be eligible. My knowledge may be out of date and I can't confirm who operates this specific location, so a person should verify.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-132",
+                    "split": "holdout",
+                    "name": "PANERA BREAD",
+                    "address": "2001 L ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Caterers",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://www.panerabread.com/en-us/cafe/locations/dc/washington",
+                    "my_note": "global chain",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.8,
+                    "reasoning": "Panera Bread is a large national bakery-cafe chain headquartered in the St. Louis area and owned by a private investment group, with thousands of locations. That fails part 1 of the rule, and it also fails the five-location limit. Many Panera locations are run by franchisees, and I can't confirm whether this one is company-owned or franchised. If it is franchised, the correct label would be franchise, but it is ineligible either way.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-139",
+                    "split": "holdout",
+                    "name": "Playa Bowls DuPont Circle",
+                    "address": "1330 CONNECTICUT AVE NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://www.playabowls.com/locations",
+                    "my_note": "many locations",
+                    "ai_classification": "franchise",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.85,
+                    "reasoning": "Playa Bowls is an acai bowl brand founded and headquartered in New Jersey with well over a hundred locations nationwide, and its stores are generally operated by franchisees. That makes this location a franchise (fails part 3) and, in any case, part of an out-of-area national chain (fails part 1). I am relying on my general knowledge of the brand rather than specifics about this Dupont Circle store, so a person should confirm who operates it.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-145",
+                    "split": "holdout",
+                    "name": "PRET A MANGER",
+                    "address": "1825 I ST NW, 101, WASHINGTON, DC, 20006",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://www.pret.com/en-US/shop-finder",
+                    "my_note": "global chain",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.95,
+                    "reasoning": "Pret A Manger is a large international sandwich and coffee chain headquartered in London, owned by JAB Holding, with many locations in the US and abroad. It fails part 1 of the rule because it is run by an operator headquartered outside the DC metro area. It also has far more than five locations. This is based on my general knowledge, which may be out of date, but the brand's chain status is well established.",
+                    "needs_human_review": false,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-148",
+                    "split": "holdout",
+                    "name": "QARGO COFFEE",
+                    "address": "1001 CONNECTICUT AVE NW, WASHINGTON, DC, 20036",
+                    "category": "cafe",
+                    "business_activity": "Delicatessen",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://qargocoffee.com/stores/washington-lafayette",
+                    "my_note": "global chain",
+                    "ai_classification": "undetermined",
+                    "ai_eligible": false,
+                    "ai_outcome": "undetermined",
+                    "confidence": 0.6,
+                    "reasoning": "I have only a vague recollection of the Qargo Coffee name and cannot reliably confirm who owns it, where it is headquartered, or how many locations it and any sister brands have. Without clear knowledge of ownership and location count, I cannot confirm it meets all three parts of the rule. This judgment rests mostly on the name, and any memory I have may be out of date.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-165",
+                    "split": "holdout",
+                    "name": "SHAKE SHACK 18TH STREET NW WASHINGTON DC LLC",
+                    "address": "1216 18TH ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://shakeshack.com/?utm_source=google&utm_medium=paidsearch&utm_campaign=search_br_conversion_go_text_x_exact&utm_adgroup=conversion_x_menu_br&utm_keyword=shake%20shack%20near%20me&utm_content=kwd-311927045454&gad_source=1&gad_campaignid=10936666222&gbraid=0AAAAADRyPRXLA0aD49m6h8MWoaGCXqejA&gclid=CjwKCAjw88HWBhA3EiwAo2Zd6PAADvqtbjF-wM6x9f4e2kMhsZPa9DBoMQ0GqKHuw66LsoQosIgPExoCyQ0QAvD_BwE",
+                    "my_note": "global chain",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.93,
+                    "reasoning": "Shake Shack is a widely known burger chain headquartered in New York and publicly traded, with hundreds of locations. Its domestic restaurants are generally company-operated rather than franchised, so it fails part 1 of the rule because it belongs to an operator headquartered outside the DC metro area. The license name follows Shake Shack's usual pattern for location-specific LLCs, though this is based on my training knowledge rather than a check of current records.",
+                    "needs_human_review": false,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-177",
+                    "split": "holdout",
+                    "name": "Springbone Dupont LLC",
+                    "address": "1850 M ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "national_chain",
+                    "evidence_url": "https://springbone.com/locations/",
+                    "my_note": "locations on the east coast",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.55,
+                    "reasoning": "This appears to be a location of Springbone Kitchen, a fast-casual bone broth restaurant brand. From memory, the brand started in New York City and later opened several DC-area locations, which would suggest an operator based outside the DC metro area and a failure of part 1. I am not certain where the company is headquartered today or how many locations it currently runs, and my information may be out of date. A person should confirm the current ownership, headquarters and location count before relying on this.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-181",
+                    "split": "holdout",
+                    "name": "SUBWAY 116",
+                    "address": "1712 L ST NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://restaurants.subway.com/united-states/dc/washington",
+                    "my_note": "global chain",
+                    "ai_classification": "franchise",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.93,
+                    "reasoning": "Subway is a national sandwich chain whose US restaurants are almost all run by independent franchisees, and the store number in the license name (\"116\") fits that pattern. Franchisees fail part 3 of the rule, which is checked first. Subway is also controlled by an out-of-area private-equity owner, so this location would fail part 1 even if it were not a franchise.",
+                    "needs_human_review": false,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-186",
+                    "split": "holdout",
+                    "name": "SWEETGREEN DUPONT, LLC.",
+                    "address": "888 17TH ST NW, WASHINGTON, DC, 20006",
+                    "category": "restaurant",
+                    "business_activity": "Delicatessen",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://www.sweetgreen.com/",
+                    "my_note": "national chain",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.88,
+                    "reasoning": "Sweetgreen is a salad chain that started in DC but is now a public company (NYSE: SG) headquartered in Los Angeles, with well over a hundred locations nationwide. Because the operator is headquartered outside the DC metro area, it fails part 1 of the rule, which comes before the outside-control and location-count tests in our order. The LLC name suggests this is a company-operated Sweetgreen store, though this is based on my training knowledge, which may be out of date.",
+                    "needs_human_review": false,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-187",
+                    "split": "holdout",
+                    "name": "Swingers",
+                    "address": "1333 NEW HAMPSHIRE AVE NW, WASHINGTON, DC, 20036",
+                    "category": "restaurant",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "national_chain",
+                    "evidence_url": "https://www.swingers.club/us/locations/washington-dc",
+                    "my_note": "operates out of boston, las vegas, etc",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.85,
+                    "reasoning": "Swingers at 1333 New Hampshire Ave NW (Dupont Circle) appears to be the crazy golf and bar concept that started in London, with US venues in DC, New York and elsewhere. That makes it part of a chain run by an operator headquartered outside the DC metro area, which fails part 1 of the rule. This is based on my own memory, which may be out of date, and I am matching partly on the name and address.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": true,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-190",
+                    "split": "holdout",
+                    "name": "Tatte Bakery & Cafe",
+                    "address": "1301 CONNECTICUT AVE NW, WASHINGTON, DC, 20036",
+                    "category": "cafe",
+                    "business_activity": "Restaurant",
+                    "my_label": "not_independent",
+                    "fail_reason": "local_chain",
+                    "evidence_url": "https://tattebakery.com/locations/",
+                    "my_note": "operate out of several locations in DC",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.88,
+                    "reasoning": "From my training knowledge, Tatte Bakery & Cafe is a bakery-cafe chain founded and headquartered in the Boston area, with many locations in Massachusetts and the DC region. I also recall it received a significant outside investment (reportedly from Advent International), but the first failing reason in the rule order is that it is headquartered outside the DC metro area, which fails part 1. It also clearly exceeds five locations. My information may be out of date, but a change that would make it eligible is very unlikely.",
+                    "needs_human_review": false,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-208",
+                    "split": "holdout",
+                    "name": "TRAVEL TRADERS #209",
+                    "address": "1127 CONNECTICUT AVE NW, WASHINGTON, DC, 20036",
+                    "category": "retail",
+                    "business_activity": "Patent Medicine",
+                    "my_label": "not_independent",
+                    "fail_reason": "franchise",
+                    "evidence_url": "https://www.traveltradersllc.com/",
+                    "my_note": "operates out of hotels",
+                    "ai_classification": "national_chain",
+                    "ai_eligible": false,
+                    "ai_outcome": "not_eligible",
+                    "confidence": 0.75,
+                    "reasoning": "From memory, Travel Traders runs gift and convenience shops inside hotels across the country, and this address appears to be the Mayflower Hotel. I recall the company being based in Florida rather than the DC area, which would fail part 1 of the rule. The store number '#209' on the license also suggests far more than five locations, failing part 2 regardless of headquarters. My knowledge of its ownership and headquarters may be out of date, so a person should confirm.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": true,
+                    "class_match": false,
+                    "cached": false
+                },
+                {
+                    "candidate_id": "MC-209",
+                    "split": "holdout",
+                    "name": "TSHIFFELY PHARMACY",
+                    "address": "2021 K ST NW, WASHINGTON, DC, 20006",
+                    "category": "retail",
+                    "business_activity": "Food Products",
+                    "my_label": "independent",
+                    "fail_reason": "",
+                    "evidence_url": "https://www.rxdc.com/",
+                    "my_note": "only one location",
+                    "ai_classification": "undetermined",
+                    "ai_eligible": false,
+                    "ai_outcome": "undetermined",
+                    "confidence": 0.6,
+                    "reasoning": "The name appears to be a variant spelling of Tschiffely Pharmacy, which I recall as a long-running, locally owned DC pharmacy business with several downtown locations. I am not confident of its current number of locations or whether ownership has changed, so I can't confirm part 2 (five or fewer locations) or part 1 (no outside control). The spelling difference and the 'Food Products' license activity also make me unsure this license is the same business.",
+                    "needs_human_review": true,
+                    "model": "claude-opus-5-5",
+                    "agree": false,
+                    "class_match": false,
+                    "cached": false
+                }
+            ],
+            "note": "The one holdout run, with frozen prompt 458e8c2d."
+        }
     },
-    "holdout_seen_by": [],
+    "holdout_seen_by": [
+        "458e8c2d"
+    ],
     "history": [
         {
             "name": "2026-10-15-claude-opus-5-5-prompt-1abdea31-dev",
@@ -1159,6 +1813,32 @@
                 ]
             },
             "file": "merchant-runs/2026-10-15-claude-opus-5-5-prompt-458e8c2d-dev.md"
+        },
+        {
+            "name": "2026-10-15-claude-opus-5-5-prompt-458e8c2d-holdout",
+            "run_at": "2026-10-15T18:27:39-04:00",
+            "model": "claude-opus-5-5",
+            "prompt_version": "458e8c2d",
+            "split": "holdout",
+            "note": "The one holdout run, with frozen prompt 458e8c2d.",
+            "cases": 20,
+            "agreement_pct": 85.0,
+            "recall": {
+                "hits": 0,
+                "of": 3,
+                "pct": 0.0,
+                "ci95": [
+                    0.0,
+                    56.1
+                ]
+            },
+            "precision": {
+                "hits": 0,
+                "of": 0,
+                "pct": null,
+                "ci95": null
+            },
+            "file": "merchant-runs/2026-10-15-claude-opus-5-5-prompt-458e8c2d-holdout.md"
         }
     ]
 }

@@ -11,6 +11,36 @@
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
+        "MC-016": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "undetermined",
+            "confidence": 0.6,
+            "reasoning": "The name suggests Barry's (formerly Barry's Bootcamp), a national fitness chain headquartered outside the DC area, which would fail part 1 of the rule. However, the license lists the business activity as \"Delicatessen\" rather than a fitness activity, so I cannot be sure this license belongs to that chain and not to an unrelated deli or a juice bar inside the studio. I am relying on the name alone, so ownership and location count cannot be confirmed.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-020": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "local_chain",
+            "confidence": 0.75,
+            "reasoning": "From my training, Bombay Club at 815 Connecticut Ave NW is owned by restaurateur Ashok Bajaj's Knightsbridge Restaurant Group, which is based in DC with no known outside parent or investor control. Its sister restaurants have included two Rasika locations, Bindaas locations, Annabelle, Sababa and Modena, which together appear to exceed five locations. That fails part 2 of the rule. My knowledge may be out of date, since restaurants in this group have opened and closed over time, so the current location count should be checked.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-021": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.85,
+            "reasoning": "Boqueria is a Spanish tapas restaurant group that started in New York City and is headquartered there, with locations in New York, DC and other cities. This M Street location appears to be part of that group, so it fails part 1 of the rule (ownership headquartered outside the DC metro area). It likely also exceeds five locations. This is based on my training knowledge, which may be out of date, so ownership should be confirmed.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
         "MC-024": {
             "prompt_version": "458e8c2d",
             "assessed_at": "2026-10-15T18:21:53-04:00",
@@ -18,6 +48,16 @@
             "classification": "undetermined",
             "confidence": 0.8,
             "reasoning": "I do not recognize a business called \"Bully\" at 2033 M St NW, so I cannot say who owns it or how many locations it has. The name alone gives no reliable information about ownership, franchise status or sister brands. Because ownership and location count can't be established, it is labeled undetermined and should be checked by a person.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-029": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.8,
+            "reasoning": "Capsule is, as far as I know, a venture-backed digital pharmacy company headquartered in New York City that operates in several U.S. cities, including Washington, DC. A DC location under that name is very likely part of that company, which fails part 1 of the rule because it is headquartered and controlled outside the DC metro area. This rests on my memory and the name matching, not the license itself, and the company's ownership or footprint may have changed.",
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
@@ -29,6 +69,16 @@
             "confidence": 0.85,
             "reasoning": "CAVA is a fast-casual Mediterranean chain founded in the DC area and, to my knowledge, headquartered in Washington, DC. It became a publicly traded company in 2023 and operates hundreds of locations nationwide. Public-company control fails part 1 of the rule, so it is not eligible. This is based on my training knowledge, which may be out of date, so a quick check of the headquarters is advised.",
             "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-035": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "franchise",
+            "confidence": 0.9,
+            "reasoning": "Chick-fil-A is a national fast-food chain headquartered in Atlanta, Georgia, and its restaurants are typically run by independent franchise operators under the company's operator model. That fails part 3 of the rule (no franchisees), and the brand would also fail part 1 as a chain headquartered outside the DC area. This is based on general knowledge of the brand, not on records specific to this Dupont location.",
+            "needs_human_review": false,
             "assessed_by": "claude-opus-5-5"
         },
         "MC-036": {
@@ -71,6 +121,16 @@
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
+        "MC-056": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "local_chain",
+            "confidence": 0.8,
+            "reasoning": "District Taco is a fast-casual taco chain founded in the DC area (Arlington, VA) by local owners, and from my knowledge it operates well over five locations across DC, Virginia, Maryland and beyond. That fails part 2 of the rule (five or fewer locations). I am not aware of a franchise arrangement or outside parent or private-equity control, but my information may be out of date, and any such change would alter the classification, though not eligibility.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
         "MC-060": {
             "prompt_version": "458e8c2d",
             "assessed_at": "2026-10-15T18:21:53-04:00",
@@ -98,6 +158,16 @@
             "classification": "undetermined",
             "confidence": 0.6,
             "reasoning": "I recognize Filter Coffeehouse as a small, DC-based coffee shop brand that has had a handful of locations around the city, including Dupont Circle and Foggy Bottom. I believe it is locally owned, but I am not certain of its current total location count or whether it has added locations or sister brands since my information was last updated. Because the rule requires confidence that the business and any sister brands have five or fewer locations, I cannot confirm eligibility from memory alone.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-076": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "undetermined",
+            "confidence": 0.6,
+            "reasoning": "GCDC appears to be the Grilled Cheese Bar near Pennsylvania Ave NW, which I recall as a single local DC restaurant. However, I am not confident in its current ownership or whether it has sister brands or additional locations, and my knowledge may be out of date. Because the rule requires certainty on both local ownership and a location count of five or fewer, this should be verified by a person.",
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
@@ -211,6 +281,16 @@
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
+        "MC-116": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "franchise",
+            "confidence": 0.75,
+            "reasoning": "From my training, Mason's Famous Lobster Rolls is a lobster roll brand that started in Annapolis, Maryland and has grown through franchising, with locations in several states. Many of its locations, likely including this one, are run by franchisees, which fails part 3 of the rule. Even if this location were company-run, the brand has well over five locations, so it would still not be eligible. My knowledge may be out of date and I can't confirm who operates this specific location, so a person should verify.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
         "MC-118": {
             "prompt_version": "458e8c2d",
             "assessed_at": "2026-10-15T18:21:53-04:00",
@@ -241,6 +321,16 @@
             "needs_human_review": false,
             "assessed_by": "claude-opus-5-5"
         },
+        "MC-132": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.8,
+            "reasoning": "Panera Bread is a large national bakery-cafe chain headquartered in the St. Louis area and owned by a private investment group, with thousands of locations. That fails part 1 of the rule, and it also fails the five-location limit. Many Panera locations are run by franchisees, and I can't confirm whether this one is company-owned or franchised. If it is franchised, the correct label would be franchise, but it is ineligible either way.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
         "MC-134": {
             "prompt_version": "458e8c2d",
             "assessed_at": "2026-10-15T18:21:53-04:00",
@@ -248,6 +338,16 @@
             "classification": "national_chain",
             "confidence": 0.9,
             "reasoning": "Peet's Coffee & Tea is a large coffee chain headquartered in California, not in the DC metro area, and it is owned by JDE Peet's, a publicly traded company. That fails part 1 of the rule (local ownership with no outside control). This is based on my own knowledge, which may be out of date, and on the name matching. I can't confirm from the name alone whether this specific location is company-run or a licensed outlet, but it is ineligible either way.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-139": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "franchise",
+            "confidence": 0.85,
+            "reasoning": "Playa Bowls is an acai bowl brand founded and headquartered in New Jersey with well over a hundred locations nationwide, and its stores are generally operated by franchisees. That makes this location a franchise (fails part 3) and, in any case, part of an out-of-area national chain (fails part 1). I am relying on my general knowledge of the brand rather than specifics about this Dupont Circle store, so a person should confirm who operates it.",
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
@@ -259,6 +359,26 @@
             "confidence": 0.93,
             "reasoning": "Potbelly Sandwich Shop is a well-known sandwich chain headquartered in Chicago with hundreds of locations nationwide. It has been a public company and has recently pursued franchising, so this location could be either company-run or franchised. Either way it fails the rule: it is not locally owned (part 1) and has far more than five locations (part 2). My knowledge of its ownership may be out of date, but no likely change would make it eligible.",
             "needs_human_review": false,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-145": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.95,
+            "reasoning": "Pret A Manger is a large international sandwich and coffee chain headquartered in London, owned by JAB Holding, with many locations in the US and abroad. It fails part 1 of the rule because it is run by an operator headquartered outside the DC metro area. It also has far more than five locations. This is based on my general knowledge, which may be out of date, but the brand's chain status is well established.",
+            "needs_human_review": false,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-148": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "undetermined",
+            "confidence": 0.6,
+            "reasoning": "I have only a vague recollection of the Qargo Coffee name and cannot reliably confirm who owns it, where it is headquartered, or how many locations it and any sister brands have. Without clear knowledge of ownership and location count, I cannot confirm it meets all three parts of the rule. This judgment rests mostly on the name, and any memory I have may be out of date.",
+            "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
         "MC-150": {
@@ -301,6 +421,16 @@
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
+        "MC-165": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.93,
+            "reasoning": "Shake Shack is a widely known burger chain headquartered in New York and publicly traded, with hundreds of locations. Its domestic restaurants are generally company-operated rather than franchised, so it fails part 1 of the rule because it belongs to an operator headquartered outside the DC metro area. The license name follows Shake Shack's usual pattern for location-specific LLCs, though this is based on my training knowledge rather than a check of current records.",
+            "needs_human_review": false,
+            "assessed_by": "claude-opus-5-5"
+        },
         "MC-169": {
             "prompt_version": "458e8c2d",
             "assessed_at": "2026-10-15T18:21:53-04:00",
@@ -321,6 +451,16 @@
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
+        "MC-177": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.55,
+            "reasoning": "This appears to be a location of Springbone Kitchen, a fast-casual bone broth restaurant brand. From memory, the brand started in New York City and later opened several DC-area locations, which would suggest an operator based outside the DC metro area and a failure of part 1. I am not certain where the company is headquartered today or how many locations it currently runs, and my information may be out of date. A person should confirm the current ownership, headquarters and location count before relying on this.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
         "MC-178": {
             "prompt_version": "458e8c2d",
             "assessed_at": "2026-10-15T18:21:53-04:00",
@@ -328,6 +468,16 @@
             "classification": "national_chain",
             "confidence": 0.95,
             "reasoning": "The license is held by Starbucks Corporation, the publicly traded coffee chain headquartered in Seattle with thousands of locations. Because the operator is headquartered outside the DC metro area, it fails part 1 of the rule. Starbucks locations in this area are generally company-operated rather than franchised, so national_chain is the first failing category that fits.",
+            "needs_human_review": false,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-181": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "franchise",
+            "confidence": 0.93,
+            "reasoning": "Subway is a national sandwich chain whose US restaurants are almost all run by independent franchisees, and the store number in the license name (\"116\") fits that pattern. Franchisees fail part 3 of the rule, which is checked first. Subway is also controlled by an out-of-area private-equity owner, so this location would fail part 1 even if it were not a franchise.",
             "needs_human_review": false,
             "assessed_by": "claude-opus-5-5"
         },
@@ -339,6 +489,36 @@
             "confidence": 0.6,
             "reasoning": "From memory, Surfside appears to be a locally owned DC taco brand with several locations, including Glover Park, Dupont Circle and The Wharf. I also recall it sharing ownership with the Jetties sandwich shops. If so, the combined sister brands likely exceed five locations, which would fail part 2 of the rule. I cannot confirm the current location count or ownership, and my knowledge may be out of date, so a person should verify.",
             "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-186": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.88,
+            "reasoning": "Sweetgreen is a salad chain that started in DC but is now a public company (NYSE: SG) headquartered in Los Angeles, with well over a hundred locations nationwide. Because the operator is headquartered outside the DC metro area, it fails part 1 of the rule, which comes before the outside-control and location-count tests in our order. The LLC name suggests this is a company-operated Sweetgreen store, though this is based on my training knowledge, which may be out of date.",
+            "needs_human_review": false,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-187": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.85,
+            "reasoning": "Swingers at 1333 New Hampshire Ave NW (Dupont Circle) appears to be the crazy golf and bar concept that started in London, with US venues in DC, New York and elsewhere. That makes it part of a chain run by an operator headquartered outside the DC metro area, which fails part 1 of the rule. This is based on my own memory, which may be out of date, and I am matching partly on the name and address.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-190": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.88,
+            "reasoning": "From my training knowledge, Tatte Bakery & Cafe is a bakery-cafe chain founded and headquartered in the Boston area, with many locations in Massachusetts and the DC region. I also recall it received a significant outside investment (reportedly from Advent International), but the first failing reason in the rule order is that it is headquartered outside the DC metro area, which fails part 1. It also clearly exceeds five locations. My information may be out of date, but a change that would make it eligible is very unlikely.",
+            "needs_human_review": false,
             "assessed_by": "claude-opus-5-5"
         },
         "MC-193": {
@@ -358,6 +538,26 @@
             "classification": "undetermined",
             "confidence": 0.8,
             "reasoning": "I do not clearly recognize a business called Top Shelf Wine & Liquor at 1033 Connecticut Ave NW, and the name is generic enough that it could match unrelated stores elsewhere. Going on the name alone, I cannot establish who owns it, whether it is a franchise, or how many locations it and any sister brands have, so none of the three parts of the rule can be confirmed. A person should check its ownership and location count.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-208": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "national_chain",
+            "confidence": 0.75,
+            "reasoning": "From memory, Travel Traders runs gift and convenience shops inside hotels across the country, and this address appears to be the Mayflower Hotel. I recall the company being based in Florida rather than the DC area, which would fail part 1 of the rule. The store number '#209' on the license also suggests far more than five locations, failing part 2 regardless of headquarters. My knowledge of its ownership and headquarters may be out of date, so a person should confirm.",
+            "needs_human_review": true,
+            "assessed_by": "claude-opus-5-5"
+        },
+        "MC-209": {
+            "prompt_version": "458e8c2d",
+            "assessed_at": "2026-10-15T18:27:39-04:00",
+            "eligible": false,
+            "classification": "undetermined",
+            "confidence": 0.6,
+            "reasoning": "The name appears to be a variant spelling of Tschiffely Pharmacy, which I recall as a long-running, locally owned DC pharmacy business with several downtown locations. I am not confident of its current number of locations or whether ownership has changed, so I can't confirm part 2 (five or fewer locations) or part 1 (no outside control). The spelling difference and the 'Food Products' license activity also make me unsure this license is the same business.",
             "needs_human_review": true,
             "assessed_by": "claude-opus-5-5"
         },
