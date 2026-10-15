@@ -25,7 +25,10 @@ license:
 
 Choose exactly one classification:
 - independent: you know who owns and runs it, and it meets all three parts of
-  the rule. This is the only eligible classification.
+  the rule. This is the only eligible classification. Use it only if you are
+  confident BOTH that the ownership is local AND that it and any sister brands
+  have five or fewer locations. If you are unsure of the location count,
+  answer undetermined.
 - franchise: this location is run by a franchisee of a franchise brand (fails
   part 3).
 - national_chain: it belongs to a chain or operator headquartered outside the
