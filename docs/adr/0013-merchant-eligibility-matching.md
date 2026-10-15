@@ -77,13 +77,27 @@ Redemption Fraud Detection ([ADR 0003](0003-fail-closed-fraud-detection.md)).
   files under `docs/evals` and `data/` do name the businesses, because the
   repo holds the source data.
 
+- **The AI only recommends (added after the dev runs).** It is a triage
+  tool: it screens out obvious chains and franchises, routes anything it
+  can't verify to a person, and never approves a merchant on its own. An AI
+  "eligible" shows as "AI recommends eligible — confirm before approving".
+  `MerchantReviewDecision` refuses any decision not made by a BID or
+  platform admin, and a test checks that only the review queue writes one.
+- **Frozen prompt.** After one dev-only change, the prompt was frozen as
+  `458e8c2d` (`eligibility.frozen_prompt_version`, checked in CI). The holdout
+  runs only with that version, once. Holdout: 0 of 17 chains and franchises
+  called eligible, 0 of 3 independents found, and agreement equal to the
+  always-"not eligible" baseline (17 of 20). On dev it found 2 of 11
+  independents.
+
 ## Consequences
 
-- Without web access, the AI should often say `undetermined` for small local
-  businesses it doesn't know. That is the honest answer, and it shows up as a
-  low "independent found" rate rather than as made-up confidence. A future
-  version could give it a vetted search tool. That would need a new prompt
-  version and a fresh holdout.
+- Without web access, the AI says `undetermined` for most small local
+  businesses (2 of 11 independents recognized on dev, 0 of 3 on the holdout).
+  That is the honest answer, and it shows up as a low "independent found" rate
+  rather than as made-up confidence. **Future work:** a vetted web search
+  tool. That needs a new prompt version and a fresh unseen holdout, since this
+  holdout has now been seen.
 - Real candidates stay out of the demo. Approving one doesn't make it
   redeemable. Turning an approved candidate into a participant is a separate,
   later step (consent, Stripe Connect onboarding).

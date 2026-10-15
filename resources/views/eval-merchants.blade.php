@@ -39,6 +39,20 @@
             </p>
         </header>
 
+        <section aria-labelledby="policy-heading" class="relative overflow-hidden rounded-3xl bg-forest p-6 text-cream sm:p-8">
+            <h2 id="policy-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-amber">How to read these numbers</h2>
+            <p class="mt-2 max-w-3xl font-display text-2xl font-semibold sm:text-3xl">{{ config('eligibility.policy') }}</p>
+            <p class="mt-4 max-w-3xl">
+                An AI “eligible” is only a recommendation: the BID admin sees “AI recommends eligible — confirm before approving”, and no business is approved until a person presses Approve.
+                @php $devRecall = $latest['splits']['dev']['summary']['recall'] ?? null; @endphp
+                @if ($devRecall && $devRecall['of'] > 0)
+                    Without web access, it recognized only {{ $devRecall['hits'] }} of {{ $devRecall['of'] }} independent businesses on dev; most small independents come back undetermined and go to a person.
+                @endif
+                Giving it a vetted web search is future work, and would need a new prompt version and a fresh unseen holdout.
+            </p>
+            <p class="mt-3 max-w-3xl text-sm text-sage">Final prompt: <code class="text-cream">{{ config('eligibility.frozen_prompt_version') }}</code>, frozen before the holdout was run once.</p>
+        </section>
+
         @if ($lock)
             <p class="max-w-3xl text-sm text-muted">
                 <strong class="text-ink">Locked before the AI saw them:</strong> the {{ $lock['row_count'] }} labels were made in commit

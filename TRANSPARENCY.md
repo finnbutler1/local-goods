@@ -11,7 +11,7 @@ Local Goods has two named AI functions:
 | Function | Status | What it does |
 |---|---|---|
 | **Redemption Fraud Detection** | Live | Scores every redemption for abuse, such as credit-to-cash collusion. |
-| **Merchant Eligibility Matching** | Built, reviewed by a person | Suggests whether a real business in the BID counts as independent under the program's rule, with reasoning and a confidence score. A BID admin makes the decision. See [Which merchants are eligible](#which-merchants-are-eligible). |
+| **Merchant Eligibility Matching** | Built, as a triage tool | Suggests whether a real business in the BID counts as independent under the program's rule, with reasoning and a confidence score. It never approves a business; a BID admin decides. See [Which merchants are eligible](#which-merchants-are-eligible). |
 
 The sections up to "Checking the person's labels" cover Redemption Fraud Detection.
 
@@ -216,9 +216,16 @@ judges check the disagreements, blind
 
 ### Which merchants are eligible
 
+**The AI is a triage tool: it screens out obvious chains and franchises, routes anything it can't verify to a person, and never approves a merchant on its own.**
+
 Merchant Eligibility Matching suggests whether a real business inside the
 Golden Triangle BID is independent under the program's rule. **A person at the
-BID makes the decision.** Today employees can still only redeem at the demo's
+BID makes every decision.** An AI "eligible" is shown to the BID admin as "AI
+recommends eligible — confirm before approving", and nothing is approved until
+they press Approve. This is enforced in code: a decision can only be saved by
+a BID or platform admin (`MerchantReviewDecision`), and a test checks that the
+review queue is the only code that writes one and that an eval run writes
+none. Today employees can still only redeem at the demo's
 fictional merchants: approving a real candidate records a decision and nothing
 else ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)).
 
@@ -297,7 +304,39 @@ the lock, and:
 - Answers are cached by model, prompt and input, so re-running costs nothing.
   `--dry-run` reports the number of API calls first.
 
-Results: [`docs/evals/merchant-eval-results.md`](docs/evals/merchant-eval-results.md)
+**Results.** The prompt went through one change, made from dev cases only:
+answer *independent* only when sure of both local ownership and five or fewer
+locations. It was then frozen as `458e8c2d` (CI fails if it changes), and the
+holdout was run once with it.
+
+| | Dev (40) | Holdout (20, run once) |
+|---|---|---|
+| Eligible yes/no agreement | 28 of 40 (70%) | 17 of 20 (85%) |
+| Baseline: always "not eligible" | 29 of 40 (72.5%) | 17 of 20 (85%) |
+| Independent businesses the AI found | 2 of 11 (18%, 95% CI 5–48%) | 0 of 3 (0%, 0–56%) |
+| AI "eligible" calls that were right | 2 of 5 (40%, 12–77%) | none made |
+| Chains and franchises correctly called not eligible | 22 of 29 (76%, 58–88%) | 15 of 17 (88%, 66–97%) |
+| Chains and franchises wrongly called eligible | 3 of 29 (10%, 4–26%) | 0 of 17 (0%, 0–18%) |
+| All cases routed to a person | 32 of 40 (80%) | 14 of 20 (70%) |
+
+Read honestly: **agreement is no better than always saying "not eligible"**,
+because the AI rarely confirms that a business is independent. Without web
+access it recognized only 2 of 11 independent businesses on dev, and 0 of 3 on
+the holdout; most came back *undetermined* and went to a person. What it does
+well is screen out chains and franchises: on the holdout it called none of
+them eligible. On dev it called 3 small local chains eligible, which is why
+an "eligible" is only ever a recommendation for a person to confirm. Many
+disagreements are only about the category (for example "franchise" vs
+"national chain" for a company-operated store), where both answers mean "not
+eligible". Finn notes that some of the fail_reason labels may be inaccurate
+(for example, company-operated locations labeled franchise). The labels stay
+locked and unchanged.
+
+**Future work: web search.** A vetted web search tool would let the AI check
+ownership and location counts instead of relying on memory. That needs a new
+prompt version and a fresh set of unseen labeled businesses to measure it.
+
+Full results: [`docs/evals/merchant-eval-results.md`](docs/evals/merchant-eval-results.md)
 and `/eval/merchants`.
 
 **Real names stay off public pages.** These are real businesses that never
