@@ -85,12 +85,15 @@ class MerchantEval extends Command
             ['Eligible calls right (of the AI\'s eligible)', MerchantEvalReport::rate($s['precision'])],
             ['Exact classification match', MerchantEvalReport::rate($s['class_match'])],
             ['AI undetermined on decided cases', MerchantEvalReport::rate($s['undetermined']['ai_undetermined_on_decided'])],
+            ['Triage: chains correctly not eligible', MerchantEvalReport::rate($s['triage']['chains_not_eligible'])],
+            ['Triage: chains wrongly called eligible', MerchantEvalReport::rate($s['triage']['chains_called_eligible'])],
+            ['Triage: routed to human review', MerchantEvalReport::rate($s['triage']['routed_to_review'])],
         ]);
         $this->table(['Finn ↓ / AI →', ...array_values(MerchantEvalReport::OUTCOME_NAMES)], array_map(
             fn ($label, $row) => [MerchantEvalReport::LABEL_NAMES[$label], ...array_values($row)],
             array_keys($s['matrix']), $s['matrix'],
         ));
-        $this->line("Disagreements: {$s['disagreements']} (listed in the results file).");
+        $this->line("Disagreements: {$s['disagreements']}, of which {$s['category_disagreements']} are category disagreements (both mean not eligible). Listed in the results file.");
 
         $paths = $report->save($run, $dir, config('eligibility.assessments_path'));
         $this->newLine();

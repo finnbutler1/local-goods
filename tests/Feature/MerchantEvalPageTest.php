@@ -76,6 +76,9 @@ class MerchantEvalPageTest extends TestCase
             ->assertSee('Independent businesses the AI found')
             ->assertSee('AI “eligible” calls that were right')
             ->assertSee('Totals only on this page')
+            ->assertSee('Chains and franchises wrongly called eligible')
+            ->assertSee('All cases routed to human review')
+            ->assertSee('Category disagreements')
             ->assertSee(config('eligibility.candidate_label'))
             ->assertSee('did not search the web')
             ->getContent();

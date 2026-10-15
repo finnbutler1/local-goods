@@ -108,6 +108,29 @@
                             </x-card>
                         </dl>
 
+                        @if (isset($s['triage']))
+                            <div>
+                                <h3 class="text-xl font-semibold text-forest">Triage</h3>
+                                <dl class="mt-2 grid gap-3 sm:grid-cols-3">
+                                    <x-card padding="p-4 sm:p-5">
+                                        <dt class="text-sm font-semibold text-muted">Chains and franchises correctly called not eligible</dt>
+                                        <dd class="tabular mt-1 font-display text-3xl font-semibold text-forest">{{ $rate($s['triage']['chains_not_eligible']) }}</dd>
+                                        <dd class="text-sm text-muted">{{ $pct($s['triage']['chains_not_eligible']) }}, {{ $ci($s['triage']['chains_not_eligible']) }}</dd>
+                                    </x-card>
+                                    <x-card padding="p-4 sm:p-5">
+                                        <dt class="text-sm font-semibold text-muted">Chains and franchises wrongly called eligible</dt>
+                                        <dd class="tabular mt-1 font-display text-3xl font-semibold text-forest">{{ $rate($s['triage']['chains_called_eligible']) }}</dd>
+                                        <dd class="text-sm text-muted">{{ $pct($s['triage']['chains_called_eligible']) }}, {{ $ci($s['triage']['chains_called_eligible']) }}. The costliest mistake; a person still decides.</dd>
+                                    </x-card>
+                                    <x-card padding="p-4 sm:p-5">
+                                        <dt class="text-sm font-semibold text-muted">All cases routed to human review</dt>
+                                        <dd class="tabular mt-1 font-display text-3xl font-semibold text-forest">{{ $rate($s['triage']['routed_to_review']) }}</dd>
+                                        <dd class="text-sm text-muted">{{ $pct($s['triage']['routed_to_review']) }}, {{ $ci($s['triage']['routed_to_review']) }}</dd>
+                                    </x-card>
+                                </dl>
+                            </div>
+                        @endif
+
                         <ul class="space-y-1 text-sm">
                             <li><span class="font-semibold">Exact classification match:</span> {{ MerchantEvalReport::rate($s['class_match']) }}</li>
                             <li><span class="font-semibold">AI said undetermined on a case Finn could decide:</span> {{ MerchantEvalReport::rate($s['undetermined']['ai_undetermined_on_decided']) }}</li>
@@ -169,6 +192,20 @@
                                 </table>
                             </div>
                         </div>
+
+                        @isset($s['category_disagreements'])
+                            <div class="max-w-3xl">
+                                <h3 class="text-xl font-semibold text-forest">Category disagreements ({{ $s['category_disagreements'] }})</h3>
+                                <p class="mt-1">{{ MerchantEvalReport::CATEGORY_NOTE }}</p>
+                                @if ($showNames && $s['category_disagreements'] > 0)
+                                    <ul class="mt-2 list-disc space-y-0.5 pl-5 text-sm">
+                                        @foreach (array_filter($run['results'], fn ($r) => MerchantEvalReport::isCategoryDisagreement($r)) as $r)
+                                            <li>{{ $r['candidate_id'] }} · {{ $r['name'] }}: Finn {{ MerchantEvalReport::CLASS_NAMES[$r['fail_reason']] }}, AI {{ MerchantEvalReport::CLASS_NAMES[$r['ai_classification']] }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                        @endisset
 
                         @if ($showNames)
                             @php $disagreements = array_values(array_filter($run['results'], fn ($r) => ! $r['class_match'])); @endphp

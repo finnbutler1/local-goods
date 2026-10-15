@@ -137,6 +137,10 @@ class MerchantEvalTest extends TestCase
         $this->assertSame([5, 40], [$s['undetermined']['ai_undetermined_on_decided']['hits'], $s['undetermined']['ai_undetermined_on_decided']['of']]);
         $this->assertSame(0, $s['undetermined']['human_undetermined']);
         $this->assertSame(12, $s['disagreements']);
+        $this->assertSame([27, 30], [$s['triage']['chains_not_eligible']['hits'], $s['triage']['chains_not_eligible']['of']]);
+        $this->assertSame([1, 30], [$s['triage']['chains_called_eligible']['hits'], $s['triage']['chains_called_eligible']['of']]);
+        $this->assertSame([5, 40], [$s['triage']['routed_to_review']['hits'], $s['triage']['routed_to_review']['of']]);
+        $this->assertSame(5, $s['category_disagreements']); // 31–35: local chain called national chain
         $this->assertNotNull($s['recall']['ci95']);
     }
 
@@ -152,6 +156,10 @@ class MerchantEvalTest extends TestCase
         $this->assertStringContainsString('Reasoning for business 23.', $md);
         $this->assertStringContainsString('**MC-023 Example Business 23**', $md);
         $this->assertStringNotContainsString('Private note 1.', $md, 'Agreed cases are not listed.');
+        $this->assertStringContainsString('Triage: chains and franchises wrongly called eligible | 1 of 30', $md);
+        $this->assertStringContainsString('Category disagreements (5)', $md);
+        $this->assertStringContainsString('labels stay locked and unchanged', $md);
+        $this->assertStringContainsString('MC-031 Example Business 31 (Finn: Local chain, AI: National chain)', $md);
         $this->assertStringContainsString('## Holdout', $md);
         $this->assertStringContainsString('Not run yet.', $md);
     }
