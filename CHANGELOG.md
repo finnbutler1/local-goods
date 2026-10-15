@@ -3,6 +3,21 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-15: Merchant eligibility prompt frozen, holdout measured
+
+- **The AI is a triage tool: it screens out obvious chains and franchises, routes anything it can't verify to a person, and never approves a merchant on its own.** An AI "eligible" shows as "AI recommends eligible —
+  confirm before approving". A decision can only be saved by a BID or
+  platform admin, and a test proves no other code path writes one.
+- **Prompt frozen as `458e8c2d`** after one dev-only change: answer
+  independent only when sure of local ownership and five or fewer locations.
+- **Holdout, run once:** 0 of 17 chains and franchises wrongly called eligible,
+  15 of 17 called not eligible, 14 of 20 cases sent to a person. Agreement
+  (17 of 20) equals the always-"not eligible" baseline, and it found 0 of 3
+  independents. On dev it found 2 of 11 without web access. Web search is
+  future work.
+- **New triage measures and a category-disagreement note** in every merchant
+  eval report.
+
 ## 2026-10-15: Merchant Eligibility Matching
 
 - **The second AI function is built.** For a real candidate business, Claude

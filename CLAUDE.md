@@ -5,9 +5,13 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Merchant Eligibility Matching — built (ADR 0013).** AI check, BID review
-queue and `merchant:eval` are in. The dev run and the one holdout run per
-prompt version need Finn's OK (they bill the API). Next milestone not set yet.
+**Merchant Eligibility Matching — built and measured (ADR 0013).** The AI is
+a triage tool and only recommends; a person makes every decision
+(`MerchantReviewDecision` refuses anyone but a BID or platform admin). Prompt
+frozen at `458e8c2d` (`eligibility.frozen_prompt_version`, CI checks it); the
+holdout has been run once with it (0 of 17 chains called eligible, 0 of 3
+independents found). A prompt change needs Finn's say-so and a fresh unseen
+holdout. Web search is future work. Next milestone not set yet.
 
 - Matcher: `App\Services\Eligibility\MerchantEligibilityMatcher`, prompt
   `resources/prompts/merchant-eligibility.md` (rule verbatim; version = first
