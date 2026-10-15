@@ -5,9 +5,29 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Merchant Eligibility Matching data foundation — done.** Ledger, seed,
-real candidates, Finn's 60 labels and the label lock are in. Next milestone
-not set yet.
+**Merchant Eligibility Matching — built (ADR 0013).** AI check, BID review
+queue and `merchant:eval` are in. The dev run and the one holdout run per
+prompt version need Finn's OK (they bill the API). Next milestone not set yet.
+
+- Matcher: `App\Services\Eligibility\MerchantEligibilityMatcher`, prompt
+  `resources/prompts/merchant-eligibility.md` (rule verbatim; version = first
+  8 hex of its SHA-256). Input is only name, address, category and license
+  business activity (`data/sources/merchant_candidate_activity.csv`, from
+  `eligibility:fetch-activity`); never read the label file in it. Fails
+  closed to undetermined + human review; undetermined or confidence < 0.7
+  always needs review. The AI has no web access: keep
+  `KNOWLEDGE_NOTICE` next to any reasoning shown.
+- Eval: `php artisan merchant:eval [--split=dev|holdout] [--dry-run]`.
+  Refuses if the label lock doesn't match. Change the prompt using dev only;
+  holdout runs once per prompt version (refused after that). Dev and holdout
+  never pooled. Always tell Finn the `--dry-run` call count before a real run.
+  Writes `docs/evals/merchant-*` and `data/merchant_assessments.json`
+  (AI output only, read by the queue; production never calls the API for it).
+- Queue: `/bid-admin/merchants`, append-only `merchant_review_decisions`
+  (not in DEMO_TABLES). Approving never creates a merchant or transaction.
+- Real names: only for admins and named reviewers
+  (`User::maySeeCandidateNames`); logged-out visitors and the Public judge
+  account see totals only on `/eval/merchants` and the queue.
 
 Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011) and the three-account ledger (ADR 0012).

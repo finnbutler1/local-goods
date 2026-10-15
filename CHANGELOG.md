@@ -3,6 +3,30 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-15: Merchant Eligibility Matching
+
+- **The second AI function is built.** For a real candidate business, Claude
+  sees only its name, address, category and license business activity, plus
+  the independence rule word for word, and returns eligible yes/no, a
+  classification, a 0–1 confidence and its reasoning. It has no web access,
+  and every page that shows its reasoning says so. A failed or invalid answer
+  becomes "undetermined" for a person, never a guess
+  ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)).
+- **BID review queue** at `/bid-admin/merchants`: the BID admin approves,
+  rejects or marks "needs research", with an optional note. Every decision is
+  a new row in an append-only log with who and when. Approving never creates
+  a merchant or a transaction. Judges see it read-only.
+- **`php artisan merchant:eval`** measures it against the 60 locked labels.
+  Dev and holdout are scored separately, and the holdout once per prompt
+  version. It refuses to run if a label changed. Agreement is shown next to
+  the always-"not eligible" baseline, with how many independent businesses
+  the AI found and how many of its "eligible" calls were right. Results are at
+  `/eval/merchants`, linked from `/eval` and the judge tour.
+- **No real names on public pages:** logged-out visitors and the shared public
+  judge account see totals only.
+- **License business activity** for every candidate, from DC Open Data
+  (`php artisan eligibility:fetch-activity`).
+
 ## 2026-10-15: Merchant labels locked
 
 - **60 hand-labeled merchants** (40 dev, 20 holdout) in
