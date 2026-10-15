@@ -45,6 +45,17 @@ return [
     'eval_cache_path' => storage_path('app/merchant-eval-cache'),
     'assessments_path' => base_path('data/merchant_assessments.json'),
 
+    // The final Merchant Eligibility Matching prompt (first 8 hex of the SHA-256
+    // of resources/prompts/merchant-eligibility.md), frozen by Finn on
+    // 2026-10-15 after two dev runs. The holdout runs only with this version,
+    // and CI fails if the prompt file changes without a new decision.
+    'frozen_prompt_version' => '458e8c2d',
+
+    // Policy: the AI only recommends. No candidate is ever approved without a
+    // person's decision (MerchantReviewDecision, made by a BID or platform
+    // admin through the review queue). Shown on the queue and the eval page.
+    'policy' => 'The AI is a triage tool: it screens out obvious chains and franchises, routes anything it can\'t verify to a person, and never approves a merchant on its own.',
+
     // Merchant Eligibility Matching: an answer below this confidence, or
     // "undetermined", is always flagged for a person, whatever the AI said.
     'review_if_confidence_below' => 0.7,

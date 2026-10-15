@@ -136,4 +136,10 @@ class MerchantEligibilityMatcherTest extends TestCase
         }
         $this->assertMatchesRegularExpression('/^[0-9a-f]{8}$/', MerchantEligibilityMatcher::promptVersion());
     }
+
+    public function test_the_prompt_is_frozen(): void
+    {
+        $this->assertSame(config('eligibility.frozen_prompt_version'), MerchantEligibilityMatcher::promptVersion(),
+            'The merchant eligibility prompt changed after it was frozen. A change needs Finn\'s say-so and a fresh unseen holdout.');
+    }
 }

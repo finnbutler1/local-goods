@@ -25,6 +25,10 @@
         <p class="mt-4 rounded-2xl border-2 border-amber bg-paper p-4 font-semibold">
             {{ $candidateLabel }} Every business on this page is a candidate only. Approving records a decision; it does not sign the business up or move any money.
         </p>
+        <p class="mt-3 rounded-2xl bg-forest-tint p-4">
+            <span class="font-semibold">{{ config('eligibility.policy') }}</span>
+            Nothing here is approved until a BID admin presses Approve, and every decision is logged with who and when.
+        </p>
         <p class="mt-3 text-sm text-muted">
             <span class="font-semibold text-ink">What the AI knows:</span> {{ MerchantEligibilityMatcher::KNOWLEDGE_NOTICE }}
             It saw only each business's name, address, category and license activity.
@@ -104,7 +108,11 @@
                                 <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-amber-ink">{{ $candidateLabel }}</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
-                                <x-badge :tone="$classTone($a['classification'])">AI: {{ MerchantEvalReport::CLASS_NAMES[$a['classification']] }}</x-badge>
+                                @if ($a['eligible'])
+                                    <x-badge tone="amber">AI recommends eligible — confirm before approving</x-badge>
+                                @else
+                                    <x-badge :tone="$classTone($a['classification'])">AI: {{ MerchantEvalReport::CLASS_NAMES[$a['classification']] }}</x-badge>
+                                @endif
                                 @if ($a['needs_human_review'])<x-badge tone="neutral">Flagged for a person</x-badge>@endif
                                 <x-badge :tone="$latest ? 'forest' : 'neutral'">{{ $latest ? $latest->label() : 'Waiting' }}</x-badge>
                             </div>
@@ -117,7 +125,7 @@
                                 <p class="mt-2 text-sm text-muted">{{ MerchantEligibilityMatcher::KNOWLEDGE_NOTICE }}</p>
                             </div>
                             <dl class="space-y-1 text-sm">
-                                <div><dt class="inline font-semibold">Eligible:</dt> <dd class="inline">{{ $a['eligible'] ? 'Yes' : 'No' }}</dd></div>
+                                <div><dt class="inline font-semibold">AI recommendation:</dt> <dd class="inline">{{ $a['eligible'] ? 'eligible — confirm before approving' : 'not eligible' }}</dd></div>
                                 <div><dt class="inline font-semibold">Confidence:</dt> <dd class="inline tabular">{{ round(100 * $a['confidence']) }}% ({{ $confidenceWords($a['confidence']) }})</dd></div>
                                 <div><dt class="inline font-semibold">Assessed by:</dt> <dd class="inline">{{ $a['assessed_by'] === 'fallback' ? 'nobody: the AI check failed' : $a['assessed_by'] }}, prompt {{ $a['prompt_version'] }}</dd></div>
                                 <div><dt class="inline font-semibold">Source:</dt> <dd class="inline"><a href="{{ $c['source_url'] }}" class="underline underline-offset-4" rel="noopener" target="_blank">DC license record<span class="sr-only"> for {{ $c['name'] }} (opens in a new tab)</span></a></dd></div>

@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\MerchantReviewDecision;
 use App\Services\Ai\ClaudeClient;
 use App\Services\Eligibility\EligibilityAssessment;
 use App\Services\Eligibility\MerchantEligibilityMatcher;
 use App\Services\Eligibility\MerchantEvalRunner;
 use App\Services\Eligibility\MerchantLabelLock;
 use App\Services\Eligibility\MerchantLabels;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
@@ -19,6 +21,8 @@ use Tests\TestCase;
  */
 class MerchantEvalTest extends TestCase
 {
+    use RefreshDatabase;
+
     private string $dir;
 
     private FakeClaudeClient $fake;
@@ -176,6 +180,22 @@ class MerchantEvalTest extends TestCase
         foreach (['my_label', 'fail_reason', 'my_note', 'evidence', 'Private note', 'not_independent'] as $forbidden) {
             $this->assertStringNotContainsString($forbidden, $raw);
         }
+    }
+
+    public function test_an_eval_run_approves_nothing(): void
+    {
+        $this->artisan('merchant:eval')->assertSuccessful();
+        $this->artisan('merchant:eval --split=holdout')->assertSuccessful();
+
+        $this->assertSame(0, MerchantReviewDecision::count(), 'The eval wrote a decision; only a person may.');
+    }
+
+    public function test_the_holdout_runs_only_with_the_frozen_prompt(): void
+    {
+        config(['eligibility.frozen_prompt_version' => 'ffffffff']);
+
+        $this->artisan('merchant:eval --split=holdout')->expectsOutputToContain('only with the frozen prompt')->assertFailed();
+        $this->assertCount(0, $this->fake->calls);
     }
 
     public function test_a_rerun_uses_the_cache_and_does_not_rebill(): void

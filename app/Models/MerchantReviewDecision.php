@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
@@ -10,6 +11,10 @@ use LogicException;
  * One BID decision on a real merchant candidate, in an append-only log.
  * Approving only records the decision: it never creates a demo merchant or
  * puts the business into any transaction. A change of mind is a new row.
+ *
+ * Policy: the AI only recommends. Every decision is made by a person, a BID
+ * or platform admin, so a row without one is refused here, whatever code
+ * tries to write it. The AI's answer is stored only as what the person saw.
  */
 class MerchantReviewDecision extends Model
 {
@@ -30,6 +35,13 @@ class MerchantReviewDecision extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $decision) {
+            $person = User::find($decision->user_id);
+
+            if ($person === null || ! $person->hasRole(Role::BidAdmin, Role::PlatformAdmin)) {
+                throw new LogicException('A merchant decision must be made by a person: a BID admin or platform admin.');
+            }
+        });
         static::updating(fn () => throw new LogicException('Merchant review decisions are append-only.'));
         static::deleting(fn () => throw new LogicException('Merchant review decisions are append-only.'));
     }
