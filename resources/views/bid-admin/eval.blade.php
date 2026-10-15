@@ -6,6 +6,12 @@
         </a>
     </nav>
 
+    <x-card tone="tint" class="max-w-3xl">
+        <p class="font-semibold">The second AI function, Merchant Eligibility Matching, has its own eval:
+            <a href="{{ route('eval.merchants') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">can the AI tell an independent business from a chain? <span aria-hidden="true">→</span></a>
+        </p>
+    </x-card>
+
     @include('partials.fraud-eval-results')
 </div>
 </x-app-shell>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
+use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\StyleguideController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,8 @@ Route::get('/', LandingController::class)->name('home');
 
 // Public: the landing page links here.
 Route::get('/eval', [FraudEvalController::class, 'public'])->name('eval');
+// Public, but business names only for named reviewers and admins (see the controller).
+Route::get('/eval/merchants', MerchantEvalController::class)->name('eval.merchants');
 
 // The pre-login demo pages now live behind login. Old links go to Log in.
 Route::redirect('/demo/{any?}', '/login')->where('any', '.*');
@@ -65,6 +69,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->name('approve');
         Route::post('/redemptions/{redemption}/reject', [ReviewRedemptionController::class, 'reject'])->name('reject');
         Route::post('/reset', ResetDemoController::class)->name('reset');
+
+        // Merchant Eligibility Matching review queue: real candidates, never participants.
+        Route::get('/merchants', [MerchantEligibilityController::class, 'index'])->name('merchants');
+        Route::post('/merchants/{candidate}/decisions', [MerchantEligibilityController::class, 'decide'])
+            ->where('candidate', 'MC-\d{3}')->name('merchants.decide');
     });
 
     Route::view('/employer', 'dashboards.employer')->middleware('role:employer_admin')->name('employer.dashboard');

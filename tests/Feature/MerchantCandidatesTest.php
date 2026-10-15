@@ -60,7 +60,7 @@ class MerchantCandidatesTest extends TestCase
 
     public function test_no_real_candidate_name_is_on_a_public_page(): void
     {
-        $html = collect(['/', '/eval', '/login'])->map(fn ($url) => $this->get($url)->assertOk()->getContent())->implode("\n");
+        $html = collect(['/', '/eval', '/eval/merchants', '/login'])->map(fn ($url) => $this->get($url)->assertOk()->getContent())->implode("\n");
 
         foreach (MerchantCandidates::load() as $id => $c) {
             $this->assertDoesNotMatchRegularExpression('/\b'.preg_quote($c['name'], '/').'\b/', $html, "{$id} {$c['name']} is on a public page");

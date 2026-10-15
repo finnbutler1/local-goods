@@ -85,7 +85,7 @@ class JudgeReadOnlyTest extends TestCase
 
     public function test_policies_and_gates_refuse_a_judge_on_their_own(): void
     {
-        foreach (['reset-demo', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
+        foreach (['reset-demo', 'decide-merchant-eligibility', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
             $this->assertTrue(Gate::forUser($this->judge)->denies($ability), "Gate {$ability} let a judge through.");
         }
 
@@ -131,6 +131,7 @@ class JudgeReadOnlyTest extends TestCase
         $ids = [
             'redemption' => Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->value('id'),
             'user' => $this->judge->id,
+            'candidate' => 'MC-001',
         ];
 
         return preg_replace_callback('/\{(\w+)\??\}/', function ($m) use ($ids) {
@@ -161,6 +162,7 @@ class JudgeReadOnlyTest extends TestCase
             'rating' => 1,
             'comment' => 'Synthetic.',
             'page_url' => 'http://localhost/judge',
+            'decision' => 'approve',
         ];
     }
 

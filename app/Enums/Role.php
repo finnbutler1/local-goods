@@ -57,6 +57,8 @@ enum Role: string
         $scales = 'M12 3.75v16.5M7.5 20.25h9M4.5 7.5h15M6.75 7.5 3.75 13.5a3 3 0 0 0 6 0L6.75 7.5Zm10.5 0-3 6a3 3 0 0 0 6 0l-3-6Z';
 
         $fraudReview = ['label' => 'Fraud review', 'short' => 'Review', 'route' => 'bid-admin.dashboard', 'icon' => $shield];
+        $store = 'M3.75 9.75 5.25 4.5h13.5l1.5 5.25M3.75 9.75a2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0M5.25 12v7.5h13.5V12M9.75 19.5v-4.5h4.5v4.5';
+        $merchants = ['label' => 'Merchant eligibility', 'short' => 'Merchants', 'route' => 'bid-admin.merchants', 'icon' => $store];
         $eval = ['label' => 'AI eval', 'short' => 'AI eval', 'route' => 'bid-admin.eval', 'icon' => $chart];
         $dashboard = ['label' => 'Dashboard', 'short' => 'Home', 'route' => $this->dashboardRoute(), 'icon' => $home];
 
@@ -69,7 +71,7 @@ enum Role: string
                 'feedback' => ['label' => 'Feedback', 'short' => 'Feedback', 'route' => 'admin.feedback.index', 'icon' => $inbox],
                 'adjudication' => ['label' => 'Adjudication', 'short' => 'Votes', 'route' => 'admin.adjudication.index', 'icon' => $scales],
             ],
-            self::BidAdmin => ['bid-admin' => $fraudReview, 'eval' => $eval],
+            self::BidAdmin => ['bid-admin' => $fraudReview, 'merchants' => $merchants, 'eval' => $eval],
             self::Employee => ['wallet' => ['label' => 'My wallet', 'short' => 'Wallet', 'route' => 'employee.wallet', 'icon' => $wallet]],
             self::EmployerAdmin, self::Merchant, self::Judge => ['dashboard' => $dashboard],
         };

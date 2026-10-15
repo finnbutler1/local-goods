@@ -59,6 +59,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Real merchant candidates' names (Merchant Eligibility Matching) are
+     * shown only to BID and platform admins and to named reviewers. The
+     * shared public reviewer account counts as public: its link is in the
+     * README, so it sees totals only, like a logged-out visitor. So does a
+     * reviewer with no type, since we can't say who they are.
+     */
+    public function maySeeCandidateNames(): bool
+    {
+        if ($this->hasRole(Role::BidAdmin, Role::PlatformAdmin)) {
+            return true;
+        }
+
+        return $this->isReadOnly() && $this->reviewer_type !== null && $this->reviewer_type !== ReviewerType::Public;
+    }
+
+    /**
      * Blind adjudication of the fraud eval (ADR 0011): only named BID and
      * contest-judge reviewers vote. Not the shared public account, friends,
      * other reviewer types or staff (the person who labeled the cases).
