@@ -45,6 +45,12 @@ class MerchantEval extends Command
         $version = MerchantEligibilityMatcher::promptVersion();
         $dir = config('eligibility.eval_dir');
 
+        if ($split === 'holdout' && $version !== config('eligibility.frozen_prompt_version')) {
+            $this->error("The holdout runs only with the frozen prompt (".config('eligibility.frozen_prompt_version')."); the prompt file is {$version}.");
+
+            return self::FAILURE;
+        }
+
         if ($split === 'holdout' && in_array($version, $report->holdoutSeenBy($dir), true)) {
             $this->error("Prompt {$version} has already scored the holdout. The holdout runs once per prompt version; its results are in docs/evals/merchant-eval-results.md.");
 
