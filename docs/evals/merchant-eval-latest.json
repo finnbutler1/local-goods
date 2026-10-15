@@ -1,16 +1,8 @@
 {
-    "updated_at": "2026-10-15T18:13:38-04:00",
-    "current_prompt_version": "1abdea31",
+    "updated_at": "2026-10-15T18:21:53-04:00",
+    "current_prompt_version": "458e8c2d",
     "splits": {
         "dev": {
-            "name": "2026-10-15-claude-opus-5-5-prompt-1abdea31-dev",
-            "run_at": "2026-10-15T18:13:38-04:00",
-            "model": "claude-opus-5-5",
-            "prompt_version": "1abdea31",
-            "split": "dev",
-            "case_count": 40,
-            "api_calls": 40,
-            "errors": [],
             "summary": {
                 "cases": 40,
                 "agreement": {
@@ -50,12 +42,12 @@
                     ]
                 },
                 "class_match": {
-                    "hits": 12,
+                    "hits": 11,
                     "of": 40,
-                    "pct": 30.0,
+                    "pct": 27.5,
                     "ci95": [
-                        18.1,
-                        45.4
+                        16.1,
+                        42.8
                     ]
                 },
                 "matrix": {
@@ -66,8 +58,8 @@
                     },
                     "not_independent": {
                         "eligible": 3,
-                        "not_eligible": 23,
-                        "undetermined": 3
+                        "not_eligible": 22,
+                        "undetermined": 4
                     },
                     "undetermined": {
                         "eligible": 0,
@@ -125,15 +117,6 @@
                     "national_chain": {
                         "cases": 7,
                         "not_eligible": {
-                            "hits": 6,
-                            "of": 7,
-                            "pct": 85.7,
-                            "ci95": [
-                                48.7,
-                                97.4
-                            ]
-                        },
-                        "same_reason": {
                             "hits": 5,
                             "of": 7,
                             "pct": 71.4,
@@ -142,7 +125,16 @@
                                 91.8
                             ]
                         },
-                        "undetermined": 1,
+                        "same_reason": {
+                            "hits": 4,
+                            "of": 7,
+                            "pct": 57.1,
+                            "ci95": [
+                                25.0,
+                                84.2
+                            ]
+                        },
+                        "undetermined": 2,
                         "called_eligible": 0
                     },
                     "outside_control": {
@@ -172,18 +164,56 @@
                         "ci95": null
                     },
                     "ai_undetermined_on_decided": {
-                        "hits": 12,
+                        "hits": 13,
                         "of": 40,
-                        "pct": 30.0,
+                        "pct": 32.5,
                         "ci95": [
-                            18.1,
-                            45.4
+                            20.1,
+                            48.0
                         ]
                     }
                 },
-                "needs_human_review": 33,
-                "disagreements": 28
+                "triage": {
+                    "chains_not_eligible": {
+                        "hits": 22,
+                        "of": 29,
+                        "pct": 75.9,
+                        "ci95": [
+                            57.9,
+                            87.8
+                        ]
+                    },
+                    "chains_called_eligible": {
+                        "hits": 3,
+                        "of": 29,
+                        "pct": 10.3,
+                        "ci95": [
+                            3.6,
+                            26.4
+                        ]
+                    },
+                    "routed_to_review": {
+                        "hits": 32,
+                        "of": 40,
+                        "pct": 80.0,
+                        "ci95": [
+                            65.2,
+                            89.5
+                        ]
+                    }
+                },
+                "category_disagreements": 13,
+                "needs_human_review": 32,
+                "disagreements": 29
             },
+            "name": "2026-10-15-claude-opus-5-5-prompt-458e8c2d-dev",
+            "run_at": "2026-10-15T18:21:53-04:00",
+            "model": "claude-opus-5-5",
+            "prompt_version": "458e8c2d",
+            "split": "dev",
+            "case_count": 40,
+            "api_calls": 40,
+            "errors": [],
             "results": [
                 {
                     "candidate_id": "MC-007",
@@ -200,7 +230,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.85,
-                    "reasoning": "AHF Pharmacy is the pharmacy arm of AIDS Healthcare Foundation, a large nonprofit headquartered in Los Angeles that runs pharmacies in many states. Because its operator is headquartered outside the DC metro area, it fails part 1 of the rule. This is based on my training knowledge and the name matching that well-known operator, so a reviewer should confirm this location is run by AIDS Healthcare Foundation.",
+                    "reasoning": "AHF Pharmacy is the pharmacy chain run by AIDS Healthcare Foundation, a nonprofit headquartered in Los Angeles that operates many pharmacies across the US. That fails part 1 of the rule because the operator is headquartered outside the DC metro area, and it also has well over five locations. This is based on my training knowledge, which may be out of date, and on the assumption that this license belongs to that organization.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -222,7 +252,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.8,
-                    "reasoning": "I do not clearly recognize a business called \"Bully\" at 2033 M St NW, so I cannot say who owns it, how many locations it has, or whether it is a franchise. The name alone is not enough to judge any part of the rule, and the license activity (\"General Business\" for a restaurant) adds no ownership information. A person should confirm the owner and any other locations before deciding eligibility.",
+                    "reasoning": "I do not recognize a business called \"Bully\" at 2033 M St NW, so I cannot say who owns it or how many locations it has. The name alone gives no reliable information about ownership, franchise status or sister brands. Because ownership and location count can't be established, it is labeled undetermined and should be checked by a person.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -244,7 +274,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.85,
-                    "reasoning": "From my training knowledge, CAVA is the Washington, DC–headquartered Mediterranean restaurant brand operated by CAVA Group, which became a publicly traded company in 2023 and runs hundreds of company-owned locations nationwide. Because it is headquartered in the DC area but controlled by a public company, it fails part 1 of the rule (it would also fail the five-location limit). I am matching on the trade name and have not confirmed this license belongs to CAVA Group, and my information may be out of date, so a person should verify it.",
+                    "reasoning": "CAVA is a fast-casual Mediterranean chain founded in the DC area and, to my knowledge, headquartered in Washington, DC. It became a publicly traded company in 2023 and operates hundreds of locations nationwide. Public-company control fails part 1 of the rule, so it is not eligible. This is based on my training knowledge, which may be out of date, so a quick check of the headquarters is advised.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -266,7 +296,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.95,
-                    "reasoning": "Chipotle Mexican Grill is a nationally known restaurant chain with thousands of locations. It is a publicly traded company headquartered outside the DC metro area (Newport Beach, California), and it operates its restaurants itself rather than franchising them in the US. It fails part 1 of the rule (headquartered outside DC with public-company control), so it is classified as a national chain.",
+                    "reasoning": "Chipotle Mexican Grill is a publicly traded national restaurant chain with thousands of company-operated locations, headquartered outside the DC metro area (Newport Beach, California). Chipotle generally does not franchise, so it fails part 1 of the rule as a chain headquartered outside the DC area. This is based on my own knowledge rather than the license data, but the ineligibility is not in doubt.",
                     "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -287,9 +317,9 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.8,
-                    "reasoning": "Chopt Creative Salad Co. is a salad chain with many locations across several states, so it clearly has more than five locations. From my training, the company was founded in New York and is commonly described as headquartered in New York (it later moved some operations), and it has received private-equity investment, so it fails part 1 either way. Under the tie-break order, a chain headquartered outside the DC metro area is labeled national_chain, but because headquarters details may be out of date, a person should confirm whether outside_control is the better label; it is ineligible in either case.",
-                    "needs_human_review": true,
+                    "confidence": 0.9,
+                    "reasoning": "Based on my training knowledge, Chopt Creative Salad Company is a salad chain founded in New York City with many company-run locations across several states. As far as I know it has been headquartered in the New York area and has had private-equity investment. That fails part 1 of the rule (outside-DC headquarters) and also part 2 (far more than five locations). My knowledge may be out of date, but a change large enough to make it eligible is very unlikely.",
+                    "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
                     "class_match": true,
@@ -310,7 +340,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.6,
-                    "reasoning": "Colada Shop is a Cuban cafe brand I recognize as founded and based in the DC area, with several locations around the region (e.g., 14th Street, The Wharf, and Northern Virginia). From memory alone, I can't reliably confirm the current total of locations including any sister brands, which may be near or above the five-location limit in part 2. I also can't confirm there is no outside investor control under part 1, and my knowledge may be out of date. A person should verify the current location count and ownership.",
+                    "reasoning": "Colada Shop is a Cuban cafe and bar brand that, from my training knowledge, was founded and is run by a DC-area team, so local ownership looks likely. However, it has several locations in DC and Northern Virginia (for example 14th Street, the Wharf and Sterling, plus this Dupont site), and I cannot confirm whether the total, including any sister concepts, is five or fewer. My knowledge may also be out of date on new openings, closures or outside investment. Part 2 of the rule (location count) can't be confirmed, so a person should verify the current location count and ownership.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -332,7 +362,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.8,
-                    "reasoning": "From my training, Compass Coffee is a DC-founded and DC-headquartered coffee company started by two Marine veterans, with well more than five cafes across the DC area. That fails part 2 of the rule (five or fewer locations). I don't know of a controlling outside parent or private-equity owner, but the company has raised outside investment, so this should be checked. My information may be out of date.",
+                    "reasoning": "Compass Coffee is a DC-founded coffee company started by two local Marine veterans and headquartered in Washington, DC. From my knowledge it operates well over five cafe locations across the DC area, so it fails part 2 of the rule (five or fewer locations). I am not aware of a franchise model or outside parent, but I cannot rule out outside investment or recent ownership changes, and my information may be out of date.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -353,8 +383,8 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.8,
-                    "reasoning": "From my training knowledge, Dos Toros Taqueria is a New York City-based taqueria chain with many locations, mostly in New York, and it expanded into other cities including Washington, DC. Because the operator is headquartered outside the DC metro area, it fails part 1 of the rule. My knowledge may be out of date, and I can't confirm that this specific license belongs to that chain, so a person should verify it.",
+                    "confidence": 0.7,
+                    "reasoning": "Dos Toros Taqueria is known to me as a fast-casual taqueria chain founded and headquartered in New York City, with many locations mainly in New York. I am not certain this DC address is one of that chain's locations; I am matching largely on the distinctive name, and my knowledge may be out of date. If it is the same business, it fails part 1 of the rule because the operator is headquartered outside the DC metro area.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -376,8 +406,8 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.9,
-                    "reasoning": "Dunkin' (formerly Dunkin' Donuts) is a national brand owned by Inspire Brands, and its U.S. shops are almost entirely run by independent franchisees. This location fails part 3 of the rule (franchisee), which takes priority over the national-chain failure. I am judging from general knowledge of how Dunkin' operates, not from records for this specific shop, but either way it is not eligible.",
-                    "needs_human_review": false,
+                    "reasoning": "Dunkin' (formerly Dunkin' Donuts) is a national brand whose US shops are almost all run by independent franchisees, and the brand is owned by Inspire Brands, which is based outside the DC area. I am relying on general knowledge of the brand rather than specific records for this K Street location, but there is no indication it is company-operated. Under the rule's tie-break order, franchise is applied first because the shop fails part 3 (franchisee). It would also fail part 1 as a national chain.",
+                    "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
                     "class_match": true,
@@ -398,7 +428,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.6,
-                    "reasoning": "From memory, Filter Coffeehouse is a small DC-based coffee shop brand with a few locations, including Dupont Circle and Foggy Bottom, and I am not aware of any franchise or outside ownership. However, I cannot confirm its current owners or how many locations it and any sister brands have today, and my knowledge may be out of date. Because the ownership and location-count parts of the rule cannot be firmly established, it is marked undetermined.",
+                    "reasoning": "I recognize Filter Coffeehouse as a small, DC-based coffee shop brand that has had a handful of locations around the city, including Dupont Circle and Foggy Bottom. I believe it is locally owned, but I am not certain of its current total location count or whether it has added locations or sister brands since my information was last updated. Because the rule requires confidence that the business and any sister brands have five or fewer locations, I cannot confirm eligibility from memory alone.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -420,7 +450,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.8,
-                    "reasoning": "Gold's Gym is a national fitness brand that operates largely through franchisees. The trade name \"Golds Gym DC Metro\" suggests this location is run by a regional franchise operator rather than an independent local owner, so it fails part 3 of the rule (no franchisees). Even if it were company-owned, Gold's Gym is owned by an outside company headquartered outside DC, so it would still be ineligible. I can't confirm the exact operator of this specific location from memory, so a quick check is recommended.",
+                    "reasoning": "Gold's Gym is a national fitness brand that grows mainly through franchising, and the \"DC Metro\" in this license name suggests a regional franchise operator. Gold's Gym itself is not a DC company and has had outside corporate owners, so this location would fail the rule either way. If this location is franchised it fails part 3; if it is company-owned it fails part 1 as a national chain. My knowledge of who runs this particular location may be out of date, so a person should confirm which applies.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -442,7 +472,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.6,
-                    "reasoning": "This is the Hay-Adams, a historic single-property luxury hotel across from Lafayette Square, whose licensed restaurant operations include its dining room and the Off the Record bar. I believe it is a standalone hotel rather than part of a chain, but I cannot reliably confirm from memory who its current owners are or whether any outside investor or parent company controls it, so part 1 of the rule cannot be settled. My knowledge may also be out of date, so a person should verify the current ownership.",
+                    "reasoning": "The Hay-Adams is a well-known luxury hotel at 16th and H Streets NW. From memory, it has been owned by a DC-area real estate investment group, but I am not certain of the current owner, whether any outside investors or a management company control it, or how many properties sit under common ownership. Because ownership and location count can't be confirmed for parts 1 and 2 of the rule, it is labeled undetermined. My knowledge may be out of date.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -463,8 +493,8 @@
                     "ai_classification": "undetermined",
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
-                    "confidence": 0.85,
-                    "reasoning": "I do not clearly recognize a business called Henry's Salon at 1924 I St NW, so I cannot confirm who owns it, how many locations it has, or whether it is a franchise. The name sounds local, but that alone is not evidence of independence under the rule. A person should verify ownership and location count before deciding eligibility.",
+                    "confidence": 0.8,
+                    "reasoning": "I do not clearly recognize a business called Henry's Salon at 1924 I St NW, so I can't confirm who owns it, whether it has other locations, or whether it is a franchise. The name sounds local, but that alone is not evidence that it meets the rule. A person should check ownership and location count before deciding eligibility.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -486,7 +516,7 @@
                     "ai_eligible": true,
                     "ai_outcome": "eligible",
                     "confidence": 0.7,
-                    "reasoning": "I recall I. Gorman Jewelers as a long-running, family-owned jewelry store in downtown DC with a single location, which would meet all three parts of the rule. I am not aware of any franchise, outside parent or private-equity owner. My memory may be out of date, and an ownership change or new locations could have happened since, so a person should confirm current ownership.",
+                    "reasoning": "From memory, I. Gorman Jewelers is a long-running, family-owned jewelry store in downtown DC operating from a single shop near 20th and L Streets NW. I know of no parent company, investor control, franchise tie or other locations, so it appears to meet all three parts of the rule. My knowledge may be out of date and I cannot confirm current ownership, so a person should verify it before relying on this.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -507,8 +537,8 @@
                     "ai_classification": "independent",
                     "ai_eligible": true,
                     "ai_outcome": "eligible",
-                    "confidence": 0.6,
-                    "reasoning": "Immigrant Food is a DC-founded restaurant concept started by local entrepreneurs, and its original location is at 1701 Pennsylvania Ave NW near the White House. As far as I know it is locally owned, not a franchise, and has no outside parent, private-equity or public-company control. It has added a few locations, but I believe it is still at five or fewer. My knowledge may be out of date, and I am unsure whether partners' other restaurants would count as sister brands, so the location count under part 2 should be checked.",
+                    "confidence": 0.68,
+                    "reasoning": "From memory, Immigrant Food is a DC-founded restaurant concept that opened its first location near the White House at this address, started by local founders and not owned by an outside parent or franchise. As far as I know it has only a handful of DC-area locations, which would meet the five-location limit. My knowledge may be out of date: new locations or outside investment since then could change the result.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -529,8 +559,8 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.92,
-                    "reasoning": "Joe & The Juice is a Danish-founded juice and coffee bar chain with hundreds of locations worldwide, and the licensee name 'Joe & The Juice New York LLC' indicates this location is operated by the chain's US entity rather than a DC-area owner. It is not headquartered in the DC metro area, so it fails part 1 of the rule (and also far exceeds five locations). This is based on my training knowledge, which may be out of date, but a change that would make it independent is very unlikely.",
+                    "confidence": 0.9,
+                    "reasoning": "Joe & The Juice is a Danish juice and coffee bar chain with hundreds of locations worldwide, and the licensee name points to a New York-based US entity rather than a local DC owner. It fails part 1 of the rule because it is controlled by an operator headquartered outside the DC metro area (it has also been backed by private equity), and it far exceeds five locations. This is based on my training knowledge, which may be out of date, but a change that would make it eligible is very unlikely.",
                     "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -551,8 +581,8 @@
                     "ai_classification": "independent",
                     "ai_eligible": true,
                     "ai_outcome": "eligible",
-                    "confidence": 0.75,
-                    "reasoning": "From my training knowledge, Kaz Sushi Bistro at 1915 I St NW is a long-running single-location sushi restaurant owned and run by local chef Kazuhiro Okochi, with no known parent company, franchise, or other locations. On that basis it appears to meet all three parts of the rule. However, my knowledge may be out of date (ownership changes or new locations would not be reflected), so a person should confirm current ownership before relying on this.",
+                    "confidence": 0.8,
+                    "reasoning": "From my training knowledge, Kaz Sushi Bistro at 1915 I St NW is a long-running single-location restaurant opened by local chef Kaz Okochi. As far as I know, it has no outside parent, investor control, franchise ties or other locations, so it meets all three parts of the rule. My information may be out of date, so ownership and location count should be confirmed.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -574,7 +604,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.85,
-                    "reasoning": "Krispy Kreme is a well-known doughnut chain with hundreds of locations, headquartered in Charlotte, North Carolina, and publicly traded. That fails part 1 of the rule (and part 2), so this location is not eligible. I can't confirm from memory whether this Connecticut Ave shop is company-owned or run by a franchisee; if it is a franchise, the classification would be franchise instead, but it is ineligible either way.",
+                    "reasoning": "Krispy Kreme is a well-known doughnut chain headquartered in Charlotte, North Carolina, and is a publicly traded company with hundreds of locations. Some Krispy Kreme shops are run by franchisees, which would fail part 3, but I can't tell from the license whether this Connecticut Ave location is company-owned or franchised. Either way it fails the rule, because the brand is controlled from outside the DC metro area (part 1). A reviewer may want to confirm whether this shop is franchised, but that would not change its ineligibility.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -596,7 +626,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.85,
-                    "reasoning": "Le Pain Quotidien is an international bakery-restaurant chain founded in Belgium. Its US locations have been operated by companies headquartered outside the DC metro area, so it fails part 1 of the rule. My memory of its ownership may be out of date, since the US business changed hands around 2020, but no version I know of is a DC-area independent.",
+                    "reasoning": "Le Pain Quotidien is an international bakery-restaurant chain founded in Belgium. Its US locations were sold in 2020 to Aurify Brands, a New York-based operator, so it is controlled from outside the DC metro area and fails part 1 of the rule. It also has far more than five locations. My knowledge may be out of date, and I cannot confirm this particular address is still open, so a person should check it.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -618,7 +648,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.85,
-                    "reasoning": "Luke's Lobster is a seafood shack chain founded and headquartered in New York City, with many locations across the U.S. and abroad. That means it fails part 1 of the rule (not headquartered in the DC metro area), and it also has far more than five locations. This is based on my training knowledge, which may be out of date regarding current ownership (the company has reportedly had outside investment), so a quick check is advised, though it would not be eligible either way.",
+                    "reasoning": "Luke's Lobster is a seafood shack chain founded and headquartered in New York City, with many locations across the US and abroad, and it has received outside investment. That fails part 1 of the rule (headquartered outside the DC metro area) and also part 2 (well over five locations). My knowledge may be out of date, and some locations have historically been franchised, so a reviewer should confirm whether this location is franchised, which would change the label but not eligibility.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -640,7 +670,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.8,
-                    "reasoning": "I do not recognize a business called Lulus cafe at 1922 I St NW from my own knowledge, so I cannot establish who owns it, how many locations it has, or whether it is a franchise. The name alone does not show that it is independent, and not knowing of other locations is not evidence that there are none. A person should check its ownership and location count before deciding eligibility.",
+                    "reasoning": "I do not clearly recognize a business called \"Lulus cafe\" at 1922 I St NW, so I cannot establish who owns it, how many locations it has, or whether it is a franchise. The name alone does not show that it is independent, and I may be confusing it with other businesses that have similar names. A person should verify the ownership and location count before deciding whether it is eligible.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -661,8 +691,8 @@
                     "ai_classification": "undetermined",
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
-                    "confidence": 0.75,
-                    "reasoning": "McReynolds Liquors appears to be a long-standing liquor and wine shop on G Street NW near the White House. I believe it is a single-location local business, but I cannot confirm its current owners, whether there is any outside control, or whether it has sister stores. This is based on memory that may be out of date, so ownership cannot be established well enough to call it independent.",
+                    "confidence": 0.6,
+                    "reasoning": "McReynolds Liquors is a long-standing liquor store in downtown DC, and from memory it appears to be a single-location, locally run business. However, I cannot confirm from my own knowledge who currently owns it or whether the owners have other stores or sister brands, so parts 1 and 2 of the rule cannot be verified. My information may also be out of date. A person should confirm ownership and location count before treating it as eligible.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -684,7 +714,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.9,
-                    "reasoning": "This appears to be a location of Morton's The Steakhouse, a national steakhouse chain founded in Chicago with dozens of locations, owned by Landry's (headquartered in Houston, Texas), based on what I know from training. Because it belongs to a chain headquartered outside the DC metro area, it fails part 1 of the rule. My ownership information may be out of date, but a change that would make this location independent is very unlikely.",
+                    "reasoning": "Morton's The Steakhouse is a large national steakhouse chain founded in Chicago, and to my knowledge it is owned by Landry's, which is headquartered in Houston. It has many locations nationwide, so it fails part 1 of the rule (outside-the-DC-area chain). This is based on my own knowledge, which may be out of date, but a change that would make it eligible is very unlikely.",
                     "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -705,9 +735,9 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.85,
-                    "reasoning": "Nando's PERi-PERi is an international restaurant chain founded in South Africa, and from my knowledge its US locations, including those in the DC area, are run by the company's US arm (Nando's Restaurant Group) rather than a local independent owner. It has far more than five locations, and its parent is headquartered outside the DC metro area, so it fails part 1 of the rule. I recognize the brand name and am relying on memory that may be out of date, but I am not aware of this being a franchised location; either way it would not be eligible.",
-                    "needs_human_review": true,
+                    "confidence": 0.88,
+                    "reasoning": "Nando's PERi-PERi is an international restaurant chain that began in South Africa, and its US business runs many locations across several states. It is not a locally headquartered business with five or fewer locations, so it fails part 1 of the rule (outside headquarters and control). The US locations are generally understood to be company-operated rather than franchised, but either way this location is not eligible. This is based on my general knowledge of the brand, not on records for this specific license.",
+                    "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
                     "class_match": false,
@@ -727,8 +757,8 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.93,
-                    "reasoning": "Peet's Coffee is a large coffee chain headquartered in Emeryville, California, with hundreds of locations. It is owned by JDE Peet's, a publicly traded company based in the Netherlands. That fails part 1 of the rule because it is run from outside the DC metro area. Peet's company-operated cafes are not generally franchised, but a person should confirm this specific location's operator, since my knowledge may be out of date.",
+                    "confidence": 0.9,
+                    "reasoning": "Peet's Coffee & Tea is a large coffee chain headquartered in California, not in the DC metro area, and it is owned by JDE Peet's, a publicly traded company. That fails part 1 of the rule (local ownership with no outside control). This is based on my own knowledge, which may be out of date, and on the name matching. I can't confirm from the name alone whether this specific location is company-run or a licensed outlet, but it is ineligible either way.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -749,8 +779,8 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.88,
-                    "reasoning": "Potbelly Sandwich Shop is a well-known sandwich chain headquartered in Chicago with hundreds of locations, and it was a publicly traded company. It has also been selling franchises, so this particular location could be franchisee-run, but either way it fails the rule. Most Potbelly shops have been company-operated, so I classified it as a national chain headquartered outside the DC area (part 1). My knowledge of its ownership may be out of date, but nothing that could have changed would make it eligible.",
+                    "confidence": 0.93,
+                    "reasoning": "Potbelly Sandwich Shop is a well-known sandwich chain headquartered in Chicago with hundreds of locations nationwide. It has been a public company and has recently pursued franchising, so this location could be either company-run or franchised. Either way it fails the rule: it is not locally owned (part 1) and has far more than five locations (part 2). My knowledge of its ownership may be out of date, but no likely change would make it eligible.",
                     "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -772,7 +802,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.85,
-                    "reasoning": "I do not clearly recognize a business called Queenies Nail Salon at 1926 I St NW, so I cannot say who owns it or how many locations it has. The name sounds like a small local shop, but a name alone is not evidence that it meets the ownership, location-count or no-franchise parts of the rule. A person should confirm the owner and any other locations before treating it as eligible.",
+                    "reasoning": "I do not recognize a nail salon called Queenies Nail Salon at 1926 I St NW, so I cannot confirm who owns it, how many locations it and any sister brands have, or whether it is a franchise. The name alone suggests a small local shop, but that is not evidence of independence under the rule. A person should check ownership and location count before deciding eligibility.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -794,7 +824,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.6,
-                    "reasoning": "The name matches Residents, a cafe and bar I recall in the Dupont Circle area, and it appears to be a single-location local business, but I am not certain of its owners or whether there are sister brands. The licensed address may also not match the one I remember, so I can't be sure it is the same business. Without clear ownership information, the independence rule cannot be confirmed, and my knowledge may be out of date.",
+                    "reasoning": "The name resembles Residents Cafe & Bar, a Dupont Circle cafe-bar I believe is a local, single-location business, but I recall it at a different nearby address (18th St NW), so I'm not sure this license is the same business. I also can't confirm its current owners or whether they run sister brands that would exceed five locations. Because of these gaps and the possibility that my information is out of date, ownership and location count can't be established.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -812,15 +842,15 @@
                     "fail_reason": "national_chain",
                     "evidence_url": "https://www.rosettabakery.com/",
                     "my_note": "operate out of florida amongst other states too",
-                    "ai_classification": "national_chain",
+                    "ai_classification": "undetermined",
                     "ai_eligible": false,
-                    "ai_outcome": "not_eligible",
-                    "confidence": 0.6,
-                    "reasoning": "From memory, Rosetta Bakery is a Milan-style bakery brand based in Miami with several South Florida locations, and I believe it opened a DC shop near Farragut. If this license is that brand, it is run from outside the DC metro area and fails part 1 of the rule. I am not certain this DC license belongs to the same company, and my knowledge may be out of date, so please confirm the owner before relying on this.",
+                    "ai_outcome": "undetermined",
+                    "confidence": 0.7,
+                    "reasoning": "I do not clearly recognize a Rosetta Bakery at this Connecticut Avenue address, so I cannot establish who owns it or how many locations it has. The name matches a Miami-based Italian bakery brand. If this is the same business, it would likely fail part 1 as a chain headquartered outside the DC area, but I am relying on the name alone and cannot confirm the connection. A person should check ownership, headquarters and location count before deciding eligibility.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
-                    "class_match": true,
+                    "class_match": false,
                     "cached": false
                 },
                 {
@@ -837,8 +867,8 @@
                     "ai_classification": "national_chain",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.8,
-                    "reasoning": "This appears to be Roti Mediterranean Grill (Roti Modern Mediterranean), a fast-casual chain founded in DC but which, as I recall, moved its headquarters to Chicago and has operated dozens of locations in several states. That would fail part 1 (headquartered outside the DC metro area), and it also far exceeds the five-location limit in part 2. I am matching on the corporate name and my memory may be out of date regarding its headquarters or ownership, so a person should confirm.",
+                    "confidence": 0.85,
+                    "reasoning": "Based on my training knowledge, Roti (Roti Modern Mediterranean) is a fast-casual chain headquartered in Chicago with dozens of locations in several states, including multiple in DC. A chain headquartered outside the DC metro area fails part 1 of the rule, and its location count would also exceed five. My information may be out of date, so ownership and headquarters should be confirmed.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -859,8 +889,8 @@
                     "ai_classification": "undetermined",
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
-                    "confidence": 0.7,
-                    "reasoning": "I recognize Sichuan Pavilion as a longtime Chinese restaurant on K Street NW downtown, but I do not have reliable knowledge of who owns it, whether it has sister locations, or whether ownership has changed. Without that, I cannot confirm the ownership, location-count or franchise parts of the rule. A person should verify ownership from public records before deciding eligibility.",
+                    "confidence": 0.6,
+                    "reasoning": "Sichuan Pavilion is a long-running Chinese restaurant on K Street NW, and from memory it appears to be a single-location business. However, I do not have reliable knowledge of who owns it, whether the owners run other restaurants, or whether there are outside investors. Because ownership and the total location count cannot be confirmed for parts 1 and 2 of the rule, it is marked undetermined. My information may also be out of date.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -881,8 +911,8 @@
                     "ai_classification": "franchise",
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
-                    "confidence": 0.8,
-                    "reasoning": "Smoothie King is a national smoothie franchise brand headquartered outside the DC area (Texas), with well over a thousand locations, most run by franchisees. The licensee name 'Smoothie King Co., Inc' could mean this is a corporate-owned store rather than a franchised one; if so it would be a national chain instead. Either way it fails the rule and is not eligible. This is based on my general knowledge of the brand, not records for this specific location.",
+                    "confidence": 0.85,
+                    "reasoning": "Smoothie King is a large national smoothie chain headquartered in the Dallas, Texas area with over a thousand locations, operated mostly through franchisees. Whether this location is run by a franchisee or by the company itself, it fails the rule: franchise (part 3) if franchised, otherwise national chain (part 1). The licensee name 'Smoothie King Co., Inc' may indicate a corporate-owned store rather than a franchisee, so a reviewer may want to confirm which label applies, but it is ineligible either way.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -904,7 +934,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.95,
-                    "reasoning": "The license names Starbucks Corporation, the Seattle-headquartered public company that operates thousands of coffee shops. Because the licensee is the corporation itself, this appears to be a company-operated store rather than a franchise, so it fails part 1 of the rule (headquartered outside the DC metro area). It also far exceeds the five-location limit. Note that the ZIP code 20007 is unusual for an L St NW address (that block is normally 20036), so the address may be worth a quick check, but it does not change the outcome.",
+                    "reasoning": "The license is held by Starbucks Corporation, the publicly traded coffee chain headquartered in Seattle with thousands of locations. Because the operator is headquartered outside the DC metro area, it fails part 1 of the rule. Starbucks locations in this area are generally company-operated rather than franchised, so national_chain is the first failing category that fits.",
                     "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -926,7 +956,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.6,
-                    "reasoning": "From memory, this appears to be part of Surfside, a DC-based taco restaurant brand with several area locations, including a Dupont Circle taco stand, and a sister brand, Jetties. As far as I recall it is locally owned with no outside parent, but Surfside and its sister brands together seem to have more than five locations, which fails part 2 of the rule. My knowledge may be out of date and I am not certain of the exact location count or ownership, so this should be verified.",
+                    "reasoning": "From memory, Surfside appears to be a locally owned DC taco brand with several locations, including Glover Park, Dupont Circle and The Wharf. I also recall it sharing ownership with the Jetties sandwich shops. If so, the combined sister brands likely exceed five locations, which would fail part 2 of the rule. I cannot confirm the current location count or ownership, and my knowledge may be out of date, so a person should verify.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -947,8 +977,8 @@
                     "ai_classification": "independent",
                     "ai_eligible": true,
                     "ai_outcome": "eligible",
-                    "confidence": 0.7,
-                    "reasoning": "From my training knowledge, Teaism is a small DC-founded and DC-owned tea house and casual restaurant group, with only a handful of locations (such as Dupont Circle, Penn Quarter and Lafayette Square). I am not aware of any franchising, outside parent company or private-equity ownership, so it appears to meet all three parts of the rule. My information may be out of date, though: locations have opened and closed over the years and ownership could have changed. A person should confirm the current location count and ownership before relying on this.",
+                    "confidence": 0.75,
+                    "reasoning": "From my training, Teaism is a DC-founded tea house and restaurant owned by its local founders, with no known outside parent, private-equity or franchise involvement. To my knowledge it has run only a few locations, such as Lafayette Square at this address and Penn Quarter, so it appears to meet all three parts of the rule. My knowledge may be out of date on ownership changes or the current number of locations, so a person should confirm.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -969,8 +999,8 @@
                     "ai_classification": "undetermined",
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
-                    "confidence": 0.85,
-                    "reasoning": "I do not specifically recognize a business called Top Shelf Wine & Liquor at 1033 Connecticut Ave NW, and the name is generic enough that it could match unrelated stores elsewhere. I can't establish who owns it, how many locations it or any sister stores have, or whether it is a franchise, so none of the three parts of the rule can be confirmed. A person should check its ownership and location count from public records before deciding eligibility.",
+                    "confidence": 0.8,
+                    "reasoning": "I do not clearly recognize a business called Top Shelf Wine & Liquor at 1033 Connecticut Ave NW, and the name is generic enough that it could match unrelated stores elsewhere. Going on the name alone, I cannot establish who owns it, whether it is a franchise, or how many locations it and any sister brands have, so none of the three parts of the rule can be confirmed. A person should check its ownership and location count.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -992,7 +1022,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.75,
-                    "reasoning": "Uchi is a Japanese restaurant brand founded by chef Tyson Cole in Austin, Texas, and operated by Hai Hospitality, which runs Uchi locations in several states plus sister brands. As far as I know, there is no Uchi location at 1700 M St NW, so I am not certain this license belongs to that company. If it does, the operator is headquartered outside the DC metro area, which fails part 1 of the rule. My knowledge may be out of date, so please confirm the operator on this license before relying on this answer.",
+                    "reasoning": "Uchi is a Japanese restaurant brand that, as far as I know, is owned by Hai Hospitality, a restaurant group based in Austin, Texas, with locations in several states. If this DC license is part of that brand, it fails part 1 of the rule because the operator is headquartered outside the DC metro area. I can't confirm from the license alone that this is the same Uchi, and my information may be out of date, so someone should verify it.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -1013,8 +1043,8 @@
                     "ai_classification": "independent",
                     "ai_eligible": true,
                     "ai_outcome": "eligible",
-                    "confidence": 0.75,
-                    "reasoning": "From my training, Voorthuis Opticians is a long-standing, family-run optical shop on Connecticut Avenue in downtown DC, and I know of no other locations, franchise ties or outside owners. That meets all three parts of the rule: local ownership, five or fewer locations, and not a franchise. My knowledge may be out of date, since ownership or locations could have changed, so please confirm current ownership before relying on this.",
+                    "confidence": 0.7,
+                    "reasoning": "From my training, Voorthuis Opticians is a long-standing, family-owned optical shop in downtown DC, and I know of no outside parent, franchise, or investor ownership. As far as I know it has only one or a few locations, which meets the five-location limit. My knowledge may be out of date, since a sale or expansion could have happened, so a person should confirm current ownership and the location count.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -1036,7 +1066,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "undetermined",
                     "confidence": 0.8,
-                    "reasoning": "I do not clearly recognize a barber shop called Wall's Barber Shop at 1660 L St NW, so I cannot establish who owns it, how many locations it has, or whether it is a franchise. The name sounds like it could be a local business, but that alone is not evidence of independence under the rule. A person should confirm ownership and location count before deciding eligibility.",
+                    "reasoning": "I do not have reliable knowledge of a barber shop called Wall's Barber Shop at 1660 L St NW, so I cannot confirm who owns it, how many locations it has, or whether it is a franchise. The name sounds like a small local shop, but the name alone is not enough to show it meets the rule. A person should verify ownership and location count before deciding eligibility.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
@@ -1058,7 +1088,7 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.95,
-                    "reasoning": "Wawa, Inc. is a large convenience store and gas station chain headquartered in Pennsylvania with hundreds of locations across several states. The license is in the company's own name, so this store appears to be company-operated rather than franchised. Because its headquarters is outside the DC metro area, it fails part 1 of the rule, and it also far exceeds the five-location limit.",
+                    "reasoning": "Wawa, Inc. is a large convenience store and gas station chain headquartered in Pennsylvania with roughly a thousand locations, and the license is held by the corporate entity itself. It fails part 1 of the rule because it is run by a company headquartered outside the DC metro area, and it also far exceeds five locations. Wawa is company-operated rather than franchised, so national chain is the right label.",
                     "needs_human_review": false,
                     "model": "claude-opus-5-5",
                     "agree": true,
@@ -1066,7 +1096,7 @@
                     "cached": false
                 }
             ],
-            "note": "First dev run, prompt unchanged."
+            "note": "Prompt change 1 (dev only): independent only when sure of local ownership and 5 or fewer locations."
         },
         "holdout": null
     },
@@ -1100,6 +1130,35 @@
                 ]
             },
             "file": "merchant-runs/2026-10-15-claude-opus-5-5-prompt-1abdea31-dev.md"
+        },
+        {
+            "name": "2026-10-15-claude-opus-5-5-prompt-458e8c2d-dev",
+            "run_at": "2026-10-15T18:21:53-04:00",
+            "model": "claude-opus-5-5",
+            "prompt_version": "458e8c2d",
+            "split": "dev",
+            "note": "Prompt change 1 (dev only): independent only when sure of local ownership and 5 or fewer locations.",
+            "cases": 40,
+            "agreement_pct": 70.0,
+            "recall": {
+                "hits": 2,
+                "of": 11,
+                "pct": 18.2,
+                "ci95": [
+                    5.1,
+                    47.7
+                ]
+            },
+            "precision": {
+                "hits": 2,
+                "of": 5,
+                "pct": 40.0,
+                "ci95": [
+                    11.8,
+                    76.9
+                ]
+            },
+            "file": "merchant-runs/2026-10-15-claude-opus-5-5-prompt-458e8c2d-dev.md"
         }
     ]
 }
