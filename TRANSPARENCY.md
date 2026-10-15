@@ -237,8 +237,9 @@ merchant is independent. Merchant Eligibility Matching will do that, and it is
 - **Ground truth before the AI.** Finn labels 60 of them by hand in
   `data/merchant_labels.csv` (independent, not independent, or undetermined,
   with the reason and a public source), split 40 dev and 20 holdout. The labels
-  are then locked with a fingerprint per row, the same way as the fraud eval,
-  before the AI sees them.
+  are locked in `data/merchant_labels_lock.json` with a fingerprint per row
+  and the labeling commit, the same way as the fraud eval, before the AI sees
+  them. CI fails if any labeled row changes.
 
 ### How reviewers get in
 
