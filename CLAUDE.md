@@ -26,8 +26,11 @@ charges and transfers. Next milestone: Prompt 8 (fraud gate on transfers).
 - Webhook `/stripe/webhook` in `routes/stripe.php`, outside the web group (no
   session/CSRF/user); signature is the only auth; `stripe_events` dedupes
   (not a demo table). The judge sweep skips only `stripe.webhook`.
-- Onboarding: Express, demo merchants only; GET return/refresh pages never
-  create anything; Reset demo keeps `stripe_account_id`.
+- Onboarding: Express dashboard on **Accounts v2** (Stripe refuses new v1
+  Express accounts here; v2 needs `contact_email`), demo merchants only; GET
+  return/refresh pages never create anything; Reset demo keeps
+  `stripe_account_id`. `StripeOnboarding::apply` reads v2 accounts and v1
+  `account.updated` snapshots. Transfers stay on v1.
 - Reconciliation: `/admin/reconciliation`, Stripe-funded activity only.
 - Every Stripe call is wrapped in `NoticeSafeStripeGateway`: stripe-php
   raises Stripe-Notice headers as PHP warnings (a 500 otherwise), and it

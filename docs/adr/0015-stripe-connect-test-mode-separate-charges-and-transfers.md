@@ -40,6 +40,9 @@ history leak into Stripe.
   and refuses live events. Missing, partial or live keys mean simulated mode.
 - **Express accounts** for the fictional demo merchants only; real merchant
   candidates are never Merchant rows. Reset demo keeps their account ids.
+  Created with **Accounts v2** (`dashboard: express`, `recipient`
+  configuration), because Stripe refused new v1 Express accounts for this
+  platform during the first local trial.
 
 ## Consequences
 

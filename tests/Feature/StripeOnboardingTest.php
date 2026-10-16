@@ -39,8 +39,8 @@ class StripeOnboardingTest extends TestCase
         $this->assertSame('acct_test_0001', $this->merchant->fresh()->stripe_account_id);
         $this->assertSame('in_progress', $this->merchant->fresh()->stripeOnboardingStatus());
         [$account] = $this->stripe->callsOf('account');
-        $this->assertSame('Farragut Grind', $account['business_profile']['name']);
-        $this->assertSame(['transfers' => ['requested' => true]], $account['capabilities']);
+        $this->assertSame('Farragut Grind', $account['display_name']);
+        $this->assertSame(['stripe_balance' => ['stripe_transfers' => ['requested' => true]]], $account['configuration']['recipient']['capabilities']);
         [$link] = $this->stripe->callsOf('account_link');
         $this->assertSame([route('merchant.stripe.refresh'), route('merchant.stripe.return')], [$link['refreshUrl'], $link['returnUrl']]);
 
@@ -190,5 +190,58 @@ class StripeOnboardingTest extends TestCase
 
         $this->post('/merchant/stripe/onboard')->assertRedirect(route('merchant.dashboard').'#stripe');
         $this->get('/merchant')->assertOk()->assertSee('Stripe refused the request (InvalidRequestException, field capabilities).');
+    }
+
+    /**
+     * The 2026-10-16 refusal: Stripe no longer creates v1 Express accounts
+     * for this platform and requires a contact email for a v2 account that
+     * receives transfers. We create v2 accounts with the Express dashboard,
+     * under a key that can't collide with the refused v1 attempts.
+     */
+    public function test_accounts_are_created_with_accounts_v2_and_a_fresh_key(): void
+    {
+        $this->post('/merchant/stripe/onboard');
+
+        [$account] = $this->stripe->callsOf('account');
+        $this->assertSame(['country' => 'US'], $account['identity']);
+        $this->assertSame($this->merchant->fresh()->user->email, $account['contact_email']);
+        $this->assertSame(['fees_collector' => 'application', 'losses_collector' => 'application'], $account['defaults']['responsibilities']);
+        $this->assertArrayNotHasKey('type', $account, 'v1 Express field');
+        $this->assertArrayNotHasKey('capabilities', $account, 'v1 field');
+
+        $key = $this->stripe->idempotencyKeys[0];
+        $this->assertSame('lg-account-v2-'.$this->merchant->fresh()->stripe_onboarding_key, $key);
+    }
+
+    public function test_status_is_read_from_both_the_v2_account_and_a_v1_webhook_snapshot(): void
+    {
+        $this->post('/merchant/stripe/onboard');
+        $this->assertSame('in_progress', $this->merchant->fresh()->stripeOnboardingStatus());
+        $this->assertFalse($this->merchant->fresh()->stripe_details_submitted, 'Stripe is waiting on the merchant');
+
+        auth()->logout();
+        $this->postWebhook($this->stripeEvent('account.updated', [
+            'id' => 'acct_test_0001', 'object' => 'account', 'details_submitted' => true, 'payouts_enabled' => true, 'capabilities' => ['transfers' => 'active'],
+        ]))->assertOk();
+
+        $this->assertTrue($this->merchant->fresh()->isStripeOnboarded());
+    }
+
+    public function test_stripes_reason_is_shown_on_the_merchant_dashboard(): void
+    {
+        $this->signIn(Role::Merchant);
+        $this->app->instance(\App\Services\Payments\StripeGateway::class, new class extends \Tests\Fakes\FakeStripeGateway
+        {
+            public function createExpressAccount(array $params, string $idempotencyKey): array
+            {
+                throw new \App\Services\Payments\StripeGatewayException('Stripe refused the request (InvalidRequestException). Stripe says: There are required fields missing (set once at account creation): - contact_email: an email address for the account');
+            }
+        });
+
+        $this->post('/merchant/stripe/onboard')->assertRedirect(route('merchant.dashboard').'#stripe');
+        $this->get('/merchant')->assertOk()
+            ->assertSee('Stripe says: There are required fields missing')
+            ->assertSee('contact_email: an email address for the account')
+            ->assertSee('Nothing was lost: press the button again in a moment.');
     }
 }

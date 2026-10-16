@@ -18,7 +18,7 @@ With Stripe Connect the money never sits in a Local Goods account:
 
 - The employer pays **Stripe** by card (Stripe Checkout). The funds land in
   the Local Goods *platform* balance at Stripe, which Stripe holds.
-- Each merchant has its **own Stripe Express account**. Stripe collects and
+- Each merchant has its **own Stripe Express account** (created with Accounts v2). Stripe collects and
   checks the merchant's details on its own pages; we store only the account
   id (`acct_…`) and whether Stripe says it can receive transfers.
 - When a redemption clears, Local Goods asks Stripe to **transfer** the
@@ -98,9 +98,16 @@ on; genuine PHP errors still reach Laravel. `STRIPE_SUPPRESS_NOTICES=true`
 detects an AI coding agent in the environment, so the code guard is what
 actually protects the request.
 
-**Accounts v2** is Stripe's newer API for connected accounts. Its notice is
-a recommendation, not a rejection: v1 Express accounts still work in test
-mode, so the demo keeps them.
+**Accounts v2.** Stripe's newer API for connected accounts. It first
+showed up as a notice, then Stripe refused new v1 Express accounts for this
+platform outright ("Create connected accounts with POST /v2/core/accounts
+instead"). So merchants' accounts are created, linked and checked with
+Accounts v2, with `dashboard: express` (the merchant still gets Stripe's
+Express onboarding and dashboard), a `recipient` configuration requesting
+`stripe_transfers`, and a contact email (the merchant login's, fictional
+in the demo), which v2 requires. Transfers stay on v1 `/v1/transfers`.
+Stripe's reason for a refusal is shown on the merchant dashboard (first
+sentence and any missing-field lines, keys removed; never for key errors).
 
 ## Webhooks
 
@@ -188,11 +195,13 @@ Make sure the dashboard is in **Test mode**, then in Developers → Webhooks
    `payment_intent.succeeded`, `payment_intent.payment_failed`,
    `checkout.session.expired`, `transfer.created`, `transfer.reversed`.
    Copy its signing secret into Beanstalk as `STRIPE_WEBHOOK_SECRET`.
-2. **Connected accounts' events.** Same URL, events from connected
-   accounts: `account.updated`. Copy its signing secret into Beanstalk as
-   `STRIPE_CONNECT_WEBHOOK_SECRET`. (Optional: without it, onboarding status
-   still updates when the merchant comes back from Stripe or presses Check
-   Stripe status.)
+2. **Connected accounts' events (optional).** Same URL, events from
+   connected accounts: `account.updated`. Copy its signing secret into
+   Beanstalk as `STRIPE_CONNECT_WEBHOOK_SECRET`. Accounts v2 reports changes
+   mainly through its own v2 events, which Local Goods doesn't listen to yet,
+   so `account.updated` may not arrive for these accounts. Onboarding status
+   always updates when the merchant comes back from Stripe or presses
+   **Check Stripe status**.
 3. In CloudFront, check the behavior that serves the site forwards all
    viewer headers except Host (origin request policy
    `AllViewerExceptHostHeader`) and allows POST. Then use "Send test event"
