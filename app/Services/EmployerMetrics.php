@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Employer;
+use App\Models\Merchant;
 use App\Models\Redemption;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -20,7 +21,7 @@ class EmployerMetrics
 
     /**
      * @return array{
-     *     enrolled: int, staff: ?int, redeemers: int, participation_pct: int, visits: int, businesses: int,
+     *     enrolled: int, staff: ?int, redeemers: int, participation_pct: int, staff_pct: ?int, visits: int, businesses: int, participating: int,
      *     first_visits: int, spent_cents: int, held_count: int, held_cents: int,
      *     categories: list<array{category: string, cents: int, visits: int}>,
      *     weeks: list<array{start: Carbon, visits: int, cents: int}>, month: Carbon
@@ -56,8 +57,10 @@ class EmployerMetrics
             'staff' => $employer->staff_count,
             'redeemers' => $redeemers,
             'participation_pct' => $enrolled === 0 ? 0 : (int) round(100 * $redeemers / $enrolled),
+            'staff_pct' => $employer->staff_count ? (int) round(100 * $redeemers / $employer->staff_count) : null,
             'visits' => $thisMonth->count(),
             'businesses' => $thisMonth->pluck('merchant_id')->unique()->count(),
+            'participating' => Merchant::where('bid_id', $employer->bid_id)->count(),
             'first_visits' => $this->firstVisits($thisMonth, $employeeIds, $monthStart),
             'spent_cents' => (int) $thisMonth->sum('amount_cents'),
             'held_count' => $held->count(),

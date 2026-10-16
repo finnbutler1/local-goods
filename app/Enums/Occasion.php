@@ -24,6 +24,17 @@ enum Occasion: string
         };
     }
 
+    /** For grouped rows like "Welcome · 40 employees". */
+    public function shortLabel(): string
+    {
+        return match ($this) {
+            self::Monthly => 'Monthly allowance',
+            self::Welcome => 'Welcome',
+            self::Birthday => 'Birthday',
+            self::Recognition => 'Recognition',
+        };
+    }
+
     /** The employers column holding this occasion's amount. */
     public function column(): string
     {

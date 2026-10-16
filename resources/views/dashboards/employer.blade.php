@@ -48,9 +48,10 @@
             $tiles = [
                 [
                     'label' => 'Employees who got out',
-                    'value' => $metrics['participation_pct'].'%',
-                    'detail' => $metrics['redeemers'].' of '.$metrics['enrolled'].' enrolled'.($metrics['staff'] ? ' · '.$metrics['staff'].' staff in all' : ''),
-                    'how' => 'Enrolled employees with at least one cleared redemption this month, divided by everyone enrolled. Held and rejected redemptions don\'t count.',
+                    'value' => number_format($metrics['redeemers']),
+                    'unit' => Str::plural('employee', $metrics['redeemers']).' got out',
+                    'detail' => $metrics['participation_pct'].'% of enrolled'.($metrics['staff_pct'] !== null ? ' · '.$metrics['staff_pct'].'% of all '.$metrics['staff'].' staff' : ''),
+                    'how' => 'Employees with at least one cleared redemption this month. The first share divides by the '.$metrics['enrolled'].' enrolled in the program, the second by all '.($metrics['staff'] ?? $metrics['enrolled']).' staff. Held and rejected redemptions don\'t count.',
                 ],
                 [
                     'label' => 'Visits out of the office',
@@ -60,9 +61,10 @@
                 ],
                 [
                     'label' => 'Local businesses visited',
-                    'value' => number_format($metrics['businesses']),
+                    'value' => $metrics['businesses'].' of '.$metrics['participating'],
+                    'unit' => 'participating '.Str::plural('business', $metrics['participating']),
                     'detail' => $metrics['first_visits'].' first-time '.Str::plural('visit', $metrics['first_visits']),
-                    'how' => 'Different businesses with at least one cleared redemption this month. A first-time visit is someone going to a business they had never redeemed at before.',
+                    'how' => 'Different businesses with at least one cleared redemption this month, out of every business taking part in the BID. A first-time visit is someone going to a business they had never redeemed at before.',
                 ],
                 [
                     'label' => 'Spent locally',
@@ -76,7 +78,10 @@
             @foreach ($tiles as $tile)
                 <x-card class="flex flex-col">
                     <dt class="text-sm font-semibold text-muted">{{ $tile['label'] }}</dt>
-                    <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ $tile['value'] }}</dd>
+                    <dd class="mt-2 text-forest">
+                        <span class="tabular font-display text-4xl font-semibold">{{ $tile['value'] }}</span>
+                        @isset($tile['unit'])<span class="font-semibold"> {{ $tile['unit'] }}</span>@endisset
+                    </dd>
                     <dd class="mt-1 text-sm text-muted">{{ $tile['detail'] }}</dd>
                     <dd class="mt-3 border-t border-line/70 pt-2 text-sm">
                         <details>
@@ -338,18 +343,44 @@
 
         <x-card as="section" aria-labelledby="allocations-heading" padding="p-0">
             <h3 id="allocations-heading" class="px-5 pt-5 text-xl font-semibold sm:px-6 sm:pt-6">Recently given</h3>
-            @if ($allocations->isEmpty())
+            @if ($allocationGroups->isEmpty())
                 <p class="px-5 pt-2 pb-5 text-muted sm:px-6">Nothing given yet.</p>
             @else
                 <ul class="mt-2 divide-y divide-line/70">
-                    @foreach ($allocations as $allocation)
-                        <li class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 sm:px-6">
-                            <div>
-                                <p class="tabular font-semibold">{{ $allocation->employee->publicLabel() }}</p>
-                                <p class="text-sm text-muted">{{ ($allocation->occasion ?? Occasion::Monthly)->label() }} · {{ $allocation->allocated_at->setTimezone('America/New_York')->format('M j, Y') }}</p>
-                            </div>
-                            <p class="tabular font-semibold">{{ Money::format($allocation->amount_cents) }}</p>
-                        </li>
+                    @foreach ($allocationGroups as $group)
+                        @php
+                            $count = $group['allocations']->count();
+                            $date = $group['at']->setTimezone('America/New_York')->format('M j, Y');
+                        @endphp
+                        @if ($count === 1)
+                            <li class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 sm:px-6">
+                                <div>
+                                    <p class="tabular font-semibold">{{ $group['allocations']->first()->employee->publicLabel() }}</p>
+                                    <p class="text-sm text-muted">{{ $group['occasion']->label() }} · {{ $date }}</p>
+                                </div>
+                                <p class="tabular font-semibold">{{ Money::format($group['amount_cents']) }}</p>
+                            </li>
+                        @else
+                            <li>
+                                <details class="group">
+                                    <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-5 py-3 hover:bg-cream-deep/50 sm:px-6 [&::-webkit-details-marker]:hidden">
+                                        <span>
+                                            <span class="flex items-center gap-1.5 font-semibold">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-forest transition-transform group-open:rotate-90" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+                                                {{ $group['occasion']->shortLabel() }} · {{ $count }} employees
+                                            </span>
+                                            <span class="block pl-5.5 text-sm text-muted">{{ Money::format($group['amount_cents']) }} each · {{ $date }}</span>
+                                        </span>
+                                        <span class="tabular font-semibold">{{ Money::format($group['amount_cents'] * $count) }}</span>
+                                    </summary>
+                                    <ul class="grid grid-cols-2 gap-x-4 gap-y-1 bg-cream-deep/40 px-5 py-3 text-sm sm:grid-cols-3 sm:px-6" aria-label="{{ $count }} employees in this allocation">
+                                        @foreach ($group['allocations'] as $allocation)
+                                            <li class="tabular">{{ $allocation->employee->publicLabel() }}</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             @endif
