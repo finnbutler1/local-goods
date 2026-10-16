@@ -43,3 +43,11 @@ if (magicLinkForm) {
         magicLinkForm.hidden = true;
     }
 }
+
+// Occasion pickers: <select data-fill-amount="#amount-input"> whose options carry
+// data-amount puts that option's amount in the field when it is chosen.
+document.addEventListener('change', (event) => {
+    const select = event.target.closest('select[data-fill-amount]');
+    const amount = select?.selectedOptions[0]?.dataset.amount;
+    if (amount) document.querySelector(select.dataset.fillAmount).value = amount;
+});

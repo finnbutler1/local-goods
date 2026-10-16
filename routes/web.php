@@ -11,6 +11,7 @@ use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
+use App\Http\Controllers\Employer\EmployerDashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
@@ -76,7 +77,14 @@ Route::middleware('auth')->group(function () {
             ->where('candidate', 'MC-\d{3}')->name('merchants.decide');
     });
 
-    Route::view('/employer', 'dashboards.employer')->middleware('role:employer_admin')->name('employer.dashboard');
+    // Employer/HR dashboard. Purchases stay pending until "Pay now" (simulated, ADR 0014).
+    Route::middleware('role:employer_admin')->prefix('employer')->name('employer.')->group(function () {
+        Route::get('/', [EmployerDashboardController::class, 'show'])->name('dashboard');
+        Route::post('/program', [EmployerDashboardController::class, 'updateProgram'])->name('program.update');
+        Route::post('/purchases', [EmployerDashboardController::class, 'storePurchase'])->name('purchases.store');
+        Route::post('/purchases/{purchase}/pay', [EmployerDashboardController::class, 'payPurchase'])->name('purchases.pay');
+        Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
+    });
     Route::view('/merchant', 'dashboards.merchant')->middleware('role:merchant')->name('merchant.dashboard');
     Route::middleware('role:judge')->group(function () {
         Route::get('/judge', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
