@@ -39,9 +39,11 @@
     </dl>
 
     <div class="grid gap-6 lg:grid-cols-5">
-        <section aria-labelledby="received-heading" class="lg:col-span-3">
+        <section id="received" aria-labelledby="received-heading" class="scroll-mt-24 lg:col-span-3">
             <h2 id="received-heading" class="text-2xl font-semibold text-forest">Redemptions received</h2>
-            <p class="mt-1 text-sm text-muted">Newest first. Customers are shown by initials only.</p>
+            <p class="mt-1 text-sm text-muted">
+                {{ $showAll ? 'All '.$receivedCount : 'The newest '.min($receivedCount, \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT).' of '.$receivedCount }}, newest first. Customers are shown by initials only.
+            </p>
             <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
                 @forelse ($received as $redemption)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
@@ -64,6 +66,11 @@
                     <li class="px-5 py-6 text-muted">No Local Goods redemptions yet. They'll appear here as soon as a customer pays with credits.</li>
                 @endforelse
             </x-card>
+            @if (! $showAll && $receivedCount > $received->count())
+                <p class="mt-3"><a href="{{ route('merchant.dashboard', ['all' => 1]) }}#received" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show all {{ $receivedCount }} redemptions</a></p>
+            @elseif ($showAll && $receivedCount > \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT)
+                <p class="mt-3"><a href="{{ route('merchant.dashboard') }}#received" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show the newest {{ \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT }} only</a></p>
+            @endif
         </section>
 
         <section aria-labelledby="payouts-heading" class="lg:col-span-2">

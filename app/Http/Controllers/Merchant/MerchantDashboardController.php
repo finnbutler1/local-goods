@@ -17,6 +17,9 @@ use Illuminate\View\View;
  */
 class MerchantDashboardController extends Controller
 {
+    /** Redemptions listed before "Show all". */
+    public const RECENT = 10;
+
     public function __invoke(Request $request): View
     {
         $merchant = $request->user()->isReadOnly()
@@ -38,7 +41,10 @@ class MerchantDashboardController extends Controller
             'monthCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents'),
             'monthVisits' => (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->count(),
             'paidOutCents' => (int) $merchant->payouts()->sum('amount_cents'),
-            'received' => (clone $redemptions)->with('employee')->latest()->latest('id')->take(25)->get(),
+            'received' => (clone $redemptions)->with('employee')->latest()->latest('id')
+                ->when(! $request->boolean('all'), fn ($q) => $q->take(self::RECENT))->get(),
+            'receivedCount' => (clone $redemptions)->count(),
+            'showAll' => $request->boolean('all'),
             'payouts' => $merchant->payouts()->latest('paid_at')->latest('id')->take(12)->get(),
         ]);
     }
