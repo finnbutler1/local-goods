@@ -103,6 +103,53 @@ class CreditLedger
     }
 
     /**
+     * Stripe confirmed (by a verified webhook) that a purchase was paid in
+     * test mode. The only place a Stripe payment reaches the ledger. Like
+     * payPurchase it only flips a purchase that is still pending, so a
+     * replayed or duplicate event writes nothing. Refuses a payment whose
+     * amount or currency doesn't match the purchase. Returns false when the
+     * purchase was already paid (nothing written).
+     */
+    public function markPurchasePaidByStripe(CreditPurchase $purchase, string $paymentIntentId, ?string $chargeId, int $amountCents, string $currency, ?Carbon $at = null): bool
+    {
+        if ($amountCents !== $purchase->amount_cents || strtolower($currency) !== config('services.stripe.currency')) {
+            throw new InvalidArgumentException('The Stripe payment ('.Money::format($amountCents).' '.strtoupper($currency)
+                .') does not match purchase '.$purchase->reference.' ('.Money::format($purchase->amount_cents).' USD).');
+        }
+
+        $at ??= now();
+
+        return DB::transaction(function () use ($purchase, $paymentIntentId, $chargeId, $at) {
+            $changed = CreditPurchase::whereKey($purchase->id)
+                ->where('status', CreditPurchase::STATUS_PENDING)
+                ->update([
+                    'status' => CreditPurchase::STATUS_PAID,
+                    'stripe_payment_intent_id' => $paymentIntentId,
+                    'stripe_charge_id' => $chargeId,
+                    'paid_at' => $at,
+                    'payment_error' => null,
+                ]);
+
+            $purchase->refresh();
+
+            if ($changed === 0) {
+                return false;
+            }
+
+            CreditLedgerEntry::create([
+                'employer_id' => $purchase->employer_id,
+                'amount_cents' => $purchase->amount_cents,
+                'type' => CreditLedgerEntry::TYPE_PURCHASE,
+                'credit_purchase_id' => $purchase->id,
+                'description' => 'Credits purchased ('.$purchase->reference.'), paid by card in Stripe test mode ('.$paymentIntentId.')',
+                'created_at' => $at,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
      * The employer dashboard's allocation: the same amount to each of these
      * employees, all or nothing. Refuses more than the employer's available
      * balance or what is left of this month's budget, before writing anything.
@@ -215,8 +262,43 @@ class CreditLedger
     }
 
     /**
-     * Pays a merchant out of what cleared redemptions earned it. Refuses
-     * more than the merchant is owed.
+     * Stripe accepted a Transfer for a Stripe-channel payout row: the row is
+     * sent and the merchant's account gets its one payout entry. Only flips
+     * a row that is still pending, so it can't be recorded twice.
+     */
+    public function recordStripeTransfer(MerchantPayout $payout, string $transferId, ?Carbon $at = null): bool
+    {
+        $at ??= now();
+
+        return DB::transaction(function () use ($payout, $transferId, $at) {
+            $changed = MerchantPayout::whereKey($payout->id)
+                ->where('status', MerchantPayout::STATUS_PENDING)
+                ->update(['status' => MerchantPayout::STATUS_SENT, 'stripe_transfer_id' => $transferId, 'paid_at' => $at, 'failure_reason' => null]);
+
+            $payout->refresh();
+
+            if ($changed === 0) {
+                return false;
+            }
+
+            CreditLedgerEntry::create([
+                'merchant_id' => $payout->merchant_id,
+                'amount_cents' => -$payout->amount_cents,
+                'type' => CreditLedgerEntry::TYPE_PAYOUT,
+                'merchant_payout_id' => $payout->id,
+                'description' => 'Stripe test-mode transfer '.$transferId.' to '.$payout->merchant->name,
+                'created_at' => $at,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Pays a merchant out of what cleared redemptions earned it, with no
+     * Stripe transfer (the seed's weekly payouts). Refuses more than the
+     * simulated part of what the merchant is owed, so it can never pay out
+     * money that is waiting for a Stripe transfer.
      */
     public function payout(Merchant $merchant, int $amountCents, string $status, ?Carbon $at = null): MerchantPayout
     {
@@ -228,6 +310,10 @@ class CreditLedger
 
             if ($amountCents > $merchant->payableCents()) {
                 throw new InvalidArgumentException('That is more than the merchant is owed.');
+            }
+
+            if ($status === MerchantPayout::STATUS_SIMULATED && $amountCents > $merchant->owedSimulatedCents()) {
+                throw new InvalidArgumentException('Part of that is owed through Stripe test mode, so it can\'t be paid out as simulated.');
             }
 
             $payout = MerchantPayout::create([

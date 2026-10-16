@@ -186,7 +186,7 @@ class CreditLedgerTest extends TestCase
         $this->ledger()->requestPurchase($this->employer, 70000, 'MPG-2');
 
         $purchased = (int) CreditPurchase::where('status', '!=', CreditPurchase::STATUS_PENDING)->sum('amount_cents');
-        $paidOut = (int) MerchantPayout::sum('amount_cents');
+        $paidOut = (int) MerchantPayout::paid()->sum('amount_cents');
         $held = (int) Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->sum('amount_cents');
 
         $this->assertSame($purchased - $paidOut - $held, (int) CreditLedgerEntry::sum('amount_cents'));
