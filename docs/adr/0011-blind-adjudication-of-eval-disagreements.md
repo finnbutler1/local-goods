@@ -4,8 +4,8 @@
 
 ## Context
 
-The fraud eval measures the AI against one person's labels (Finn's). Professor
-Yoest pointed out that where Finn and the AI disagree, Finn's label may be the
+The fraud eval measures the AI against one person's labels (Finn's). A contest
+judge pointed out that where Finn and the AI disagree, Finn's label may be the
 wrong one, and that a blind vote by a third party, such as BID staff, is what
 makes the numbers credible. Judges are otherwise read-only
 ([ADR 0008](0008-read-only-reviewers-with-single-use-invite-links.md)), sign

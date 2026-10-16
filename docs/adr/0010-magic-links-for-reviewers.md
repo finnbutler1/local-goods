@@ -6,7 +6,7 @@ of 0008 (judge role, read-only enforcement, view as) still stands.
 
 ## Context
 
-The contest's rule (from Professor Yoest): judges never create accounts or set
+The contest's rule (from the contest organizers): judges never create accounts or set
 passwords. ADR 0008 had reviewers open a single-use link and choose a password.
 We also want one link we can publish in the README for any judge, without
 losing attribution for the reviewers we invite by name.
@@ -42,7 +42,7 @@ losing attribution for the reviewers we invite by name.
   `demo:seed-accounts`, found by type so there is only ever one, shown as its
   own type in the feedback inbox. Its feedback is limited to 3 a minute and 20
   a day per IP (others: 10 a minute). Like every judge it can't approve or
-  reject a redemption. Named reviewers (for example Professor Yoest) keep
+  reject a redemption. Named reviewers (for example a contest judge) keep
   personal links so their feedback is attributed.
 - Old invite tokens were cleared by a migration; old `/invite/…` URLs show the
   ended page.
