@@ -89,4 +89,21 @@ class StripeCheckoutTest extends TestCase
 
         $this->assertCount(1, $this->stripe->callsOf('checkout'));
     }
+
+    public function test_judges_see_the_stripe_badge_and_payment_id_but_no_pay_button(): void
+    {
+        $this->post("/employer/purchases/{$this->purchase->id}/pay");
+        app(\App\Services\CreditLedger::class)->markPurchasePaidByStripe($this->purchase->fresh(), 'pi_test_judge', 'ch_test_judge', 25000, 'usd');
+        app(\App\Services\CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 1000, 'MPG-PENDING');
+
+        $this->signIn(Role::Judge);
+        $this->get('/judge/view-as/employer_admin');
+
+        $this->get('/employer')->assertOk()
+            ->assertSee('Stripe test mode')
+            ->assertSee('pi_test_judge')
+            ->assertSee("Read-only: judges can't pay", false)
+            ->assertDontSee('/pay"', false);
+        $this->assertSame([], array_slice($this->stripe->callsOf('checkout'), 1), 'A judge opened Checkout');
+    }
 }
