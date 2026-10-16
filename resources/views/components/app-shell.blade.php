@@ -113,7 +113,7 @@
             </div>
         </header>
 
-        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-28 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
+        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-40 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
             @if ($viewAs)
                 <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-amber bg-amber/20 px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>

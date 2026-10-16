@@ -52,6 +52,24 @@ class FeedbackTest extends TestCase
             ->assertSee('name="page_url" value="'.url($url).'"', false);
     }
 
+    public function test_on_phones_the_button_is_a_named_icon_that_steps_aside(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $this->signIn(Role::Employee);
+
+        $html = $this->get('/employee')->getContent();
+
+        // Icon only below desktop width, with an accessible name; the word shows from lg up.
+        $this->assertStringContainsString('aria-label="Leave feedback"', $html);
+        $this->assertStringContainsString('<span class="hidden lg:inline" aria-hidden="true">Feedback</span>', $html);
+        // Above the bottom tab bar, and hidden while it would cover something (resources/js/app.js).
+        $this->assertStringContainsString('data-feedback-widget', $html);
+        $this->assertStringContainsString('bottom-[calc(4.75rem+env(safe-area-inset-bottom))]', $html);
+        $this->assertStringContainsString('data-[covering]:opacity-0', $html);
+        $this->assertStringContainsString('data-[covering]:focus-within:opacity-100', $html, 'Keyboard users can still reach it');
+        $this->assertStringContainsString('[data-feedback-widget]', file_get_contents(resource_path('js/app.js')));
+    }
+
     public function test_signed_out_pages_have_no_feedback_button(): void
     {
         $this->get('/login')->assertDontSee('feedback-dialog');
