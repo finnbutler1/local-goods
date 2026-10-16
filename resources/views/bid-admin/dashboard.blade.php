@@ -58,7 +58,7 @@
                         <div>
                             <p class="tabular font-display text-xl font-semibold">{{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}</p>
                             <p class="text-sm text-muted">
-                                {{ $redemption->employee->display_name }}, {{ $redemption->employee->employer->name }} ·
+                                <span title="Employee initials and staff number: names are never shown outside an employee's own wallet">{{ $redemption->employee->publicLabel() }}</span>, {{ $redemption->employee->employer->name }} ·
                                 {{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}
                             </p>
                         </div>
