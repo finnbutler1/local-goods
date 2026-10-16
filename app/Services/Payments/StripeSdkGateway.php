@@ -5,6 +5,8 @@ namespace App\Services\Payments;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiConnectionException;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\AuthenticationException;
+use Stripe\Exception\PermissionException;
 use Stripe\Exception\ExceptionInterface as StripeExceptionInterface;
 use Stripe\StripeClient;
 use Stripe\StripeObject;
@@ -35,22 +37,38 @@ class StripeSdkGateway implements StripeGateway
         return $this->call('checkout.create', fn () => $this->client()->checkout->sessions->create($params, ['idempotency_key' => $idempotencyKey]));
     }
 
+    /**
+     * Accounts v2 with the Express dashboard. Stripe refuses new v1 Express
+     * accounts for this platform ("Create connected accounts with POST
+     * /v2/core/accounts instead"), so accounts, links and status use v2;
+     * transfers stay on v1 /transfers, which v2 recipient accounts accept.
+     */
     public function createExpressAccount(array $params, string $idempotencyKey): array
     {
-        return $this->call('accounts.create', fn () => $this->client()->accounts->create($params + ['type' => 'express'], ['idempotency_key' => $idempotencyKey]));
+        return $this->call('v2.accounts.create', fn () => $this->client()->v2->core->accounts->create(
+            $params + ['dashboard' => 'express', 'include' => self::ACCOUNT_INCLUDE],
+            ['idempotency_key' => $idempotencyKey],
+        ));
     }
 
     public function createAccountLink(string $accountId, string $refreshUrl, string $returnUrl): array
     {
-        return $this->call('account_links.create', fn () => $this->client()->accountLinks->create([
-            'account' => $accountId, 'refresh_url' => $refreshUrl, 'return_url' => $returnUrl, 'type' => 'account_onboarding',
+        return $this->call('v2.account_links.create', fn () => $this->client()->v2->core->accountLinks->create([
+            'account' => $accountId,
+            'use_case' => [
+                'type' => 'account_onboarding',
+                'account_onboarding' => ['refresh_url' => $refreshUrl, 'return_url' => $returnUrl],
+            ],
         ]));
     }
 
     public function retrieveAccount(string $accountId): array
     {
-        return $this->call('accounts.retrieve', fn () => $this->client()->accounts->retrieve($accountId));
+        return $this->call('v2.accounts.retrieve', fn () => $this->client()->v2->core->accounts->retrieve($accountId, ['include' => self::ACCOUNT_INCLUDE]));
     }
+
+    /** v2 leaves these out unless asked; onboarding status needs both. */
+    private const ACCOUNT_INCLUDE = ['configuration.recipient', 'requirements'];
 
     public function createTransfer(array $params, string $idempotencyKey): array
     {
@@ -95,8 +113,8 @@ class StripeSdkGateway implements StripeGateway
 
             throw new StripeGatewayException('Could not reach Stripe. Nothing was lost; it will be tried again.', definite: false);
         } catch (ApiErrorException $e) {
-            // The param is a field name (never a value or a key), so it is safe to log.
-            Log::warning('Stripe call failed', ['call' => $what, 'type' => class_basename($e), 'code' => $e->getStripeCode(), 'param' => $e->getError()?->param, 'status' => $e->getHttpStatus()]);
+            // The param is a field name, and reason() is Stripe's own text with anything key-like removed.
+            Log::warning('Stripe call failed', ['call' => $what, 'type' => class_basename($e), 'code' => $e->getStripeCode(), 'param' => $e->getError()?->param, 'status' => $e->getHttpStatus(), 'reason' => self::reason($e)]);
 
             throw new StripeGatewayException(self::plainEnglish($e), definite: ($e->getHttpStatus() ?? 500) < 500, stripeCode: $e->getStripeCode());
         } catch (StripeExceptionInterface $e) {
@@ -117,7 +135,36 @@ class StripeSdkGateway implements StripeGateway
             'balance_insufficient' => 'Stripe says the platform balance is too low for this transfer yet.',
             'account_invalid', 'insufficient_capabilities_for_transfer' => 'Stripe says this merchant can\'t receive transfers yet (onboarding not finished).',
             default => 'Stripe refused the request ('.($e->getStripeCode() ?? class_basename($e))
-                .($e->getError()?->param ? ', field '.$e->getError()->param : '').').',
+                .($e->getError()?->param ? ', field '.$e->getError()->param : '').')'
+                .(self::reason($e) !== null ? '. Stripe says: '.self::reason($e) : '.'),
         };
+    }
+
+    /**
+     * Stripe's own explanation, when it is safe to show: never for key or
+     * permission errors (their text can describe the key), and only the
+     * first sentence plus any "- field: ..." lines, with anything that looks
+     * like a key removed, so example code and long guidance are left out.
+     */
+    public static function reason(ApiErrorException $e): ?string
+    {
+        if ($e instanceof AuthenticationException || $e instanceof PermissionException) {
+            return null;
+        }
+
+        $text = trim((string) ($e->getError()?->message ?? ''));
+        if ($text === '') {
+            return null;
+        }
+
+        $lines = preg_split('/\R/', $text);
+        $kept = [trim($lines[0])];
+        foreach ($lines as $line) {
+            if (preg_match('/^\s*-\s+\w[\w.\[\]]*:\s/', $line) && count($kept) < 4) {
+                $kept[] = trim($line);
+            }
+        }
+
+        return mb_strimwidth(StripeNotices::redact(implode(' ', $kept)), 0, 300, '…');
     }
 }

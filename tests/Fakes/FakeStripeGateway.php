@@ -73,7 +73,7 @@ class FakeStripeGateway implements StripeGateway
             }
             $id = 'acct_test_'.$this->next();
 
-            return $this->accounts[$id] = ['id' => $id, 'details_submitted' => false, 'payouts_enabled' => false, 'capabilities' => ['transfers' => 'inactive']];
+            return $this->accounts[$id] = self::v2Account($id, 'restricted', waitingOnMerchant: true);
         });
     }
 
@@ -94,7 +94,24 @@ class FakeStripeGateway implements StripeGateway
     /** Pretends the merchant finished Stripe's onboarding form. */
     public function completeOnboarding(string $accountId): array
     {
-        return $this->accounts[$accountId] = ['id' => $accountId, 'details_submitted' => true, 'payouts_enabled' => true, 'capabilities' => ['transfers' => 'active']];
+        return $this->accounts[$accountId] = self::v2Account($accountId, 'active', waitingOnMerchant: false);
+    }
+
+    /** An Accounts v2 account as Stripe returns it with configuration.recipient and requirements included. */
+    public static function v2Account(string $id, string $transfers, bool $waitingOnMerchant): array
+    {
+        return [
+            'id' => $id,
+            'object' => 'v2.core.account',
+            'dashboard' => 'express',
+            'configuration' => ['recipient' => ['applied' => true, 'capabilities' => ['stripe_balance' => [
+                'stripe_transfers' => ['status' => $transfers, 'status_details' => []],
+                'payouts' => ['status' => $transfers, 'status_details' => []],
+            ]]]],
+            'requirements' => ['entries' => $waitingOnMerchant
+                ? [['awaiting_action_from' => 'user', 'description' => 'business_details', 'errors' => []]]
+                : []],
+        ];
     }
 
     public function createTransfer(array $params, string $idempotencyKey): array
@@ -135,8 +152,13 @@ class FakeStripeGateway implements StripeGateway
         return array_values(array_map(fn ($c) => $c[1], array_filter($this->calls, fn ($c) => $c[0] === $kind)));
     }
 
+    /** @var list<string> every idempotency key used, in order */
+    public array $idempotencyKeys = [];
+
     private function remember(string $key, callable $make): array
     {
+        $this->idempotencyKeys[] = $key;
+
         return $this->byIdempotencyKey[$key] ??= $make();
     }
 

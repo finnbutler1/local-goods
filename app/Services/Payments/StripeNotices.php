@@ -54,8 +54,12 @@ class StripeNotices
     /** First line, shortened, with anything that looks like a key or secret removed. */
     public static function safe(string $message): string
     {
-        $first = strtok($message, "\n") ?: '';
+        return mb_strimwidth(self::redact(strtok($message, "\r\n") ?: ''), 0, 200, '…');
+    }
 
-        return mb_strimwidth((string) preg_replace('/\b(?:sk|pk|rk)_(?:test|live)_\S+|\bwhsec_\S+/', '[redacted]', $first), 0, 200, '…');
+    /** Removes anything that looks like a Stripe key or webhook secret. */
+    public static function redact(string $text): string
+    {
+        return (string) preg_replace('/\b(?:sk|pk|rk)_(?:test|live)_\S+|\bwhsec_\S+/', '[redacted]', $text);
     }
 }
