@@ -2,15 +2,21 @@
      records this page's address automatically. --}}
 @php $hasErrors = $errors->getBag('feedback')->any(); @endphp
 
-<div class="fixed right-4 bottom-24 z-30 lg:right-6 lg:bottom-6">
+{{-- Phones and tablets: a 48px icon button just above the bottom tab bar.
+     Desktop: the labelled button. On every size it steps aside (fades out,
+     can't be tapped) while it would sit on a field, button or link, or while
+     someone is typing; see data-feedback-widget in resources/js/app.js. --}}
+<div data-feedback-widget
+     class="fixed right-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 transition-opacity duration-150 data-[covering]:pointer-events-none data-[covering]:opacity-0 data-[covering]:focus-within:pointer-events-auto data-[covering]:focus-within:opacity-100 lg:right-6 lg:bottom-6">
     <div aria-live="polite">
         @if (session('feedback_status'))
             <p class="mb-2 max-w-xs rounded-xl bg-ok-bg px-4 py-2 text-sm font-semibold text-ok shadow">{{ session('feedback_status') }}</p>
         @endif
     </div>
-    <x-button variant="accent" data-dialog-open="feedback-dialog" aria-haspopup="dialog" class="ml-auto shadow-lg">
+    <x-button variant="accent" data-dialog-open="feedback-dialog" aria-haspopup="dialog" aria-label="Leave feedback"
+              class="ml-auto size-12 p-0! shadow-lg lg:size-auto lg:px-5! lg:py-2.5!">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-5" aria-hidden="true"><path d="M7.5 8.25h9m-9 3.75h6M3.75 19.5V6a1.5 1.5 0 0 1 1.5-1.5h13.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H8.25L3.75 19.5Z"/></svg>
-        Feedback
+        <span class="hidden lg:inline" aria-hidden="true">Feedback</span>
     </x-button>
 </div>
 
