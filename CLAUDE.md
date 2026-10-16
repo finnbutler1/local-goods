@@ -269,7 +269,7 @@ snapshot step by name when the build says the deploy includes migrations.
 5. After deploy: open the CloudFront site, log in as each demo role, check
    `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
    as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
-6. Never click New link on the live public judge, Yoest or Danny rows.
+6. Never click New link on the live public judge or named reviewer rows.
 
 ## Contest
 
