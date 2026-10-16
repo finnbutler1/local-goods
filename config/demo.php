@@ -37,6 +37,8 @@ return [
             'name' => 'Priya Natarajan',
             'email' => 'priya.natarajan@example.com',
             'password' => env('DEMO_PASSWORD_MERCHANT'),
+            // The fictional demo merchant this login runs (DatabaseSeeder).
+            'business' => 'Farragut Grind',
         ],
         'judge' => [
             'name' => 'Public judge access',

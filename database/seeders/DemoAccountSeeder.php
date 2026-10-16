@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\Employee;
+use App\Models\Merchant;
 use App\Models\User;
 use App\Support\RetiredDemoAccounts;
 use Illuminate\Database\Seeder;
@@ -61,6 +62,7 @@ class DemoAccountSeeder extends Seeder
         }
 
         self::linkDemoEmployee();
+        self::linkDemoMerchant();
 
         return ['saved' => $saved, 'skipped' => $skipped];
     }
@@ -100,6 +102,20 @@ class DemoAccountSeeder extends Seeder
 
         if ($user && ! $user->employee()->exists()) {
             Employee::whereNull('user_id')->orderBy('id')->first()?->update(['user_id' => $user->id]);
+        }
+    }
+
+    /**
+     * Gives the demo merchant login its business (config demo.accounts.merchant.business).
+     * Runs here and after the demo data is seeded, so either order works.
+     */
+    public static function linkDemoMerchant(): void
+    {
+        $user = User::where('email', config('demo.accounts.merchant.email'))->first();
+
+        if ($user && ! $user->merchant()->exists()) {
+            Merchant::whereNull('user_id')->where('name', config('demo.accounts.merchant.business'))
+                ->first()?->update(['user_id' => $user->id]);
         }
     }
 }

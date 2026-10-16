@@ -101,4 +101,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Employee::class);
     }
+
+    /** The business a merchant login runs (only for the merchant role). */
+    public function merchant(): HasOne
+    {
+        return $this->hasOne(Merchant::class);
+    }
 }

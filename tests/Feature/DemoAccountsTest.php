@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\Employee;
+use App\Models\Merchant;
 use App\Models\User;
 use App\Services\DemoResetter;
 use App\Services\ReviewerLinks;
@@ -117,6 +118,20 @@ class DemoAccountsTest extends TestCase
         $this->assertSame($jordan->id, Employee::orderBy('id')->firstOrFail()->user_id);
         $this->assertSame(1, Employee::whereNotNull('user_id')->count());
         $this->assertSame(count(Role::cases()), User::count(), 'Reset demo never removes logins');
+    }
+
+    public function test_merchant_login_runs_farragut_grind_in_either_order_and_after_reset(): void
+    {
+        $this->setPasswords();
+
+        $this->artisan('demo:seed-accounts');
+        (new DatabaseSeeder)->run();
+        $priya = User::where('role', Role::Merchant)->sole();
+        $this->assertSame('Farragut Grind', $priya->merchant->name);
+
+        app(DemoResetter::class)->reset();
+        $this->assertSame('Farragut Grind', $priya->fresh()->merchant->name);
+        $this->assertSame(1, Merchant::whereNotNull('user_id')->count());
     }
 
     public function test_role_middleware_lets_only_listed_roles_in(): void

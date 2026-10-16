@@ -45,6 +45,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Meridian Policy Group',
             'monthly_allowance_cents' => 15000,
             'staff_count' => 120,
+            // Program setup on the employer dashboard: room above the $6,000
+            // of monthly allowances for occasions. Changes no seeded history.
+            'monthly_budget_cents' => 750000,
+            'welcome_cents' => 5000,
+            'birthday_cents' => 2500,
+            'recognition_cents' => 5000,
         ]);
 
         $employee = Employee::create([
@@ -128,6 +134,7 @@ class DatabaseSeeder extends Seeder
         $this->payMerchantsWeekly($ledger, $merchants, $now);
 
         DemoAccountSeeder::linkDemoEmployee();
+        DemoAccountSeeder::linkDemoMerchant();
     }
 
     /**
