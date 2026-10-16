@@ -63,15 +63,15 @@ class JudgeController extends Controller
             ],
             [
                 'title' => 'Employer dashboard',
-                'look_for' => 'What the HR buyer sees: credits funded, spent locally and employees taking part.',
+                'look_for' => 'What the HR buyer sees: how many of their people got out into the neighborhood, visits, local businesses discovered and dollars spent locally, each with how it is counted. Buying credits (pending until a simulated "Pay now"), giving them out and program setup are shown with their buttons switched off for reviewers.',
                 'url' => route('judge.view-as', Role::EmployerAdmin->value),
-                'available' => false,
+                'available' => true,
             ],
             [
                 'title' => 'Merchant dashboard',
-                'look_for' => 'What a coffee shop or salon sees: Local Goods sales, and payouts once Stripe Connect is built.',
+                'look_for' => 'What a coffee shop sees: redemptions received, what it is owed (cleared redemptions only; held ones wait for review and are not owed yet) and its payouts, simulated until Stripe test mode.',
                 'url' => route('judge.view-as', Role::Merchant->value),
-                'available' => false,
+                'available' => true,
             ],
         ];
     }

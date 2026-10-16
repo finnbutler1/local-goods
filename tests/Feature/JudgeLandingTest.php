@@ -20,7 +20,7 @@ class JudgeLandingTest extends TestCase
             ->assertSee('What Local Goods is')
             ->assertSee('Redemption Fraud Detection')
             ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Merchant eligibility check', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
-            ->assertSee('Coming in a later build')
+            ->assertDontSee('Coming in a later build')
             ->assertSee('Payments will run through Stripe Connect in test mode in a later build')
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
@@ -34,12 +34,13 @@ class JudgeLandingTest extends TestCase
         }
     }
 
-    public function test_only_unbuilt_screens_say_coming_later(): void
+    public function test_every_tour_screen_is_built(): void
     {
         $this->signIn(Role::Judge);
         $html = $this->get('/judge')->getContent();
 
-        $this->assertSame(2, substr_count($html, 'Coming in a later build'));
+        $this->assertSame(0, substr_count($html, 'Coming in a later build'));
+        $this->assertTrue(collect(\App\Http\Controllers\JudgeController::tour())->every('available'));
     }
 
     public function test_no_adjudication_card_before_a_set_is_published(): void
