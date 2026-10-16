@@ -51,6 +51,11 @@ history leak into Stripe.
 - `/admin/reconciliation` compares Stripe-funded activity one by one with
   Stripe. The balance never matches exactly (Stripe keeps fees; a reset
   clears our rows but not Stripe's), so it is shown for information.
+- Local and production can share one Stripe sandbox, so every object we
+  create is tagged `lg_env` + `lg_instance` (from `APP_KEY`).
+  Reconciliation counts only this environment's objects (plus untagged ones
+  this database knows) and lists the rest as "From another environment,
+  not counted"; the webhook ignores events about other environments.
 - Per-redemption transfers cost one Stripe call each. Fine for a demo; a
   real program would batch daily per merchant.
 - Stripe-funded matching is pool-level, not per credit: a redemption by an
