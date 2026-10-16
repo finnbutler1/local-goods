@@ -68,6 +68,8 @@ class EmployerMetricsTest extends TestCase
         $this->assertSame(120, $m['staff']);
         $this->assertSame(3, $m['redeemers'], 'Employee 3 counts for the cleared $3 on Oct 1, not the rejected one');
         $this->assertSame(100, $m['participation_pct']);
+        $this->assertSame(3, $m['staff_pct'], '3 of 120 staff, rounded');
+        $this->assertSame(2, $m['participating']);
         $this->assertSame(5, $m['visits']);
         $this->assertSame(2, $m['businesses']);
         $this->assertSame(3, $m['first_visits']);

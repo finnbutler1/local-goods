@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employer;
 
 use App\Enums\Occasion;
 use App\Http\Controllers\Controller;
+use App\Models\CreditAllocation;
 use App\Models\CreditPurchase;
 use App\Models\Employee;
 use App\Models\Employer;
@@ -13,6 +14,8 @@ use App\Services\EmployerProgram;
 use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -55,9 +58,30 @@ class EmployerDashboardController extends Controller
             'allocatedThisMonth' => EmployerProgram::allocatedInMonthCents($employer),
             'remainingBudget' => EmployerProgram::remainingBudgetCents($employer),
             'purchases' => $employer->creditPurchases()->latest('purchased_at')->latest('id')->take(8)->get(),
-            'allocations' => $employer->creditAllocations()->with('employee')->latest('allocated_at')->latest('id')->take(8)->get(),
+            'allocationGroups' => self::recentAllocationGroups($employer),
             'employees' => $employees,
         ]);
+    }
+
+    /**
+     * "Recently given", newest first. One bulk action gives everyone the same
+     * occasion and amount at the same moment, so allocations sharing all
+     * three are shown as one row that expands to the people in it.
+     *
+     * @return Collection<int, array{occasion: Occasion, amount_cents: int, at: Carbon, allocations: Collection<int, CreditAllocation>}>
+     */
+    public static function recentAllocationGroups(Employer $employer, int $groups = 8): Collection
+    {
+        return $employer->creditAllocations()->with('employee')
+            ->latest('allocated_at')->latest('id')->take(500)->get()
+            ->groupBy(fn (CreditAllocation $a) => $a->allocated_at->toIso8601String().'|'.($a->occasion ?? Occasion::Monthly)->value.'|'.$a->amount_cents)
+            ->take($groups)
+            ->map(fn (Collection $group) => [
+                'occasion' => $group->first()->occasion ?? Occasion::Monthly,
+                'amount_cents' => $group->first()->amount_cents,
+                'at' => $group->first()->allocated_at,
+                'allocations' => $group->sortBy('employee_id')->values(),
+            ])->values();
     }
 
     public function updateProgram(Request $request): RedirectResponse

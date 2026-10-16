@@ -212,4 +212,56 @@ class EmployerDashboardTest extends TestCase
 
         $this->get('/employer')->assertOk()->assertSee('No employer program is set up yet');
     }
+
+    public function test_recently_given_shows_the_occasion_not_monthly_allowance(): void
+    {
+        $this->fund('100');
+        $employee = Employee::orderBy('id')->firstOrFail();
+
+        foreach (['welcome' => 'New-hire welcome', 'birthday' => 'Birthday', 'recognition' => 'Recognition award'] as $occasion => $label) {
+            $this->post('/employer/allocations', ['mode' => 'individual', 'occasion' => $occasion, 'employee_id' => $employee->id, 'amount' => '1']);
+            $this->travel(1)->seconds();
+        }
+
+        $section = $this->recentlyGiven();
+        $this->assertStringContainsString('New-hire welcome', $section);
+        $this->assertStringContainsString('Birthday', $section);
+        $this->assertStringContainsString('Recognition award', $section);
+        // The seeded monthly allowance is older, so it comes after all three.
+        $this->assertLessThan(strpos($section, 'Monthly allowance'), strpos($section, 'New-hire welcome'));
+    }
+
+    public function test_a_bulk_allocation_is_one_row_that_expands_to_each_person(): void
+    {
+        $this->employer->update(['monthly_budget_cents' => null]);
+        $this->fund('1000');
+
+        $this->post('/employer/allocations', ['mode' => 'bulk', 'recipients' => 'all', 'occasion' => 'welcome', 'amount' => '25']);
+
+        $section = $this->recentlyGiven();
+        $this->assertSame(1, substr_count($section, 'Welcome · 40 employees'));
+        $this->assertStringContainsString('$1,000.00', $section);
+        $this->assertStringContainsString('$25.00 each', $section);
+        foreach (Employee::orderBy('id')->get() as $employee) {
+            $this->assertStringContainsString(e($employee->publicLabel()), $section);
+        }
+    }
+
+    public function test_the_participation_tiles_lead_with_counts(): void
+    {
+        $m = app(\App\Services\EmployerMetrics::class)->for($this->employer);
+
+        $this->get('/employer')
+            ->assertSeeInOrder([$m['redeemers'], 'employees got out', $m['participation_pct'].'% of enrolled · '.$m['staff_pct'].'% of all 120 staff'])
+            ->assertSeeInOrder([$m['businesses'].' of 8', 'participating businesses', $m['first_visits'].' first-time']);
+    }
+
+    /** The "Recently given" card's HTML. */
+    private function recentlyGiven(): string
+    {
+        $html = $this->get('/employer')->assertOk()->getContent();
+        $start = strpos($html, 'id="allocations-heading"');
+
+        return substr($html, $start, strpos($html, 'id="program"') - $start);
+    }
 }
