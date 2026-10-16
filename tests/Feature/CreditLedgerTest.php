@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Occasion;
 use App\Models\Bid;
+use App\Models\CreditAllocation;
 use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
 use App\Models\Employee;
@@ -13,9 +15,11 @@ use App\Models\Redemption;
 use App\Models\User;
 use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
+use App\Services\EmployerProgram;
 use App\Services\RedemptionReviewService;
 use App\Services\RedemptionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use LogicException;
 use Tests\Fakes\FakeClaudeClient;
@@ -178,8 +182,10 @@ class CreditLedgerTest extends TestCase
         app(RedemptionReviewService::class)->approve($approved, User::factory()->create());
         app(RedemptionReviewService::class)->reject($rejected, User::factory()->create());
         $this->ledger()->payout($this->merchant, 4000, MerchantPayout::STATUS_SIMULATED);
+        // Requested but not paid: not in the ledger, so not counted.
+        $this->ledger()->requestPurchase($this->employer, 70000, 'MPG-2');
 
-        $purchased = (int) CreditPurchase::sum('amount_cents');
+        $purchased = (int) CreditPurchase::where('status', '!=', CreditPurchase::STATUS_PENDING)->sum('amount_cents');
         $paidOut = (int) MerchantPayout::sum('amount_cents');
         $held = (int) Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->sum('amount_cents');
 
@@ -191,5 +197,106 @@ class CreditLedgerTest extends TestCase
         $this->assertSame([85000, 15000 - 1250 - 800 - 3000 - 1000, 1250 + 800 + 3000 - 4000], [
             $this->employer->balanceCents(), $this->employee->balanceCents(), $this->merchant->payableCents(),
         ]);
+    }
+
+    public function test_a_requested_purchase_is_pending_and_writes_no_ledger_entry(): void
+    {
+        $purchase = $this->ledger()->requestPurchase($this->employer, 50000, 'MPG-1');
+
+        $this->assertTrue($purchase->isPending());
+        $this->assertSame(0, CreditLedgerEntry::count());
+        $this->assertSame(0, $this->employer->balanceCents());
+    }
+
+    public function test_pending_credits_cannot_be_allocated_or_spent(): void
+    {
+        $this->ledger()->requestPurchase($this->employer, 50000, 'MPG-1');
+
+        foreach ([
+            fn () => $this->ledger()->allocate($this->employer, $this->employee, 100),
+            fn () => $this->ledger()->allocateMany($this->employer, [$this->employee], 100, Occasion::Monthly),
+        ] as $attempt) {
+            try {
+                $attempt();
+                $this->fail('Pending credits were allocated.');
+            } catch (InvalidArgumentException) {
+            }
+        }
+
+        $this->assertSame(0, CreditAllocation::count());
+        $this->assertSame(0, $this->employee->balanceCents());
+
+        // With nothing in the wallet, a redemption is refused too.
+        $this->expectException(ValidationException::class);
+        $this->redeem(100, 'clear');
+    }
+
+    public function test_paying_a_purchase_writes_one_entry_and_unlocks_its_credits(): void
+    {
+        $purchase = $this->ledger()->requestPurchase($this->employer, 50000, 'MPG-1');
+        $this->ledger()->payPurchase($purchase);
+
+        try {
+            $this->ledger()->payPurchase($purchase);
+            $this->fail('A purchase was paid twice.');
+        } catch (InvalidArgumentException) {
+        }
+
+        $this->assertSame(CreditPurchase::STATUS_SIMULATED, $purchase->fresh()->status);
+        $this->assertSame(1, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
+        $this->assertSame(50000, $this->employer->balanceCents());
+
+        $this->ledger()->allocate($this->employer, $this->employee, 15000);
+        $this->assertSame([35000, 15000], [$this->employer->balanceCents(), $this->employee->balanceCents()]);
+    }
+
+    public function test_bulk_allocation_gives_each_employee_the_amount_in_cents(): void
+    {
+        $second = Employee::create(['employer_id' => $this->employer->id, 'display_name' => 'Second Employee']);
+        $this->ledger()->purchase($this->employer, 10000, 'INV-1');
+
+        $allocations = $this->ledger()->allocateMany($this->employer, [$this->employee, $second], 2501, Occasion::Birthday);
+
+        $this->assertCount(2, $allocations);
+        $this->assertSame([10000 - 5002, 2501, 2501], [$this->employer->balanceCents(), $this->employee->balanceCents(), $second->balanceCents()]);
+        $this->assertSame(Occasion::Birthday, $allocations[0]->fresh()->occasion);
+        $this->assertSame('Birthday from Meridian Policy Group', CreditLedgerEntry::where('employee_id', $second->id)->value('description'));
+        $this->assertSame((int) CreditPurchase::sum('amount_cents'), (int) CreditLedgerEntry::sum('amount_cents'));
+    }
+
+    public function test_bulk_allocation_is_all_or_nothing_when_the_balance_is_short(): void
+    {
+        $second = Employee::create(['employer_id' => $this->employer->id, 'display_name' => 'Second Employee']);
+        $this->ledger()->purchase($this->employer, 15000, 'INV-1');
+
+        try {
+            $this->ledger()->allocateMany($this->employer, [$this->employee, $second], 10000, Occasion::Monthly);
+            $this->fail('An allocation beyond the balance was allowed.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Buy more credits', $e->getMessage());
+        }
+
+        $this->assertSame([0, 15000, 0, 0], [CreditAllocation::count(), $this->employer->balanceCents(), $this->employee->balanceCents(), $second->balanceCents()]);
+    }
+
+    public function test_allocation_is_refused_beyond_this_months_budget(): void
+    {
+        $this->employer->update(['monthly_budget_cents' => 20000]);
+        $this->ledger()->purchase($this->employer, 100000, 'INV-1');
+        $this->ledger()->allocateMany($this->employer, [$this->employee], 15000, Occasion::Monthly);
+
+        try {
+            $this->ledger()->allocateMany($this->employer, [$this->employee], 5001, Occasion::Recognition);
+            $this->fail('An allocation beyond the budget was allowed.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('$50.00 is left', $e->getMessage());
+        }
+
+        $this->ledger()->allocateMany($this->employer, [$this->employee], 5000, Occasion::Recognition);
+        $this->assertSame(0, EmployerProgram::remainingBudgetCents($this->employer));
+        $this->assertSame(20000, $this->employee->balanceCents());
+
+        // Last month's allocations don't count against this month.
+        $this->assertSame(0, EmployerProgram::allocatedInMonthCents($this->employer, now()->subMonthNoOverflow()));
     }
 }
