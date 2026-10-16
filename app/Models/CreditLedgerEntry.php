@@ -38,6 +38,9 @@ class CreditLedgerEntry extends Model
     /** Merchant account: money paid out to the merchant. */
     public const TYPE_PAYOUT = 'payout';
 
+    /** Merchant account: a Stripe transfer was reversed, so the merchant is owed that amount again. */
+    public const TYPE_PAYOUT_REVERSED = 'payout_reversed';
+
     public const ACCOUNT_COLUMNS = ['employee_id', 'employer_id', 'merchant_id'];
 
     public const UPDATED_AT = null;

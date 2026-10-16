@@ -295,6 +295,39 @@ class CreditLedger
     }
 
     /**
+     * Stripe reports a sent transfer was reversed (pulled back from the
+     * merchant). The merchant is owed the amount again, through Stripe; it
+     * is never re-sent automatically. Only flips a row that is still sent.
+     */
+    public function recordStripeReversal(MerchantPayout $payout, ?Carbon $at = null): bool
+    {
+        $at ??= now();
+
+        return DB::transaction(function () use ($payout, $at) {
+            $changed = MerchantPayout::whereKey($payout->id)
+                ->where('status', MerchantPayout::STATUS_SENT)
+                ->update(['status' => MerchantPayout::STATUS_REVERSED, 'reversed_at' => $at, 'failure_reason' => 'Reversed in Stripe. Owed again; a person decides what happens next.']);
+
+            $payout->refresh();
+
+            if ($changed === 0) {
+                return false;
+            }
+
+            CreditLedgerEntry::create([
+                'merchant_id' => $payout->merchant_id,
+                'amount_cents' => $payout->amount_cents,
+                'type' => CreditLedgerEntry::TYPE_PAYOUT_REVERSED,
+                'merchant_payout_id' => $payout->id,
+                'description' => 'Stripe test-mode transfer '.$payout->stripe_transfer_id.' reversed; owed again',
+                'created_at' => $at,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
      * Pays a merchant out of what cleared redemptions earned it, with no
      * Stripe transfer (the seed's weekly payouts). Refuses more than the
      * simulated part of what the merchant is owed, so it can never pay out

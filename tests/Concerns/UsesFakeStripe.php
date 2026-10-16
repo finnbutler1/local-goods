@@ -52,11 +52,11 @@ trait UsesFakeStripe
         return 't='.$at.',v1='.hash_hmac('sha256', $at.'.'.$payload, $secret);
     }
 
-    protected function postWebhook(array $event, ?string $header = null, array $server = []): TestResponse
+    protected function postWebhook(array $event, ?string $header = null, array $server = [], string $url = '/stripe/webhook'): TestResponse
     {
         $payload = json_encode($event);
 
-        return $this->call('POST', '/stripe/webhook', [], [], [], $server + [
+        return $this->call('POST', $url, [], [], [], $server + [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_STRIPE_SIGNATURE' => $header ?? $this->signedHeader($payload),
         ], $payload);
