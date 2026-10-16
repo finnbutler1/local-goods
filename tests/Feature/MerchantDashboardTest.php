@@ -95,4 +95,36 @@ class MerchantDashboardTest extends TestCase
 
         $this->get('/merchant')->assertOk()->assertSee('Farragut Grind')->assertDontSee('<form method="POST" action="'.url('/merchant'), false);
     }
+
+    public function test_redemptions_received_shows_the_newest_ten_then_all(): void
+    {
+        $total = $this->merchant->redemptions()->count();
+        $this->assertGreaterThan(10, $total, 'The seed gives Farragut Grind more than ten');
+
+        $html = $this->get('/merchant')->assertSee("The newest 10 of {$total}")->assertSee("Show all {$total} redemptions")->getContent();
+        $this->assertSame(10, $this->receivedRows($html));
+
+        $html = $this->get('/merchant?all=1')->assertSee("All {$total}")->assertDontSee('Show all')->assertSee('Show the newest 10 only')->getContent();
+        $this->assertSame($total, $this->receivedRows($html));
+    }
+
+    public function test_no_show_all_link_with_ten_or_fewer(): void
+    {
+        $owner = User::factory()->role(Role::Merchant)->create();
+        $this->merchant = Merchant::create(['bid_id' => $this->merchant->bid_id, 'name' => 'Test Bakery', 'category' => 'cafe', 'address' => '1 Test St NW', 'user_id' => $owner->id]);
+        $this->actingAs($owner);
+        foreach ([300, 400, 500] as $cents) {
+            $this->redeem($cents, 'clear');
+        }
+
+        $html = $this->get('/merchant')->assertOk()->assertSee('The newest 3 of 3')->assertDontSee('Show all')->getContent();
+        $this->assertSame(3, $this->receivedRows($html));
+    }
+
+    private function receivedRows(string $html): int
+    {
+        $start = strpos($html, 'id="received-heading"');
+
+        return substr_count(substr($html, $start, strpos($html, 'id="payouts-heading"') - $start), '<li class="flex items-center justify-between');
+    }
 }
