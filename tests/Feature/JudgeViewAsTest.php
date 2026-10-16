@@ -97,7 +97,7 @@ class JudgeViewAsTest extends TestCase
 
     public function test_employer_view_shows_the_dashboard_with_every_write_disabled(): void
     {
-        // A pending purchase, so its "Pay now" button is on the page too.
+        // A pending purchase: judges see it, but never a button that pays it.
         $pending = app(\App\Services\CreditLedger::class)->requestPurchase(\App\Models\Employer::firstOrFail(), 10000, 'MPG-TEST-1');
         $this->signIn(Role::Judge);
         $this->get('/judge/view-as/employer_admin');
@@ -110,7 +110,9 @@ class JudgeViewAsTest extends TestCase
         // Every form sits in a disabled fieldset, and every submit button outside one is disabled.
         // (Only the employer's own forms: feedback and log out stay open to judges.)
         preg_match_all('/<form method="POST" action="[^"]*\/employer[^"]*"[^>]*>(.*?)<\/form>/s', $html, $forms);
-        $this->assertCount(5, $forms[1], 'program, purchase, one Pay now, two allocations');
+        $this->assertCount(4, $forms[1], 'program, purchase, two allocations (no Pay form for judges)');
+        $this->assertStringContainsString("Read-only: judges can't pay", $html);
+        $this->assertStringNotContainsString('/pay"', $html);
         foreach ($forms[1] as $form) {
             $this->assertTrue(str_contains($form, '<fieldset disabled') || preg_match('/<button[^>]*type="submit"[^>]*disabled/', $form) === 1, 'A form is not disabled for judges.');
         }
