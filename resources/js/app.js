@@ -51,3 +51,14 @@ document.addEventListener('change', (event) => {
     const amount = select?.selectedOptions[0]?.dataset.amount;
     if (amount) document.querySelector(select.dataset.fillAmount).value = amount;
 });
+
+// Approved redemption screen: a ticking clock (DC time) so the merchant can see
+// it is the live app, not a screenshot.
+document.querySelectorAll('[data-live-clock]').forEach((clock) => {
+    const format = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', second: '2-digit',
+    });
+    const tick = () => (clock.textContent = format.format(new Date()));
+    tick();
+    setInterval(tick, 1000);
+});

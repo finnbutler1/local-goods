@@ -53,6 +53,8 @@ class MerchantDashboardTest extends TestCase
 
         $this->get('/merchant')->assertOk()
             ->assertSee('Owed to you now')
+            ->assertSee('Cleared sales this month')
+            ->assertDontSee('Local Goods sales this month')
             ->assertSee(Money::format($owedBefore + 450))
             ->assertSee('Waiting for review, not owed yet')
             ->assertSee('$12.00')
