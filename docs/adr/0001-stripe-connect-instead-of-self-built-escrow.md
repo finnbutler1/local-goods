@@ -1,6 +1,6 @@
 # 0001. Stripe Connect instead of self-built escrow
 
-**Status:** Accepted, not yet implemented (planned)
+**Status:** Accepted, implemented in test mode by [0015](0015-stripe-connect-test-mode-separate-charges-and-transfers.md)
 
 ## Context
 
@@ -27,5 +27,7 @@ program's rules. It never holds the cash itself.
 - Redemption Fraud Detection will gate the Stripe transfer: a held redemption
   produces no transfer until a person clears it.
 - Stripe takes fees on each transfer, and we depend on one vendor.
-- **Today no Stripe code exists.** Redemptions update the ledger only, and no
-  real or test money moves.
+- Built in test mode (ADR 0015): Checkout for employer purchases, Express
+  accounts for the demo merchants, a Transfer per Stripe-funded cleared
+  redemption, and a reconciliation page. No real money moves; without keys
+  the demo falls back to clearly labeled simulated mode.

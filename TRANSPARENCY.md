@@ -86,10 +86,14 @@ yet**:
   redemption can only be decided once.
 - **Planned:** a written reason with each decision, and the same buttons for
   HR reviewers.
-- **Planned:** once Stripe Connect is built, no money will move to a merchant
-  for a held redemption until a person clears it. **Today no money moves at
-  all**, whether a redemption is cleared or held. Redemptions only update the
-  credit ledger.
+- **Today (Stripe test mode, [ADR 0015](docs/adr/0015-stripe-connect-test-mode-separate-charges-and-transfers.md)):**
+  no money moves to a merchant for a held redemption. Only a cleared one
+  (by the AI, or approved by a person) that was funded by Stripe-paid
+  credits becomes a Stripe test-mode transfer; a rejected one never does.
+  Every transfer passes one named check, `TransferGate`, where a further
+  fraud gate will sit. It is test mode, so no real money moves, and every
+  money page says whether it is "Stripe test mode" or "Simulated". Nothing
+  sent to Stripe names an employee. See [docs/STRIPE.md](docs/STRIPE.md).
 
 ### How we measure it
 

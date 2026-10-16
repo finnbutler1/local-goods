@@ -3,6 +3,31 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-16: Stripe Connect in test mode
+
+- **Employers pay through Stripe Checkout (test mode).** "Pay with Stripe
+  (test mode)" replaces "Pay now" when Stripe keys are set, with the test
+  card hint on the page (4000 0000 0000 0077). The purchase stays pending
+  until Stripe's signed webhook confirms the payment; only then is the
+  ledger entry written, once ([ADR 0015](docs/adr/0015-stripe-connect-test-mode-separate-charges-and-transfers.md)).
+- **Merchants onboard with Stripe Express.** Priya can connect Farragut
+  Grind from the merchant dashboard; status shows there and on the BID
+  roster.
+- **Cleared redemptions become Stripe transfers**, with the purchase's
+  `transfer_group` and charge, but only Stripe-funded ones. Seeded and
+  simulated money owed stays simulated and is never sent to Stripe; the
+  merchant dashboard shows "Owed via Stripe test mode" and "Owed,
+  simulated" separately. Held or rejected redemptions never transfer; a
+  merchant who hasn't finished onboarding stays owed until they do.
+- **Webhook** at `/stripe/webhook`: signature required, every event handled
+  once, no session or CSRF, works behind CloudFront.
+- **Reconciliation** for the platform admin: the ledger next to Stripe,
+  every mismatch in plain English.
+- **Badges everywhere money moves:** "Stripe test mode" or "Simulated". With
+  no keys the demo works exactly as before, labeled simulated. Judges see
+  the badges and Stripe ids, never a button that pays or onboards.
+- How and why: [docs/STRIPE.md](docs/STRIPE.md).
+
 ## 2026-10-15: The money loop on screen
 
 - **Employer/HR dashboard** at `/employer`: "Your team got out into the

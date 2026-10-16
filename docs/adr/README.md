@@ -6,7 +6,7 @@ trade-off in under a minute.
 
 | # | Decision | Status |
 |---|---|---|
-| [0001](0001-stripe-connect-instead-of-self-built-escrow.md) | Stripe Connect instead of self-built escrow | Accepted, not yet implemented |
+| [0001](0001-stripe-connect-instead-of-self-built-escrow.md) | Stripe Connect instead of self-built escrow | Accepted, implemented in test mode (0015) |
 | [0002](0002-one-bid-and-one-employer-for-the-mvp.md) | One BID and one employer for the MVP | Accepted |
 | [0003](0003-fail-closed-fraud-detection.md) | Fail-closed fraud detection | Accepted, implemented |
 | [0004](0004-elastic-beanstalk-instead-of-amplify.md) | Elastic Beanstalk instead of Amplify | Accepted, implemented |
@@ -20,3 +20,4 @@ trade-off in under a minute.
 | [0012](0012-one-ledger-three-account-kinds.md) | One ledger with three kinds of account: employee, employer, merchant | Accepted, implemented |
 | [0013](0013-merchant-eligibility-matching.md) | Merchant Eligibility Matching: an AI suggestion, a person's decision, measured against locked labels | Accepted, implemented |
 | [0014](0014-employer-program-pending-purchases-and-initials.md) | Employer program, purchases locked until paid, and initials only outside an employee's own wallet | Accepted, implemented |
+| [0015](0015-stripe-connect-test-mode-separate-charges-and-transfers.md) | Stripe Connect in test mode: separate charges and transfers, Stripe-funded payouts only | Accepted, implemented |
