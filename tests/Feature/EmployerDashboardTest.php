@@ -55,7 +55,8 @@ class EmployerDashboardTest extends TestCase
             ->assertSee('How we count this')
             ->assertSee('Visits per week, last 8 weeks')
             ->assertSee('Buy credits')
-            ->assertSee('Test-mode payments coming in a later build')
+            ->assertSee("Stripe isn't connected on this server, so \"Pay now\" marks it paid with no real money", false)
+            ->assertSee('Simulated')
             ->assertSee('Program setup')
             ->assertSee(Employee::orderBy('id')->firstOrFail()->publicLabel())
             ->assertDontSee('Coming in a later build');

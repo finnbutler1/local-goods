@@ -26,6 +26,18 @@
     </header>
 
     <div aria-live="polite" class="empty:hidden">
+        @if ($checkout === 'returned' && $checkoutPurchase?->isPending())
+            <p class="rounded-2xl border-2 border-amber bg-cream-deep p-4 font-semibold">
+                Back from Stripe. {{ $checkoutPurchase->reference }} stays pending until Stripe confirms the payment to Local Goods,
+                usually within a few seconds. Refresh this page to check.
+            </p>
+        @elseif ($checkout === 'returned' && $checkoutPurchase?->isStripe())
+            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">
+                Stripe confirmed {{ $checkoutPurchase->reference }} ({{ Money::format($checkoutPurchase->amount_cents) }}, test mode). The credits are ready to give to your team.
+            </p>
+        @elseif ($checkout === 'cancelled')
+            <p class="rounded-2xl border-2 border-line bg-cream-deep p-4 font-semibold">Payment cancelled. Nothing was charged; the purchase is still pending.</p>
+        @endif
         @if (session('status'))
             <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
         @endif
@@ -203,11 +215,25 @@
 
         <div class="grid gap-3 lg:grid-cols-2">
             <x-card as="section" aria-labelledby="buy-heading">
-                <h3 id="buy-heading" class="text-xl font-semibold">Buy credits</h3>
-                <p class="mt-1 text-sm text-muted">
-                    A purchase starts as pending. Test-mode payments coming in a later build: for now "Pay now" marks it paid with no real money,
-                    and only then can the credits be given out.
-                </p>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 id="buy-heading" class="text-xl font-semibold">Buy credits</h3>
+                    <x-money-mode />
+                </div>
+                @if ($stripe)
+                    <p class="mt-1 text-sm text-muted">
+                        A purchase starts as pending. "Pay with Stripe (test mode)" opens Stripe Checkout; the credits unlock only once Stripe
+                        confirms the payment to Local Goods. Stripe holds the money, not Local Goods.
+                    </p>
+                    <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-amber bg-cream-deep p-3 text-sm">
+                        <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
+                        No real money moves.
+                    </p>
+                @else
+                    <p class="mt-1 text-sm text-muted">
+                        A purchase starts as pending. Stripe isn't connected on this server, so "Pay now" marks it paid with no real money
+                        (simulated), and only then can the credits be given out.
+                    </p>
+                @endif
                 <form method="POST" action="{{ route('employer.purchases.store') }}" class="mt-4">
                     @csrf
                     <fieldset @disabled($readOnly) class="space-y-4">
@@ -238,13 +264,32 @@
                                 @if ($purchase->isPending())
                                     <div class="flex flex-wrap items-center gap-2">
                                         <x-badge tone="hold">Pending</x-badge>
-                                        <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}">
-                                            @csrf
-                                            <x-button type="submit" size="sm" :disabled="$readOnly" aria-label="Pay now for {{ $purchase->reference }}, simulated, no real money">Pay now (simulated, no real money)</x-button>
-                                        </form>
+                                        @if ($readOnly)
+                                            <span class="text-sm text-muted">Read-only: judges can't pay</span>
+                                        @else
+                                            <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}">
+                                                @csrf
+                                                @if ($stripe)
+                                                    <x-button type="submit" size="sm" aria-describedby="test-card-hint" aria-label="Pay with Stripe, test mode, for {{ $purchase->reference }}">Pay with Stripe (test mode)</x-button>
+                                                @else
+                                                    <x-button type="submit" size="sm" aria-label="Pay now for {{ $purchase->reference }}, simulated, no real money">Pay now (simulated, no real money)</x-button>
+                                                @endif
+                                            </form>
+                                        @endif
+                                    </div>
+                                    @if ($purchase->payment_error)
+                                        <p class="basis-full text-sm text-hold"><span aria-hidden="true">⚑</span> Last Stripe attempt: {{ $purchase->payment_error }}</p>
+                                    @endif
+                                @elseif ($purchase->isStripe())
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <x-badge tone="ok">Paid</x-badge>
+                                        <x-money-mode mode="stripe" :id="$purchase->stripe_payment_intent_id" />
                                     </div>
                                 @else
-                                    <x-badge tone="ok">Paid (simulated)</x-badge>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <x-badge tone="ok">Paid (simulated)</x-badge>
+                                        <x-money-mode mode="simulated" />
+                                    </div>
                                 @endif
                             </li>
                         @endforeach
