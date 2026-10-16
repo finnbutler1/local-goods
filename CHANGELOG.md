@@ -23,6 +23,11 @@ commit history.
   once, no session or CSRF, works behind CloudFront.
 - **Reconciliation** for the platform admin: the ledger next to Stripe,
   every mismatch in plain English.
+- **Each environment reconciles only its own Stripe objects.** Payments,
+  transfers and connected accounts are tagged with the environment that
+  made them, so local testing in a shared Stripe sandbox no longer shows up
+  as production mismatches. Others are listed as "From another
+  environment, not counted", and the webhook ignores their events.
 - **Badges everywhere money moves:** "Stripe test mode" or "Simulated". With
   no keys the demo works exactly as before, labeled simulated. Judges see
   the badges and Stripe ids, never a button that pays or onboards.

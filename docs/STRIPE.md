@@ -128,6 +128,11 @@ sentence and any missing-field lines, keys removed; never for key errors).
 - Handled: `payment_intent.succeeded`, `payment_intent.payment_failed`,
   `checkout.session.expired`, `account.updated`, `transfer.created`,
   `transfer.reversed`. Anything else gets 200 and is ignored.
+- An event about an object tagged for **another environment** (see
+  below) gets 200 `"ignored: other environment"` before anything is
+  written: no ledger entry, no `stripe_events` row. Untagged objects (made
+  before tagging) go through, because each handler only finds records by
+  this database's own tokens and ids.
 - Works behind CloudFront: CloudFront passes the body unchanged; its origin
   request policy must forward the `Stripe-Signature` header (see setup).
 
@@ -150,6 +155,36 @@ one by one, and the platform balance for information (Stripe keeps card
 fees, so it never matches exactly). Each difference is a sentence, for
 example "Stripe has a $250.00 payment (pi_…) that Local Goods has no ledger
 record of". Simulated activity is counted but not checked.
+
+### One Stripe sandbox, several environments
+
+Local development and production may share one Stripe sandbox, so every
+object Local Goods creates carries its environment in Stripe metadata
+(`App\Support\StripeEnvironment`):
+
+| Object | Metadata |
+|---|---|
+| Checkout Session and its PaymentIntent | `lg_env`, `lg_instance`, `lg_purchase_id`, `lg_purchase_token`, `lg_purchase_reference` |
+| Transfer | `lg_env`, `lg_instance`, `lg_redemption_id`, `lg_payout_key` |
+| Connected account (v2) | `lg_env`, `lg_instance`, `lg_merchant_id`, `lg_merchant` |
+
+`lg_env` is `APP_ENV` (`local`, `production`). `lg_instance` is 8 hex
+characters derived from the server's `APP_KEY` (an HMAC, so it reveals
+nothing about the key): two laptops both called `local` still differ. The
+reconciliation page shows this environment's tag at the top.
+
+Reconciliation counts an object only if its tag matches this environment,
+or if it has no tag (made before tagging) but this database already knows
+its id or token. Everything else goes in a separate **"From another
+environment, not counted"** note with its totals and one line per object,
+and never in the mismatches or the totals. The words "check before
+refunding" appear only for a payment with no ledger record that is either
+this environment's own (a mismatch) or untagged (in the note). Nothing in
+the app ever refunds.
+
+If `APP_KEY` is ever rotated, the instance id changes and older objects
+from that server look like another environment's. Objects this database
+knows by id are still counted.
 
 ## Privacy
 
@@ -184,6 +219,26 @@ Leave all of them blank for simulated mode.
 4. As HR, request and pay a purchase with 4000 0000 0000 0077. The terminal
    running `stripe listen` shows `payment_intent.succeeded` and the purchase
    turns paid.
+
+**Recommended: a separate sandbox for local development.** Tagging keeps
+the environments apart, but with one shared sandbox `stripe listen` still
+forwards production's events to your laptop (they are ignored), and
+Stripe's dashboard mixes both environments' payments. A second sandbox
+keeps them fully separate and is free:
+
+1. Stripe dashboard → account menu (top left) → **Sandboxes** → **Create
+   sandbox**, named for example "Local Goods – local dev".
+2. Switch to it, then **Settings → Connect** and finish the Connect
+   platform setup there (each sandbox has its own Connect settings).
+3. Developers → API keys in that sandbox: put its `pk_test_…` and
+   `sk_test_…` in your local `.env` as `STRIPE_KEY` and `STRIPE_SECRET`.
+4. `stripe login` again and pick the new sandbox (or pass `--api-key` with
+   its secret key), then run `stripe listen` as above and put the new
+   `whsec_…` in `.env` as `STRIPE_WEBHOOK_SECRET`.
+5. Restart the app. The Farragut Grind account in your local database was
+   made in the old sandbox, so clear its Stripe account in a local scratch
+   database (or start from a fresh scratchpad SQLite) and onboard again.
+   Production keeps the existing sandbox and changes nothing.
 
 ### Production webhook (Stripe dashboard, test mode)
 

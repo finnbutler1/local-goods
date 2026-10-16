@@ -31,7 +31,12 @@ charges and transfers. Next milestone: Prompt 8 (fraud gate on transfers).
   return/refresh pages never create anything; Reset demo keeps
   `stripe_account_id`. `StripeOnboarding::apply` reads v2 accounts and v1
   `account.updated` snapshots. Transfers stay on v1.
-- Reconciliation: `/admin/reconciliation`, Stripe-funded activity only.
+- Reconciliation: `/admin/reconciliation`, Stripe-funded activity only,
+  this environment only. Every Stripe object we create carries
+  `StripeEnvironment::tag()` (`lg_env` + `lg_instance` from `APP_KEY`);
+  other-environment and unknown untagged objects go in "From another
+  environment, not counted", and the webhook ignores other-env events
+  before writing anything. Never suggest refunds without "check before".
 - Every Stripe call is wrapped in `NoticeSafeStripeGateway`: stripe-php
   raises Stripe-Notice headers as PHP warnings (a 500 otherwise), and it
   ignores `STRIPE_SUPPRESS_NOTICES` when an AI agent env var (CLAUDECODE) is
