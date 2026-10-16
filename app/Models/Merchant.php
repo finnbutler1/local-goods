@@ -8,11 +8,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Merchant extends Model
 {
-    protected $fillable = ['bid_id', 'name', 'category', 'address'];
+    protected $fillable = ['bid_id', 'name', 'category', 'address', 'user_id'];
 
     public function bid(): BelongsTo
     {
         return $this->belongsTo(Bid::class);
+    }
+
+    /** The login that runs this business (the merchant role), if any. */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function redemptions(): HasMany
+    {
+        return $this->hasMany(Redemption::class);
     }
 
     public function ledgerEntries(): HasMany

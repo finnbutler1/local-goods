@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Enums\Role;
 use App\Models\Employee;
+use App\Models\Merchant;
 use App\Models\User;
 use App\Services\ReviewerLinks;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -26,6 +27,11 @@ abstract class TestCase extends BaseTestCase
 
         if ($role === Role::Employee && ! $user->employee()->exists()) {
             Employee::whereNull('user_id')->orderBy('id')->first()?->update(['user_id' => $user->id]);
+        }
+
+        if ($role === Role::Merchant && ! $user->merchant()->exists()) {
+            Merchant::whereNull('user_id')->where('name', config('demo.accounts.merchant.business'))
+                ->first()?->update(['user_id' => $user->id]);
         }
 
         $this->actingAs($user);
