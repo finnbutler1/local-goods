@@ -20,6 +20,10 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="ANTHROPIC_API_KEY" value=""/>
+        <env name="STRIPE_KEY" value=""/>
+        <env name="STRIPE_SECRET" value=""/>
+        <env name="STRIPE_WEBHOOK_SECRET" value=""/>
+        <env name="STRIPE_CONNECT_WEBHOOK_SECRET" value=""/>
         <env name="ANTHROPIC_MODEL" value="claude-opus-5-5"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
