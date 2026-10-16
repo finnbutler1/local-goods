@@ -131,7 +131,7 @@ class JudgeViewAsTest extends TestCase
 
         $this->get('/merchant')->assertOk()
             ->assertSee('Owed to you now')
-            ->assertSee('Simulated until Stripe test mode')
+            ->assertSee('Simulated')->assertSee('no money moved')
             ->assertDontSee('<form method="POST" action="'.url('/merchant'), false);
     }
 }

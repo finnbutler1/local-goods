@@ -59,7 +59,9 @@
                         <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
                         <dl class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
                             <dt class="text-muted">This month</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->month_cents) }} · {{ $merchant->month_visits }} {{ Str::plural('visit', $merchant->month_visits) }}</dd>
-                            <dt class="text-muted">Owed now</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->owed_cents) }}</dd>
+                            <dt class="text-muted">Owed via Stripe test mode</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->owed_stripe_cents) }}</dd>
+                            <dt class="text-muted">Owed, simulated</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->owed_cents - (int) $merchant->owed_stripe_cents) }}</dd>
+                            <dt class="text-muted">Stripe</dt><dd class="text-right">{{ $merchant->stripeOnboardingLabel() }}@if ($merchant->stripe_account_id)<code class="block break-all font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif</dd>
                             <dt class="text-muted">Last payout</dt><dd class="text-right">{{ $merchant->last_payout_at ? \Illuminate\Support\Carbon::parse($merchant->last_payout_at)->setTimezone('America/New_York')->format('M j') : 'None yet' }}</dd>
                         </dl>
                     </x-card>
@@ -67,15 +69,17 @@
             </ul>
             <x-card padding="p-0" class="mt-3 hidden overflow-x-auto sm:block">
                 <table class="w-full text-left">
-                    <caption class="sr-only">Participating merchants with this month's cleared sales, what they are owed and their last payout</caption>
+                    <caption class="sr-only">Participating merchants with this month's cleared sales, what they are owed through Stripe test mode and simulated, their last payout and Stripe onboarding</caption>
                     <thead class="border-b border-line/70 text-sm text-muted">
                         <tr>
                             <th scope="col" class="px-5 py-3 font-semibold">Merchant</th>
                             <th scope="col" class="px-5 py-3 font-semibold">Category</th>
                             <th scope="col" class="px-5 py-3 text-right font-semibold">Visits this month</th>
                             <th scope="col" class="px-5 py-3 text-right font-semibold">Sales this month</th>
-                            <th scope="col" class="px-5 py-3 text-right font-semibold">Owed now</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">Owed via Stripe test mode</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">Owed, simulated</th>
                             <th scope="col" class="px-5 py-3 text-right font-semibold">Last payout</th>
+                            <th scope="col" class="px-5 py-3 font-semibold">Stripe onboarding</th>
                         </tr>
                     </thead>
                     <tbody class="tabular divide-y divide-line/70">
@@ -85,14 +89,26 @@
                                 <td class="px-5 py-3 capitalize">{{ $merchant->category }}</td>
                                 <td class="px-5 py-3 text-right">{{ $merchant->month_visits }}</td>
                                 <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->month_cents) }}</td>
-                                <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_cents) }}</td>
+                                <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_stripe_cents) }}</td>
+                                <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_cents - (int) $merchant->owed_stripe_cents) }}</td>
                                 <td class="px-5 py-3 text-right">{{ $merchant->last_payout_at ? \Illuminate\Support\Carbon::parse($merchant->last_payout_at)->setTimezone('America/New_York')->format('M j') : 'None yet' }}</td>
+                                <td class="px-5 py-3 text-sm" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">
+                                    {{ $merchant->stripeOnboardingLabel() }}
+                                    @if ($merchant->stripe_account_id)<code class="block break-all font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </x-card>
-            <p class="mt-2 text-sm text-muted">Payouts are simulated until Stripe test mode: recorded in the ledger, no real transfer.</p>
+            <p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
+                <x-money-mode />
+                @if ($stripe)
+                    Redemptions funded by Stripe-paid credits are transferred through Stripe (test mode) once the merchant finishes onboarding. Seeded history stays simulated.
+                @else
+                    Stripe isn't connected on this server: payouts are simulated, recorded in the ledger with no real transfer.
+                @endif
+            </p>
         @endif
     </section>
 </div>
