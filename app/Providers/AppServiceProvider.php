@@ -43,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('reset-demo', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('decide-merchant-eligibility', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('redeem', fn (User $user) => $user->hasRole(Role::Employee));
+        Gate::define('manage-employer-program', fn (User $user) => $user->hasRole(Role::EmployerAdmin));
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-changelog', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
