@@ -60,6 +60,7 @@ enum Role: string
         $store = 'M3.75 9.75 5.25 4.5h13.5l1.5 5.25M3.75 9.75a2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0 2.25 2.25 0 0 0 4.5 0M5.25 12v7.5h13.5V12M9.75 19.5v-4.5h4.5v4.5';
         $merchants = ['label' => 'Merchant eligibility', 'short' => 'Merchants', 'route' => 'bid-admin.merchants', 'icon' => $store];
         $eval = ['label' => 'AI eval', 'short' => 'AI eval', 'route' => 'bid-admin.eval', 'icon' => $chart];
+        $participation = ['label' => 'Participation', 'short' => 'Program', 'route' => 'bid-admin.participation', 'icon' => $people];
         $dashboard = ['label' => 'Dashboard', 'short' => 'Home', 'route' => $this->dashboardRoute(), 'icon' => $home];
 
         return match ($this) {
@@ -71,7 +72,7 @@ enum Role: string
                 'feedback' => ['label' => 'Feedback', 'short' => 'Feedback', 'route' => 'admin.feedback.index', 'icon' => $inbox],
                 'adjudication' => ['label' => 'Adjudication', 'short' => 'Votes', 'route' => 'admin.adjudication.index', 'icon' => $scales],
             ],
-            self::BidAdmin => ['bid-admin' => $fraudReview, 'merchants' => $merchants, 'eval' => $eval],
+            self::BidAdmin => ['bid-admin' => $fraudReview, 'participation' => $participation, 'merchants' => $merchants, 'eval' => $eval],
             self::Employee => ['wallet' => ['label' => 'My wallet', 'short' => 'Wallet', 'route' => 'employee.wallet', 'icon' => $wallet]],
             self::EmployerAdmin, self::Merchant, self::Judge => ['dashboard' => $dashboard],
         };

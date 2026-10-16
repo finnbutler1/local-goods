@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
+use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
@@ -68,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:bid_admin,platform_admin')->prefix('bid-admin')->name('bid-admin.')->group(function () {
         Route::get('/', BidAdminController::class)->name('dashboard');
         Route::get('/eval', [FraudEvalController::class, 'admin'])->name('eval');
+        Route::get('/participation', ParticipationController::class)->name('participation');
         Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->name('approve');
         Route::post('/redemptions/{redemption}/reject', [ReviewRedemptionController::class, 'reject'])->name('reject');
         Route::post('/reset', ResetDemoController::class)->name('reset');
