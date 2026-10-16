@@ -94,4 +94,42 @@ class JudgeViewAsTest extends TestCase
 
         $this->get('/bid-admin')->assertSee('Reset demo')->assertDontSee('This is read-only.');
     }
+
+    public function test_employer_view_shows_the_dashboard_with_every_write_disabled(): void
+    {
+        // A pending purchase, so its "Pay now" button is on the page too.
+        $pending = app(\App\Services\CreditLedger::class)->requestPurchase(\App\Models\Employer::firstOrFail(), 10000, 'MPG-TEST-1');
+        $this->signIn(Role::Judge);
+        $this->get('/judge/view-as/employer_admin');
+
+        $html = $this->get('/employer')->assertOk()
+            ->assertSee('Your team got out into the neighborhood.')
+            ->assertSee("Judges can look at every form here but can't buy, pay or give credits.", false)
+            ->getContent();
+
+        // Every form sits in a disabled fieldset, and every submit button outside one is disabled.
+        // (Only the employer's own forms: feedback and log out stay open to judges.)
+        preg_match_all('/<form method="POST" action="[^"]*\/employer[^"]*"[^>]*>(.*?)<\/form>/s', $html, $forms);
+        $this->assertCount(5, $forms[1], 'program, purchase, one Pay now, two allocations');
+        foreach ($forms[1] as $form) {
+            $this->assertTrue(str_contains($form, '<fieldset disabled') || preg_match('/<button[^>]*type="submit"[^>]*disabled/', $form) === 1, 'A form is not disabled for judges.');
+        }
+
+        $this->post('/employer/purchases', ['purchase_amount' => '10'])->assertForbidden();
+        $this->post('/employer/allocations', ['mode' => 'bulk', 'recipients' => 'all', 'occasion' => 'monthly', 'amount' => '1'])->assertForbidden();
+        $this->post('/employer/program', ['monthly_allowance' => '1'])->assertForbidden();
+        $this->post("/employer/purchases/{$pending->id}/pay")->assertForbidden();
+        $this->assertTrue($pending->fresh()->isPending());
+    }
+
+    public function test_merchant_view_shows_the_demo_merchant_with_no_forms(): void
+    {
+        $this->signIn(Role::Judge);
+        $this->get('/judge/view-as/merchant');
+
+        $this->get('/merchant')->assertOk()
+            ->assertSee('Owed to you now')
+            ->assertSee('Simulated until Stripe test mode')
+            ->assertDontSee('<form method="POST" action="'.url('/merchant'), false);
+    }
 }
