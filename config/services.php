@@ -32,6 +32,9 @@ return [
         // events on connected accounts (account.updated). Blank is fine.
         'connect_webhook_secret' => env('STRIPE_CONNECT_WEBHOOK_SECRET'),
         'currency' => 'usd',
+        // Stripe's informational notices (e.g. "consider Accounts v2"). On by
+        // default; they are logged, never shown, and can never crash a request.
+        'suppress_notices' => (bool) env('STRIPE_SUPPRESS_NOTICES', true),
     ],
 
     'postmark' => [

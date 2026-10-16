@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiConnectionException;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\ExceptionInterface as StripeExceptionInterface;
 use Stripe\StripeClient;
 use Stripe\StripeObject;
 
@@ -20,6 +21,12 @@ class StripeSdkGateway implements StripeGateway
 
     private function client(): StripeClient
     {
+        // Stripe's official switch for its informational notices. Not enough on
+        // its own (see StripeNotices), but it keeps them out of the way.
+        if (config('services.stripe.suppress_notices')) {
+            putenv('STRIPE_SUPPRESS_NOTICES=true');
+        }
+
         return $this->client ??= new StripeClient(['api_key' => (string) config('services.stripe.secret'), 'max_network_retries' => 1]);
     }
 
@@ -92,6 +99,11 @@ class StripeSdkGateway implements StripeGateway
             Log::warning('Stripe call failed', ['call' => $what, 'type' => class_basename($e), 'code' => $e->getStripeCode(), 'param' => $e->getError()?->param, 'status' => $e->getHttpStatus()]);
 
             throw new StripeGatewayException(self::plainEnglish($e), definite: ($e->getHttpStatus() ?? 500) < 500, stripeCode: $e->getStripeCode());
+        } catch (StripeExceptionInterface $e) {
+            // Anything else the SDK throws (an unreadable reply, a bad argument).
+            Log::warning('Stripe call failed', ['call' => $what, 'type' => class_basename($e)]);
+
+            throw new StripeGatewayException('Stripe sent a reply Local Goods could not read. Nothing was changed; try again.', definite: false);
         }
 
         return $list

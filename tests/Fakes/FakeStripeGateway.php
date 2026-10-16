@@ -57,10 +57,20 @@ class FakeStripeGateway implements StripeGateway
         });
     }
 
+    /**
+     * If set, account creation raises this as a PHP user warning, exactly as
+     * stripe-php 22 does for a "Stripe-Notice" response header.
+     */
+    public ?string $accountNotice = null;
+
     public function createExpressAccount(array $params, string $idempotencyKey): array
     {
         return $this->remember($idempotencyKey, function () use ($params) {
             $this->calls[] = ['account', $params];
+
+            if ($this->accountNotice !== null) {
+                trigger_error($this->accountNotice, E_USER_WARNING);
+            }
             $id = 'acct_test_'.$this->next();
 
             return $this->accounts[$id] = ['id' => $id, 'details_submitted' => false, 'payouts_enabled' => false, 'capabilities' => ['transfers' => 'inactive']];
