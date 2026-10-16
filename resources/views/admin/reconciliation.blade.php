@@ -9,6 +9,7 @@
             Stripe holds and moves the money; Local Goods keeps the ledger of who is owed what. This puts the two side by side for
             Stripe-funded activity only, since the last Reset demo ({{ $report['since']->setTimezone('America/New_York')->format('M j, Y g:i A') }}).
             Simulated purchases and payouts never touched Stripe, so they are not part of the check.
+            Only this environment's Stripe objects are counted (<span class="font-mono text-base">{{ $report['environment'] }}</span>).
         </p>
         <x-money-mode class="mt-3" />
     </header>
@@ -90,6 +91,22 @@
                 <h2 id="notes-heading" class="text-xl font-semibold">Worth knowing (not mismatches)</h2>
                 <ul class="mt-3 list-disc space-y-2 pl-5 text-muted">
                     @foreach ($report['notes'] as $line)
+                        <li>{{ $line }}</li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endif
+
+        @if ($report['other']['lines'] !== [])
+            <x-card as="section" aria-labelledby="other-env-heading" data-other-environment>
+                <h2 id="other-env-heading" class="text-xl font-semibold">From another environment, not counted</h2>
+                <p class="mt-2 text-muted">
+                    {{ $report['other']['payments'] }} {{ Str::plural('payment', $report['other']['payments']) }} ({{ Money::format($report['other']['payment_cents']) }})
+                    and {{ $report['other']['transfers'] }} {{ Str::plural('transfer', $report['other']['transfers']) }} ({{ Money::format($report['other']['transfer_cents']) }})
+                    in this Stripe account were made by another copy of Local Goods (for example local development sharing the sandbox), or before objects were tagged, and this database has no record of them. They are left out of every total above.
+                </p>
+                <ul class="mt-3 list-disc space-y-2 pl-5 text-muted">
+                    @foreach ($report['other']['lines'] as $line)
                         <li>{{ $line }}</li>
                     @endforeach
                 </ul>

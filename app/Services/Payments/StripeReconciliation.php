@@ -6,6 +6,7 @@ use App\Models\Bid;
 use App\Models\CreditPurchase;
 use App\Models\MerchantPayout;
 use App\Support\Money;
+use App\Support\StripeEnvironment;
 use App\Support\StripeMode;
 use Illuminate\Support\Carbon;
 
@@ -18,6 +19,12 @@ use Illuminate\Support\Carbon;
  *
  * The window starts at the last Reset demo (when the BID row was seeded),
  * because a reset clears Local Goods' records but not Stripe's.
+ *
+ * Only this environment's objects are counted (StripeEnvironment): local
+ * development and production can share one Stripe sandbox. An object
+ * counts if its tag matches, or if it has no tag (made before tagging) but
+ * this database already knows its id. Everything else is listed in a
+ * separate "From another environment, not counted" note with its totals.
  */
 class StripeReconciliation
 {
@@ -38,9 +45,11 @@ class StripeReconciliation
                 'payouts' => MerchantPayout::where('status', MerchantPayout::STATUS_SIMULATED)->count(),
                 'payout_cents' => (int) MerchantPayout::where('status', MerchantPayout::STATUS_SIMULATED)->sum('amount_cents'),
             ],
+            'environment' => StripeEnvironment::label(),
             'error' => null,
             'mismatches' => [],
             'notes' => [],
+            'other' => ['payments' => 0, 'payment_cents' => 0, 'transfers' => 0, 'transfer_cents' => 0, 'lines' => []],
         ];
 
         $local = $this->localTotals();
@@ -63,6 +72,10 @@ class StripeReconciliation
 
             return $report;
         }
+
+        [$intents, $otherIntents] = $intents->partition(fn ($pi) => $this->ourPayment($pi));
+        [$transfers, $otherTransfers] = $transfers->partition(fn ($tr) => $this->ourTransfer($tr));
+        $report['other'] = $this->otherEnvironments($otherIntents, $otherTransfers);
 
         $report['stripe'] = [
             'purchase_cents' => (int) $intents->sum(fn ($pi) => $pi['amount_received'] ?? $pi['amount']),
@@ -88,7 +101,7 @@ class StripeReconciliation
         $report['expected_balance_cents'] = $expected;
         if ($report['stripe']['balance_cents'] !== $expected) {
             $report['notes'][] = 'Stripe\'s platform balance ('.Money::format($report['stripe']['balance_cents']).') differs from Stripe-paid purchases minus transfers ('
-                .Money::format($expected).') by '.Money::format($report['stripe']['balance_cents'] - $expected).'. That is expected: Stripe keeps its card fees, and the balance also holds test activity from before the last Reset demo. Not counted as a mismatch.';
+                .Money::format($expected).') by '.Money::format($report['stripe']['balance_cents'] - $expected).'. That is expected: Stripe keeps its card fees, and the balance also holds test activity from before the last Reset demo and from other environments sharing this Stripe account. Not counted as a mismatch.';
         }
 
         $unsent = MerchantPayout::whereIn('status', MerchantPayout::UNPAID_STRIPE_STATUSES)->with('merchant')->get();
@@ -140,7 +153,7 @@ class StripeReconciliation
             $pending = CreditPurchase::where('payment_token', $pi['metadata']['lg_purchase_token'])->where('status', CreditPurchase::STATUS_PENDING)->first();
             $out[] = $pending
                 ? 'Stripe received '.Money::format($pi['amount_received'] ?? $pi['amount']).' for '.$pending->reference.' ('.$pi['id'].'), but Local Goods still shows it pending: the webhook has not arrived. Check the webhook endpoint in Stripe.'
-                : 'Stripe has a '.Money::format($pi['amount_received'] ?? $pi['amount']).' payment ('.$pi['id'].') that Local Goods has no ledger record of (for example a purchase paid twice). It may need a refund in Stripe.';
+                : 'Stripe has a '.Money::format($pi['amount_received'] ?? $pi['amount']).' payment ('.$pi['id'].') that Local Goods has no ledger record of (for example a purchase paid twice). Check before refunding it in Stripe.';
         }
 
         return $out;
@@ -169,6 +182,56 @@ class StripeReconciliation
         }
 
         return $out;
+    }
+
+    /** Made by this environment: tagged for it, or untagged (before tagging) but already known to this database. */
+    private function ourPayment(array $pi): bool
+    {
+        return match (StripeEnvironment::of($pi['metadata'] ?? null)) {
+            StripeEnvironment::SAME => true,
+            StripeEnvironment::OTHER => false,
+            default => CreditPurchase::where('stripe_payment_intent_id', $pi['id'])
+                ->orWhere('payment_token', $pi['metadata']['lg_purchase_token'])->exists(),
+        };
+    }
+
+    private function ourTransfer(array $tr): bool
+    {
+        return match (StripeEnvironment::of($tr['metadata'] ?? null)) {
+            StripeEnvironment::SAME => true,
+            StripeEnvironment::OTHER => false,
+            default => MerchantPayout::stripe()->where(fn ($q) => $q->where('stripe_transfer_id', $tr['id'])
+                ->orWhere('idempotency_key', $tr['metadata']['lg_payout_key']))->exists(),
+        };
+    }
+
+    /** The "From another environment, not counted" note: totals, then one line per object. */
+    private function otherEnvironments($intents, $transfers): array
+    {
+        $lines = [];
+
+        foreach ($intents as $pi) {
+            $amount = Money::format($pi['amount_received'] ?? $pi['amount']);
+            $lines[] = StripeEnvironment::of($pi['metadata'] ?? null) === StripeEnvironment::OTHER
+                ? 'A '.$amount.' payment ('.$pi['id'].') made by another environment ('.StripeEnvironment::label($pi['metadata']).').'
+                : 'A '.$amount.' payment ('.$pi['id'].') with no environment tag (made before tagging) and no record here. Most likely another environment\'s; if it was made from this one, check before refunding.';
+        }
+
+        foreach ($transfers as $tr) {
+            $amount = Money::format($tr['amount'] - ($tr['amount_reversed'] ?? 0));
+            $to = ' to '.($tr['destination'] ?? 'a connected account');
+            $lines[] = StripeEnvironment::of($tr['metadata'] ?? null) === StripeEnvironment::OTHER
+                ? 'A '.$amount.' transfer ('.$tr['id'].')'.$to.' made by another environment ('.StripeEnvironment::label($tr['metadata']).').'
+                : 'A '.$amount.' transfer ('.$tr['id'].')'.$to.' with no environment tag (made before tagging) and no record here.';
+        }
+
+        return [
+            'payments' => $intents->count(),
+            'payment_cents' => (int) $intents->sum(fn ($pi) => $pi['amount_received'] ?? $pi['amount']),
+            'transfers' => $transfers->count(),
+            'transfer_cents' => (int) $transfers->sum(fn ($tr) => $tr['amount'] - ($tr['amount_reversed'] ?? 0)),
+            'lines' => $lines,
+        ];
     }
 
     private static function usd(array $amounts): int

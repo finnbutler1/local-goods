@@ -7,6 +7,7 @@ use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\StripeEvent;
 use App\Services\CreditLedger;
+use App\Support\StripeEnvironment;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,11 @@ use InvalidArgumentException;
  * also guarded by state (only a pending purchase can be paid, only a sent
  * transfer reversed), so even a new event about old news writes nothing.
  * Transfers are sent after the transaction, never inside it.
+ *
+ * Events about an object tagged for another environment (local and
+ * production can share one Stripe sandbox) are answered and ignored before
+ * anything is written. Untagged objects (made before tagging) go through,
+ * since each handler only finds records by this database's own ids.
  */
 class StripeWebhookHandler
 {
@@ -35,6 +41,12 @@ class StripeWebhookHandler
     public function handle(array $event): string
     {
         $after = null;
+
+        if (StripeEnvironment::of($event['data']['object']['metadata'] ?? null) === StripeEnvironment::OTHER) {
+            Log::info('Stripe webhook ignored: other environment', ['event' => $event['id'], 'type' => $event['type']]);
+
+            return 'ignored: other environment';
+        }
 
         try {
             $outcome = DB::transaction(function () use ($event, &$after) {

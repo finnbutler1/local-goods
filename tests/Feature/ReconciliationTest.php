@@ -12,6 +12,7 @@ use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
 use App\Services\Payments\StripeOnboarding;
 use App\Services\RedemptionService;
+use App\Support\StripeEnvironment;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\UsesFakeStripe;
@@ -67,12 +68,65 @@ class ReconciliationTest extends TestCase
 
     public function test_a_payment_stripe_has_but_the_ledger_does_not_is_highlighted_in_plain_english(): void
     {
-        $this->stripe->paymentIntents[] = ['id' => 'pi_test_extra', 'status' => 'succeeded', 'amount' => 25000, 'amount_received' => 25000, 'currency' => 'usd', 'metadata' => ['lg_purchase_token' => 'unknown']];
+        $this->stripe->paymentIntents[] = ['id' => 'pi_test_extra', 'status' => 'succeeded', 'amount' => 25000, 'amount_received' => 25000, 'currency' => 'usd', 'metadata' => ['lg_purchase_token' => 'unknown'] + StripeEnvironment::tag()];
 
         $this->get('/admin/reconciliation')->assertOk()
             ->assertSee('data-reconciled="no"', false)
-            ->assertSee('Stripe has a $250.00 payment (pi_test_extra) that Local Goods has no ledger record of')
-            ->assertSee('Purchases: the ledger counts $500.00 paid through Stripe; Stripe received $750.00. Difference: $250.00.');
+            ->assertSee('Stripe has a $250.00 payment (pi_test_extra) that Local Goods has no ledger record of (for example a purchase paid twice). Check before refunding it in Stripe.')
+            ->assertSee('Purchases: the ledger counts $500.00 paid through Stripe; Stripe received $750.00. Difference: $250.00.')
+            ->assertDontSee('may need a refund');
+    }
+
+    public function test_same_environment_objects_are_counted(): void
+    {
+        $this->stripe->paymentIntents[0]['metadata'] += StripeEnvironment::tag();
+        $this->assertSame(StripeEnvironment::SAME, StripeEnvironment::of($this->stripe->transfers[0]['metadata']), 'Transfers we send are tagged');
+
+        $this->get('/admin/reconciliation')->assertOk()
+            ->assertSee('data-reconciled="yes"', false)
+            ->assertSee(StripeEnvironment::label())
+            ->assertDontSee('From another environment, not counted');
+    }
+
+    public function test_other_environment_objects_are_listed_but_never_counted(): void
+    {
+        $local = ['lg_env' => 'local', 'lg_instance' => 'abcd1234'];
+        $this->stripe->paymentIntents[] = ['id' => 'pi_test_local', 'status' => 'succeeded', 'amount' => 50000, 'amount_received' => 50000, 'currency' => 'usd', 'metadata' => ['lg_purchase_token' => 'tok-1'] + $local];
+        $this->stripe->transfers[] = ['id' => 'tr_test_local', 'amount' => 800, 'destination' => 'acct_test_local', 'metadata' => ['lg_payout_key' => 'lg-transfer-local'] + $local];
+
+        $this->get('/admin/reconciliation')->assertOk()
+            ->assertSee('data-reconciled="yes"', false)
+            ->assertSee('From another environment, not counted')
+            ->assertSee('1 payment ($500.00)')
+            ->assertSee('1 transfer ($8.00)')
+            ->assertSee('A $500.00 payment (pi_test_local) made by another environment (local · abcd1234).')
+            ->assertSee('A $8.00 transfer (tr_test_local) to acct_test_local made by another environment (local · abcd1234).')
+            ->assertDontSee('refund');
+    }
+
+    /** What production saw: a payment and a transfer from local testing, made before tagging. */
+    public function test_untagged_objects_unknown_here_are_information_not_mismatches(): void
+    {
+        $this->stripe->paymentIntents[] = ['id' => 'pi_test_legacy', 'status' => 'succeeded', 'amount' => 50000, 'amount_received' => 50000, 'currency' => 'usd', 'metadata' => ['lg_purchase_token' => 'someone-elses-token']];
+        $this->stripe->transfers[] = ['id' => 'tr_test_legacy', 'amount' => 800, 'destination' => 'acct_test_legacy', 'metadata' => ['lg_payout_key' => 'lg-transfer-someone-else']];
+
+        $this->get('/admin/reconciliation')->assertOk()
+            ->assertSee('data-reconciled="yes"', false)
+            ->assertSee('From another environment, not counted')
+            ->assertSee('A $500.00 payment (pi_test_legacy) with no environment tag (made before tagging) and no record here. Most likely another environment&#039;s; if it was made from this one, check before refunding.', false)
+            ->assertSee('A $8.00 transfer (tr_test_legacy) to acct_test_legacy with no environment tag')
+            ->assertDontSee('may need a refund');
+    }
+
+    public function test_untagged_objects_this_database_knows_are_still_counted(): void
+    {
+        // The setUp payment is untagged (made "before tagging") but its id is in the ledger.
+        $this->assertSame(StripeEnvironment::UNTAGGED, StripeEnvironment::of($this->stripe->paymentIntents[0]['metadata']));
+        unset($this->stripe->transfers[0]['metadata']['lg_env'], $this->stripe->transfers[0]['metadata']['lg_instance']);
+
+        $this->get('/admin/reconciliation')->assertOk()
+            ->assertSee('data-reconciled="yes"', false)
+            ->assertDontSee('From another environment, not counted');
     }
 
     public function test_a_missed_webhook_is_explained(): void

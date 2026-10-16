@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Merchant;
+use App\Support\StripeEnvironment;
 use Illuminate\Support\Str;
 
 /**
@@ -34,7 +35,7 @@ class StripeOnboarding
                 'identity' => ['country' => 'US'],
                 'defaults' => ['responsibilities' => ['fees_collector' => 'application', 'losses_collector' => 'application']],
                 'configuration' => ['recipient' => ['capabilities' => ['stripe_balance' => ['stripe_transfers' => ['requested' => true]]]]],
-                'metadata' => ['lg_merchant' => $merchant->name],
+                'metadata' => ['lg_merchant' => $merchant->name, 'lg_merchant_id' => (string) $merchant->id] + StripeEnvironment::tag(),
             ], 'lg-account-v2-'.$merchant->stripe_onboarding_key);
 
             $this->apply($merchant, $account);

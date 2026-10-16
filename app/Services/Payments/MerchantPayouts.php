@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Services\CreditLedger;
+use App\Support\StripeEnvironment;
 use App\Support\StripeMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -105,7 +106,7 @@ class MerchantPayouts
                 'transfer_group' => $row->transfer_group,
                 'source_transaction' => $row->source_charge_id,
                 'description' => 'Local Goods: cleared redemption #'.$row->redemption_id.' (test mode)',
-                'metadata' => ['lg_payout_key' => $key, 'lg_redemption_id' => (string) $row->redemption_id],
+                'metadata' => ['lg_payout_key' => $key, 'lg_redemption_id' => (string) $row->redemption_id] + StripeEnvironment::tag(),
             ], fn ($v) => $v !== null), $key);
         } catch (StripeGatewayException $e) {
             $row->refresh()->update([
