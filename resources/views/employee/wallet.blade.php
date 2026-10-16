@@ -31,7 +31,8 @@
         </div>
         <p class="tabular mt-3 font-display text-6xl font-semibold tracking-tight text-amber" data-testid="balance">{{ Money::format($balance) }}</p>
         <p class="mt-4 text-sm text-sage">{{ Money::format($employee->employer->monthly_allowance_cents) }} added each month by {{ $employee->employer->name }}</p>
-        <p class="mt-1 text-sm text-sage">Demo employee: <span class="font-semibold text-cream">{{ $employee->display_name }}</span></p>
+        {{-- The full name only on the employee's own wallet; a judge viewing it sees initials (ADR 0014). --}}
+        <p class="mt-1 text-sm text-sage">Demo employee: <span class="font-semibold text-cream">{{ auth()->user()->isReadOnly() ? $employee->initials() : $employee->display_name }}</span></p>
     </section>
 
     <x-card as="section" id="redeem" aria-labelledby="redeem-heading" class="scroll-mt-24">
