@@ -194,4 +194,31 @@ class EmployeeWalletTest extends TestCase
             $this->get('/employee?history=1')->assertDontSee('Show all');
         }
     }
+
+    public function test_the_wallet_card_says_demo_account_without_the_name(): void
+    {
+        $this->get('/employee')->assertSee('Demo account')->assertDontSee('Jordan Rivera (demo)')->assertDontSee('Demo employee:');
+    }
+
+    public function test_an_approved_screen_is_live_and_says_the_merchant_sees_it(): void
+    {
+        $this->fakeClaude(FakeClaudeClient::verdict(6, 'clear'));
+
+        $this->followingRedirects()
+            ->post('/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50'])
+            ->assertSee('data-live-clock', false)
+            ->assertSee('role="timer"', false)
+            ->assertSee('motion-safe:animate-ping', false)
+            ->assertSee('Farragut Grind also sees this redemption on their Local Goods dashboard.');
+    }
+
+    public function test_an_under_review_screen_has_no_live_clock(): void
+    {
+        $this->fakeClaude(FakeClaudeClient::verdict(92, 'hold'));
+
+        $this->followingRedirects()
+            ->post('/employee/redeem', ['merchant_id' => $this->merchant('Press Room Deli')->id, 'amount' => '120'])
+            ->assertSee('Under review')
+            ->assertDontSee('data-live-clock', false);
+    }
 }

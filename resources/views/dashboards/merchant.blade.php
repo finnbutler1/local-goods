@@ -32,7 +32,7 @@
             </dd>
         </div>
         <x-card>
-            <dt class="text-sm font-semibold text-muted">Local Goods sales this month</dt>
+            <dt class="text-sm font-semibold text-muted">Cleared sales this month</dt>
             <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ Money::format($monthCents) }}</dd>
             <dd class="mt-1 text-sm text-muted">{{ $monthVisits }} cleared {{ Str::plural('visit', $monthVisits) }} · {{ Money::format($paidOutCents) }} paid out in all</dd>
         </x-card>

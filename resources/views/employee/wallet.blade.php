@@ -15,14 +15,29 @@
                 'border-ok bg-ok-bg text-ok' => $approved,
                 'border-hold bg-hold-bg text-hold' => ! $approved,
             ])>
-                <span @class(['mx-auto grid size-16 place-items-center rounded-full text-cream', 'bg-ok' => $approved, 'bg-hold' => ! $approved]) aria-hidden="true">
+                {{-- A live clock and a gentle pulse show the merchant this is the live app, not a screenshot. --}}
+                <span class="relative mx-auto grid size-16 place-items-center">
                     @if ($approved)
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-9"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
-                    @else
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-9"><circle cx="12" cy="12" r="8.25"/><path d="M12 7.5V12l3 2"/></svg>
+                        <span class="absolute inset-0 rounded-full bg-ok opacity-30 motion-safe:animate-ping" aria-hidden="true"></span>
                     @endif
+                    <span @class(['relative grid size-16 place-items-center rounded-full text-cream', 'bg-ok' => $approved, 'bg-hold' => ! $approved]) aria-hidden="true">
+                        @if ($approved)
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-9"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                        @else
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-9"><circle cx="12" cy="12" r="8.25"/><path d="M12 7.5V12l3 2"/></svg>
+                        @endif
+                    </span>
                 </span>
                 <h2 id="confirmation-heading" class="mt-3 font-display text-4xl font-semibold">{{ $approved ? 'Approved' : 'Under review' }}</h2>
+                @if ($approved)
+                    <p class="mt-2 inline-flex items-center gap-2 rounded-full bg-paper px-3 py-1 text-sm font-semibold text-ink">
+                        <span class="relative flex size-2.5" aria-hidden="true">
+                            <span class="absolute inline-flex size-full rounded-full bg-ok opacity-60 motion-safe:animate-ping"></span>
+                            <span class="relative inline-flex size-2.5 rounded-full bg-ok"></span>
+                        </span>
+                        Live · <span class="tabular" role="timer" aria-live="off" aria-label="Current time" data-live-clock>{{ now()->setTimezone('America/New_York')->format('g:i:s A') }}</span>
+                    </p>
+                @endif
                 <p class="tabular mt-2 font-display text-5xl font-semibold text-ink">{{ Money::format($result->amount_cents) }}</p>
                 <p class="mt-1 text-lg font-semibold text-ink">{{ $result->merchant->name }}</p>
                 <dl class="mx-auto mt-4 grid max-w-xs grid-cols-2 gap-2 text-left text-sm text-ink">
@@ -31,7 +46,8 @@
                 </dl>
                 <p class="mx-auto mt-4 max-w-sm">
                     @if ($approved)
-                        Show this screen at the counter. You're all set.
+                        Show this screen at the counter. The clock is live, so it can't be a saved screenshot.
+                        {{ $result->merchant->name }} also sees this redemption on their Local Goods dashboard.
                     @else
                         Redemption Fraud Detection asked for a quick check by a person at the BID before the merchant is paid.
                         Your credits are reserved meanwhile, and come back to you if it isn't approved.
@@ -50,8 +66,7 @@
         </div>
         <p class="tabular mt-3 font-display text-6xl font-semibold tracking-tight text-amber" data-testid="balance">{{ Money::format($balance) }}</p>
         <p class="mt-4 text-sm text-sage">{{ Money::format($employee->employer->monthly_allowance_cents) }} added each month by {{ $employee->employer->name }}</p>
-        {{-- The full name only on the employee's own wallet; a judge viewing it sees initials (ADR 0014). --}}
-        <p class="mt-1 text-sm text-sage">Demo employee: <span class="font-semibold text-cream">{{ auth()->user()->isReadOnly() ? $employee->initials() : $employee->display_name }}</span></p>
+        <p class="mt-1 text-sm text-sage">Demo account</p>
     </section>
 
     <x-card as="section" id="redeem" aria-labelledby="redeem-heading" class="scroll-mt-24">

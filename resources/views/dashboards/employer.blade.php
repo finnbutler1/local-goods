@@ -363,15 +363,15 @@
                         @else
                             <li>
                                 <details class="group">
-                                    <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-5 py-3 hover:bg-cream-deep/50 sm:px-6 [&::-webkit-details-marker]:hidden">
-                                        <span>
+                                    <summary class="flex cursor-pointer list-none items-start justify-between gap-3 px-5 py-3 hover:bg-cream-deep/50 sm:px-6 [&::-webkit-details-marker]:hidden">
+                                        <span class="min-w-0">
                                             <span class="flex items-center gap-1.5 font-semibold">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-forest transition-transform group-open:rotate-90" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
                                                 {{ $group['occasion']->shortLabel() }} · {{ $count }} employees
                                             </span>
                                             <span class="block pl-5.5 text-sm text-muted">{{ Money::format($group['amount_cents']) }} each · {{ $date }}</span>
                                         </span>
-                                        <span class="tabular font-semibold">{{ Money::format($group['amount_cents'] * $count) }}</span>
+                                        <span class="tabular shrink-0 font-semibold">{{ Money::format($group['amount_cents'] * $count) }}</span>
                                     </summary>
                                     <ul class="grid grid-cols-2 gap-x-4 gap-y-1 bg-cream-deep/40 px-5 py-3 text-sm sm:grid-cols-3 sm:px-6" aria-label="{{ $count }} employees in this allocation">
                                         @foreach ($group['allocations'] as $allocation)
