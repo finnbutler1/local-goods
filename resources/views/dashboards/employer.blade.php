@@ -251,6 +251,11 @@
 
             <x-card as="section" aria-labelledby="purchases-heading" padding="p-0">
                 <h3 id="purchases-heading" class="px-5 pt-5 text-xl font-semibold sm:px-6 sm:pt-6">Purchases</h3>
+                @if (session('credits_error'))
+                    <p role="alert" class="mx-5 mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold sm:mx-6">
+                        <span aria-hidden="true">⚑</span> Payment didn't start: {{ session('credits_error') }} Nothing was charged; the purchase is still pending.
+                    </p>
+                @endif
                 @if ($purchases->isEmpty())
                     <p class="px-5 pt-2 pb-5 text-muted sm:px-6">No purchases yet. Request one to fund your team's credits.</p>
                 @else
