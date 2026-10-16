@@ -28,3 +28,5 @@ Thumbs.db
 *.key
 /deploy.zip
 /storage/*.sqlite*
+/.last-deploy-commit
+/.deploy-zip-commit

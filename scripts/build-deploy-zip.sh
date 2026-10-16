@@ -60,6 +60,8 @@ zip -r -q deploy.zip . \
     -x "vendor/*" \
     -x "tests/*" \
     -x "deploy.zip" \
+    -x ".last-deploy-commit" \
+    -x ".deploy-zip-commit" \
     -x "public/hot" \
     -x "database/*.sqlite*" \
     -x "storage/*.sqlite*" \
@@ -104,3 +106,29 @@ grep '^public/build/.' <<< "$contents" | grep -v '/$' | sort | sed 's/^/  /'
 echo ""
 echo "Done: $(du -h deploy.zip | cut -f1) deploy.zip"
 echo "Upload it in the Elastic Beanstalk console (Upload and deploy)."
+
+# Reminder only, never blocks the build: does this deploy include database
+# migrations since the last deployed commit? If so, take an RDS snapshot first.
+git rev-parse HEAD > .deploy-zip-commit 2>/dev/null || true
+set +e
+migrations="$(scripts/deploy-migrations.sh)"
+migration_check=$?
+set -e
+
+if [ -t 1 ]; then bold=$'\033[1;30;43m'; reset=$'\033[0m'; else bold=''; reset=''; fi
+echo ""
+if [ "$migration_check" -eq 3 ]; then
+    echo "${bold} No deployed commit is recorded, so this can't tell whether there are new migrations. ${reset}"
+    echo "${bold} To be safe, take an RDS snapshot before uploading.                                     ${reset}"
+    echo "After a successful deploy, run: scripts/mark-deployed.sh"
+elif [ -n "$migrations" ]; then
+    echo "${bold}=====================================================================${reset}"
+    echo "${bold} This deploy includes database migrations:                           ${reset}"
+    while IFS= read -r file; do echo "${bold}   ${file}${reset}"; done <<< "$migrations"
+    echo "${bold} Take an RDS snapshot before uploading.                              ${reset}"
+    echo "${bold}=====================================================================${reset}"
+    echo "After a successful deploy, run: scripts/mark-deployed.sh"
+else
+    echo "No migrations in this deploy."
+    echo "After a successful deploy, run: scripts/mark-deployed.sh"
+fi

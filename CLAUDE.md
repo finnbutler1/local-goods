@@ -247,6 +247,30 @@ Use these exact names in code, UI, and docs.
   console's Logs → Request logs downloads (`.ebextensions/laravel-logs.config`).
 - Live URL is in `README.md`.
 
+## Deploy checklist
+
+Follow these in order for every deploy. **Whenever you build a deploy zip
+for Finn, repeat this checklist in your final message**, and call out the
+snapshot step by name when the build says the deploy includes migrations.
+
+1. Stop `composer dev` (Control+C) before building the zip
+   (`scripts/build-deploy-zip.sh`).
+2. Confirm CI is green on `main` for the commit being deployed (both the
+   SQLite and the MySQL job).
+3. If this deploy includes any new migration: take a manual RDS snapshot
+   first (RDS → local-goods-db → Actions → Take snapshot, named
+   `before-<short-feature-name>`) and wait until it shows Available. The
+   build ends by listing the migrations since the last deployed commit, or
+   saying "No migrations in this deploy." (`scripts/deploy-migrations.sh`;
+   a reminder only, it never blocks the build).
+4. Upload `deploy.zip` in Elastic Beanstalk with the next version label and
+   wait for green. Then run `scripts/mark-deployed.sh` to record the commit
+   the zip was built from in `.last-deploy-commit` (git-ignored).
+5. After deploy: open the CloudFront site, log in as each demo role, check
+   `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
+   as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
+6. Never click New link on the live public judge, Yoest or Danny rows.
+
 ## Contest
 
 CUA Busch School AI Vibe Coding Contest, judged the **week of Nov 23, 2026**.
