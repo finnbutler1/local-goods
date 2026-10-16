@@ -7,7 +7,9 @@ use App\Models\MerchantPayout;
 use App\Services\CreditLedger;
 use App\Support\StripeMode;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Sends Stripe transfers for a merchant's Stripe-channel payout rows (made
@@ -24,6 +26,19 @@ use Illuminate\Support\Str;
 class MerchantPayouts
 {
     public function __construct(private StripeGateway $stripe, private CreditLedger $ledger, private TransferGate $gate) {}
+
+    /**
+     * send(), but never throws: for callers that just cleared a redemption.
+     * Anything unexpected is logged (no keys, no names) and left owed.
+     */
+    public function sendSafely(Merchant $merchant): void
+    {
+        try {
+            $this->send($merchant);
+        } catch (Throwable $e) {
+            Log::error('Stripe transfer step failed; amounts stay owed', ['merchant' => $merchant->id, 'type' => class_basename($e)]);
+        }
+    }
 
     /** @return array{sent: int, failed: int, waiting: int} */
     public function send(Merchant $merchant): array

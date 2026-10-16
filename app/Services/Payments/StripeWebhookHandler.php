@@ -148,7 +148,7 @@ class StripeWebhookHandler
         $justOnboarded = $this->onboarding->apply($merchant, $account);
 
         if ($merchant->isStripeOnboarded()) {
-            $after = fn () => $this->payouts->send($merchant);
+            $after = fn () => $this->payouts->sendSafely($merchant);
         }
 
         return $justOnboarded ? 'onboarded: '.$merchant->name : 'account synced: '.$merchant->name;

@@ -8,6 +8,8 @@ use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Services\Fraud\RedemptionFraudDetector;
 use App\Services\Fraud\SignalCalculator;
+use App\Services\Payments\MerchantPayouts;
+use App\Services\Payments\StripeFunding;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -17,13 +19,17 @@ class RedemptionService
         private SignalCalculator $signals,
         private RedemptionFraudDetector $detector,
         private CreditLedger $ledger,
+        private StripeFunding $funding,
+        private MerchantPayouts $payouts,
     ) {}
 
     /**
      * Score a redemption with Redemption Fraud Detection, then record it and
      * debit the ledger. Held redemptions still debit, so the credits stay
      * reserved while a person reviews them. Only a cleared redemption
-     * credits the merchant; a held one earns it nothing until approved.
+     * credits the merchant; a held one earns it nothing until approved. A
+     * cleared one funded by Stripe-paid credits is then transferred to the
+     * merchant through Stripe (test mode), after the transaction commits.
      */
     public function redeem(Employee $employee, Merchant $merchant, int $amountCents): Redemption
     {
@@ -34,7 +40,7 @@ class RedemptionService
         // The AI call happens outside the transaction so the database is never locked while we wait.
         $verdict = $this->detector->score($signals);
 
-        return DB::transaction(function () use ($employee, $merchant, $amountCents, $signals, $verdict) {
+        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $signals, $verdict) {
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.
@@ -66,10 +72,19 @@ class RedemptionService
 
             if ($redemption->status === Redemption::STATUS_APPROVED) {
                 $this->ledger->creditMerchant($redemption);
+                // Stripe-funded? Then it's owed through Stripe (ADR 0015); otherwise it stays simulated.
+                $this->funding->claim($redemption);
             }
 
             return $redemption;
         });
+
+        // Outside the transaction: a Stripe problem never undoes or blocks the redemption.
+        if ($redemption->status === Redemption::STATUS_APPROVED) {
+            $this->payouts->sendSafely($merchant);
+        }
+
+        return $redemption;
     }
 
     private function ensureAffordable(Employee $employee, int $amountCents): void
