@@ -5,12 +5,15 @@ namespace Tests\Feature;
 use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Http\Middleware\BlockJudgeWrites;
+use App\Models\CreditPurchase;
+use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Policies\RedemptionPolicy;
 use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Ai\ClaudeClient;
+use App\Services\CreditLedger;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RoutingRoute;
@@ -57,6 +60,9 @@ class JudgeReadOnlyTest extends TestCase
 
         // A draft adjudication set, so its edit routes have a case to change.
         app(AdjudicationSetBuilder::class)->newDraft();
+
+        // A pending credit purchase, so "Pay now" has something it could pay.
+        app(CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 10000, 'MPG-TEST-1');
 
         $this->judge = $this->signIn(Role::Judge);
     }
@@ -130,6 +136,7 @@ class JudgeReadOnlyTest extends TestCase
     {
         $ids = [
             'redemption' => Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->value('id'),
+            'purchase' => CreditPurchase::where('status', CreditPurchase::STATUS_PENDING)->value('id'),
             'user' => $this->judge->id,
             'candidate' => 'MC-001',
         ];

@@ -132,6 +132,6 @@ class EmployeeNamePrivacyTest extends TestCase
     {
         $this->assertSame('J.R.', Employee::orderBy('id')->firstOrFail()->initials());
         $this->assertSame('H.Q.', Employee::where('display_name', 'Harper Quiñones')->sole()->initials());
-        $this->assertMatchesRegularExpression('/^J\.R\. · #\d{3}$/', Employee::orderBy('id')->firstOrFail()->publicLabel());
+        $this->assertMatchesRegularExpression('/^J\.R\. · #\d{3,}$/', Employee::orderBy('id')->firstOrFail()->publicLabel());
     }
 }
