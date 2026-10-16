@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AdjudicationController;
 use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\FeedbackInboxController;
+use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
@@ -120,6 +121,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/{user}/link', [ReviewerController::class, 'link'])->name('link');
             Route::post('/{user}/revoke', [ReviewerController::class, 'revoke'])->name('revoke');
         });
+
+        // Ledger next to Stripe, Stripe-funded activity only (ADR 0015).
+        Route::get('/admin/reconciliation', [ReconciliationController::class, 'index'])->name('admin.reconciliation');
+        Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1')->name('admin.reconciliation.retry');
 
         Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
         Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');
