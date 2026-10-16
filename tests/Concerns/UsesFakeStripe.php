@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use App\Services\Payments\NoticeSafeStripeGateway;
 use App\Services\Payments\StripeGateway;
 use Illuminate\Testing\TestResponse;
 use Tests\Fakes\FakeStripeGateway;
@@ -26,7 +27,8 @@ trait UsesFakeStripe
         ]);
 
         $this->stripe = new FakeStripeGateway;
-        $this->app->instance(StripeGateway::class, $this->stripe);
+        // Wrapped like the real one (AppServiceProvider), so notices are tested too.
+        $this->app->instance(StripeGateway::class, new NoticeSafeStripeGateway($this->stripe));
 
         return $this->stripe;
     }

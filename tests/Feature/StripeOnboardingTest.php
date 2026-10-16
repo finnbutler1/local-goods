@@ -138,4 +138,57 @@ class StripeOnboardingTest extends TestCase
         $this->post('/merchant/stripe/onboard')->assertForbidden();
         $this->assertSame([], $this->stripe->calls);
     }
+
+    /**
+     * The localhost 500 of 2026-10-16: stripe-php raises Stripe's
+     * "consider Accounts v2" notice as a PHP warning, which Laravel turned
+     * into an ErrorException. A notice must never crash onboarding.
+     */
+    public function test_a_stripe_notice_during_account_creation_does_not_stop_onboarding(): void
+    {
+        $this->stripe->accountNotice = 'We recommend building your integration using Accounts v2. '
+            ."\nTo suppress Stripe notices in test and sandbox environments, set the STRIPE_SUPPRESS_NOTICES environment variable to true.";
+
+        $this->post('/merchant/stripe/onboard')->assertRedirect('https://connect.stripe.test/setup/acct_test_0001');
+
+        $this->assertSame('acct_test_0001', $this->merchant->fresh()->stripe_account_id);
+    }
+
+    public function test_any_onboarding_failure_shows_a_friendly_message_not_a_500_and_logs_no_keys(): void
+    {
+        config(['services.stripe.secret' => 'sk_test_SECRETVALUE']);
+        $this->app->instance(\App\Services\Payments\StripeGateway::class, new class extends \Tests\Fakes\FakeStripeGateway
+        {
+            public function createExpressAccount(array $params, string $idempotencyKey): array
+            {
+                throw new \RuntimeException('boom with sk_test_SECRETVALUE inside');
+            }
+        });
+        $logged = [];
+        \Illuminate\Support\Facades\Log::listen(function ($message) use (&$logged) {
+            $logged[] = json_encode([$message->message, $message->context]);
+        });
+
+        $this->post('/merchant/stripe/onboard')->assertRedirect(route('merchant.dashboard').'#stripe');
+
+        $this->get('/merchant')->assertOk()->assertSee('Something went wrong talking to Stripe. Nothing was lost: press the button again in a moment.');
+        $this->assertNotEmpty($logged);
+        $this->assertStringContainsString('RuntimeException', implode(' ', $logged));
+        $this->assertStringNotContainsString('SECRETVALUE', implode(' ', $logged));
+        $this->assertNull($this->merchant->fresh()->stripe_account_id);
+    }
+
+    public function test_a_stripe_refusal_shows_its_reason_on_the_merchant_dashboard(): void
+    {
+        $this->app->instance(\App\Services\Payments\StripeGateway::class, new class extends \Tests\Fakes\FakeStripeGateway
+        {
+            public function createExpressAccount(array $params, string $idempotencyKey): array
+            {
+                throw new \App\Services\Payments\StripeGatewayException('Stripe refused the request (InvalidRequestException, field capabilities).');
+            }
+        });
+
+        $this->post('/merchant/stripe/onboard')->assertRedirect(route('merchant.dashboard').'#stripe');
+        $this->get('/merchant')->assertOk()->assertSee('Stripe refused the request (InvalidRequestException, field capabilities).');
+    }
 }

@@ -29,6 +29,10 @@ charges and transfers. Next milestone: Prompt 8 (fraud gate on transfers).
 - Onboarding: Express, demo merchants only; GET return/refresh pages never
   create anything; Reset demo keeps `stripe_account_id`.
 - Reconciliation: `/admin/reconciliation`, Stripe-funded activity only.
+- Every Stripe call is wrapped in `NoticeSafeStripeGateway`: stripe-php
+  raises Stripe-Notice headers as PHP warnings (a 500 otherwise), and it
+  ignores `STRIPE_SUPPRESS_NOTICES` when an AI agent env var (CLAUDECODE) is
+  set. Don't bind the SDK gateway unwrapped.
 
 **Money loop screens — built (ADR 0014).** Employer/HR dashboard
 (`/employer`, `Employer\EmployerDashboardController`), extended wallet,

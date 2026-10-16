@@ -11,7 +11,9 @@ use App\Support\Money;
 use App\Support\StripeMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * A merchant connects their business to Stripe (Express, test mode) so
@@ -34,13 +36,13 @@ class StripeOnboardingController extends Controller
         $merchant = $this->ownMerchant($request);
 
         if ($merchant->isStripeOnboarded()) {
-            return redirect()->to(route('merchant.dashboard').'#stripe')->with('status', 'Stripe onboarding is already complete.');
+            return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_status', 'Stripe onboarding is already complete.');
         }
 
         try {
             return redirect()->away($onboarding->link($merchant));
-        } catch (StripeGatewayException $e) {
-            return redirect()->to(route('merchant.dashboard').'#stripe')->with('error', $e->getMessage());
+        } catch (Throwable $e) {
+            return $this->failed('start', $e);
         }
     }
 
@@ -68,22 +70,37 @@ class StripeOnboardingController extends Controller
         return $this->check($this->ownMerchant($request), $onboarding, $payouts);
     }
 
+    /**
+     * Any onboarding failure, expected or not, becomes a friendly message on
+     * the merchant dashboard, never a 500. Logged by type only: no keys.
+     */
+    private function failed(string $step, Throwable $e): RedirectResponse
+    {
+        if (! $e instanceof StripeGatewayException) {
+            Log::error('Stripe onboarding failed', ['step' => $step, 'type' => class_basename($e)]);
+        }
+
+        return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_error',
+            ($e instanceof StripeGatewayException ? $e->getMessage().' ' : 'Something went wrong talking to Stripe. ')
+            .'Nothing was lost: press the button again in a moment. If it keeps happening, tell the BID team.');
+    }
+
     private function check(Merchant $merchant, StripeOnboarding $onboarding, MerchantPayouts $payouts): RedirectResponse
     {
         try {
             $onboarding->refresh($merchant);
-        } catch (StripeGatewayException $e) {
-            return redirect()->to(route('merchant.dashboard').'#stripe')->with('error', $e->getMessage());
+        } catch (Throwable $e) {
+            return $this->failed('check', $e);
         }
 
         if (! $merchant->isStripeOnboarded()) {
-            return redirect()->to(route('merchant.dashboard').'#stripe')->with('status', $merchant->stripeOnboardingLabel().'. Money owed through Stripe waits until it is complete.');
+            return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_status', $merchant->stripeOnboardingLabel().'. Money owed through Stripe waits until it is complete.');
         }
 
         $owed = $merchant->owedViaStripeCents();
         $result = $payouts->send($merchant);
 
-        return redirect()->to(route('merchant.dashboard').'#stripe')->with('status', 'Stripe onboarding complete.'
+        return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_status', 'Stripe onboarding complete.'
             .($result['sent'] > 0 ? ' '.$result['sent'].' Stripe test-mode '.str('transfer')->plural($result['sent']).' sent ('.Money::format($owed - $merchant->owedViaStripeCents()).').' : '')
             .($result['failed'] > 0 ? ' '.$result['failed'].' could not be sent yet and stay owed.' : ''));
     }

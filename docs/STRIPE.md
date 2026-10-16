@@ -86,6 +86,22 @@ redemptions never transfer.
   Transfers are sent after the database transaction commits, never inside
   it, and failures are written down rather than thrown.
 
+### Stripe notices never crash a request
+
+stripe-php 22 turns Stripe's informational `Stripe-Notice` response header
+(for example "We recommend building your integration using Accounts v2")
+into a PHP warning, which Laravel would turn into a 500, after Stripe has
+already done the work. Every Stripe call goes through
+`NoticeSafeStripeGateway`, which logs such notices (redacted) and carries
+on; genuine PHP errors still reach Laravel. `STRIPE_SUPPRESS_NOTICES=true`
+(the default) is Stripe's own switch, but the library ignores it when it
+detects an AI coding agent in the environment, so the code guard is what
+actually protects the request.
+
+**Accounts v2** is Stripe's newer API for connected accounts. Its notice is
+a recommendation, not a rejection: v1 Express accounts still work in test
+mode, so the demo keeps them.
+
 ## Webhooks
 
 `POST /stripe/webhook` (`App\Http\Controllers\Stripe\StripeWebhookController`):
@@ -144,6 +160,7 @@ reference and amount; transfers carry the redemption number and amount.
 | `STRIPE_SECRET` | Secret key, `sk_test_…` (or a restricted `rk_test_…`) | local `.env`, Beanstalk |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret of the endpoint for your account's events, `whsec_…` | local `.env` (from `stripe listen`), Beanstalk (from the dashboard endpoint) |
 | `STRIPE_CONNECT_WEBHOOK_SECRET` | Optional: signing secret of the endpoint for connected accounts' events | Beanstalk only |
+| `STRIPE_SUPPRESS_NOTICES` | Optional, default `true`: hide Stripe's informational notices (logged instead) | not needed anywhere; the code guard works without it |
 
 Leave all of them blank for simulated mode.
 
