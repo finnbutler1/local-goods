@@ -166,7 +166,7 @@ reference and amount; transfers carry the redemption number and amount.
 | `STRIPE_KEY` | Publishable key, `pk_test_…` | local `.env`, Beanstalk environment properties |
 | `STRIPE_SECRET` | Secret key, `sk_test_…` (or a restricted `rk_test_…`) | local `.env`, Beanstalk |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret of the endpoint for your account's events, `whsec_…` | local `.env` (from `stripe listen`), Beanstalk (from the dashboard endpoint) |
-| `STRIPE_CONNECT_WEBHOOK_SECRET` | Optional: signing secret of the endpoint for connected accounts' events | Beanstalk only |
+| `STRIPE_CONNECT_WEBHOOK_SECRET` | Signing secret of the destination for connected accounts' events (`account.updated`); recommended in production | Beanstalk only (locally `stripe listen` uses one secret for both) |
 | `STRIPE_SUPPRESS_NOTICES` | Optional, default `true`: hide Stripe's informational notices (logged instead) | not needed anywhere; the code guard works without it |
 
 Leave all of them blank for simulated mode.
@@ -187,25 +187,67 @@ Leave all of them blank for simulated mode.
 
 ### Production webhook (Stripe dashboard, test mode)
 
-Make sure the dashboard is in **Test mode**, then in Developers → Webhooks
-(Workbench → Webhooks → Add destination):
+**Two event destinations, both "snapshot" events, same URL:**
+`https://d4ghrpm72uczx.cloudfront.net/stripe/webhook`. Create them in the
+same test-mode environment (or sandbox) your `sk_test_…` key comes from.
+In Stripe: Developers → Webhooks (in Workbench: Event destinations) → Add
+destination.
 
-1. **Your account's events.** Endpoint URL
-   `https://<the CloudFront address in README>/stripe/webhook`. Events:
-   `payment_intent.succeeded`, `payment_intent.payment_failed`,
-   `checkout.session.expired`, `transfer.created`, `transfer.reversed`.
-   Copy its signing secret into Beanstalk as `STRIPE_WEBHOOK_SECRET`.
-2. **Connected accounts' events (optional).** Same URL, events from
-   connected accounts: `account.updated`. Copy its signing secret into
-   Beanstalk as `STRIPE_CONNECT_WEBHOOK_SECRET`. Accounts v2 reports changes
-   mainly through its own v2 events, which Local Goods doesn't listen to yet,
-   so `account.updated` may not arrive for these accounts. Onboarding status
-   always updates when the merchant comes back from Stripe or presses
-   **Check Stripe status**.
-3. In CloudFront, check the behavior that serves the site forwards all
-   viewer headers except Host (origin request policy
-   `AllViewerExceptHostHeader`) and allows POST. Then use "Send test event"
-   in Stripe: the event should show a 200 response.
+1. **Events from: Your account.** Payload style **Snapshot**. Destination
+   type **Webhook endpoint**, the URL above. Events, exactly these five:
+   - `payment_intent.succeeded` (a purchase is paid: the only thing that
+     writes its ledger entry)
+   - `payment_intent.payment_failed` (shows the decline reason; stays pending)
+   - `checkout.session.expired` (lets HR start a fresh Checkout)
+   - `transfer.created` (records a transfer whose reply was lost)
+   - `transfer.reversed` (marks a transfer reversed and owed again)
+
+   Copy this destination's signing secret into Beanstalk as
+   `STRIPE_WEBHOOK_SECRET`.
+2. **Events from: Connected accounts.** Payload style **Snapshot**,
+   Webhook endpoint, the same URL. One event: `account.updated` (a
+   merchant finished or changed onboarding; when they become able to
+   receive transfers, what's owed through Stripe is sent). Copy its signing
+   secret into Beanstalk as `STRIPE_CONNECT_WEBHOOK_SECRET`. Stripe gives
+   each destination its own secret; the app tries both.
+
+**Accounts v2 does not need thin events or a third destination.** Stripe
+still sends the classic `account.updated` snapshot for our Accounts v2
+merchants: the local trial on 2026-10-16 received six, including the one
+that marked Farragut Grind onboarded. Do **not** add a "Thin" (v2)
+destination pointing at this URL: the app accepts only snapshot events,
+answers a thin one with 400, and Stripe would keep retrying it until it
+disabled the destination. Even if `account.updated` were missed, status
+still updates when the merchant comes back from Stripe or presses
+**Check Stripe status**.
+
+3. **CloudFront.** The behavior that serves the site must allow POST
+   (it already does: logins work) and forward the `Stripe-Signature`
+   header, for example with origin request policy
+   `AllViewerExceptHostHeader`. CloudFront passes the body unchanged.
+4. **Test it.** On each destination use "Send test event" (pick one of its
+   events). Expect a 200 response with `"received": true`. A test event
+   for something Local Goods doesn't know answers 200 with an
+   "ignored: …" outcome and changes nothing. A 400 "Invalid signature" means
+   the secret in Beanstalk doesn't match that destination; a 400 "Stripe is
+   not configured" means the keys aren't set on Beanstalk.
 
 Connect must be enabled on the Stripe account (Connect → Get started, as a
 platform, Express accounts).
+
+### Beanstalk environment properties
+
+Configuration → Updates, monitoring and logging → Environment properties.
+Names only; never commit or share the values:
+
+| Name | Needed | Value comes from |
+|---|---|---|
+| `STRIPE_KEY` | yes | Developers → API keys, publishable key (`pk_test_…`) |
+| `STRIPE_SECRET` | yes | Developers → API keys, secret key (`sk_test_…`) |
+| `STRIPE_WEBHOOK_SECRET` | yes | destination 1 ("Your account") signing secret |
+| `STRIPE_CONNECT_WEBHOOK_SECRET` | yes, for `account.updated` | destination 2 ("Connected accounts") signing secret |
+| `STRIPE_SUPPRESS_NOTICES` | no | leave unset; the code already handles Stripe's notices |
+
+Without the first three, production stays in simulated mode and says so.
+Saving environment properties restarts the app; the config hook re-runs
+migrations safely and never caches config.
