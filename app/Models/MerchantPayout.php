@@ -32,11 +32,17 @@ class MerchantPayout extends Model
 
     public const STATUS_SIMULATED = 'simulated';
 
+    /** Stripe channel: sent, then reversed in Stripe. Owed again; a person decides, never retried automatically. */
+    public const STATUS_REVERSED = 'reversed';
+
     /** Rows that are in the ledger as a payout entry. */
     public const PAID_STATUSES = [self::STATUS_SENT, self::STATUS_SIMULATED];
 
     /** Stripe-channel rows not yet paid. */
-    public const UNPAID_STRIPE_STATUSES = [self::STATUS_OWED, self::STATUS_PENDING, self::STATUS_FAILED];
+    public const UNPAID_STRIPE_STATUSES = [self::STATUS_OWED, self::STATUS_PENDING, self::STATUS_FAILED, self::STATUS_REVERSED];
+
+    /** Stripe-channel rows MerchantPayouts::send may (re)send. */
+    public const SENDABLE_STATUSES = [self::STATUS_OWED, self::STATUS_PENDING, self::STATUS_FAILED];
 
     protected $fillable = [
         'merchant_id', 'amount_cents', 'status', 'stripe_transfer_id', 'paid_at', 'redemption_id',

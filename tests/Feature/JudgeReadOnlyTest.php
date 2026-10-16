@@ -71,7 +71,9 @@ class JudgeReadOnlyTest extends TestCase
     {
         $routes = collect(Route::getRoutes()->getRoutes())
             ->reject(fn (RoutingRoute $r) => in_array($r->getName(), BlockJudgeWrites::ALLOWED_ROUTES, true))
-            ->filter(fn (RoutingRoute $r) => array_diff($r->methods(), ['GET', 'HEAD', 'OPTIONS']) !== []);
+            ->filter(fn (RoutingRoute $r) => array_diff($r->methods(), ['GET', 'HEAD', 'OPTIONS']) !== [])
+            // Stripe's webhook has no session, so no judge: see the next test.
+            ->reject(fn (RoutingRoute $r) => $r->getName() === 'stripe.webhook');
 
         $this->assertGreaterThan(5, $routes->count(), 'The route list looks too short.');
 
@@ -87,6 +89,24 @@ class JudgeReadOnlyTest extends TestCase
         }
 
         $this->assertEquals($before, $this->snapshot(), 'A judge request changed data.');
+    }
+
+    /**
+     * Stripe's webhook is the one write route the sweep skips. It sits
+     * outside the web group (no session, so nobody is signed in there) and
+     * only a valid Stripe signature gets it to do anything. Even a judge's
+     * request (or anyone's) without one changes nothing.
+     */
+    public function test_the_stripe_webhook_has_no_session_and_needs_a_signature(): void
+    {
+        $webhook = Route::getRoutes()->getByName('stripe.webhook');
+
+        $this->assertNotContains('web', $webhook->gatherMiddleware());
+        $this->assertNotContains('stripe.webhook', BlockJudgeWrites::ALLOWED_ROUTES);
+
+        $before = $this->snapshot();
+        $this->actingAs($this->judge)->postJson('/stripe/webhook', ['id' => 'evt_x', 'type' => 'payment_intent.succeeded'])->assertStatus(400);
+        $this->assertEquals($before, $this->snapshot(), 'An unsigned webhook changed data.');
     }
 
     public function test_policies_and_gates_refuse_a_judge_on_their_own(): void

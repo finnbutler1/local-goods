@@ -58,9 +58,12 @@ class CreditPurchase extends Model
         return $this->hasMany(MerchantPayout::class);
     }
 
-    /** Money from this Stripe payment not yet claimed by a merchant transfer. */
+    /**
+     * Money from this Stripe payment not yet claimed by a merchant transfer.
+     * A reversed transfer keeps its claim: a person decides what happens next.
+     */
     public function unclaimedCents(): int
     {
-        return $this->amount_cents - (int) $this->fundedPayouts()->whereNull('reversed_at')->sum('amount_cents');
+        return $this->amount_cents - (int) $this->fundedPayouts()->sum('amount_cents');
     }
 }
