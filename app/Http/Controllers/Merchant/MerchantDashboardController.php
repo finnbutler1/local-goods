@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Services\EmployerProgram;
+use App\Support\StripeMode;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
  * What a merchant sees: Local Goods redemptions at their business, what they
  * are owed (cleared redemptions only; held ones are not owed until a person
- * clears them) and payouts, simulated until Stripe test mode. Customers are
+ * clears them), split into owed through Stripe test mode and owed simulated
+ * (ADR 0015), Stripe onboarding, and payouts. Customers are
  * shown by initials only (ADR 0014). A judge sees the demo merchant.
  */
 class MerchantDashboardController extends Controller
@@ -36,16 +38,20 @@ class MerchantDashboardController extends Controller
         return view('dashboards.merchant', [
             'merchant' => $merchant,
             'owedCents' => $merchant->payableCents(),
+            'owedStripeCents' => $merchant->owedViaStripeCents(),
+            'owedSimulatedCents' => $merchant->owedSimulatedCents(),
+            'stripe' => StripeMode::active(),
+            'canOnboard' => StripeMode::active() && ! $request->user()->isReadOnly(),
             'heldCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_UNDER_REVIEW)->sum('amount_cents'),
             'heldCount' => (clone $redemptions)->where('status', Redemption::STATUS_UNDER_REVIEW)->count(),
             'monthCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents'),
             'monthVisits' => (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->count(),
-            'paidOutCents' => (int) $merchant->payouts()->sum('amount_cents'),
+            'paidOutCents' => (int) $merchant->payouts()->paid()->sum('amount_cents'),
             'received' => (clone $redemptions)->with('employee')->latest()->latest('id')
                 ->when(! $request->boolean('all'), fn ($q) => $q->take(self::RECENT))->get(),
             'receivedCount' => (clone $redemptions)->count(),
             'showAll' => $request->boolean('all'),
-            'payouts' => $merchant->payouts()->latest('paid_at')->latest('id')->take(12)->get(),
+            'payouts' => $merchant->payouts()->latest('id')->take(12)->get(),
         ]);
     }
 }

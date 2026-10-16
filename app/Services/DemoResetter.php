@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Restores the seeded demo. Only the Local Goods demo tables are cleared;
- * Laravel's own tables (users, cache, jobs, sessions, migrations) are untouched.
+ * Laravel's own tables (users, cache, jobs, sessions, migrations) and
+ * stripe_events are untouched. Demo merchants keep their Stripe test accounts.
  */
 class DemoResetter
 {
@@ -26,9 +27,20 @@ class DemoResetter
         'bids',
     ];
 
+    /** Stripe connection columns kept across a reset, matched by merchant name (ADR 0015). */
+    private const KEPT_STRIPE_COLUMNS = [
+        'stripe_account_id', 'stripe_onboarding_key', 'stripe_details_submitted',
+        'stripe_payouts_enabled', 'stripe_transfers_active', 'stripe_synced_at',
+    ];
+
     public function reset(): void
     {
         DB::transaction(function () {
+            // A demo merchant's Stripe test account outlives the reset, so
+            // Farragut Grind doesn't need a new Express account every time.
+            $stripe = DB::table('merchants')->whereNotNull('stripe_account_id')
+                ->get(['name', ...self::KEPT_STRIPE_COLUMNS])->keyBy('name');
+
             foreach (self::DEMO_TABLES as $table) {
                 // Query-builder delete on purpose: the ledger model refuses
                 // deletes, and this demo reset is the one sanctioned exception.
@@ -43,6 +55,10 @@ class DemoResetter
             // ALTER TABLE, which silently commits this transaction midway.
 
             (new DatabaseSeeder)->run();
+
+            foreach ($stripe as $name => $row) {
+                DB::table('merchants')->where('name', $name)->update(array_intersect_key((array) $row, array_flip(self::KEPT_STRIPE_COLUMNS)));
+            }
         });
     }
 }

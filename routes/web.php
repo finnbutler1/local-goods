@@ -18,6 +18,7 @@ use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
+use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\StyleguideController;
@@ -88,7 +89,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/purchases/{purchase}/pay', [EmployerDashboardController::class, 'payPurchase'])->name('purchases.pay');
         Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
     });
-    Route::get('/merchant', MerchantDashboardController::class)->middleware('role:merchant')->name('merchant.dashboard');
+    Route::middleware('role:merchant')->group(function () {
+        Route::get('/merchant', MerchantDashboardController::class)->name('merchant.dashboard');
+        // Stripe Express onboarding, test mode (ADR 0015). Only the merchant's own login; GETs create nothing.
+        Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1')->name('merchant.stripe.onboard');
+        Route::post('/merchant/stripe/sync', [StripeOnboardingController::class, 'sync'])->middleware('throttle:20,1')->name('merchant.stripe.sync');
+        Route::get('/merchant/stripe/refresh', [StripeOnboardingController::class, 'refresh'])->name('merchant.stripe.refresh');
+        Route::get('/merchant/stripe/return', [StripeOnboardingController::class, 'return'])->middleware('throttle:20,1')->name('merchant.stripe.return');
+    });
     Route::middleware('role:judge')->group(function () {
         Route::get('/judge', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
         // Read-only "view as" switcher. With no role, goes back to the judge's own view.

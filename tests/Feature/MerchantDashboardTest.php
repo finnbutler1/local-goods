@@ -74,7 +74,7 @@ class MerchantDashboardTest extends TestCase
         app(CreditLedger::class)->payout($this->merchant, $owed, MerchantPayout::STATUS_SIMULATED);
 
         $this->assertSame(0, $this->merchant->payableCents());
-        $this->get('/merchant')->assertSee('Payout history')->assertSee('Simulated until Stripe test mode')->assertSee(Money::format($owed));
+        $this->get('/merchant')->assertSee('Payout history')->assertSee('Simulated')->assertSee('no money moved')->assertSee(Money::format($owed));
     }
 
     public function test_only_the_linked_business_is_shown(): void

@@ -13,9 +13,14 @@
         <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Merchant dashboard · {{ $merchant->name }}</p>
         <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Your Local Goods sales</h1>
         <p class="mt-3 text-lg text-muted">
-            Customers from employers in the BID pay with Local Goods credits. You're owed a redemption once it clears,
-            and paid out every Friday. Payouts are simulated until Stripe test mode arrives in a later build: no real money moves yet.
+            Customers from employers in the BID pay with Local Goods credits. You're owed a redemption once it clears.
+            @if ($stripe)
+                Redemptions paid for with Stripe-paid credits are sent to your Stripe account (test mode) as they clear; older, simulated history stays simulated.
+            @else
+                Stripe isn't connected on this server, so payouts are simulated: recorded in the ledger, no money moves.
+            @endif
         </p>
+        <x-money-mode class="mt-3" />
     </header>
 
     <dl class="grid gap-3 sm:grid-cols-3">
@@ -23,6 +28,10 @@
             <dt class="text-sm font-semibold text-sage">Owed to you now</dt>
             <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($owedCents) }}</dd>
             <dd class="mt-1 text-sm text-sage">Cleared redemptions not yet paid out</dd>
+            <dd class="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 border-t border-sage/40 pt-3 text-sm text-cream">
+                <span>Owed via Stripe test mode</span><span class="tabular text-right font-semibold" data-owed="stripe">{{ Money::format($owedStripeCents) }}</span>
+                <span>Owed, simulated</span><span class="tabular text-right font-semibold" data-owed="simulated">{{ Money::format($owedSimulatedCents) }}</span>
+            </dd>
         </x-card>
         <div class="rounded-2xl bg-hold-bg p-5 sm:p-6">
             <dt class="text-sm font-semibold text-hold">Waiting for review, not owed yet</dt>
@@ -73,22 +82,72 @@
             @endif
         </section>
 
-        <section aria-labelledby="payouts-heading" class="lg:col-span-2">
+        <section aria-labelledby="payouts-heading" class="space-y-8 lg:col-span-2">
+            <div id="stripe" class="scroll-mt-24">
+                <h2 class="text-2xl font-semibold text-forest">Stripe account</h2>
+                <x-card class="mt-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <p class="font-semibold" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">{{ $merchant->stripeOnboardingLabel() }}</p>
+                        <x-money-mode :mode="$merchant->stripe_account_id ? 'stripe' : null" :id="$merchant->stripe_account_id" />
+                    </div>
+                    @if (! $stripe)
+                        <p class="mt-2 text-sm text-muted">Stripe isn't connected on this server, so there is nothing to onboard yet.</p>
+                    @elseif ($merchant->isStripeOnboarded())
+                        <p class="mt-2 text-sm text-muted">Stripe-funded cleared redemptions are transferred to this account as they clear.</p>
+                    @else
+                        <p class="mt-2 text-sm text-muted">
+                            Until onboarding is complete, money owed through Stripe ({{ Money::format($owedStripeCents) }}) waits here. Stripe asks for the
+                            business details on its own page; in test mode use Stripe's test values.
+                        </p>
+                        @if ($canOnboard)
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <form method="POST" action="{{ route('merchant.stripe.onboard') }}">
+                                    @csrf
+                                    <x-button type="submit" variant="accent">{{ $merchant->stripe_account_id ? 'Continue Stripe onboarding' : 'Start Stripe onboarding' }} (test mode)</x-button>
+                                </form>
+                                @if ($merchant->stripe_account_id)
+                                    <form method="POST" action="{{ route('merchant.stripe.sync') }}">
+                                        @csrf
+                                        <x-button type="submit" size="sm">Check Stripe status</x-button>
+                                    </form>
+                                @endif
+                            </div>
+                        @else
+                            <p class="mt-3 text-sm text-muted">Read-only: judges can't onboard.</p>
+                        @endif
+                    @endif
+                </x-card>
+            </div>
+
+            <div>
             <h2 id="payouts-heading" class="text-2xl font-semibold text-forest">Payout history</h2>
-            <p class="mt-1 text-sm text-muted">Simulated until Stripe test mode. Each payout is recorded in the ledger, with no bank transfer behind it.</p>
+            <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer (with its id), or simulated (recorded in the ledger, no money moved).</p>
             <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
                 @forelse ($payouts as $payout)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
-                        <div>
+                        <div class="min-w-0">
                             <p class="font-semibold">{{ $payout->paid_at?->setTimezone('America/New_York')->format('D, M j, Y') ?? 'Not paid yet' }}</p>
-                            <x-badge tone="neutral" class="mt-1">{{ $payout->status === \App\Models\MerchantPayout::STATUS_SIMULATED ? 'Simulated until Stripe test mode' : ucfirst($payout->status) }}</x-badge>
+                            <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                @if ($payout->isStripe())
+                                    <x-badge :tone="match ($payout->status) { 'sent' => 'ok', 'failed', 'reversed' => 'hold', default => 'neutral' }">{{ match ($payout->status) {
+                                        'owed' => 'Owed, waiting for onboarding', 'pending' => 'Sending', 'sent' => 'Transferred',
+                                        'failed' => 'Not sent yet, still owed', 'reversed' => 'Reversed, owed again', default => ucfirst($payout->status) } }}</x-badge>
+                                    <x-money-mode mode="stripe" :id="$payout->stripe_transfer_id" />
+                                @else
+                                    <x-money-mode mode="simulated" />
+                                @endif
+                            </div>
+                            @if ($payout->failure_reason && $payout->status !== 'sent')
+                                <p class="mt-1 text-sm text-hold">{{ $payout->failure_reason }}</p>
+                            @endif
                         </div>
                         <p class="tabular font-semibold">{{ Money::format($payout->amount_cents) }}</p>
                     </li>
                 @empty
-                    <li class="px-5 py-6 text-muted">No payouts yet. Cleared redemptions are paid out every Friday.</li>
+                    <li class="px-5 py-6 text-muted">No payouts yet.</li>
                 @endforelse
             </x-card>
+            </div>
         </section>
     </div>
 </div>
