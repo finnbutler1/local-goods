@@ -3,6 +3,35 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-15: The money loop on screen
+
+- **Employer/HR dashboard** at `/employer`: "Your team got out into the
+  neighborhood." This month's share of employees who redeemed, visits out of
+  the office, local businesses visited and first-time visits, dollars spent
+  locally, top categories and an eight-week trend (with a table view). Every
+  number says how it is counted, and only cleared redemptions count.
+- **Buying credits is locked until paid.** A purchase starts pending and
+  writes nothing to the ledger; "Pay now (simulated, no real money)" marks it
+  paid and is the only thing that adds the credits. Test-mode payments come
+  in a later build ([ADR 0014](docs/adr/0014-employer-program-pending-purchases-and-initials.md)).
+- **Giving credits** to one person or many at once, for the monthly allowance
+  or an occasion (new-hire welcome, birthday, recognition award), all or
+  nothing and within the monthly budget set in **Program setup**.
+- **Wallet:** search and category filters over the participating merchants,
+  a fuller confirmation screen (Approved or Under review, with a confirmation
+  number), and full transaction history from the ledger. The fraud check and
+  "Try a suspicious redemption" work exactly as before.
+- **Merchant dashboard** at `/merchant`: owed now (cleared redemptions only),
+  held ones shown as "waiting for review, not owed yet", redemptions received
+  and payout history, marked "simulated until Stripe test mode".
+- **BID participation** at `/bid-admin/participation`: employers, employees
+  active, merchants, dollars recirculated and a merchant roster.
+- **Initials only:** outside an employee's own wallet, people are shown as
+  "H.M." (plus a staff number for HR), including on the fraud review. A test
+  opens every page as every role and fails on any full name.
+- **Judges:** the employer and merchant steps of the tour are live, read-only,
+  with every write button switched off.
+
 ## 2026-10-15: Merchant eligibility prompt frozen, holdout measured
 
 - **The AI is a triage tool: it screens out obvious chains and franchises, routes anything it can't verify to a person, and never approves a merchant on its own.** An AI "eligible" shows as "AI recommends eligible —

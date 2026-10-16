@@ -5,13 +5,40 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Money loop screens — built (ADR 0014).** Employer/HR dashboard
+(`/employer`, `Employer\EmployerDashboardController`), extended wallet,
+merchant dashboard (`/merchant`) and BID participation
+(`/bid-admin/participation`). The ledger moves, money doesn't: Stripe test
+mode is next. Next milestone not set yet.
+
+- Purchases: `CreditLedger::requestPurchase` writes only a `pending`
+  `credit_purchases` row, **no ledger entry**; `payPurchase` ("Pay now
+  (simulated, no real money)") is the only code that writes it, once.
+  Pending credits can't be allocated or spent. Seeded purchases are
+  `simulated` (paid). Ledger invariant counts paid purchases only.
+- Allocation from the dashboard: `CreditLedger::allocateMany` (all or
+  nothing, checks paid balance and `EmployerProgram::remainingBudgetCents`).
+  Occasions: `App\Enums\Occasion` (monthly plus optional welcome, birthday,
+  recognition; amounts on `employers`, empty = off).
+- Metrics: `App\Services\EmployerMetrics`, cleared redemptions only, calendar
+  month in DC time, 8 Monday weeks. Each number on the page says how it's
+  counted; keep the code and that text in step.
+- Privacy: outside an employee's own wallet show `Employee::initials()` or
+  `publicLabel()` ("H.M. · #014"), never `display_name`.
+  `EmployeeNamePrivacyTest` sweeps every page as every role.
+- Merchant login: `merchants.user_id`, linked to Farragut Grind
+  (`demo.accounts.merchant.business`) by `DemoAccountSeeder::linkDemoMerchant`.
+- Local trial runs: `php artisan serve` doesn't pass `DB_DATABASE` to its
+  worker, so it uses `.env`'s database. Use `php -S` from `public/` with a
+  scratchpad SQLite instead.
+
 **Merchant Eligibility Matching — built and measured (ADR 0013).** The AI is
 a triage tool and only recommends; a person makes every decision
 (`MerchantReviewDecision` refuses anyone but a BID or platform admin). Prompt
 frozen at `458e8c2d` (`eligibility.frozen_prompt_version`, CI checks it); the
 holdout has been run once with it (0 of 17 chains called eligible, 0 of 3
 independents found). A prompt change needs Finn's say-so and a fresh unseen
-holdout. Web search is future work. Next milestone not set yet.
+holdout. Web search is future work.
 
 - Matcher: `App\Services\Eligibility\MerchantEligibilityMatcher`, prompt
   `resources/prompts/merchant-eligibility.md` (rule verbatim; version = first
@@ -34,7 +61,8 @@ holdout. Web search is future work. Next milestone not set yet.
   account see totals only on `/eval/merchants` and the queue.
 
 Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
-adjudication (ADR 0011) and the three-account ledger (ADR 0012).
+adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
+Eligibility Matching (ADR 0013) and the money loop screens (ADR 0014).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
