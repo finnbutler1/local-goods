@@ -6,6 +6,8 @@ use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Models\CreditLedgerEntry;
 use App\Models\Redemption;
 use App\Models\User;
+use App\Services\Payments\MerchantPayouts;
+use App\Services\Payments\StripeFunding;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 
@@ -14,12 +16,17 @@ use Illuminate\Support\Facades\DB;
  * The credits were already debited (reserved) when the redemption was made:
  * approving spends them, rejecting gives them back. Each decision adds one
  * ledger entry recording who decided; nothing is edited or deleted. An
- * approval also credits the merchant, which a held redemption never does. Who may
+ * approval also credits the merchant, which a held redemption never does,
+ * and (if Stripe-funded) sends its Stripe transfer afterwards. Who may
  * decide is checked by RedemptionPolicy::review before this is called.
  */
 class RedemptionReviewService
 {
-    public function __construct(private CreditLedger $ledger) {}
+    public function __construct(
+        private CreditLedger $ledger,
+        private StripeFunding $funding,
+        private MerchantPayouts $payouts,
+    ) {}
 
     public function approve(Redemption $redemption, User $reviewer): Redemption
     {
@@ -44,7 +51,7 @@ class RedemptionReviewService
      */
     private function decide(Redemption $redemption, User $reviewer, string $status, callable $entry): Redemption
     {
-        return DB::transaction(function () use ($redemption, $reviewer, $status, $entry) {
+        $redemption = DB::transaction(function () use ($redemption, $reviewer, $status, $entry) {
             $now = now();
 
             // Only flips a row that is still under review, so a second decision
@@ -73,9 +80,17 @@ class RedemptionReviewService
 
             if ($status === Redemption::STATUS_APPROVED) {
                 $this->ledger->creditMerchant($redemption, $now);
+                $this->funding->claim($redemption);
             }
 
             return $redemption;
         });
+
+        // Outside the transaction, as in RedemptionService. Rejected: never a transfer.
+        if ($redemption->status === Redemption::STATUS_APPROVED) {
+            $this->payouts->sendSafely($redemption->merchant);
+        }
+
+        return $redemption;
     }
 }
