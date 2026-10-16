@@ -19,3 +19,4 @@ trade-off in under a minute.
 | [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Accepted, implemented |
 | [0012](0012-one-ledger-three-account-kinds.md) | One ledger with three kinds of account: employee, employer, merchant | Accepted, implemented |
 | [0013](0013-merchant-eligibility-matching.md) | Merchant Eligibility Matching: an AI suggestion, a person's decision, measured against locked labels | Accepted, implemented |
+| [0014](0014-employer-program-pending-purchases-and-initials.md) | Employer program, purchases locked until paid, and initials only outside an employee's own wallet | Accepted, implemented |
