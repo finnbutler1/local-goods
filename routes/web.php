@@ -16,6 +16,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\JudgeLinkController;
+use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\StyleguideController;
@@ -85,7 +86,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/purchases/{purchase}/pay', [EmployerDashboardController::class, 'payPurchase'])->name('purchases.pay');
         Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
     });
-    Route::view('/merchant', 'dashboards.merchant')->middleware('role:merchant')->name('merchant.dashboard');
+    Route::get('/merchant', MerchantDashboardController::class)->middleware('role:merchant')->name('merchant.dashboard');
     Route::middleware('role:judge')->group(function () {
         Route::get('/judge', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
         // Read-only "view as" switcher. With no role, goes back to the judge's own view.
