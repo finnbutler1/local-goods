@@ -106,4 +106,43 @@ class StripeCheckoutTest extends TestCase
             ->assertDontSee('/pay"', false);
         $this->assertSame([], array_slice($this->stripe->callsOf('checkout'), 1), 'A judge opened Checkout');
     }
+
+    /**
+     * The live bug of 2026-10-16: Stripe's current API refuses
+     * payment_method_types on a Checkout Session (400), so "Pay with
+     * Stripe" bounced back to the dashboard. Every field we send must be
+     * one Stripe accepts, and the amount, currency, URLs and transfer
+     * group must be right.
+     */
+    public function test_the_checkout_request_only_sends_fields_stripe_accepts(): void
+    {
+        $this->post("/employer/purchases/{$this->purchase->id}/pay")->assertRedirect('https://checkout.stripe.test/cs_test_0001');
+
+        [$session] = $this->stripe->callsOf('checkout');
+        $this->assertArrayNotHasKey('payment_method_types', $session);
+        $this->assertSame(
+            ['mode', 'client_reference_id', 'line_items', 'payment_intent_data', 'metadata', 'success_url', 'cancel_url'],
+            array_keys($session),
+        );
+        $this->assertSame('payment', $session['mode']);
+        $this->assertSame(['currency' => 'usd', 'unit_amount' => 25000], array_intersect_key($session['line_items'][0]['price_data'], array_flip(['currency', 'unit_amount'])));
+        $this->assertSame($this->purchase->reference, $session['payment_intent_data']['transfer_group']);
+        $this->assertSame(route('employer.dashboard').'?checkout=returned&purchase='.$this->purchase->reference.'#credits', $session['success_url']);
+        $this->assertSame(route('employer.dashboard').'?checkout=cancelled&purchase='.$this->purchase->reference.'#credits', $session['cancel_url']);
+    }
+
+    public function test_when_stripe_refuses_checkout_the_reason_shows_in_the_credits_section(): void
+    {
+        $this->stripe->checkoutFailure = 'Stripe refused the request (InvalidRequestException, field success_url).';
+
+        $this->post("/employer/purchases/{$this->purchase->id}/pay")
+            ->assertRedirect(route('employer.dashboard').'#credits')
+            ->assertSessionHas('credits_error');
+
+        $html = $this->get('/employer')->assertOk()->getContent();
+        $credits = substr($html, strpos($html, 'id="purchases-heading"'));
+        $this->assertStringContainsString("Payment didn't start: Stripe refused the request (InvalidRequestException, field success_url).", $credits);
+        $this->assertStringContainsString('Nothing was charged; the purchase is still pending.', $credits);
+        $this->assertTrue($this->purchase->fresh()->isPending());
+    }
 }

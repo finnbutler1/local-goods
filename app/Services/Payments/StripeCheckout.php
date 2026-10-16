@@ -35,8 +35,10 @@ class StripeCheckout
         $dashboard = route('employer.dashboard');
 
         $session = $this->stripe->createCheckoutSession([
+            // No payment_method_types: Stripe's current API refuses it for
+            // Checkout. Which methods appear (card, in test mode) is set in
+            // the Stripe Dashboard under Settings → Payment methods.
             'mode' => 'payment',
-            'payment_method_types' => ['card'],
             'client_reference_id' => $purchase->reference,
             'line_items' => [[
                 'quantity' => 1,

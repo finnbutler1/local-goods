@@ -153,14 +153,15 @@ class EmployerDashboardController extends Controller
             try {
                 return redirect()->away($checkout->start($purchase));
             } catch (InvalidArgumentException|StripeGatewayException $e) {
-                return redirect()->to(route('employer.dashboard').'#credits')->with('error', $e->getMessage());
+                // Shown inside the credits section: the redirect jumps there, past the top-of-page messages.
+                return redirect()->to(route('employer.dashboard').'#credits')->with('credits_error', $e->getMessage());
             }
         }
 
         try {
             $ledger->payPurchase($purchase);
         } catch (InvalidArgumentException $e) {
-            return redirect()->to(route('employer.dashboard').'#credits')->with('error', $e->getMessage());
+            return redirect()->to(route('employer.dashboard').'#credits')->with('credits_error', $e->getMessage());
         }
 
         return redirect()->to(route('employer.dashboard').'#credits')->with('status',

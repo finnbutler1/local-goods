@@ -33,10 +33,24 @@ class FakeStripeGateway implements StripeGateway
 
     private int $counter = 0;
 
+    /** Next Checkout Session fails with this (plain English), once. */
+    public ?string $checkoutFailure = null;
+
     public function createCheckoutSession(array $params, string $idempotencyKey): array
     {
         return $this->remember($idempotencyKey, function () use ($params) {
             $this->calls[] = ['checkout', $params];
+
+            // Like the real API (2026-09-30): Checkout refuses payment_method_types.
+            if (array_key_exists('payment_method_types', $params)) {
+                throw new StripeGatewayException('Stripe refused the request (InvalidRequestException, field payment_method_types).');
+            }
+
+            if ($this->checkoutFailure !== null) {
+                [$message, $this->checkoutFailure] = [$this->checkoutFailure, null];
+
+                throw new StripeGatewayException($message);
+            }
             $id = 'cs_test_'.$this->next();
 
             return ['id' => $id, 'url' => 'https://checkout.stripe.test/'.$id];

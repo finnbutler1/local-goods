@@ -88,7 +88,8 @@ class StripeSdkGateway implements StripeGateway
 
             throw new StripeGatewayException('Could not reach Stripe. Nothing was lost; it will be tried again.', definite: false);
         } catch (ApiErrorException $e) {
-            Log::warning('Stripe call failed', ['call' => $what, 'type' => class_basename($e), 'code' => $e->getStripeCode(), 'status' => $e->getHttpStatus()]);
+            // The param is a field name (never a value or a key), so it is safe to log.
+            Log::warning('Stripe call failed', ['call' => $what, 'type' => class_basename($e), 'code' => $e->getStripeCode(), 'param' => $e->getError()?->param, 'status' => $e->getHttpStatus()]);
 
             throw new StripeGatewayException(self::plainEnglish($e), definite: ($e->getHttpStatus() ?? 500) < 500, stripeCode: $e->getStripeCode());
         }
@@ -103,7 +104,8 @@ class StripeSdkGateway implements StripeGateway
         return match ($e->getStripeCode()) {
             'balance_insufficient' => 'Stripe says the platform balance is too low for this transfer yet.',
             'account_invalid', 'insufficient_capabilities_for_transfer' => 'Stripe says this merchant can\'t receive transfers yet (onboarding not finished).',
-            default => 'Stripe refused the request ('.($e->getStripeCode() ?? class_basename($e)).').',
+            default => 'Stripe refused the request ('.($e->getStripeCode() ?? class_basename($e))
+                .($e->getError()?->param ? ', field '.$e->getError()->param : '').').',
         };
     }
 }
