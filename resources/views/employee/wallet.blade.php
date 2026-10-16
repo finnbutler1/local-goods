@@ -72,6 +72,12 @@
     <x-card as="section" id="redeem" aria-labelledby="redeem-heading" class="scroll-mt-24">
         <h2 id="redeem-heading" class="text-2xl font-semibold text-forest">Redeem credits</h2>
         <p class="mt-1 text-sm text-muted">Every redemption is checked by Redemption Fraud Detection before the merchant is paid.</p>
+        <p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
+            <x-money-mode />
+            {{ \App\Support\StripeMode::active()
+                ? 'Merchants are paid through Stripe (test mode) once a redemption clears. Your credits never touch a card.'
+                : 'Merchant payouts are simulated on this server: no money moves.' }}
+        </p>
 
         @if ($suspicious)
             <p class="mt-4 rounded-xl bg-hold-bg p-3 text-sm text-hold">

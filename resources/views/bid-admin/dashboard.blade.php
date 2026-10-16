@@ -11,6 +11,12 @@
             The AI can be wrong, so a held redemption is never approved or rejected automatically: a person at the BID decides.
             If the AI check fails for any reason, the redemption is held, never cleared.
         </p>
+        <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
+            <x-money-mode />
+            {{ \App\Support\StripeMode::active()
+                ? 'Held redemptions never reach Stripe. Approving one funded by Stripe-paid credits sends its Stripe test-mode transfer to the merchant; rejecting sends nothing.'
+                : 'Stripe isn\'t connected on this server: approving a redemption records what the merchant is owed, and payouts are simulated.' }}
+        </p>
         <p class="mt-3">
             <a href="{{ route('bid-admin.eval') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
                 How often does the AI agree with a person? See the eval results <span aria-hidden="true">→</span>
