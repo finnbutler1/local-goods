@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\CreditPurchase;
+use App\Support\StripeEnvironment;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -31,7 +32,8 @@ class StripeCheckout
         $metadata = [
             'lg_purchase_token' => $purchase->payment_token,
             'lg_purchase_reference' => $purchase->reference,
-        ];
+            'lg_purchase_id' => (string) $purchase->id,
+        ] + StripeEnvironment::tag();
         $dashboard = route('employer.dashboard');
 
         $session = $this->stripe->createCheckoutSession([
