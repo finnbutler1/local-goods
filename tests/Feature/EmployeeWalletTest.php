@@ -139,4 +139,59 @@ class EmployeeWalletTest extends TestCase
         $this->post('/employee/redeem', ['merchant_id' => $id, 'amount' => '0'])->assertSessionHasErrors('amount');
         $this->post('/employee/redeem', ['merchant_id' => $id, 'amount' => 'ten'])->assertSessionHasErrors('amount');
     }
+
+    public function test_the_confirmation_screen_shows_amount_merchant_and_number(): void
+    {
+        $this->fakeClaude(FakeClaudeClient::verdict(6, 'clear'));
+
+        $this->followingRedirects()
+            ->post('/employee/redeem', ['merchant_id' => $this->merchant('Farragut Grind')->id, 'amount' => '6.50'])
+            ->assertSeeInOrder(['Approved', '$6.50', 'Farragut Grind', 'LG-'.str_pad((string) Redemption::max('id'), 6, '0', STR_PAD_LEFT), 'Show this screen at the counter']);
+
+        // Shown once: going back to the wallet doesn't repeat it.
+        $this->get('/employee')->assertDontSee('Show this screen at the counter');
+    }
+
+    public function test_browse_filters_by_category_and_search(): void
+    {
+        $this->get('/employee?category=salon')->assertOk()
+            ->assertSee('K Street Cuts')
+            ->assertSee('aria-current="true"', false)
+            ->assertDontSee('Redeem here<span class="sr-only"> at Farragut Grind', false);
+
+        $this->get('/employee?q=noodle')
+            ->assertSee('Redeem here<span class="sr-only"> at Connecticut Noodle Bar', false)
+            ->assertDontSee('Redeem here<span class="sr-only"> at Page &amp; Quill Books', false);
+
+        $this->get('/employee?q=pizza')->assertSee('No merchants match &quot;pizza&quot;', false)->assertSee('Show all merchants');
+    }
+
+    public function test_redeem_here_picks_that_merchant(): void
+    {
+        $deli = $this->merchant('Press Room Deli');
+
+        $this->get('/employee?merchant='.$deli->id)
+            ->assertSee('<option value="'.$deli->id.'" selected', false);
+    }
+
+    public function test_history_lists_ledger_entries_with_the_balance_after_each(): void
+    {
+        $employee = Employee::orderBy('id')->firstOrFail();
+        $entries = $employee->ledgerEntries()->latest('created_at')->latest('id')->take(2)->get();
+        $balance = $employee->balanceCents();
+
+        $this->get('/employee')->assertOk()
+            ->assertSee('Transaction history')
+            ->assertSeeInOrder([
+                $entries[0]->description, 'Balance '.\App\Support\Money::format($balance),
+                $entries[1]->description, 'Balance '.\App\Support\Money::format($balance - $entries[0]->amount_cents),
+            ]);
+
+        // Jordan has 12 redemptions plus allowances, more than the first 20 shown.
+        $count = $employee->ledgerEntries()->count();
+        if ($count > 20) {
+            $this->get('/employee')->assertSee("Show all {$count} transactions");
+            $this->get('/employee?history=1')->assertDontSee('Show all');
+        }
+    }
 }

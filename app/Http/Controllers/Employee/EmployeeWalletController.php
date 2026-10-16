@@ -44,7 +44,8 @@ class EmployeeWalletController extends Controller
         $balance = $employee->balanceCents();
         $recent = $employee->redemptions()->with('merchant')->latest()->latest('id')->take(8)->get();
 
-        $prefill = ['merchant_id' => null, 'amount' => null];
+        // "Redeem here" on a merchant card picks that merchant in the form.
+        $prefill = ['merchant_id' => $request->integer('merchant') ?: null, 'amount' => null];
         $suspicious = $request->boolean('suspicious') && $balance > 0;
 
         if ($suspicious) {
@@ -55,10 +56,36 @@ class EmployeeWalletController extends Controller
             ];
         }
 
+        $merchants = Merchant::orderBy('name')->get();
+        $search = trim((string) $request->query('q', ''));
+        $category = (string) $request->query('category', '');
+        $browse = $merchants
+            ->when($category !== '', fn ($list) => $list->where('category', $category))
+            ->when($search !== '', fn ($list) => $list->filter(fn (Merchant $m) => str_contains(mb_strtolower($m->name.' '.$m->category.' '.$m->address), mb_strtolower($search))))
+            ->values();
+
+        // Newest first, each with the balance right after it (from the ledger).
+        $showAll = $request->boolean('history');
+        $entries = $employee->ledgerEntries()->latest('created_at')->latest('id')->when(! $showAll, fn ($q) => $q->take(20))->get();
+        $running = $balance;
+        $history = $entries->map(function ($entry) use (&$running) {
+            $row = ['entry' => $entry, 'balance_after' => $running];
+            $running -= $entry->amount_cents;
+
+            return $row;
+        });
+
         return view('employee.wallet', [
             'employee' => $employee,
             'balance' => $balance,
-            'merchants' => Merchant::orderBy('name')->get(),
+            'merchants' => $merchants,
+            'categories' => $merchants->pluck('category')->unique()->sort()->values(),
+            'browse' => $browse,
+            'search' => $search,
+            'category' => $category,
+            'history' => $history,
+            'historyCount' => $employee->ledgerEntries()->count(),
+            'showAllHistory' => $showAll,
             'recent' => $recent,
             'prefill' => $prefill,
             'suspicious' => $suspicious,
