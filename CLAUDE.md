@@ -5,15 +5,39 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Stripe Connect, test mode — built (ADR 0015, `docs/STRIPE.md`).** Separate
+charges and transfers. Next milestone: Prompt 8 (fraud gate on transfers).
+
+- Mode: `App\Support\StripeMode::active()` only with `STRIPE_KEY`,
+  `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` all set and test keys; otherwise
+  simulated (CI, tests, missing/live keys). Never print, log or commit keys.
+  All Stripe calls go through `App\Services\Payments\StripeGateway`; tests
+  use `Tests\Concerns\UsesFakeStripe` / `Tests\Fakes\FakeStripeGateway`.
+- Purchases: pending until a signed `payment_intent.succeeded`
+  (`CreditLedger::markPurchasePaidByStripe`, status `paid`, once). Simulated
+  mode keeps `payPurchase` (status `simulated`). Never label one as the other.
+- Payouts: two channels that never mix. `StripeFunding::claim` (inside the
+  clearing transaction) makes a Stripe payout row only for a cleared
+  redemption in Stripe mode covered by a Stripe-paid purchase (oldest first);
+  everything else, including all seeded history, stays simulated and is
+  never sent to Stripe. `MerchantPayouts::send` runs after commit, only once
+  the merchant is onboarded. `TransferGate::allows` is where Prompt 8's fraud
+  gate goes. Ledger payout entries only for `sent`/`simulated` rows.
+- Webhook `/stripe/webhook` in `routes/stripe.php`, outside the web group (no
+  session/CSRF/user); signature is the only auth; `stripe_events` dedupes
+  (not a demo table). The judge sweep skips only `stripe.webhook`.
+- Onboarding: Express, demo merchants only; GET return/refresh pages never
+  create anything; Reset demo keeps `stripe_account_id`.
+- Reconciliation: `/admin/reconciliation`, Stripe-funded activity only.
+
 **Money loop screens — built (ADR 0014).** Employer/HR dashboard
 (`/employer`, `Employer\EmployerDashboardController`), extended wallet,
 merchant dashboard (`/merchant`) and BID participation
-(`/bid-admin/participation`). The ledger moves, money doesn't: Stripe test
-mode is next. Next milestone not set yet.
+(`/bid-admin/participation`).
 
 - Purchases: `CreditLedger::requestPurchase` writes only a `pending`
-  `credit_purchases` row, **no ledger entry**; `payPurchase` ("Pay now
-  (simulated, no real money)") is the only code that writes it, once.
+  `credit_purchases` row, **no ledger entry**; only a paid purchase
+  (`simulated` or Stripe `paid`) is in the ledger, once.
   Pending credits can't be allocated or spent. Seeded purchases are
   `simulated` (paid). Ledger invariant counts paid purchases only.
 - Allocation from the dashboard: `CreditLedger::allocateMany` (all or
@@ -62,13 +86,14 @@ holdout. Web search is future work.
 
 Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
-Eligibility Matching (ADR 0013) and the money loop screens (ADR 0014).
+Eligibility Matching (ADR 0013), the money loop screens (ADR 0014) and
+Stripe Connect test mode (ADR 0015).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
   redemption only once it clears, never while held. Invariant: purchases −
-  payouts − amounts under review = sum of all entries. Demo payouts are
-  `simulated` (no Stripe yet).
+  payouts (sent or simulated) − amounts under review = sum of all entries.
+  Seeded payouts are `simulated`.
 - Seed: Meridian (120 staff, 40 enrolled). Jordan Rivera must stay the first
   employee with the same 12 redemptions (fraud eval signal test and wallet
   demo depend on it). `DemoHistorySeeder` adds 39 employees, 8 weeks of
@@ -269,6 +294,8 @@ snapshot step by name when the build says the deploy includes migrations.
 5. After deploy: open the CloudFront site, log in as each demo role, check
    `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
    as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
+   With Stripe keys set: the employer page shows "Stripe test mode", and
+   `/admin/reconciliation` says everything matches.
 6. Never click New link on the live public judge or named reviewer rows.
 
 ## Contest
