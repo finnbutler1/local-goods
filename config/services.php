@@ -21,6 +21,19 @@ return [
         'timeout' => 20,
     ],
 
+    // Stripe Connect, test mode only (ADR 0015, docs/STRIPE.md). Blank keys
+    // mean simulated mode. Live keys are refused (App\Support\StripeMode).
+    // Never print or log these values.
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        // Optional: the signing secret of a second endpoint that listens to
+        // events on connected accounts (account.updated). Blank is fine.
+        'connect_webhook_secret' => env('STRIPE_CONNECT_WEBHOOK_SECRET'),
+        'currency' => 'usd',
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

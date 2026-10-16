@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Services\Payments\StripeGateway;
+use App\Services\Payments\StripeSdkGateway;
 use App\Support\AppUrl;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -24,7 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Only ever reached in Stripe test mode; tests bind a fake (ADR 0015).
+        $this->app->singleton(StripeGateway::class, StripeSdkGateway::class);
     }
 
     /**
