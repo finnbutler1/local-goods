@@ -47,11 +47,12 @@ class MerchantDashboardController extends Controller
             'monthCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents'),
             'monthVisits' => (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->count(),
             'paidOutCents' => (int) $merchant->payouts()->paid()->sum('amount_cents'),
-            'received' => (clone $redemptions)->with('employee')->latest()->latest('id')
+            'received' => (clone $redemptions)->with(['employee', 'decision', 'stripePayout'])->latest()->latest('id')
                 ->when(! $request->boolean('all'), fn ($q) => $q->take(self::RECENT))->get(),
             'receivedCount' => (clone $redemptions)->count(),
             'showAll' => $request->boolean('all'),
-            'payouts' => $merchant->payouts()->latest('id')->take(12)->get(),
+            // Stripe rows carry their redemption, so each shows its path (ADR 0016).
+            'payouts' => $merchant->payouts()->with(['redemption.employee', 'redemption.decision', 'redemption.stripePayout'])->latest('id')->take(12)->get(),
         ]);
     }
 }

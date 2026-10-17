@@ -14,7 +14,7 @@
         <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
             <x-money-mode />
             {{ \App\Support\StripeMode::active()
-                ? 'Held redemptions never reach Stripe. Approving one funded by Stripe-paid credits sends its Stripe test-mode transfer to the merchant; rejecting sends nothing.'
+                ? 'Held redemptions never reach Stripe. Approving one funded by Stripe-paid credits sends its one Stripe test-mode transfer to the merchant; denying sends nothing, ever.'
                 : 'Stripe isn\'t connected on this server: approving a redemption records what the merchant is owed, and payouts are simulated.' }}
         </p>
         <p class="mt-3">
@@ -31,6 +31,22 @@
         @if (session('error'))
             <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">{{ session('error') }}</p>
         @endif
+        @if ($example = $exampleId ? $redemptions->firstWhere('id', $exampleId) : null)
+            <div class="rounded-2xl border-2 {{ $example->isUnderReview() ? 'border-hold bg-hold-bg' : 'border-ok bg-ok-bg' }} p-4" data-collusion-example="{{ $example->id }}">
+                <p class="font-semibold">
+                    Collusion example: {{ Money::format($example->amount_cents) }} at {{ $example->merchant->name }} by {{ $example->employee->publicLabel() }} (synthetic).
+                    The real AI {{ $example->scored_by === 'fallback' ? 'check failed, so it was held automatically' : ($example->isUnderReview() ? 'held it' : 'cleared it') }}.
+                </p>
+                <p class="mt-1 text-sm">
+                    @if ($example->isUnderReview())
+                        No money moves until a person approves it below.
+                    @else
+                        An honest miss: the AI judged this one ordinary, so the gate let it through like any cleared redemption.
+                    @endif
+                    <a href="#redemption-{{ $example->id }}" class="font-semibold underline underline-offset-4">See it below</a>
+                </p>
+            </div>
+        @endif
     </div>
 
     <div class="flex flex-wrap items-end justify-between gap-4">
@@ -45,6 +61,14 @@
             </div>
         </dl>
 
+        <div class="flex flex-wrap items-start gap-4">
+        @can('run-collusion-example')
+            <form method="POST" action="{{ route('bid-admin.collusion-example') }}">
+                @csrf
+                <x-button type="submit" variant="accent" aria-describedby="example-help">Run a collusion example</x-button>
+                <p id="example-help" class="mt-1.5 max-w-xs text-sm text-muted">A fresh synthetic redemption at Farragut Grind with a credit-to-cash pattern, checked by the real AI. One AI call.</p>
+            </form>
+        @endcan
         @can('reset-demo')
             <form method="POST" action="{{ route('bid-admin.reset') }}"
                   onsubmit="return confirm('Reset the demo? This removes every redemption made since the last deploy and restores the seeded data.');">
@@ -53,6 +77,7 @@
                 <p id="reset-help" class="mt-1.5 text-sm text-muted">Restores the seeded demo data only.</p>
             </form>
         @endcan
+        </div>
     </div>
 
     <section aria-labelledby="recent-heading">
@@ -76,6 +101,10 @@
                         </div>
                     </div>
 
+                    <p class="mt-2 text-sm" data-audit-trail>
+                        <span class="font-semibold">Path:</span> {{ implode(' → ', $redemption->auditTrail()) }}
+                    </p>
+
                     @if ($redemption->scored_by === 'seed')
                         <p class="mt-3 text-sm text-muted">Historical demo data, recorded before AI scoring was switched on.</p>
                     @else
@@ -86,6 +115,9 @@
                                 <dl class="mt-2 space-y-0.5 text-sm">
                                     <div><dt class="inline font-semibold">AI decision:</dt> <dd class="inline">{{ $redemption->aiDecisionLabel() }}</dd>@if ($redemption->scored_by !== 'fallback')<span class="text-muted"> · scored by {{ $redemption->scored_by }}</span>@endif</div>
                                     <div><dt class="inline font-semibold">Final decision:</dt> <dd class="inline">{{ $redemption->finalDecisionLabel() }}</dd></div>
+                                    @if ($redemption->decision)
+                                        <div><dt class="inline font-semibold">Reason:</dt> <dd class="inline">{{ $redemption->decision->reason }}</dd></div>
+                                    @endif
                                 </dl>
                             </div>
                             <div>
@@ -110,22 +142,44 @@
                                 <span class="font-semibold">@can('review', $redemption) Waiting for your decision. @else Waiting for a BID admin's decision. @endcan</span>
                                 The {{ Money::format($redemption->amount_cents) }} is reserved from the employee's balance.
                             </p>
-                            @can('review', $redemption)
-                                <div class="flex flex-wrap gap-2">
-                                    <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}">
-                                        @csrf
-                                        <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
-                                    </form>
-                                    <form method="POST" action="{{ route('bid-admin.reject', $redemption) }}">
-                                        @csrf
-                                        <x-button type="submit" size="sm" variant="danger" class="bg-paper" aria-label="Reject {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Reject</x-button>
-                                    </form>
-                                </div>
-                            @endcan
                         </div>
+                        @can('review', $redemption)
+                            @php $bag = $errors->getBag("review{$redemption->id}"); @endphp
+                            <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}" class="mt-3 space-y-3 rounded-xl border border-hold/30 bg-paper p-4">
+                                @csrf
+                                <div class="space-y-1.5">
+                                    <label for="reason-{{ $redemption->id }}" class="block font-semibold">Reason for your decision <span class="font-normal text-muted">(required, kept with the decision)</span></label>
+                                    <textarea id="reason-{{ $redemption->id }}" name="reason" rows="2" required minlength="5" maxlength="500"
+                                              aria-describedby="reason-{{ $redemption->id }}-hint{{ $bag->has('reason') ? ' reason-'.$redemption->id.'-error' : '' }}"
+                                              @if ($bag->has('reason')) aria-invalid="true" @endif
+                                              class="block w-full rounded-xl border-2 {{ $bag->has('reason') ? 'border-hold' : 'border-muted' }} bg-paper px-3 py-2 focus-visible:border-forest">{{ $bag->any() ? old('reason') : '' }}</textarea>
+                                    <p id="reason-{{ $redemption->id }}-hint" class="text-sm text-muted">For example: "Regular customer, receipt checked with the merchant." 5 to 500 characters.</p>
+                                    @if ($bag->has('reason'))
+                                        <p id="reason-{{ $redemption->id }}-error" class="text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $bag->first('reason') }}</p>
+                                    @endif
+                                </div>
+                                <fieldset class="space-y-1.5" @if ($bag->has('denial')) aria-describedby="denial-{{ $redemption->id }}-error" @endif>
+                                    <legend class="font-semibold">If you deny it, where does the credit go?</legend>
+                                    @foreach (\App\Enums\DenialReason::cases() as $why)
+                                        <label class="flex items-start gap-2 text-sm">
+                                            <input type="radio" name="denial" value="{{ $why->value }}" class="mt-0.5" @checked($bag->any() && old('denial') === $why->value)>
+                                            <span>{{ $why->label() }}</span>
+                                        </label>
+                                    @endforeach
+                                    @if ($bag->has('denial'))
+                                        <p id="denial-{{ $redemption->id }}-error" class="text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $bag->first('denial') }}</p>
+                                    @endif
+                                </fieldset>
+                                <div class="flex flex-wrap gap-2">
+                                    <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
+                                    <x-button type="submit" size="sm" variant="danger" class="bg-paper" formaction="{{ route('bid-admin.deny', $redemption) }}" aria-label="Deny {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Deny</x-button>
+                                </div>
+                                <p class="text-sm text-muted">Approve pays the merchant (one transfer, never two). Deny means no transfer, ever.</p>
+                            </form>
+                        @endcan
                     @elseif ($redemption->reviewed_by)
                         <p class="mt-4 text-sm text-muted">
-                            {{ $redemption->isApproved() ? 'The reserved credits were spent.' : 'The credits went back to the employee.' }}
+                            {{ $redemption->isApproved() ? 'The reserved credits were spent.' : 'Denied: the credits went back to the '.($redemption->decision?->credit_returned_to ?? 'employee').'.' }}
                         </p>
                     @endif
                 </x-card>

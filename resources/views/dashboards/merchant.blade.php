@@ -59,13 +59,16 @@
                         <div class="min-w-0">
                             <p class="tabular font-semibold">{{ $redemption->employee->initials() }}</p>
                             <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}</p>
+                            @if ($redemption->scored_by !== 'seed')
+                                <p class="text-sm text-muted" data-audit-trail>{{ implode(' → ', $redemption->auditTrail()) }}</p>
+                            @endif
                         </div>
                         <div class="text-right">
                             <p @class(['tabular font-semibold', 'text-muted line-through' => $redemption->isRejected()])>{{ Money::format($redemption->amount_cents) }}</p>
                             @if ($redemption->isUnderReview())
                                 <x-badge tone="hold" class="mt-1">Waiting for review, not owed yet</x-badge>
                             @elseif ($redemption->isRejected())
-                                <x-badge tone="neutral" class="mt-1">Rejected, not owed</x-badge>
+                                <x-badge tone="neutral" class="mt-1">Denied, not owed</x-badge>
                             @else
                                 <x-badge tone="ok" class="mt-1">Cleared</x-badge>
                             @endif
@@ -145,6 +148,11 @@
                                     <x-money-mode mode="simulated" />
                                 @endif
                             </div>
+                            @if ($payout->redemption)
+                                <p class="mt-1 text-sm text-muted" data-audit-trail>
+                                    Redemption #{{ $payout->redemption->id }} ({{ $payout->redemption->employee->initials() }}): {{ implode(' → ', $payout->redemption->auditTrail()) }}
+                                </p>
+                            @endif
                             @if ($payout->failure_reason && $payout->status !== 'sent')
                                 <p class="mt-1 text-sm text-hold">{{ $payout->failure_reason }}</p>
                             @endif

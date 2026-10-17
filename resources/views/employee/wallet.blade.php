@@ -184,6 +184,9 @@
                     <div class="text-right">
                         <p class="tabular font-semibold">{{ Money::format($redemption->amount_cents) }}</p>
                         <x-status-badge :redemption="$redemption" class="mt-1" />
+                        @if ($redemption->isRejected())
+                            <p class="mt-1 text-xs text-muted">{{ $redemption->decision?->credit_returned_to === 'employer' ? 'Credit returned to your employer' : 'Credit back in your balance' }}</p>
+                        @endif
                     </div>
                 </li>
             @empty

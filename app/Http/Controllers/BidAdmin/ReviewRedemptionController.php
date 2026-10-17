@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BidAdmin;
 
+use App\Enums\DenialReason;
 use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Http\Controllers\Controller;
 use App\Models\Redemption;
@@ -10,11 +11,13 @@ use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 /**
- * Approve and Reject buttons for redemptions held by Redemption Fraud
- * Detection. The decision is recorded as the signed-in user. Only BID admins
- * and the platform admin may decide (RedemptionPolicy); judges get 403.
+ * Approve and Deny for redemptions held by Redemption Fraud Detection
+ * (ADR 0016). Both need a short reason; Deny also says why, which decides
+ * where the credit goes. Recorded as the signed-in user. Only BID admins and
+ * the platform admin may decide (RedemptionPolicy); judges get 403.
  */
 class ReviewRedemptionController extends Controller
 {
@@ -22,30 +25,43 @@ class ReviewRedemptionController extends Controller
 
     public function approve(Request $request, Redemption $redemption): RedirectResponse
     {
-        return $this->decide($request, $redemption, 'approve',
-            fn ($r) => 'Approved '.Money::format($r->amount_cents)." at {$r->merchant->name}. The reserved credits are spent.");
+        Gate::authorize('review', $redemption);
+        $data = $request->validateWithBag("review{$redemption->id}", $this->reasonRules());
+
+        return $this->decide($redemption, fn () => $this->reviews->approve($redemption, $request->user(), $data['reason']),
+            fn ($r) => 'Approved '.Money::format($r->amount_cents)." at {$r->merchant->name}. The reserved credits are spent and the merchant is paid.");
     }
 
-    public function reject(Request $request, Redemption $redemption): RedirectResponse
-    {
-        return $this->decide($request, $redemption, 'reject',
-            fn ($r) => 'Rejected '.Money::format($r->amount_cents)." at {$r->merchant->name}. The credits are back in the employee's balance.");
-    }
-
-    private function decide(Request $request, Redemption $redemption, string $action, callable $message): RedirectResponse
+    public function deny(Request $request, Redemption $redemption): RedirectResponse
     {
         Gate::authorize('review', $redemption);
+        $data = $request->validateWithBag("review{$redemption->id}", $this->reasonRules() + [
+            'denial' => ['required', Rule::enum(DenialReason::class)],
+        ], ['denial.required' => 'Choose why it is denied: that decides where the credit goes.']);
+        $why = DenialReason::from($data['denial']);
 
+        return $this->decide($redemption, fn () => $this->reviews->deny($redemption, $request->user(), $data['reason'], $why),
+            fn ($r) => 'Denied '.Money::format($r->amount_cents)." at {$r->merchant->name}. No transfer; the credit is back with the {$why->returnsTo()}.");
+    }
+
+    /** @return array<string, list<string>> */
+    private function reasonRules(): array
+    {
+        return ['reason' => ['required', 'string', 'min:5', 'max:500']];
+    }
+
+    private function decide(Redemption $redemption, callable $action, callable $message): RedirectResponse
+    {
         $back = redirect()->to(route('bid-admin.dashboard')."#redemption-{$redemption->id}");
 
         try {
-            $this->reviews->{$action}($redemption, $request->user());
+            $action();
         } catch (RedemptionAlreadyReviewed $e) {
-            $done = $e->redemption->isUnderReview() ? 'not under review' : "already {$e->redemption->status}";
+            $done = $e->redemption->isUnderReview() ? 'not under review' : 'already '.($e->redemption->isRejected() ? 'denied' : $e->redemption->status);
 
             return $back->with('error', 'Nothing changed: this redemption is '.str_replace('_', ' ', $done).'.');
         }
 
-        return $back->with('status', $message($redemption->load('merchant')));
+        return $back->with('status', $message($redemption->refresh()->load('merchant')));
     }
 }
