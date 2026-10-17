@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DenialReason;
 use App\Enums\Role;
 use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
@@ -17,6 +18,7 @@ use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeOnboarding;
 use App\Services\RedemptionReviewService;
 use App\Services\RedemptionService;
+use App\Support\Money;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\UsesFakeStripe;
@@ -111,10 +113,10 @@ class StripePayoutTest extends TestCase
         $this->assertSame(0, MerchantPayout::whereIn('redemption_id', [$held->id, $rejected->id])->count());
 
         $reviewer = User::factory()->role(Role::BidAdmin)->create();
-        app(RedemptionReviewService::class)->reject($rejected, $reviewer);
+        app(RedemptionReviewService::class)->deny($rejected, $reviewer, 'No purchase happened.', DenialReason::NoPurchase);
         $this->assertSame([], $this->stripe->callsOf('transfer'), 'Rejected redemptions never transfer');
 
-        app(RedemptionReviewService::class)->approve($held, $reviewer);
+        app(RedemptionReviewService::class)->approve($held, $reviewer, 'Checked with the merchant.');
         $this->assertCount(1, $this->stripe->callsOf('transfer'));
         $this->assertSame(3000, $this->stripe->callsOf('transfer')[0]['amount']);
         $this->assertSame(MerchantPayout::STATUS_SENT, MerchantPayout::where('redemption_id', $held->id)->value('status'));
@@ -180,7 +182,7 @@ class StripePayoutTest extends TestCase
         $this->get('/merchant')->assertOk()
             ->assertSee('Owed via Stripe test mode')
             ->assertSee('Owed, simulated')
-            ->assertSee('data-owed="simulated">'.\App\Support\Money::format($seededOwed + 1500), false)
+            ->assertSee('data-owed="simulated">'.Money::format($seededOwed + 1500), false)
             ->assertSee('data-owed="stripe">$0.00', false);
     }
 

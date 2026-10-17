@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\DenialReason;
 use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Models\CreditLedgerEntry;
 use App\Models\Redemption;
+use App\Models\RedemptionDecision;
 use App\Models\User;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
@@ -12,13 +14,15 @@ use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 
 /**
- * A person's decision on a redemption that Redemption Fraud Detection held.
- * The credits were already debited (reserved) when the redemption was made:
- * approving spends them, rejecting gives them back. Each decision adds one
- * ledger entry recording who decided; nothing is edited or deleted. An
- * approval also credits the merchant, which a held redemption never does,
- * and (if Stripe-funded) sends its Stripe transfer afterwards. Who may
- * decide is checked by RedemptionPolicy::review before this is called.
+ * A person's decision on a redemption that Redemption Fraud Detection held
+ * (ADR 0016). The credits were already debited (reserved) when the
+ * redemption was made. Approving spends them, credits the merchant and (if
+ * Stripe-funded) sends its one Stripe transfer afterwards, through the
+ * TransferGate. Denying never transfers: the credits go back to the
+ * employer's pool for suspected abuse, or to the employee when no purchase
+ * happened. Each decision writes one RedemptionDecision (who, when, why,
+ * what the AI said) and one ledger entry; nothing is edited or deleted.
+ * Who may decide is checked by RedemptionPolicy::review before this.
  */
 class RedemptionReviewService
 {
@@ -28,30 +32,42 @@ class RedemptionReviewService
         private MerchantPayouts $payouts,
     ) {}
 
-    public function approve(Redemption $redemption, User $reviewer): Redemption
+    public function approve(Redemption $redemption, User $reviewer, string $reason): Redemption
     {
-        return $this->decide($redemption, $reviewer, Redemption::STATUS_APPROVED, fn (Redemption $r) => [
+        return $this->decide($redemption, $reviewer, $reason, null, fn (Redemption $r) => [
+            'employee_id' => $r->employee_id,
             'amount_cents' => 0,
             'type' => CreditLedgerEntry::TYPE_REVIEW_APPROVED,
             'description' => "Approved by {$reviewer->name}: reserved ".Money::format($r->amount_cents)." spent at {$r->merchant->name}",
         ]);
     }
 
-    public function reject(Redemption $redemption, User $reviewer): Redemption
+    public function deny(Redemption $redemption, User $reviewer, string $reason, DenialReason $why): Redemption
     {
-        return $this->decide($redemption, $reviewer, Redemption::STATUS_REJECTED, fn (Redemption $r) => [
-            'amount_cents' => $r->amount_cents,
-            'type' => CreditLedgerEntry::TYPE_REVIEW_REJECTED,
-            'description' => "Rejected by {$reviewer->name}: ".Money::format($r->amount_cents)." returned from {$r->merchant->name}",
-        ]);
+        return $this->decide($redemption, $reviewer, $reason, $why, fn (Redemption $r) => $why === DenialReason::SuspectedAbuse
+            ? [
+                'employer_id' => $r->employee->employer_id,
+                'amount_cents' => $r->amount_cents,
+                'type' => CreditLedgerEntry::TYPE_REVIEW_DENIED_TO_EMPLOYER,
+                'description' => "Denied by {$reviewer->name} (suspected abuse): ".Money::format($r->amount_cents)." from {$r->merchant->name} back to the employer",
+            ]
+            : [
+                'employee_id' => $r->employee_id,
+                'amount_cents' => $r->amount_cents,
+                'type' => CreditLedgerEntry::TYPE_REVIEW_REJECTED,
+                'description' => "Denied by {$reviewer->name} (no purchase happened): ".Money::format($r->amount_cents)." returned from {$r->merchant->name}",
+            ]);
     }
 
     /**
      * @param  callable(Redemption): array<string, mixed>  $entry
      */
-    private function decide(Redemption $redemption, User $reviewer, string $status, callable $entry): Redemption
+    private function decide(Redemption $redemption, User $reviewer, string $reason, ?DenialReason $why, callable $entry): Redemption
     {
-        $redemption = DB::transaction(function () use ($redemption, $reviewer, $status, $entry) {
+        $approve = $why === null;
+        $status = $approve ? Redemption::STATUS_APPROVED : Redemption::STATUS_REJECTED;
+
+        $redemption = DB::transaction(function () use ($redemption, $reviewer, $reason, $why, $approve, $status, $entry) {
             $now = now();
 
             // Only flips a row that is still under review, so a second decision
@@ -71,14 +87,28 @@ class RedemptionReviewService
                 throw new RedemptionAlreadyReviewed($redemption);
             }
 
+            // One per redemption (unique index): a second one rolls all of this back.
+            RedemptionDecision::create([
+                'redemption_id' => $redemption->id,
+                'decision' => $approve ? RedemptionDecision::APPROVE : RedemptionDecision::DENY,
+                'reason' => trim($reason),
+                'credit_returned_to' => $why?->returnsTo(),
+                'decided_by_user_id' => $reviewer->id,
+                'decided_by_name' => $reviewer->name,
+                'decided_by_role' => $reviewer->role->value,
+                'ai_decision' => $redemption->ai_decision,
+                'ai_risk_score' => $redemption->risk_score,
+                'ai_scored_by' => $redemption->scored_by,
+                'decided_at' => $now,
+            ]);
+
             CreditLedgerEntry::create($entry($redemption) + [
-                'employee_id' => $redemption->employee_id,
                 'redemption_id' => $redemption->id,
                 'decided_by' => $reviewer->name,
                 'created_at' => $now,
             ]);
 
-            if ($status === Redemption::STATUS_APPROVED) {
+            if ($approve) {
                 $this->ledger->creditMerchant($redemption, $now);
                 $this->funding->claim($redemption);
             }
@@ -86,8 +116,8 @@ class RedemptionReviewService
             return $redemption;
         });
 
-        // Outside the transaction, as in RedemptionService. Rejected: never a transfer.
-        if ($redemption->status === Redemption::STATUS_APPROVED) {
+        // Outside the transaction, as in RedemptionService. Denied: never a transfer.
+        if ($redemption->isApproved()) {
             $this->payouts->sendSafely($redemption->merchant);
         }
 

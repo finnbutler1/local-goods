@@ -9,7 +9,6 @@ use App\Support\StripeEnvironment;
 use App\Support\StripeMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -67,6 +66,20 @@ class MerchantPayouts
         return $result;
     }
 
+    /**
+     * One key per redemption (ADR 0016): this server, the redemption, when its
+     * payout row was made, and how many times Stripe definitely refused it.
+     * The same redemption always asks Stripe with the same key, so a double
+     * click or a retry after a timeout can't create a second transfer. The
+     * server id and the row's time keep keys apart when local and production
+     * share a Stripe sandbox, or after a Reset demo reuses redemption ids.
+     */
+    public static function idempotencyKey(MerchantPayout $row): string
+    {
+        return 'lg-transfer-'.StripeEnvironment::instance().'-r'.$row->redemption_id
+            .'-'.$row->created_at->getTimestamp().'-'.$row->attempts;
+    }
+
     /** @return 'sent'|'failed'|'waiting' */
     private function sendOne(Merchant $merchant, MerchantPayout $row): string
     {
@@ -87,7 +100,7 @@ class MerchantPayouts
 
             $key = $fresh->status === MerchantPayout::STATUS_PENDING && $fresh->idempotency_key !== null
                 ? $fresh->idempotency_key
-                : 'lg-transfer-'.Str::uuid();
+                : self::idempotencyKey($fresh);
 
             $fresh->update(['status' => MerchantPayout::STATUS_PENDING, 'idempotency_key' => $key]);
 
@@ -109,9 +122,13 @@ class MerchantPayouts
                 'metadata' => ['lg_payout_key' => $key, 'lg_redemption_id' => (string) $row->redemption_id] + StripeEnvironment::tag(),
             ], fn ($v) => $v !== null), $key);
         } catch (StripeGatewayException $e) {
-            $row->refresh()->update([
-                // A timeout stays pending (same key next time); a refusal is failed (new key next time).
+            $row->refresh();
+            $row->update([
+                // A timeout stays pending (same key next time). A refusal is
+                // failed: Stripe made no transfer, so the next attempt may use
+                // a new key (attempts + 1).
                 'status' => $e->definite ? MerchantPayout::STATUS_FAILED : MerchantPayout::STATUS_PENDING,
+                'attempts' => $row->attempts + ($e->definite ? 1 : 0),
                 'failure_reason' => $e->getMessage(),
             ]);
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DenialReason;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
@@ -50,8 +51,8 @@ class EmployeeNamePrivacyTest extends TestCase
         foreach (Employee::whereIn('display_name', DemoHistorySeeder::PATTERN_B_EMPLOYEES)->get() as $i => $employee) {
             $redemption = app(RedemptionService::class)->redeem($employee, $merchant, 500);
             match ($i) {
-                0 => app(RedemptionReviewService::class)->approve($redemption, $reviewer),
-                1 => app(RedemptionReviewService::class)->reject($redemption, $reviewer),
+                0 => app(RedemptionReviewService::class)->approve($redemption, $reviewer, 'Checked with the merchant.'),
+                1 => app(RedemptionReviewService::class)->deny($redemption, $reviewer, 'No purchase happened.', DenialReason::NoPurchase),
                 default => null,
             };
         }

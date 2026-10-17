@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Services\Fraud\FraudVerdict;
+use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Redemption extends Model
 {
@@ -11,6 +14,7 @@ class Redemption extends Model
 
     public const STATUS_UNDER_REVIEW = 'under_review';
 
+    /** Denied by a person after a hold (shown as "Denied"; the stored value predates the word). */
     public const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [
@@ -32,6 +36,30 @@ class Redemption extends Model
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    /** A person's Approve or Deny, if there was one (ADR 0016). */
+    public function decision(): HasOne
+    {
+        return $this->hasOne(RedemptionDecision::class);
+    }
+
+    /** Its Stripe-channel payout row, if it was Stripe-funded (ADR 0015). */
+    public function stripePayout(): HasOne
+    {
+        return $this->hasOne(MerchantPayout::class);
+    }
+
+    /**
+     * Redemption Fraud Detection cleared it on its own: a real AI answer of
+     * "clear" and no person involved. Never true for an AI failure (always a
+     * hold) or for seeded history.
+     */
+    public function wasClearedByAi(): bool
+    {
+        return $this->ai_decision === FraudVerdict::CLEAR
+            && ! in_array($this->scored_by, ['fallback', 'seed'], true)
+            && $this->reviewed_at === null;
     }
 
     public function isApproved(): bool
@@ -67,10 +95,62 @@ class Redemption extends Model
         }
 
         if ($this->reviewed_by) {
-            return "{$this->status} by {$this->reviewed_by} on "
+            return ($this->isRejected() ? 'denied' : $this->status)." by {$this->reviewed_by} on "
                 .$this->reviewed_at->setTimezone('America/New_York')->format('M j, g:i A');
         }
 
         return 'approved automatically: the AI cleared it';
+    }
+
+    /**
+     * The redemption's path, one step at a time, for the review page and the
+     * merchant's payout history, e.g. ["AI held (risk 88)", "approved by BID
+     * admin S.T. · Oct 17", "transferred tr_…"]. Staff by initials; the
+     * employee is never named here. Load decision and stripePayout first.
+     *
+     * @return list<string>
+     */
+    public function auditTrail(): array
+    {
+        $steps = [match (true) {
+            $this->scored_by === 'seed' => 'Seeded history (before AI scoring)',
+            $this->scored_by === 'fallback' => 'AI check failed → automatic hold',
+            $this->ai_decision === FraudVerdict::CLEAR => "AI cleared (risk {$this->risk_score})",
+            default => 'AI held'.($this->risk_score !== null ? " (risk {$this->risk_score})" : ''),
+        }];
+
+        $decision = $this->decision;
+
+        if ($decision !== null) {
+            $when = $decision->decided_at->setTimezone('America/New_York')->format('M j');
+            $steps[] = ($decision->isApproval() ? 'approved' : 'denied').' by '.$decision->deciderLabel().' · '.$when;
+        } elseif ($this->isUnderReview()) {
+            $steps[] = 'waiting for a BID admin';
+        }
+
+        if ($this->isRejected()) {
+            $steps[] = 'no transfer · '.Money::format($this->amount_cents).' credit back to the '.($decision?->credit_returned_to ?? 'employee');
+
+            return $steps;
+        }
+
+        if ($this->isUnderReview()) {
+            $steps[] = 'no transfer while held';
+
+            return $steps;
+        }
+
+        $payout = $this->stripePayout;
+        $steps[] = match ($payout?->status) {
+            null => 'owed to the merchant, simulated (no Stripe transfer)',
+            MerchantPayout::STATUS_SENT => "transferred {$payout->stripe_transfer_id}",
+            MerchantPayout::STATUS_OWED => 'owed via Stripe, waiting for the merchant\'s onboarding',
+            MerchantPayout::STATUS_PENDING => 'Stripe transfer sending',
+            MerchantPayout::STATUS_FAILED => 'Stripe transfer not sent yet, still owed',
+            MerchantPayout::STATUS_REVERSED => "transfer {$payout->stripe_transfer_id} reversed, owed again",
+            default => $payout->status,
+        };
+
+        return $steps;
     }
 }

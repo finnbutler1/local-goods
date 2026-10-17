@@ -17,6 +17,7 @@ class DemoResetter
      */
     public const DEMO_TABLES = [
         'credit_ledger_entries',
+        'redemption_decisions',
         'merchant_payouts',
         'credit_allocations',
         'credit_purchases',
@@ -26,6 +27,12 @@ class DemoResetter
         'employers',
         'bids',
     ];
+
+    /**
+     * Demo tables the seed leaves empty: decisions only exist once a person
+     * reviews a held redemption, so demo:seed-if-empty doesn't count them.
+     */
+    public const EMPTY_AFTER_SEED = ['redemption_decisions'];
 
     /** Stripe connection columns kept across a reset, matched by merchant name (ADR 0015). */
     private const KEPT_STRIPE_COLUMNS = [

@@ -41,6 +41,14 @@ class User extends Authenticatable
         ];
     }
 
+    /** "Sam Taylor" becomes "S.T.": staff are shown by initials in audit trails, like employees. */
+    public static function initialsOf(string $name): string
+    {
+        return collect(preg_split('/\s+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY))
+            ->map(fn (string $word) => mb_strtoupper(mb_substr($word, 0, 1)).'.')
+            ->implode('');
+    }
+
     public function hasRole(Role ...$roles): bool
     {
         return in_array($this->role, $roles, true);

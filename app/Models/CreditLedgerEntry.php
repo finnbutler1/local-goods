@@ -18,13 +18,17 @@ use LogicException;
 class CreditLedgerEntry extends Model
 {
     public const TYPE_ALLOWANCE = 'allowance';
+
     public const TYPE_REDEMPTION = 'redemption';
 
     /** A person approved a held redemption: the reserved credits are spent (amount 0, already debited). */
     public const TYPE_REVIEW_APPROVED = 'review_approved';
 
-    /** A person rejected a held redemption: the reserved credits go back to the employee. */
+    /** A person denied a held redemption as "no purchase happened": the reserved credits go back to the employee. */
     public const TYPE_REVIEW_REJECTED = 'review_rejected';
+
+    /** Employer account: a person denied a held redemption as suspected abuse, so its credits go back to the employer's pool (ADR 0016). */
+    public const TYPE_REVIEW_DENIED_TO_EMPLOYER = 'review_denied_to_employer';
 
     /** Employer account: the employer bought credits. */
     public const TYPE_PURCHASE = 'purchase';

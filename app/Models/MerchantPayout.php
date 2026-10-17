@@ -46,7 +46,7 @@ class MerchantPayout extends Model
 
     protected $fillable = [
         'merchant_id', 'amount_cents', 'status', 'stripe_transfer_id', 'paid_at', 'redemption_id',
-        'credit_purchase_id', 'transfer_group', 'source_charge_id', 'idempotency_key', 'failure_reason', 'reversed_at',
+        'credit_purchase_id', 'transfer_group', 'source_charge_id', 'idempotency_key', 'attempts', 'failure_reason', 'reversed_at',
     ];
 
     protected function casts(): array
