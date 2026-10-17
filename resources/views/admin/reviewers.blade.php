@@ -53,7 +53,7 @@
                 <h2 id="public-heading" class="text-2xl font-semibold text-forest">Public judge access</h2>
                 <p class="mt-2 text-muted">
                     One shared, generic read-only reviewer for the README's "For judges" link. Anyone with the link uses it,
-                    so its feedback is anonymous, it is rate-limited more tightly, and it can't approve or reject anything.
+                    so its feedback is anonymous, it is rate-limited more tightly, and it can't approve or deny anything.
                     Named reviewers get their own links below so their feedback is attributed.
                 </p>
             </div>

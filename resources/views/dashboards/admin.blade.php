@@ -5,7 +5,7 @@
             <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Welcome back, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             <p class="mt-3 max-w-2xl text-lg text-muted">
                 Every login is created by an admin; there is no public sign-up.
-                You can also open fraud review to approve or reject held redemptions.
+                You can also open fraud review to approve or deny held redemptions.
             </p>
             <p class="mt-3 flex flex-wrap gap-x-6 gap-y-2 font-semibold">
                 <a href="{{ route('admin.reviewers.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Invite reviewers</a>

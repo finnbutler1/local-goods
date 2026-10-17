@@ -71,7 +71,7 @@
             </div>
             <div class="grid gap-2 border-b border-line/70 pb-6 sm:grid-cols-[10rem_1fr]">
                 <p class="text-sm text-muted">Body</p>
-                <p>A held redemption is never rejected automatically: a person reviews it. If the AI check fails for any reason, the redemption is held, never cleared.</p>
+                <p>A held redemption is never denied automatically: a person reviews it. If the AI check fails for any reason, the redemption is held, never cleared.</p>
             </div>
             <div class="grid gap-2 border-b border-line/70 pb-6 sm:grid-cols-[10rem_1fr]">
                 <p class="text-sm text-muted">Small / muted</p>

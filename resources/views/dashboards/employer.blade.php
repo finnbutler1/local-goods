@@ -63,7 +63,7 @@
                     'value' => number_format($metrics['redeemers']),
                     'unit' => Str::plural('employee', $metrics['redeemers']).' got out',
                     'detail' => $metrics['participation_pct'].'% of enrolled'.($metrics['staff_pct'] !== null ? ' · '.$metrics['staff_pct'].'% of all '.$metrics['staff'].' staff' : ''),
-                    'how' => 'Employees with at least one cleared redemption this month. The first share divides by the '.$metrics['enrolled'].' enrolled in the program, the second by all '.($metrics['staff'] ?? $metrics['enrolled']).' staff. Held and rejected redemptions don\'t count.',
+                    'how' => 'Employees with at least one cleared redemption this month. The first share divides by the '.$metrics['enrolled'].' enrolled in the program, the second by all '.($metrics['staff'] ?? $metrics['enrolled']).' staff. Held and denied redemptions don\'t count.',
                 ],
                 [
                     'label' => 'Visits out of the office',
