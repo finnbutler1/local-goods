@@ -18,7 +18,7 @@ instead, so their feedback carries their name
 
 **An employee perk program designed to keep employer spending in the neighborhood: credits meant to be spent only at independent local merchants.**
 
-> **Status:** working demo. Redemptions, AI fraud scoring and human approve/reject of held redemptions are live. Employer, employee, merchant and BID dashboards cover the whole money loop in the ledger: buying credits, giving them out, spending, merchants owed and paid. Merchant Eligibility Matching is built as a triage tool: the AI screens real BID businesses, a BID admin decides, and approved businesses don't join the demo yet. Payments and payouts run on **Stripe Connect in test mode** (Checkout for employer purchases, Express accounts for the demo merchants, a Transfer per Stripe-funded cleared redemption); no real money moves, and every money page says whether it's Stripe test mode or simulated. Seeded history stays simulated, and without Stripe keys the whole demo falls back to simulated mode. The demo merchants are seeded by hand.
+> **Status:** working demo. Redemptions, AI fraud scoring and human approve/deny of held redemptions (with a reason, gating every Stripe transfer) are live. Employer, employee, merchant and BID dashboards cover the whole money loop in the ledger: buying credits, giving them out, spending, merchants owed and paid. Merchant Eligibility Matching is built as a triage tool: the AI screens real BID businesses, a BID admin decides, and approved businesses don't join the demo yet. Payments and payouts run on **Stripe Connect in test mode** (Checkout for employer purchases, Express accounts for the demo merchants, a Transfer per Stripe-funded cleared redemption); no real money moves, and every money page says whether it's Stripe test mode or simulated. Seeded history stays simulated, and without Stripe keys the whole demo falls back to simulated mode. The demo merchants are seeded by hand.
 
 **Live app:** https://d4ghrpm72uczx.cloudfront.net
 
@@ -52,16 +52,18 @@ employers want a perk their staff will actually use.
    the BID for the BID admin to approve or reject. Turning an approved business
    into a participant is planned.*
 3. **AI checks every redemption.** *Live: suspicious redemptions are held and
-   shown on the BID admin view, where a person approves or rejects them.
+   shown on the BID admin view, where a person approves or denies them, with a reason.
    Merchants are owed a redemption only once it clears; a cleared redemption
    funded by Stripe-paid credits becomes a Stripe test-mode transfer to the
-   merchant's connected account. Held or rejected ones never transfer.*
+   merchant's connected account. Held or denied ones never transfer: one gate,
+   `TransferGate`, decides every transfer ([ADR 0016](docs/adr/0016-fraud-detection-gates-stripe-transfers.md)).*
 
 **Try it:** [log in](https://d4ghrpm72uczx.cloudfront.net/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,
 then click **Try a suspicious redemption**. As the BID admin, see the AI's
-score, decision and explanation for each one, and approve or reject held
-redemptions. The [AI eval results](https://d4ghrpm72uczx.cloudfront.net/eval) are public.
+score, decision and explanation for each one, approve or deny held
+redemptions, and press **Run a collusion example** to watch the real AI
+check a synthetic credit-to-cash redemption. The [AI eval results](https://d4ghrpm72uczx.cloudfront.net/eval) are public.
 Judges and other reviewers sign in with a magic link (no account, no password;
 see **For judges** above) to a read-only view with a guided tour, a "view as"
 switcher for each role, and a Feedback button on every page
@@ -88,8 +90,9 @@ The following all produce a hold with risk score 100:
 If Claude says `clear` but gives a score of 70 or higher, the app holds it
 anyway. A held redemption keeps the employee's credits reserved and appears on
 the BID admin view, where a person approves it (the reserved credits are spent)
-or rejects it (the credits go back to the employee). Each decision is recorded in
-the append-only ledger with who decided and when, and a redemption can only be
+or denies it (suspected abuse: the credits go back to the employer; no purchase
+happened: back to the employee). Each decision needs a reason and is recorded with
+who decided, when and what the AI said, and a redemption can only be
 decided once. A held redemption never reaches Stripe; only a cleared one funded by Stripe-paid credits is transferred (test mode). See
 [`RedemptionFraudDetector.php`](app/Services/Fraud/RedemptionFraudDetector.php),
 its [tests](tests/Feature/RedemptionFraudDetectorTest.php) and
@@ -107,7 +110,7 @@ Only what exists today is claimed. Everything else is marked **planned**.
 | **Code quality / GitHub** | 15 | A [test that sends every write route as a judge](tests/Feature/JudgeReadOnlyTest.php) and checks nothing changes. Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php) and a [fake Stripe gateway](tests/Fakes/FakeStripeGateway.php) (webhooks are signed exactly as Stripe signs them), so they need no secrets and never touch the network. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
 | **UX** | 10 | A custom brand system (Fraunces + Public Sans, self-hosted; forest/cream/amber tokens with every text pair tested for WCAG AA in [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)), an employer-first landing page, a shared app shell (sidebar on desktop, bottom tabs on mobile), one-click demo flow, plain-English AI explanations, all businesses labeled fictional. A local-only `/styleguide` shows every token and component. The employer/HR dashboard frames results as "your team got out into the neighborhood", and every number has a "How we count this" note; the eight-week trend has a table view. Every new page has empty states and plain-English errors and was checked at 375px wide. |
 | **Business impact** | 10 | Designed to keep perk spending with independent merchants. [Civic Economics](https://www.civiceconomics.com/) studies found that independent businesses recirculate roughly 48% of their revenue locally, versus under 14% for chains: roughly 3x more per dollar. BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, merchants are owed only cleared ones, and cleared Stripe-funded ones are paid out through Stripe Connect (test mode), so custody stays with a licensed processor instead of us. **Live metrics:** the employer sees the share of staff who redeemed this month, visits out of the office, local businesses discovered (including first-time visits), dollars spent locally and top categories; the BID sees employees active, merchants and dollars recirculated. Live (test-mode) Stripe payouts; real-money payouts would need only live keys and Stripe's account review. |
-| **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, a person approves or rejects every hold (name and time recorded), the merchant AI only recommends and never approves a business on its own (enforced in the model and tested), real business names kept off public pages, synthetic demo data only, and employees shown by initials only outside their own wallet (checked on every page by [`EmployeeNamePrivacyTest`](tests/Feature/EmployeeNamePrivacyTest.php)). See [TRANSPARENCY.md](TRANSPARENCY.md). **Planned:** recording the reviewer's written reason. |
+| **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** form labels, `aria-describedby`/`aria-invalid` on errors, `aria-live` status messages, `aria-current` navigation, screen-reader text ([views](resources/views/)). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, a person approves or denies every hold (name, time and reason recorded) and no money moves until they do, the merchant AI only recommends and never approves a business on its own (enforced in the model and tested), real business names kept off public pages, synthetic demo data only, and employees shown by initials only outside their own wallet (checked on every page by [`EmployeeNamePrivacyTest`](tests/Feature/EmployeeNamePrivacyTest.php)). See [TRANSPARENCY.md](TRANSPARENCY.md). |
 
 ## How I built it with Claude Code
 
@@ -150,11 +153,10 @@ php artisan test
 
 ## What's next
 
-- Prompt 8: a fraud gate on Stripe transfers at `TransferGate`
-  ([ADR 0015](docs/adr/0015-stripe-connect-test-mode-separate-charges-and-transfers.md))
 - Merchant Eligibility Matching, checked against manual review of the seeded
   merchants (target: at least 90% agreement)
-- A written reason with each approve/reject decision
+- A check across redemptions for collusion rings (new signals, so a new
+  prompt version and a fresh holdout)
 - An employer/HR dashboard
 
 ---

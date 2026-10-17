@@ -62,11 +62,45 @@ the BID roster show the two separately: **Owed via Stripe test mode** and
 
 ### The transfer gate
 
-`App\Services\Payments\TransferGate::allows()` is asked before any transfer
-is claimed and again just before it is sent. **This is where Prompt 8's
-fraud gate will sit.** Today it allows only a cleared redemption whose
-merchant earning is in the ledger, so held, rejected and pending
-redemptions never transfer.
+`App\Services\Payments\TransferGate::allows()` is the fraud gate on
+transfers ([ADR 0016](adr/0016-fraud-detection-gates-stripe-transfers.md)).
+It allows a transfer only when the redemption is approved, its merchant
+earning is in the ledger, and either:
+
+- Redemption Fraud Detection cleared it itself (a real AI answer, no person
+  involved), or
+- the AI held it and a BID or platform admin then recorded an **Approve**
+  (a row in `redemption_decisions`).
+
+Held, denied, unreviewed and seeded redemptions never pass. If the AI call
+failed or returned something invalid, the redemption was held (it fails
+closed), so it can only pass after a person approves it.
+
+The gate is asked twice: by `StripeFunding::claim` before a payout row is
+made, and by `MerchantPayouts::sendOne`, the only code that calls
+`createTransfer`, just before Stripe is called. `FraudGateTest` checks
+this both by scanning the source and by running every sending flow (a new
+clear, an approval, onboarding finishing, the webhook, Retry) with the gate
+shut: no transfer.
+
+**Approve** sends the transfer: through Stripe if Stripe-paid money funds
+it, otherwise it stays simulated, same rules as above. **Deny** never
+sends one, and asks why: *suspected abuse* puts the credit back in the
+employer's paid pool; *no purchase happened* gives it back to the employee.
+Both need a short reason. Each decision records who, when, the reason and
+what the AI originally said, once per redemption.
+
+**One idempotency key per redemption:**
+`lg-transfer-<instance>-r<redemption id>-<payout row created>-<attempt>`.
+A double click, a second tab or a retry after a timeout asks Stripe with
+the same key, so Stripe can't create a second transfer. The attempt number
+only goes up after Stripe definitely refused (no transfer exists). The
+instance id and the row's creation time keep keys apart between local and
+production, and after a Reset demo reuses redemption ids.
+
+Every redemption shows its path on the review page and on the merchant's
+dashboard, e.g. *AI held (risk 88) → approved by BID admin S.T. · Oct 17 →
+transferred tr_…*.
 
 ### When things go wrong
 
@@ -75,8 +109,8 @@ redemptions never transfer.
   "Check Stripe status").
 - **Stripe refuses the transfer** (e.g. not enough available balance): the
   row is *failed* with the reason, still owed, and retried on the next
-  clearance or with **Retry owed transfers** on the reconciliation page, with a
-  new idempotency key.
+  clearance or with **Retry owed transfers** on the reconciliation page, with
+  the next attempt's key.
 - **No answer from Stripe** (a timeout): the row stays *pending* and is
   retried with the **same** idempotency key, so Stripe can't pay twice. A
   `transfer.created` webhook also records it.

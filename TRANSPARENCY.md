@@ -64,36 +64,52 @@ it. Any of these counts as a failure:
 
 In each case the app records a hold with score 100, marks it `scored_by =
 fallback`, and shows the explanation: *"Automatic hold: the AI check could not
-be completed, so a person will review this redemption."* That review is only
-partly built today (see below). See
+be completed, so a person will review this redemption."* No money moves
+until a person approves it (see below). See
 [`RedemptionFraudDetector`](app/Services/Fraud/RedemptionFraudDetector.php)
 and [ADR 0003](docs/adr/0003-fail-closed-fraud-detection.md).
 
-### Human review of holds (partly planned)
+### Human review of holds, and the gate on money
 
-A held redemption is never thrown away and never approved automatically. A
-person can see it, but **approving or rejecting it in the app is not built
-yet**:
+A held redemption is never thrown away and never approved automatically.
+**No money moves for it until a person decides**
+([ADR 0016](docs/adr/0016-fraud-detection-gates-stripe-transfers.md)):
 
-- **Today:** a held redemption gets the status *under review*. The employee's
-  credits stay reserved, so neither side loses anything while it waits. The
-  redemption appears on the BID admin view with the AI's score, decision and
-  explanation, and the admin view counts how many are waiting.
-- **Today:** a person at the BID approves or rejects each held redemption on
-  the admin view. Approving spends the reserved credits; rejecting returns
-  them to the employee. Who decided and when are recorded on the redemption
-  and in the append-only ledger, shown next to the AI's decision, and a
-  redemption can only be decided once.
-- **Planned:** a written reason with each decision, and the same buttons for
-  HR reviewers.
-- **Today (Stripe test mode, [ADR 0015](docs/adr/0015-stripe-connect-test-mode-separate-charges-and-transfers.md)):**
-  no money moves to a merchant for a held redemption. Only a cleared one
-  (by the AI, or approved by a person) that was funded by Stripe-paid
-  credits becomes a Stripe test-mode transfer; a rejected one never does.
-  Every transfer passes one named check, `TransferGate`, where a further
-  fraud gate will sit. It is test mode, so no real money moves, and every
-  money page says whether it is "Stripe test mode" or "Simulated". Nothing
-  sent to Stripe names an employee. See [docs/STRIPE.md](docs/STRIPE.md).
+- A held redemption is *under review*. The employee's credits stay
+  reserved. The BID admin view shows the AI's score, decision, explanation
+  and the anonymous signals it was given.
+- A BID admin or the platform admin presses **Approve** or **Deny** and
+  must write a short reason. Deny also asks why, which decides where the
+  credit goes: *suspected abuse* sends it back to the employer (so a
+  suspected colluder can't simply try again), *no purchase happened* gives
+  it back to the employee. Every decision records who, when, the reason
+  and what the AI originally said, and a redemption can only be decided
+  once. Judges can see all of this but can't decide.
+- **One gate for all money.** A transfer to a merchant happens only for a
+  redemption the AI cleared itself or a person approved after a hold
+  (`TransferGate`). Held, denied, unreviewed: no transfer. If the AI call
+  failed, the redemption was held, so only a person can release it. In
+  Stripe test mode an approved, Stripe-funded redemption sends exactly one
+  test-mode transfer; otherwise payouts are simulated. Every money page
+  says which. Nothing sent to Stripe names an employee. See
+  [docs/STRIPE.md](docs/STRIPE.md).
+- Each redemption shows its path, e.g. *AI held (risk 88) → approved by
+  BID admin S.T. → transferred tr_…*, on the review page and the merchant's
+  dashboard. People are shown by initials only.
+- **Reviewer decisions are not eval labels.** They are kept in their own
+  table and never feed the fraud eval, holdout_3, adjudication or the
+  `/eval` numbers. A person deciding a live case knows things the AI
+  didn't (the merchant, the receipt), so counting their decisions as
+  labels would change the score without the AI getting any better.
+- **What the demo can and can't show.** BID and platform admins have a "Run
+  a collusion example" button: one synthetic credit-to-cash redemption at
+  Farragut Grind, checked by the real AI, with the real answer shown, even
+  if the AI clears it. The two collusion patterns planted in the seed look
+  ordinary one redemption at a time; one of them (three people at one
+  salon within minutes) isn't visible in the signals the AI gets at all.
+  The tests prove that a hold moves no money, not that the AI catches
+  those patterns. Catching them needs a check across redemptions, which
+  would mean new signals, a new prompt version and a fresh holdout.
 
 ### How we measure it
 
