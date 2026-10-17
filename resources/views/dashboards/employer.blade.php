@@ -194,6 +194,16 @@
                 <dt class="text-sm font-semibold text-sage">Ready to give</dt>
                 <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($balance) }}</dd>
                 <dd class="mt-1 text-sm text-sage">Paid credits not yet given to employees</dd>
+                @if ($returned['count'] > 0)
+                    <dd class="mt-2 border-t border-sage/40 pt-2 text-sm text-cream" data-returned-credit="{{ $returned['cents'] }}">
+                        @if ($returned['cents'] <= $balance)
+                            Includes {{ Money::format($returned['cents']) }} returned from {{ $returned['count'] }} denied {{ Str::plural('redemption', $returned['count']) }}.
+                        @else
+                            {{ Money::format($returned['cents']) }} came back from {{ $returned['count'] }} denied {{ Str::plural('redemption', $returned['count']) }}; some of it has been given out again.
+                        @endif
+                        <a href="#credit-activity" class="font-semibold underline underline-offset-4">See returned credit</a>
+                    </dd>
+                @endif
             </x-card>
             <x-card>
                 <dt class="text-sm font-semibold text-muted">Pending payment</dt>
@@ -250,17 +260,38 @@
             </x-card>
 
             <x-card as="section" aria-labelledby="purchases-heading" padding="p-0">
-                <h3 id="purchases-heading" class="px-5 pt-5 text-xl font-semibold sm:px-6 sm:pt-6">Purchases</h3>
+                <h3 id="purchases-heading" class="px-5 pt-5 text-xl font-semibold sm:px-6 sm:pt-6">{{ $returned['count'] > 0 ? 'Purchases and returned credit' : 'Purchases' }}</h3>
                 @if (session('credits_error'))
                     <p role="alert" class="mx-5 mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold sm:mx-6">
                         <span aria-hidden="true">⚑</span> Payment didn't start: {{ session('credits_error') }} Nothing was charged; the purchase is still pending.
                     </p>
                 @endif
-                @if ($purchases->isEmpty())
+                @php
+                    // Purchases and returned credit in one list, newest first.
+                    $activity = $purchases->map(fn ($p) => ['at' => $p->purchased_at, 'purchase' => $p, 'entry' => null])
+                        ->concat($returned['entries']->map(fn ($e) => ['at' => $e->created_at, 'purchase' => null, 'entry' => $e]))
+                        ->sortByDesc('at')->values();
+                @endphp
+                @if ($activity->isEmpty())
                     <p class="px-5 pt-2 pb-5 text-muted sm:px-6">No purchases yet. Request one to fund your team's credits.</p>
                 @else
-                    <ul class="mt-2 divide-y divide-line/70">
-                        @foreach ($purchases as $purchase)
+                    <ul id="credit-activity" class="mt-2 scroll-mt-24 divide-y divide-line/70">
+                        @foreach ($activity as $item)
+                            @if ($entry = $item['entry'])
+                                @php $r = $entry->redemption; @endphp
+                                <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6" data-returned-entry="{{ $r?->id }}">
+                                    <div class="min-w-0">
+                                        <p class="tabular font-semibold">+{{ Money::format($entry->amount_cents) }}</p>
+                                        <p class="text-sm text-muted">
+                                            Denied redemption #{{ $r?->id }} · suspected abuse · decided by {{ $r?->decision?->deciderLabel() ?? 'a BID admin' }}
+                                            · {{ $r?->employee?->initials() }} · {{ $entry->created_at->setTimezone('America/New_York')->format('M j, Y') }}
+                                        </p>
+                                    </div>
+                                    <x-badge tone="neutral">Returned credit</x-badge>
+                                </li>
+                                @continue
+                            @endif
+                            @php $purchase = $item['purchase']; @endphp
                             <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
                                 <div class="min-w-0">
                                     <p class="tabular font-semibold">{{ Money::format($purchase->amount_cents) }}</p>

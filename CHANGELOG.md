@@ -23,6 +23,12 @@ commit history.
 - **Run a collusion example** (BID and platform admins only): a fresh
   synthetic credit-to-cash redemption at Farragut Grind, checked by the
   real AI, result shown as it is. Judges don't see it.
+- **Returned credit on the employer's Credits page.** Under "Ready to give":
+  "Includes $X returned from N denied redemptions", and a "Returned credit"
+  row for each suspected-abuse denial (redemption number, who decided,
+  employee initials). Returned credit stays covered by the Stripe payment
+  that funded it, so when it's given out and spent again it still
+  transfers through Stripe.
 - Reviewer decisions are stored apart from the eval and never change the
   `/eval` numbers. The fraud prompt, signals and eval data are unchanged.
 
