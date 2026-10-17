@@ -46,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
         // Who may change what. Judges pass none of these; BlockJudgeWrites
         // also stops them at the door, so both layers must agree.
         Gate::define('reset-demo', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
+        // Admins only: one real AI call per press (ADR 0016). Judges never see or use it.
+        Gate::define('run-collusion-example', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('decide-merchant-eligibility', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('redeem', fn (User $user) => $user->hasRole(Role::Employee));
         Gate::define('manage-employer-program', fn (User $user) => $user->hasRole(Role::EmployerAdmin));

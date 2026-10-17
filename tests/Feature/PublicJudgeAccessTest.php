@@ -52,7 +52,7 @@ class PublicJudgeAccessTest extends TestCase
         $this->get('/admin/feedback')->assertForbidden();
     }
 
-    public function test_it_cannot_approve_or_reject_a_held_redemption(): void
+    public function test_it_cannot_approve_or_deny_a_held_redemption_or_run_the_collusion_example(): void
     {
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(91, 'hold', 'Round number.'));
         $this->signIn(Role::Employee);
@@ -62,8 +62,9 @@ class PublicJudgeAccessTest extends TestCase
 
         $this->assertFalse($this->public->can('review', $held));
         $this->actingAs($this->public);
-        $this->post(route('bid-admin.approve', $held))->assertForbidden();
-        $this->post(route('bid-admin.reject', $held))->assertForbidden();
+        $this->post(route('bid-admin.approve', $held), ['reason' => 'Looks fine to me.'])->assertForbidden();
+        $this->post(route('bid-admin.deny', $held), ['reason' => 'Looks wrong to me.', 'denial' => 'suspected_abuse'])->assertForbidden();
+        $this->post(route('bid-admin.collusion-example'))->assertForbidden();
         $this->assertTrue($held->fresh()->isUnderReview());
         $this->assertNull($held->fresh()->reviewed_by_user_id);
     }

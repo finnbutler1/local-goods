@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\FeedbackInboxController;
 use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
+use App\Http\Controllers\BidAdmin\CollusionExampleController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
@@ -18,9 +19,9 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\JudgeLinkController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
-use App\Http\Controllers\LandingController;
 use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\StyleguideController;
 use Illuminate\Http\Request;
@@ -73,7 +74,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/eval', [FraudEvalController::class, 'admin'])->name('eval');
         Route::get('/participation', ParticipationController::class)->name('participation');
         Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->name('approve');
-        Route::post('/redemptions/{redemption}/reject', [ReviewRedemptionController::class, 'reject'])->name('reject');
+        Route::post('/redemptions/{redemption}/deny', [ReviewRedemptionController::class, 'deny'])->name('deny');
+        // Admins only, never judges: a fresh synthetic collusion example through the real AI check (ADR 0016).
+        Route::post('/collusion-example', CollusionExampleController::class)->middleware('throttle:5,1')->name('collusion-example');
         Route::post('/reset', ResetDemoController::class)->name('reset');
 
         // Merchant Eligibility Matching review queue: real candidates, never participants.

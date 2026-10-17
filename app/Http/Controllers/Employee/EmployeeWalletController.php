@@ -42,7 +42,7 @@ class EmployeeWalletController extends Controller
     {
         $employee = $this->employee($request);
         $balance = $employee->balanceCents();
-        $recent = $employee->redemptions()->with('merchant')->latest()->latest('id')->take(8)->get();
+        $recent = $employee->redemptions()->with(['merchant', 'decision'])->latest()->latest('id')->take(8)->get();
 
         // "Redeem here" on a merchant card picks that merchant in the form.
         $prefill = ['merchant_id' => $request->integer('merchant') ?: null, 'amount' => null];

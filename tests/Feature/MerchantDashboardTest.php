@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DenialReason;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
@@ -49,7 +50,7 @@ class MerchantDashboardTest extends TestCase
         $this->redeem(450, 'clear');
         $held = $this->redeem(1200, 'hold');
         $rejected = $this->redeem(800, 'hold');
-        app(RedemptionReviewService::class)->reject($rejected, User::factory()->role(Role::BidAdmin)->create());
+        app(RedemptionReviewService::class)->deny($rejected, User::factory()->role(Role::BidAdmin)->create(), 'No purchase happened.', DenialReason::NoPurchase);
 
         $this->get('/merchant')->assertOk()
             ->assertSee('Owed to you now')
@@ -58,12 +59,13 @@ class MerchantDashboardTest extends TestCase
             ->assertSee(Money::format($owedBefore + 450))
             ->assertSee('Waiting for review, not owed yet')
             ->assertSee('$12.00')
-            ->assertSee('Rejected, not owed')
+            ->assertSee('Denied, not owed')
+            ->assertSee('AI held (risk 90) → denied by BID admin')
             ->assertSee('J.R.');
 
         $this->assertSame($owedBefore + 450, $this->merchant->payableCents());
 
-        app(RedemptionReviewService::class)->approve($held, User::factory()->role(Role::BidAdmin)->create());
+        app(RedemptionReviewService::class)->approve($held, User::factory()->role(Role::BidAdmin)->create(), 'Checked with the merchant.');
         $this->assertSame($owedBefore + 450 + 1200, $this->merchant->payableCents());
     }
 
