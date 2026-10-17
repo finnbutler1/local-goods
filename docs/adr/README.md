@@ -21,3 +21,4 @@ trade-off in under a minute.
 | [0013](0013-merchant-eligibility-matching.md) | Merchant Eligibility Matching: an AI suggestion, a person's decision, measured against locked labels | Accepted, implemented |
 | [0014](0014-employer-program-pending-purchases-and-initials.md) | Employer program, purchases locked until paid, and initials only outside an employee's own wallet | Accepted, implemented |
 | [0015](0015-stripe-connect-test-mode-separate-charges-and-transfers.md) | Stripe Connect in test mode: separate charges and transfers, Stripe-funded payouts only | Accepted, implemented |
+| [0016](0016-fraud-detection-gates-stripe-transfers.md) | Redemption Fraud Detection gates Stripe transfers: one gate, recorded human decisions, denied credit to the employer for suspected abuse | Accepted, implemented |

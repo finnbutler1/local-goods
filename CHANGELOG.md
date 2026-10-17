@@ -3,6 +3,29 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-17: Redemption Fraud Detection gates Stripe transfers
+
+- **One gate for all money.** A merchant is paid only for a redemption the
+  AI cleared, or one a BID admin approved after the AI held it. Held,
+  denied or unreviewed: no transfer, ever. If the AI check fails, the
+  redemption is held and only a person can release it
+  ([ADR 0016](docs/adr/0016-fraud-detection-gates-stripe-transfers.md)).
+- **Approve or Deny with a reason.** Every decision on the fraud review
+  page needs a short reason and records who, when and what the AI said.
+  Deny asks why: suspected abuse sends the credit back to the employer;
+  "no purchase happened" gives it back to the employee. "Rejected" is now
+  "Denied" everywhere.
+- **Never two transfers.** One Stripe idempotency key per redemption, one
+  decision per redemption; double clicks and retries change nothing.
+- **Audit trail on screen:** each redemption shows its path, e.g. "AI held
+  (risk 88) → approved by BID admin S.T. → transferred tr_…", on the review
+  page and on the merchant dashboard.
+- **Run a collusion example** (BID and platform admins only): a fresh
+  synthetic credit-to-cash redemption at Farragut Grind, checked by the
+  real AI, result shown as it is. Judges don't see it.
+- Reviewer decisions are stored apart from the eval and never change the
+  `/eval` numbers. The fraud prompt, signals and eval data are unchanged.
+
 ## 2026-10-16: Stripe Connect in test mode
 
 - **Employers pay through Stripe Checkout (test mode).** "Pay with Stripe

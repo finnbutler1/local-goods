@@ -5,8 +5,37 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Fraud gate on Stripe transfers — built (Prompt 8, ADR 0016).** Built only
+around the AI: the fraud prompt (`8d5e1e70`), signals, model and eval data
+are unchanged.
+
+- `TransferGate::allows` re-reads the row: approved + merchant earning in
+  the ledger + (AI cleared itself via `Redemption::wasClearedByAi`, or a
+  `redemption_decisions` Approve). Held, denied, unreviewed, seed: never.
+  `MerchantPayouts::sendOne` is the only `createTransfer` caller and asks
+  the gate first; `FraudGateTest` checks this (source scan + gate shut).
+- Decisions: `RedemptionReviewService::approve($r, $user, $reason)` /
+  `deny($r, $user, $reason, DenialReason)`. Append-only
+  `redemption_decisions`, one per redemption (unique index), reason
+  required, keeps the AI's original answer. Deny: `SuspectedAbuse` →
+  employer pool (`review_denied_to_employer`), `NoPurchase` → employee
+  (`review_rejected`). Stored status stays `rejected`; the UI says
+  "Denied". Not eval labels: never read by the fraud eval, `/eval` or
+  adjudication. In DEMO_TABLES; `demo:seed-if-empty` ignores it
+  (`DemoResetter::EMPTY_AFTER_SEED`).
+- Idempotency: `MerchantPayouts::idempotencyKey` (instance, redemption,
+  row created, `attempts`); attempts only go up after a definite refusal.
+- Audit trail: `Redemption::auditTrail()` on `/bid-admin` and `/merchant`
+  (load `decision` and `stripePayout`). Staff by `User::initialsOf`.
+- "Run a collusion example" (`bid-admin.collusion-example`,
+  `run-collusion-example` gate, throttled): one real AI call, a seeded
+  synthetic employee (never Jordan) at Farragut Grind. Hidden from judges.
+- Honest limit: the planted collusion patterns look ordinary one
+  redemption at a time; catching them needs new signals (new prompt
+  version + fresh holdout, Finn's say-so).
+
 **Stripe Connect, test mode — built (ADR 0015, `docs/STRIPE.md`).** Separate
-charges and transfers. Next milestone: Prompt 8 (fraud gate on transfers).
+charges and transfers.
 
 - Mode: `App\Support\StripeMode::active()` only with `STRIPE_KEY`,
   `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` all set and test keys; otherwise
@@ -21,8 +50,8 @@ charges and transfers. Next milestone: Prompt 8 (fraud gate on transfers).
   redemption in Stripe mode covered by a Stripe-paid purchase (oldest first);
   everything else, including all seeded history, stays simulated and is
   never sent to Stripe. `MerchantPayouts::send` runs after commit, only once
-  the merchant is onboarded. `TransferGate::allows` is where Prompt 8's fraud
-  gate goes. Ledger payout entries only for `sent`/`simulated` rows.
+  the merchant is onboarded. `TransferGate::allows` is the fraud gate
+  (ADR 0016). Ledger payout entries only for `sent`/`simulated` rows.
 - Webhook `/stripe/webhook` in `routes/stripe.php`, outside the web group (no
   session/CSRF/user); signature is the only auth; `stripe_events` dedupes
   (not a demo table). The judge sweep skips only `stripe.webhook`.
@@ -98,8 +127,9 @@ holdout. Web search is future work.
 
 Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
-Eligibility Matching (ADR 0013), the money loop screens (ADR 0014) and
-Stripe Connect test mode (ADR 0015).
+Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
+Stripe Connect test mode (ADR 0015) and the fraud gate on transfers
+(ADR 0016, Prompt 8).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -307,7 +337,8 @@ snapshot step by name when the build says the deploy includes migrations.
    `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
    as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
    With Stripe keys set: the employer page shows "Stripe test mode", and
-   `/admin/reconciliation` says everything matches.
+   `/admin/reconciliation` says everything matches. As the BID admin, press
+   "Run a collusion example" once (one AI call) and check its path line.
 6. Never click New link on the live public judge or named reviewer rows.
 
 ## Contest
