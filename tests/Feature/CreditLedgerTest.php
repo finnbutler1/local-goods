@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DenialReason;
 use App\Enums\Occasion;
+use App\Enums\Role;
 use App\Models\Bid;
 use App\Models\CreditAllocation;
 use App\Models\CreditLedgerEntry;
@@ -34,7 +36,9 @@ class CreditLedgerTest extends TestCase
     use RefreshDatabase;
 
     private Employer $employer;
+
     private Employee $employee;
+
     private Merchant $merchant;
 
     protected function setUp(): void
@@ -120,7 +124,7 @@ class CreditLedgerTest extends TestCase
         $this->fund();
         $held = $this->redeem(5000, 'hold');
 
-        app(RedemptionReviewService::class)->approve($held, User::factory()->create());
+        app(RedemptionReviewService::class)->approve($held, User::factory()->role(Role::BidAdmin)->create(), 'Checked with the merchant.');
 
         $this->assertSame(10000, $this->employee->balanceCents());
         $this->assertSame(5000, $this->merchant->payableCents());
@@ -131,7 +135,7 @@ class CreditLedgerTest extends TestCase
         $this->fund();
         $held = $this->redeem(5000, 'hold');
 
-        app(RedemptionReviewService::class)->reject($held, User::factory()->create());
+        app(RedemptionReviewService::class)->deny($held, User::factory()->role(Role::BidAdmin)->create(), 'No purchase happened.', DenialReason::NoPurchase);
 
         $this->assertSame(15000, $this->employee->balanceCents());
         $this->assertSame(0, $this->merchant->payableCents());
@@ -179,8 +183,8 @@ class CreditLedgerTest extends TestCase
         $approved = $this->redeem(3000, 'hold');
         $rejected = $this->redeem(2000, 'hold');
         $this->redeem(1000, 'hold');
-        app(RedemptionReviewService::class)->approve($approved, User::factory()->create());
-        app(RedemptionReviewService::class)->reject($rejected, User::factory()->create());
+        app(RedemptionReviewService::class)->approve($approved, User::factory()->role(Role::BidAdmin)->create(), 'Checked with the merchant.');
+        app(RedemptionReviewService::class)->deny($rejected, User::factory()->role(Role::BidAdmin)->create(), 'No purchase happened.', DenialReason::NoPurchase);
         $this->ledger()->payout($this->merchant, 4000, MerchantPayout::STATUS_SIMULATED);
         // Requested but not paid: not in the ledger, so not counted.
         $this->ledger()->requestPurchase($this->employer, 70000, 'MPG-2');

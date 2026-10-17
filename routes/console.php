@@ -15,12 +15,13 @@ Artisan::command('inspire', function () {
 // Run by the Beanstalk deploy hook. Seeds the demo only into an empty
 // database, so deploying never overwrites or duplicates existing data.
 Artisan::command('demo:seed-if-empty', function () {
-    $filled = array_filter(DemoResetter::DEMO_TABLES, fn ($table) => DB::table($table)->exists());
+    $seeded = array_diff(DemoResetter::DEMO_TABLES, DemoResetter::EMPTY_AFTER_SEED);
+    $filled = array_filter($seeded, fn ($table) => DB::table($table)->exists());
 
     if ($filled === []) {
         DB::transaction(fn () => (new DatabaseSeeder)->run());
         $this->info('Demo tables were empty: seeded the demo data.');
-    } elseif (count($filled) === count(DemoResetter::DEMO_TABLES)) {
+    } elseif (count($filled) === count($seeded)) {
         $this->info('Demo data already present: nothing changed.');
     } else {
         $this->warn('Some demo tables are empty and some are not ('.implode(', ', $filled).' have rows). Left everything as is; use Reset demo to restore it.');
