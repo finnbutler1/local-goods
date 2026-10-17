@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Employer;
 use App\Enums\Occasion;
 use App\Http\Controllers\Controller;
 use App\Models\CreditAllocation;
+use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
-use App\Models\Employee;
 use App\Models\Employer;
 use App\Services\CreditLedger;
 use App\Services\EmployerMetrics;
 use App\Services\EmployerProgram;
 use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
-use App\Support\StripeMode;
 use App\Support\Money;
+use App\Support\StripeMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -65,9 +65,29 @@ class EmployerDashboardController extends Controller
             'allocatedThisMonth' => EmployerProgram::allocatedInMonthCents($employer),
             'remainingBudget' => EmployerProgram::remainingBudgetCents($employer),
             'purchases' => $employer->creditPurchases()->latest('purchased_at')->latest('id')->take(8)->get(),
+            'returned' => self::returnedCredit($employer),
             'allocationGroups' => self::recentAllocationGroups($employer),
             'employees' => $employees,
         ]);
+    }
+
+    /**
+     * Credit that came back to the employer because a BID admin denied a held
+     * redemption as suspected abuse (ADR 0016): the total, how many, and the
+     * newest entries for the credits activity. Already part of "Ready to
+     * give", since the balance is the sum of the employer's ledger entries.
+     *
+     * @return array{cents: int, count: int, entries: Collection<int, CreditLedgerEntry>}
+     */
+    public static function returnedCredit(Employer $employer, int $recent = 8): array
+    {
+        $query = fn () => $employer->ledgerEntries()->where('type', CreditLedgerEntry::TYPE_REVIEW_DENIED_TO_EMPLOYER);
+
+        return [
+            'cents' => (int) $query()->sum('amount_cents'),
+            'count' => $query()->count(),
+            'entries' => $query()->with(['redemption.employee', 'redemption.decision'])->latest('created_at')->latest('id')->take($recent)->get(),
+        ];
     }
 
     /**
