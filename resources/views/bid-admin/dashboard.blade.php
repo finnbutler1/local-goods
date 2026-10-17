@@ -8,7 +8,7 @@
         <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Redemption Fraud Detection</h1>
         <p class="mt-3 text-lg text-muted">
             Every new redemption is scored by AI from anonymous signals (no names) before any merchant is paid.
-            The AI can be wrong, so a held redemption is never approved or rejected automatically: a person at the BID decides.
+            The AI can be wrong, so a held redemption is never approved or denied automatically: a person at the BID decides.
             If the AI check fails for any reason, the redemption is held, never cleared.
         </p>
         <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
