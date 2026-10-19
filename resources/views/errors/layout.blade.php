@@ -7,9 +7,10 @@
 
 @section('content')
     @php
-        // Our own abort() messages ("Your account is read-only.") help; Laravel's generic ones don't.
-        $detail = isset($exception) ? trim($exception->getMessage()) : '';
-        $generic = ['', 'This action is unauthorized.', 'Not Found', 'Forbidden', 'Too Many Attempts.', 'Server Error', 'Service Unavailable', 'Page Expired', 'CSRF token mismatch.'];
+        // Only 403s carry our own reasons ("Your account is read-only."). Other codes' messages
+        // come from the framework and can name internals ("No query results for model …").
+        $detail = $code === 403 && isset($exception) ? trim($exception->getMessage()) : '';
+        $generic = ['', 'This action is unauthorized.', 'Forbidden'];
         $signedIn = rescue(fn () => auth()->check(), false, false);
     @endphp
     <section aria-labelledby="error-heading" class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
