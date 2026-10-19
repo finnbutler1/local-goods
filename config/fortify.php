@@ -101,7 +101,8 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    // throttle:auth-forms limits every form post (FortifyServiceProvider).
+    'middleware' => ['web', 'throttle:auth-forms'],
 
     /*
     |--------------------------------------------------------------------------
