@@ -201,7 +201,7 @@
                 <p class="mt-3 max-w-3xl text-sm">
                     Source: {{ $source['publisher'] }}, “{{ $source['title'] }}” (with {{ $source['partner'] }}), data from {{ $source['data_years'] }},
                     {{ $source['sample'] }}.
-                    <a href="{{ $source['url'] }}" class="{{ $link }}" rel="noopener">Read the American Booksellers Association write-up</a>.
+                    <a href="{{ $source['url'] }}" class="{{ $link }}" rel="noopener">Read the Publishers Weekly report on the study</a>.
                 </p>
             </aside>
         @endif
