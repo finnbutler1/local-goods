@@ -41,10 +41,14 @@ Route::redirect('/demo/{any?}', '/login')->where('any', '.*');
 // Login, logout and password reset routes come from Laravel Fortify
 // (see App\Providers\FortifyServiceProvider). There is no registration.
 
+// Rate limits: "throttle:N,1,<route name>" gives each route its own counter.
+// Without the third part every throttle:N,1 route shares one counter per
+// person, so one busy button would lock out the others (RateLimitsTest).
+
 // Reviewers' magic links: /judge-access#<id>.<token> signs them straight in,
 // read-only, until judging ends. Rate-limited per visitor IP.
-Route::get('/judge-access', [JudgeLinkController::class, 'show'])->middleware('throttle:20,1')->name('judge-access.show');
-Route::post('/judge-access', [JudgeLinkController::class, 'store'])->middleware('throttle:10,1')->name('judge-access.store');
+Route::get('/judge-access', [JudgeLinkController::class, 'show'])->middleware('throttle:20,1,judge-access.show')->name('judge-access.show');
+Route::post('/judge-access', [JudgeLinkController::class, 'store'])->middleware('throttle:10,1,judge-access.store')->name('judge-access.store');
 // The old single-use password invite links no longer work.
 Route::get('/invite/{any}', [JudgeLinkController::class, 'ended'])->where('any', '.*');
 
@@ -67,7 +71,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:employee')->group(function () {
         Route::get('/employee', [EmployeeWalletController::class, 'show'])->name('employee.wallet');
-        Route::post('/employee/redeem', [EmployeeWalletController::class, 'redeem'])->name('employee.redeem');
+        // One Redemption Fraud Detection call to Claude each, so rate-limited (AppServiceProvider).
+        Route::post('/employee/redeem', [EmployeeWalletController::class, 'redeem'])->middleware('throttle:redeem')->name('employee.redeem');
     });
 
     Route::middleware('role:bid_admin,platform_admin')->prefix('bid-admin')->name('bid-admin.')->group(function () {
@@ -75,16 +80,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/eval', [FraudEvalController::class, 'admin'])->name('eval');
         Route::get('/participation', ParticipationController::class)->name('participation');
         Route::get('/impact', ImpactController::class)->name('impact');
-        Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->name('approve');
-        Route::post('/redemptions/{redemption}/deny', [ReviewRedemptionController::class, 'deny'])->name('deny');
+        Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->middleware('throttle:30,1,bid-admin.approve')->name('approve');
+        Route::post('/redemptions/{redemption}/deny', [ReviewRedemptionController::class, 'deny'])->middleware('throttle:30,1,bid-admin.deny')->name('deny');
         // Admins only, never judges: a fresh synthetic collusion example through the real AI check (ADR 0016).
-        Route::post('/collusion-example', CollusionExampleController::class)->middleware('throttle:5,1')->name('collusion-example');
-        Route::post('/reset', ResetDemoController::class)->name('reset');
+        Route::post('/collusion-example', CollusionExampleController::class)->middleware('throttle:5,1,bid-admin.collusion-example')->name('collusion-example');
+        Route::post('/reset', ResetDemoController::class)->middleware('throttle:5,1,bid-admin.reset')->name('reset');
 
         // Merchant Eligibility Matching review queue: real candidates, never participants.
         Route::get('/merchants', [MerchantEligibilityController::class, 'index'])->name('merchants');
         Route::post('/merchants/{candidate}/decisions', [MerchantEligibilityController::class, 'decide'])
-            ->where('candidate', 'MC-\d{3}')->name('merchants.decide');
+            ->where('candidate', 'MC-\d{3}')->middleware('throttle:30,1,bid-admin.merchants.decide')->name('merchants.decide');
     });
 
     // Employer/HR dashboard. Purchases stay pending until "Pay now" (simulated, ADR 0014).
@@ -98,10 +103,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:merchant')->group(function () {
         Route::get('/merchant', MerchantDashboardController::class)->name('merchant.dashboard');
         // Stripe Express onboarding, test mode (ADR 0015). Only the merchant's own login; GETs create nothing.
-        Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1')->name('merchant.stripe.onboard');
-        Route::post('/merchant/stripe/sync', [StripeOnboardingController::class, 'sync'])->middleware('throttle:20,1')->name('merchant.stripe.sync');
+        Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1,merchant.stripe.onboard')->name('merchant.stripe.onboard');
+        Route::post('/merchant/stripe/sync', [StripeOnboardingController::class, 'sync'])->middleware('throttle:20,1,merchant.stripe.sync')->name('merchant.stripe.sync');
         Route::get('/merchant/stripe/refresh', [StripeOnboardingController::class, 'refresh'])->name('merchant.stripe.refresh');
-        Route::get('/merchant/stripe/return', [StripeOnboardingController::class, 'return'])->middleware('throttle:20,1')->name('merchant.stripe.return');
+        Route::get('/merchant/stripe/return', [StripeOnboardingController::class, 'return'])->middleware('throttle:20,1,merchant.stripe.return')->name('merchant.stripe.return');
     });
     Route::middleware('role:judge')->group(function () {
         Route::get('/judge', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
@@ -111,7 +116,7 @@ Route::middleware('auth')->group(function () {
         // "Help check the AI": blind votes on eval cases (ADR 0011). Every judge
         // can open the page; only named BID and contest-judge reviewers can vote.
         Route::get('/adjudicate', [AdjudicateController::class, 'show'])->name('adjudication.show');
-        Route::middleware('throttle:60,1')->group(function () {
+        Route::middleware('throttle:60,1,adjudication')->group(function () {
             Route::post('/adjudicate/start', [AdjudicateController::class, 'start'])->name('adjudication.start');
             Route::post('/adjudicate/cases/{adjudicationCase}', [AdjudicateController::class, 'vote'])->name('adjudication.vote');
             Route::post('/adjudicate/submit', [AdjudicateController::class, 'submit'])->name('adjudication.submit');
@@ -129,7 +134,7 @@ Route::middleware('auth')->group(function () {
 
         // Ledger next to Stripe, Stripe-funded activity only (ADR 0015).
         Route::get('/admin/reconciliation', [ReconciliationController::class, 'index'])->name('admin.reconciliation');
-        Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1')->name('admin.reconciliation.retry');
+        Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1,admin.reconciliation.retry')->name('admin.reconciliation.retry');
 
         Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
         Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');

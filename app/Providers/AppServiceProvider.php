@@ -23,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
 
     public const PUBLIC_FEEDBACK_PER_DAY = 20;
 
+    public const REDEEM_PER_MINUTE = 10;
+
     /**
      * Register any application services.
      */
@@ -71,6 +73,9 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perDay(self::PUBLIC_FEEDBACK_PER_DAY)->by('public-feedback-day|'.$request->ip()),
             ]
             : Limit::perMinute(10)->by('feedback|'.($request->user()?->id ?: $request->ip())));
+
+        // Each redemption is one Redemption Fraud Detection call to Claude.
+        RateLimiter::for('redeem', fn (Request $request) => Limit::perMinute(self::REDEEM_PER_MINUTE)->by('redeem|'.($request->user()?->id ?: $request->ip())));
 
         // "What's new since your last visit" compares against previous_visit_at.
         Event::listen(function (Login $event) {

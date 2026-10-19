@@ -10,5 +10,5 @@ use Illuminate\Support\Facades\Route;
  * The Stripe signature is the only authentication (ADR 0015).
  */
 Route::post('/stripe/webhook', StripeWebhookController::class)
-    ->middleware('throttle:300,1')
+    ->middleware('throttle:300,1,stripe.webhook')
     ->name('stripe.webhook');
