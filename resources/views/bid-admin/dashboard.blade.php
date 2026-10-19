@@ -25,14 +25,9 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
-        @if (session('error'))
-            <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">{{ session('error') }}</p>
-        @endif
+        <x-flash />
         @if ($example = $exampleId ? $redemptions->firstWhere('id', $exampleId) : null)
-            <div class="rounded-2xl border-2 {{ $example->isUnderReview() ? 'border-hold bg-hold-bg' : 'border-ok bg-ok-bg' }} p-4" data-collusion-example="{{ $example->id }}">
+            <div class="rounded-2xl border-2 {{ $example->isUnderReview() ? 'border-hold bg-hold-bg' : 'border-ok bg-ok-bg' }} p-4" tabindex="-1" data-flash data-collusion-example="{{ $example->id }}">
                 <p class="font-semibold">
                     Collusion example: {{ Money::format($example->amount_cents) }} at {{ $example->merchant->name }} by {{ $example->employee->publicLabel() }} (synthetic).
                     The real AI {{ $example->scored_by === 'fallback' ? 'check failed, so it was held automatically' : ($example->isUnderReview() ? 'held it' : 'cleared it') }}.
@@ -63,14 +58,14 @@
 
         <div class="flex flex-wrap items-start gap-4">
         @can('run-collusion-example')
-            <form method="POST" action="{{ route('bid-admin.collusion-example') }}">
+            <form method="POST" action="{{ route('bid-admin.collusion-example') }}" data-busy="Asking the AI… this can take a few seconds">
                 @csrf
                 <x-button type="submit" variant="accent" aria-describedby="example-help">Run a collusion example</x-button>
                 <p id="example-help" class="mt-1.5 max-w-xs text-sm text-muted">A fresh synthetic redemption at Farragut Grind with a credit-to-cash pattern, checked by the real AI. One AI call.</p>
             </form>
         @endcan
         @can('reset-demo')
-            <form method="POST" action="{{ route('bid-admin.reset') }}"
+            <form method="POST" action="{{ route('bid-admin.reset') }}" data-busy="Resetting the demo…"
                   onsubmit="return confirm('Reset the demo? This removes every redemption made since the last deploy and restores the seeded data.');">
                 @csrf
                 <x-button type="submit" variant="secondary" aria-describedby="reset-help">Reset demo</x-button>
@@ -145,7 +140,7 @@
                         </div>
                         @can('review', $redemption)
                             @php $bag = $errors->getBag("review{$redemption->id}"); @endphp
-                            <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}" class="mt-3 space-y-3 rounded-xl border border-hold/30 bg-paper p-4">
+                            <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}" data-busy="Saving your decision…" class="mt-3 space-y-3 rounded-xl border border-hold/30 bg-paper p-4">
                                 @csrf
                                 <div class="space-y-1.5">
                                     <label for="reason-{{ $redemption->id }}" class="block font-semibold">Reason for your decision <span class="font-normal text-muted">(required, kept with the decision)</span></label>
@@ -158,7 +153,7 @@
                                         <p id="reason-{{ $redemption->id }}-error" class="text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $bag->first('reason') }}</p>
                                     @endif
                                 </div>
-                                <fieldset class="space-y-1.5" @if ($bag->has('denial')) aria-describedby="denial-{{ $redemption->id }}-error" @endif>
+                                <fieldset class="space-y-1.5" @if ($bag->has('denial')) role="radiogroup" aria-invalid="true" aria-describedby="denial-{{ $redemption->id }}-error" @endif>
                                     <legend class="font-semibold">If you deny it, where does the credit go?</legend>
                                     @foreach (\App\Enums\DenialReason::cases() as $why)
                                         <label class="flex items-start gap-2 text-sm">

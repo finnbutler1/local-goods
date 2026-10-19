@@ -38,12 +38,7 @@
         @elseif ($checkout === 'cancelled')
             <p class="rounded-2xl border-2 border-line bg-cream-deep p-4 font-semibold">Payment cancelled. Nothing was charged; the purchase is still pending.</p>
         @endif
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
-        @if (session('error'))
-            <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">{{ session('error') }}</p>
-        @endif
+        <x-flash />
     </div>
 
     @if ($readOnly)
@@ -244,7 +239,7 @@
                         (simulated), and only then can the credits be given out.
                     </p>
                 @endif
-                <form method="POST" action="{{ route('employer.purchases.store') }}" class="mt-4">
+                <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="Saving…" class="mt-4">
                     @csrf
                     <fieldset @disabled($readOnly) class="space-y-4">
                         <legend class="sr-only">Buy credits</legend>
@@ -262,7 +257,7 @@
             <x-card as="section" aria-labelledby="purchases-heading" padding="p-0">
                 <h3 id="purchases-heading" class="px-5 pt-5 text-xl font-semibold sm:px-6 sm:pt-6">{{ $returned['count'] > 0 ? 'Purchases and returned credit' : 'Purchases' }}</h3>
                 @if (session('credits_error'))
-                    <p role="alert" class="mx-5 mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold sm:mx-6">
+                    <p role="alert" tabindex="-1" data-flash class="mx-5 mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold sm:mx-6">
                         <span aria-hidden="true">⚑</span> Payment didn't start: {{ session('credits_error') }} Nothing was charged; the purchase is still pending.
                     </p>
                 @endif
@@ -303,7 +298,7 @@
                                         @if ($readOnly)
                                             <span class="text-sm text-muted">Read-only: judges can't pay</span>
                                         @else
-                                            <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}">
+                                            <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}" data-busy="Paying…">
                                                 @csrf
                                                 @if ($stripe)
                                                     <x-button type="submit" size="sm" aria-describedby="test-card-hint" aria-label="Pay with Stripe, test mode, for {{ $purchase->reference }}">Pay with Stripe (test mode)</x-button>
@@ -343,7 +338,7 @@
         </div>
 
         @if ($errors->hasAny(['amount', 'employee_id', 'employee_ids', 'occasion', 'recipients']))
-            <p role="alert" class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">
+            <p id="allocate-error" role="alert" class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">
                 <span aria-hidden="true">⚑</span> {{ $errors->first('amount') ?: $errors->first('employee_id') ?: $errors->first('employee_ids') ?: $errors->first('occasion') ?: $errors->first('recipients') }}
             </p>
         @endif
@@ -353,15 +348,20 @@
         @else
         <div class="grid gap-3 lg:grid-cols-2">
             @foreach (['individual' => 'One person', 'bulk' => 'Several people at once'] as $mode => $title)
+                @php
+                    // The one error above both forms belongs to the field that caused it, in the form that was sent.
+                    $invalid = fn (string ...$fields) => old('mode') === $mode && $errors->hasAny($fields)
+                        ? 'aria-invalid="true" aria-describedby="allocate-error"' : '';
+                @endphp
                 <x-card as="section" aria-labelledby="{{ $mode }}-heading">
                     <h3 id="{{ $mode }}-heading" class="text-xl font-semibold">{{ $title }}</h3>
-                    <form method="POST" action="{{ route('employer.allocations.store') }}" class="mt-4">
+                    <form method="POST" action="{{ route('employer.allocations.store') }}" data-busy="Giving credits…" class="mt-4">
                         @csrf
                         <input type="hidden" name="mode" value="{{ $mode }}">
                         <fieldset @disabled($readOnly) class="space-y-4">
                             <legend class="sr-only">Give credits to {{ strtolower($title) }}</legend>
                             <x-field name="occasion" id="{{ $mode }}-occasion" label="Occasion" :error="false">
-                                <select id="{{ $mode }}-occasion" name="occasion" required data-fill-amount="#{{ $mode }}-amount" class="{{ $input }} border-muted">
+                                <select id="{{ $mode }}-occasion" name="occasion" required data-fill-amount="#{{ $mode }}-amount" class="{{ $input }} border-muted" {!! $invalid('occasion') !!}>
                                     @foreach ($employer->activeOccasions() as $occasion)
                                         <option value="{{ $occasion->value }}" data-amount="{{ Money::toDollars($employer->occasionCents($occasion)) }}"
                                                 @selected(old('mode') === $mode ? old('occasion') === $occasion->value : $occasion === Occasion::Monthly)>
@@ -373,7 +373,7 @@
 
                             @if ($mode === 'individual')
                                 <x-field name="employee_id" id="individual-employee" label="Employee" :error="false">
-                                    <select id="individual-employee" name="employee_id" required class="{{ $input }} border-muted">
+                                    <select id="individual-employee" name="employee_id" required class="{{ $input }} border-muted" {!! $invalid('employee_id') !!}>
                                         <option value="">Choose an employee</option>
                                         @foreach ($employees as $employee)
                                             <option value="{{ $employee->id }}" @selected((string) old('employee_id') === (string) $employee->id)>
@@ -383,7 +383,7 @@
                                     </select>
                                 </x-field>
                             @else
-                                <fieldset class="space-y-2">
+                                <fieldset class="space-y-2" @if ($invalid('recipients', 'employee_ids', 'employee_id')) role="radiogroup" @endif {!! $invalid('recipients', 'employee_ids', 'employee_id') !!}>
                                     <legend class="font-semibold">Who</legend>
                                     <label class="flex items-center gap-2">
                                         <input type="radio" name="recipients" value="all" class="size-5 accent-forest" @checked(old('recipients', 'all') === 'all')>
@@ -395,7 +395,8 @@
                                     </label>
                                     <details class="rounded-xl border-2 border-muted/40" @if (old('recipients') === 'selected') open @endif>
                                         <summary class="cursor-pointer px-3 py-2 font-semibold text-forest">Choose people</summary>
-                                        <ul class="grid max-h-56 grid-cols-1 gap-1 overflow-y-auto px-3 pb-3 sm:grid-cols-2">
+                                        {{-- Read-only, the checkboxes can't take focus, so the list itself does, to scroll it by keyboard. --}}
+                                        <ul class="grid max-h-56 grid-cols-1 gap-1 overflow-y-auto px-3 pb-3 sm:grid-cols-2" aria-label="Employees" @if ($readOnly) tabindex="0" @endif>
                                             @foreach ($employees as $employee)
                                                 <li>
                                                     <label class="flex items-center gap-2 text-sm">
@@ -413,7 +414,7 @@
                             <x-field name="amount" id="{{ $mode }}-amount" label="Amount each, in dollars" :error="false">
                                 <input id="{{ $mode }}-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" required
                                        value="{{ old('mode') === $mode ? old('amount') : Money::toDollars($employer->monthly_allowance_cents) }}"
-                                       class="{{ $input }} tabular border-muted">
+                                       class="{{ $input }} tabular border-muted" {!! $invalid('amount') !!}>
                             </x-field>
                             <x-button type="submit" :aria-describedby="$readOnly ? 'read-only-note' : null">{{ $mode === 'individual' ? 'Give credits' : 'Give credits to everyone chosen' }}</x-button>
                         </fieldset>
@@ -474,7 +475,7 @@
         <x-card>
             <h2 id="program-heading" class="text-2xl font-semibold text-forest">Program setup</h2>
             <p class="mt-1 text-muted">Your monthly budget caps how much can be given out each calendar month, across allowances and occasions.</p>
-            <form method="POST" action="{{ route('employer.program.update') }}" class="mt-5">
+            <form method="POST" action="{{ route('employer.program.update') }}" data-busy="Saving…" class="mt-5">
                 @csrf
                 <fieldset @disabled($readOnly) class="space-y-6">
                     <legend class="sr-only">Program setup</legend>

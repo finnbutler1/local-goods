@@ -12,14 +12,12 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
+        <x-flash />
     </div>
 
     <x-card as="section" aria-labelledby="new-heading" class="max-w-2xl">
         <h2 id="new-heading" class="text-2xl font-semibold text-forest">New entry</h2>
-        <form method="POST" action="{{ route('admin.changelog.store') }}" class="mt-4 space-y-4">
+        <form method="POST" action="{{ route('admin.changelog.store') }}" data-busy="Saving…" class="mt-4 space-y-4">
             @csrf
             <x-field name="title" label="Title">
                 <input id="title" name="title" type="text" required maxlength="150" value="{{ old('title') }}"

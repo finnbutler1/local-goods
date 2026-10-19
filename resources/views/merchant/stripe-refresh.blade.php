@@ -6,7 +6,7 @@
         </div>
         <p class="mt-2 text-muted">Stripe onboarding links only work for a few minutes. Start a fresh one to carry on where you left off.</p>
         @if ($canOnboard)
-            <form method="POST" action="{{ route('merchant.stripe.onboard') }}" class="mt-4">
+            <form method="POST" action="{{ route('merchant.stripe.onboard') }}" data-busy="Opening Stripe…" class="mt-4">
                 @csrf
                 <x-button type="submit" variant="accent">Continue Stripe onboarding (test mode)</x-button>
             </form>

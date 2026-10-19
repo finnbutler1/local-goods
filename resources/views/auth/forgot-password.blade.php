@@ -10,7 +10,7 @@
             <p role="status" class="mt-5 rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
         @endif
 
-        <form method="POST" action="{{ route('password.email') }}" class="mt-6 space-y-5">
+        <form method="POST" action="{{ route('password.email') }}" data-busy="Sending…" class="mt-6 space-y-5">
             @csrf
             <x-field name="email" label="Email">
                 <input id="email" name="email" type="email" autocomplete="username" required autofocus
