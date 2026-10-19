@@ -87,12 +87,13 @@ class LandingPageTest extends TestCase
             ->assertSee('Not affiliated with the Golden Triangle BID.');
     }
 
-    public function test_payouts_are_not_described_as_live(): void
+    public function test_stripe_is_described_as_test_mode_neither_missing_nor_live(): void
     {
-        // Stripe Connect isn't built yet: the page must not say merchants are paid out today.
+        // Stripe Connect is built, in test mode only (ADR 0015).
         $this->get('/')->assertOk()
-            ->assertDontSee('paid out directly')
-            ->assertSee('Stripe Connect (test mode) come in a later build');
+            ->assertSee('Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.')
+            ->assertDontSee('later build')
+            ->assertDontSee('paid out directly');
     }
 
     public function test_impact_strip_shows_the_ledger_totals_labelled_as_fictional_demo_data(): void

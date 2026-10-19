@@ -21,7 +21,8 @@ class JudgeLandingTest extends TestCase
             ->assertSee('Redemption Fraud Detection')
             ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Merchant eligibility check', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
             ->assertDontSee('Coming in a later build')
-            ->assertSee('Payments will run through Stripe Connect in test mode in a later build')
+            ->assertSee('Payments and merchant payouts run on Stripe Connect in test mode (real Stripe transactions, no real money)')
+            ->assertDontSee('later build')
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
 
