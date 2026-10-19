@@ -8,6 +8,18 @@ namespace App\Support;
 class SignalPresenter
 {
     /**
+     * Says exactly what SignalCalculator checks for is_round_number, built
+     * from the same config values. Display text only.
+     */
+    public static function roundAmountLabel(): string
+    {
+        $dollars = fn (int $cents) => $cents % 100 === 0 ? '$'.number_format(intdiv($cents, 100)) : Money::format($cents);
+
+        return 'Round amount (a multiple of '.$dollars((int) config('fraud.round_number_step_cents'))
+            .', and at least '.$dollars((int) config('fraud.round_number_min_cents')).')';
+    }
+
+    /**
      * @param  array<string, mixed>  $s
      * @return list<array{label: string, value: string, flagged: bool}>
      */
@@ -18,7 +30,7 @@ class SignalPresenter
 
         return [
             [
-                'label' => 'Round number',
+                'label' => self::roundAmountLabel(),
                 'value' => $yesNo($s['is_round_number'] ?? false),
                 'flagged' => (bool) ($s['is_round_number'] ?? false),
             ],
