@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\CollusionExampleController;
+use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
@@ -73,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', BidAdminController::class)->name('dashboard');
         Route::get('/eval', [FraudEvalController::class, 'admin'])->name('eval');
         Route::get('/participation', ParticipationController::class)->name('participation');
+        Route::get('/impact', ImpactController::class)->name('impact');
         Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->name('approve');
         Route::post('/redemptions/{redemption}/deny', [ReviewRedemptionController::class, 'deny'])->name('deny');
         // Admins only, never judges: a fresh synthetic collusion example through the real AI check (ADR 0016).
