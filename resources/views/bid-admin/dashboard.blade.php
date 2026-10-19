@@ -77,6 +77,12 @@
 
     <section aria-labelledby="recent-heading">
         <h2 id="recent-heading" class="text-2xl font-semibold text-forest">Recent redemptions</h2>
+        @if ($redemptions->isEmpty())
+            <x-card class="mt-3 border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-10">
+                <p class="font-semibold">No redemptions yet.</p>
+                <p class="mx-auto mt-1 max-w-md text-muted">When an employee spends credits, the redemption shows here with Redemption Fraud Detection's score, and any it holds wait here for your decision.</p>
+            </x-card>
+        @else
         <ul class="mt-3 space-y-3">
             @foreach ($redemptions as $redemption)
                 <x-card as="li" id="redemption-{{ $redemption->id }}" @class(['scroll-mt-24 border-l-4', 'border-l-hold' => $redemption->isUnderReview(), 'border-l-ok' => $redemption->isApproved(), 'border-l-muted' => $redemption->isRejected()])>
@@ -180,6 +186,7 @@
                 </x-card>
             @endforeach
         </ul>
+        @endif
     </section>
 </div>
 </x-app-shell>
