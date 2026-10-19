@@ -2,10 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Models\CreditLedgerEntry;
+use App\Services\BidImpactMetrics;
+use App\Support\Money;
+use Database\Seeders\DatabaseSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class LandingPageTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_landing_page_shows_headline_and_demo_links(): void
     {
         $this->get('/')
@@ -85,5 +93,45 @@ class LandingPageTest extends TestCase
         $this->get('/')->assertOk()
             ->assertDontSee('paid out directly')
             ->assertSee('Stripe Connect (test mode) come in a later build');
+    }
+
+    public function test_impact_strip_shows_the_ledger_totals_labelled_as_fictional_demo_data(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $totals = app(BidImpactMetrics::class)->totals();
+        $this->assertSame((int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents'), $totals['spent_cents']);
+
+        $html = $this->get('/')
+            ->assertSee('The demo program so far')
+            ->assertSee('Demo data: all people and transactions are fictional.')
+            ->assertSeeInOrder([
+                'Spent at independent merchants', Money::format($totals['spent_cents']),
+                'Merchants reached', (string) $totals['merchants'],
+                'Employees participating', (string) $totals['employees'],
+                'Employers participating', (string) $totals['employers'],
+            ])
+            ->getContent();
+
+        $this->assertDoesNotMatchRegularExpression('/\\b3\\s?x\\b|3×|multiplier/i', strip_tags($html));
+    }
+
+    public function test_impact_strip_names_no_merchant_or_real_candidate_to_logged_out_visitors(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $strip = str($this->get('/')->getContent())->after('data-demo-totals')->before('</section>')->toString();
+
+        foreach (DB::table('merchants')->pluck('name') as $name) {
+            $this->assertStringNotContainsString(e($name), $strip);
+        }
+        $page = mb_strtolower($this->get('/')->getContent());
+        foreach (array_slice(array_map('str_getcsv', file(base_path('data/merchant_candidates.csv'), FILE_IGNORE_NEW_LINES)), 1) as $row) {
+            $this->assertStringNotContainsString(mb_strtolower(e($row[1])), $page, 'Real candidate '.$row[0].' must not be on the public page');
+        }
+        $this->get('/')->assertDontSee('public records');
+    }
+
+    public function test_impact_strip_has_an_empty_state(): void
+    {
+        $this->get('/')->assertOk()->assertSee('No cleared redemptions yet.');
     }
 }

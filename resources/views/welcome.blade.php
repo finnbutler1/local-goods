@@ -175,6 +175,34 @@
         </div>
     </section>
 
+    {{-- Impact strip: the demo's real ledger totals since launch. Totals only, never a name (ADR 0017). --}}
+    <section aria-labelledby="demo-totals-heading" class="border-b border-line bg-paper" data-demo-totals>
+        <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+            <div class="flex flex-wrap items-baseline justify-between gap-3">
+                <h2 id="demo-totals-heading" class="text-3xl font-semibold text-forest">The demo program so far</h2>
+                <p class="rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">Demo data: all people and transactions are fictional.</p>
+            </div>
+            @if ($demoTotals['visits'] === 0)
+                <p class="mt-4 max-w-2xl text-muted">No cleared redemptions yet. Once employees spend their credits, the totals from the credit ledger appear here.</p>
+            @else
+                <p class="mt-3 max-w-2xl text-muted">Read live from the credit ledger: cleared redemptions only, since launch. Held and denied redemptions don't count.</p>
+                <dl class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ([
+                        ['Spent at independent merchants', \App\Support\Money::format($demoTotals['spent_cents'])],
+                        ['Merchants reached', number_format($demoTotals['merchants'])],
+                        ['Employees participating', number_format($demoTotals['employees'])],
+                        ['Employers participating', number_format($demoTotals['employers'])],
+                    ] as [$label, $figure])
+                        <div class="flex flex-col-reverse">
+                            <dt class="mt-1 text-sm font-semibold text-muted">{{ $label }}</dt>
+                            <dd class="tabular font-display text-4xl font-semibold text-forest">{{ $figure }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            @endif
+        </div>
+    </section>
+
     {{-- Impact: one worked, illustrative scenario (not real data) --}}
     <section aria-labelledby="impact-heading" class="border-b border-line bg-cream-deep">
         <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
