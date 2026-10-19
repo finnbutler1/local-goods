@@ -3,6 +3,23 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-19: Security audit and test gaps
+
+- **No secrets in the history.** Every commit on every branch was searched
+  for keys and passwords; nothing real was found and no key needed
+  rotating. The scan is a script that never prints what it finds, and CI
+  now runs it on the full history.
+- **Only CloudFront reaches the server.** Requests that skip CloudFront get
+  "Forbidden" ([ADR 0018](docs/adr/0018-only-cloudfront-reaches-beanstalk.md)),
+  with a Beanstalk setting to switch that off without a redeploy.
+- **A deploy with unsafe settings stops** (debug on, not production,
+  cookie not HTTPS-only, CloudFront secret missing), and production never
+  shows a debug page.
+- **Rate limits** on redeeming (each one is an AI call), the sign-in forms,
+  Reset demo and the review buttons; each limit now counts on its own.
+- **Tests:** the public judge account's view of every page, and the
+  refusals in the money and AI code. They found no bugs there.
+
 ## 2026-10-19: Honest claims about Stripe and impact
 
 - **Stripe:** the landing page and judge home no longer say payouts "come

@@ -5,6 +5,26 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Security audit and test gaps — done (Prompt 9C, ADR 0018).** No
+migration, no money/AI/eval changes. Summary in TRANSPARENCY.md "Security";
+keep it true.
+
+- `scripts/scan-history-for-secrets.sh` (`SecretScanScriptTest`, CI
+  `fetch-depth: 0`): never prints a value, fails on a shallow clone. Fake
+  values in tests must say fake / not-a-real / example, or the scan fails.
+- Origin lock: `RequireCloudFrontOrigin` 403s production requests without
+  `X-Origin-Verify` (except `/up`); kill switch `ORIGIN_VERIFY_ENFORCE=false`.
+  `app:check-production-config` (`ProductionConfig`) runs in the predeploy
+  hook before anything else; production forces debug off at boot.
+- Rate limits: write routes use `throttle:N,1,<route name>` (plain
+  `throttle:N,1` shares one counter per person). Named limiters `redeem`,
+  `feedback`, `login`, `auth-forms` (all Fortify posts, via
+  `config/fortify.php`). `RateLimitsTest` fails a write route that can reach
+  Claude without a throttle.
+- `EmployeeNamePrivacyTest` also sweeps as the public judge (names,
+  candidates, reviewer names, emails). `MoneyGuardsTest` covers the money
+  refusals.
+
 **Accessibility and UX pass — done (Prompt 9B, `docs/accessibility.md`).**
 No migration, no money/AI/eval changes.
 
@@ -172,8 +192,8 @@ Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
 Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
 Stripe Connect test mode (ADR 0015), the fraud gate on transfers
-(ADR 0016, Prompt 8), the BID impact dashboard (ADR 0017, Prompt 9A) and
-the accessibility and UX pass (Prompt 9B).
+(ADR 0016, Prompt 8), the BID impact dashboard (ADR 0017, Prompt 9A), the accessibility and UX
+pass (Prompt 9B) and the security audit (ADR 0018, Prompt 9C).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

@@ -416,6 +416,60 @@ every page for every role. It has not been tested with a screen reader or on
 a real phone. What was checked, what was fixed and what is still a known limit
 is in [docs/accessibility.md](docs/accessibility.md).
 
+### Security
+
+A security pass on October 19, 2026. This lists only what was actually
+checked or built, and how.
+
+- **No secrets in the code's history.** Every line ever committed, on every
+  branch (207 commits that day), was searched for Stripe, Anthropic and AWS
+  keys, Laravel app keys, database addresses, private keys and values
+  assigned to our secret settings. Nothing real was found; the only matches
+  were obvious test placeholders. No key needed rotating. The check is
+  [`scripts/scan-history-for-secrets.sh`](scripts/scan-history-for-secrets.sh):
+  it never prints what it finds, and CI runs it on the full history (a
+  partial copy fails rather than passing).
+- **No names on judges' pages.** A test opens every page, and every "view
+  as" page, as the shared public judge account, and checks that no
+  employee's full name, real candidate business name, reviewer's name or
+  account email appears. The same sweep runs for every other role.
+- **Production settings.** Before each deploy or settings change, the
+  server checks that debug mode is off, the environment is production, the
+  login cookie is HTTPS-only and the CloudFront secret is set; if not, the
+  deploy stops and the running site is unchanged. If debug mode were ever on
+  anyway, production switches it off.
+- **Only CloudFront reaches the server.** Requests that skip CloudFront
+  (without its secret header) get "Forbidden", except the server's own
+  health check ([ADR 0018](docs/adr/0018-only-cloudfront-reaches-beanstalk.md)).
+  Built and tested; it is live from the first deploy after this pass.
+- **Rate limits**, each with a test that sends one request too many:
+
+  | What | Limit |
+  |---|---|
+  | Log in | 5 a minute per email and visitor |
+  | Other sign-in forms (password change, confirm, reset) | 10 a minute per person or visitor |
+  | Magic link sign-in | 10 a minute per visitor |
+  | Feedback | public judge: 3 a minute and 20 a day per visitor; others: 10 a minute |
+  | Adjudication votes | 60 a minute per judge |
+  | Redeem (one Redemption Fraud Detection call each) | 10 a minute per employee |
+  | Run a collusion example (one AI call) | 5 a minute |
+  | Reset demo | 5 a minute |
+
+  A test also fails any form whose code can reach Claude without a limit.
+  Each limit counts on its own, so a busy button can't lock out another.
+- **Tests on the money and AI code's refusals**: the transfer gate, ledger
+  guards (wrong payment amounts, double recording, Stripe-owed money paid as
+  simulated), a balance spent twice at once, and every kind of malformed AI
+  reply. These tests found no bugs in the money or AI code.
+- **Dependencies:** `composer audit` reported no known vulnerabilities in
+  the PHP packages.
+
+**Not done:** no penetration test or outside security review; the JavaScript
+packages (npm) were not audited; the history scan only finds
+secrets that match its patterns; the server's network rules don't yet block
+non-CloudFront traffic (the app refuses it instead); limits are counted on
+the one server and start again from zero after each deploy.
+
 ## How I built Local Goods with Claude Code
 
 I built Local Goods with [Claude Code](https://claude.com/claude-code), working
