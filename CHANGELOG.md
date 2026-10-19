@@ -3,6 +3,28 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-18: BID impact dashboard
+
+- **BID impact page** (`/bid-admin/impact`, BID and platform admins;
+  judges can look): dollars spent at independent merchants, merchants
+  reached, employees participating (a count, never names), employers
+  participating, and a weekly trend. All of it is read from the credit
+  ledger, and every number has a "How we count this" note
+  ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)).
+- **Agrees with HR.** Employer engagement is rolled up from each employer
+  dashboard with the same definitions, so the BID and HR see the same
+  numbers. Tests check the totals against the ledger.
+- **No "3x" claim.** One boxed estimate, labelled "Estimate from an outside
+  study, not measured by Local Goods", using Civic Economics' Indie Impact
+  national summary (52.3% of independents' revenue recirculated locally,
+  2011–2012, none of it in DC), with the source linked.
+- **Landing page:** a strip of the demo's real ledger totals, labelled
+  "Demo data: all people and transactions are fictional." No merchant
+  names.
+- **Clearer fraud signal label:** "Round number" now reads "Round amount (a
+  multiple of $10, and at least $20)", exactly what the check does. The
+  check itself, the AI prompt and the eval are unchanged.
+
 ## 2026-10-17: Redemption Fraud Detection gates Stripe transfers
 
 - **One gate for all money.** A merchant is paid only for a redemption the

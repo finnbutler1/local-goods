@@ -397,6 +397,17 @@ merchants, including two planted collusion patterns for a future check to find
 (described in `database/seeders/DemoHistorySeeder.php`). The real merchant
 candidates above are kept out of all of it.
 
+### Impact numbers
+
+The BID impact page and the landing page strip count only cleared
+redemptions in the credit ledger, using the same definitions as the employer
+dashboard ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)). They
+are demo numbers, labelled as fictional. There is no "3x multiplier" claim. The one
+recirculation figure is an estimate from an outside study, labelled as such:
+Civic Economics, "Indie Impact Study Series: National Summary Report" (with
+the American Booksellers Association), data from 2011–2012, 134 businesses in
+10 U.S. communities, none in DC. Local Goods has not measured it here.
+
 ## How I built Local Goods with Claude Code
 
 I built Local Goods with [Claude Code](https://claude.com/claude-code), working

@@ -5,6 +5,29 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**BID impact dashboard — built (Prompt 9A, ADR 0017).** No migration.
+
+- `App\Services\BidImpactMetrics`: spending = `merchant_earned` ledger
+  entries, dated by the redemption's `created_at` in DC time (like
+  `EmployerMetrics`). Merchants reached, employees participating (count
+  only), employers participating; this month and since launch; 8 Monday
+  weeks. Employer rollup = `EmployerMetrics::for()` unchanged. New
+  engagement numbers go into `EmployerMetrics` first.
+  `BidImpactMetricsTest` checks totals = ledger and BID = sum of HR.
+- `/bid-admin/impact` (`bid-admin.impact`, BID admin nav; platform admin
+  links from `/admin`, its tab bar is full at 6). Every number has "How we
+  count this". Empty state when nothing has cleared (Reset demo reseeds
+  history, so it shows only with an empty ledger).
+- Recirculation: only as the boxed "Estimate from an outside study, not
+  measured by Local Goods", Civic Economics Indie Impact national summary,
+  52.3% (config `impact.recirculation`). Never "3x", never "multiplier",
+  never a measured result (tests check).
+- Landing strip: `BidImpactMetrics::totals()`, labelled "Demo data: all
+  people and transactions are fictional.", no names.
+- Fraud review label "Round amount (a multiple of $10, and at least $20)"
+  is built from `fraud.round_number_*` config (`SignalPresenter`); display
+  only.
+
 **Fraud gate on Stripe transfers — built (Prompt 8, ADR 0016).** Built only
 around the AI: the fraud prompt (`8d5e1e70`), signals, model and eval data
 are unchanged.
@@ -128,8 +151,8 @@ holdout. Web search is future work.
 Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
 Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
-Stripe Connect test mode (ADR 0015) and the fraud gate on transfers
-(ADR 0016, Prompt 8).
+Stripe Connect test mode (ADR 0015), the fraud gate on transfers
+(ADR 0016, Prompt 8) and the BID impact dashboard (ADR 0017, Prompt 9A).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
