@@ -107,7 +107,7 @@
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 @if ($a['eligible'])
-                                    <x-badge tone="amber">AI recommends eligible — confirm before approving</x-badge>
+                                    <x-badge tone="amber" :wrap="true">AI recommends eligible — confirm before approving</x-badge>
                                 @else
                                     <x-badge :tone="$classTone($a['classification'])">AI: {{ MerchantEvalReport::CLASS_NAMES[$a['classification']] }}</x-badge>
                                 @endif
