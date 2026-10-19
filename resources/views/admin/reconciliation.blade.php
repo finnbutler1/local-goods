@@ -15,12 +15,7 @@
     </header>
 
     <div aria-live="polite" class="empty:hidden">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
-        @if (session('error'))
-            <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">{{ session('error') }}</p>
-        @endif
+        <x-flash />
     </div>
 
     @if (! $report['active'])
@@ -47,7 +42,7 @@
             </section>
         @endif
 
-        <x-card padding="p-0" class="overflow-x-auto">
+        <x-card padding="p-0" class="scroll-region" role="region" tabindex="0" aria-label="Ledger next to Stripe table">
             <table class="w-full text-left">
                 <caption class="px-5 pt-5 text-left text-xl font-semibold sm:px-6">Ledger next to Stripe</caption>
                 <thead class="border-b border-line/70 text-sm text-muted">
@@ -113,7 +108,7 @@
             </x-card>
         @endif
 
-        <form method="POST" action="{{ route('admin.reconciliation.retry') }}">
+        <form method="POST" action="{{ route('admin.reconciliation.retry') }}" data-busy="Retrying with Stripe…">
             @csrf
             <x-button type="submit">Retry owed transfers</x-button>
             <p class="mt-2 text-sm text-muted">Sends Stripe-funded amounts still owed to onboarded merchants. Simulated amounts are never sent.</p>

@@ -41,9 +41,7 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
+        <x-flash />
     </div>
 
     <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -133,7 +131,7 @@
                         </div>
 
                         @can('decide-merchant-eligibility')
-                            <form method="POST" action="{{ route('bid-admin.merchants.decide', $item['id']) }}" class="mt-5 rounded-xl bg-cream-deep p-4">
+                            <form method="POST" action="{{ route('bid-admin.merchants.decide', $item['id']) }}" data-busy="Saving your decision…" class="mt-5 rounded-xl bg-cream-deep p-4">
                                 @csrf
                                 <label for="note-{{ $item['id'] }}" class="text-sm font-semibold">Note (optional, saved with your decision)</label>
                                 <textarea id="note-{{ $item['id'] }}" name="note" rows="2" maxlength="1000"
@@ -141,7 +139,7 @@
                                 <div class="mt-3 flex flex-wrap gap-2">
                                     <x-button type="submit" size="sm" name="decision" value="approve" aria-label="Approve {{ $c['name'] }} as eligible">Approve</x-button>
                                     <x-button type="submit" size="sm" variant="danger" class="bg-paper" name="decision" value="reject" aria-label="Reject {{ $c['name'] }}">Reject</x-button>
-                                    <x-button type="submit" size="sm" variant="secondary" name="decision" value="needs_research" aria-label="Mark {{ $c['name'] }} as needing research">Needs research</x-button>
+                                    <x-button type="submit" size="sm" variant="secondary" name="decision" value="needs_research" aria-label="Needs research: {{ $c['name'] }}">Needs research</x-button>
                                 </div>
                             </form>
                         @else

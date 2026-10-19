@@ -147,7 +147,7 @@
             <h2 id="employers-heading" class="text-2xl font-semibold text-forest">Employer engagement, {{ $monthName }} so far</h2>
             <p class="mt-1 text-sm text-muted">Each row is the employer's own HR dashboard, unchanged, so the numbers match what HR sees.</p>
 
-            <x-card padding="p-0" class="mt-3 overflow-x-auto">
+            <x-card padding="p-0" class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Employer engagement table">
                 <table class="w-full text-left">
                     <caption class="sr-only">Each employer's engagement this month, as shown on its HR dashboard</caption>
                     <thead class="border-b border-line/70 text-sm text-muted">

@@ -111,6 +111,13 @@ class AccessibilityAudit
             }
         }
 
+        // A box that scrolls sideways must be reachable and named, or keyboard users can't scroll it.
+        foreach ($this->xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " scroll-region ") or contains(concat(" ", normalize-space(@class), " "), " overflow-x-auto ")]') as $box) {
+            if ($box->getAttribute('tabindex') !== '0' || trim($box->getAttribute('aria-label')) === '') {
+                $add('scrolling box needs tabindex="0", role="region" and an aria-label', $box);
+            }
+        }
+
         foreach ($this->xpath->query('//table') as $table) {
             if (! $this->first('./caption', $table) && ! $table->hasAttribute('aria-label') && ! $table->hasAttribute('aria-labelledby')) {
                 $add('<table> has no caption', $table);
@@ -125,6 +132,17 @@ class AccessibilityAudit
         foreach ($radios as $group) {
             if (count($group) > 1 && ! $this->first('ancestor::fieldset[legend] | ancestor::*[@role="radiogroup"][@aria-label or @aria-labelledby]', $group[0])) {
                 $add('radio group is not in a <fieldset> with a <legend>', $group[0]);
+            }
+        }
+
+        // x-field writes "{id}-hint" and "{id}-error" next to control #{id}; the control must point at them.
+        foreach ($this->xpath->query('//*[@id]') as $el) {
+            if (! preg_match('/^(.+)-(hint|error)$/', $el->getAttribute('id'), $m)) {
+                continue;
+            }
+            $control = $this->first('//*[@id="'.$m[1].'"][self::input or self::select or self::textarea]');
+            if ($control && ! in_array($el->getAttribute('id'), preg_split('/\s+/', $control->getAttribute('aria-describedby')), true)) {
+                $add("field does not point at its {$m[2]} \"{$el->getAttribute('id')}\"", $control);
             }
         }
 

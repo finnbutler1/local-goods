@@ -42,9 +42,7 @@
                 </div>
             </x-card>
         @endif
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
+        <x-flash />
     </div>
 
     <x-card as="section" aria-labelledby="public-heading">
@@ -65,7 +63,7 @@
         @if ($public)
             <p class="mt-3 text-sm text-muted">Last seen {{ $when($public->last_seen_at) }}.</p>
             <div class="mt-4 flex flex-wrap gap-2">
-                <form method="POST" action="{{ route('admin.reviewers.link', $public) }}"
+                <form method="POST" action="{{ route('admin.reviewers.link', $public) }}" data-busy="Making a new link…"
                       onsubmit="return confirm('Make a new public link? The current one, including the link in the README, stops working at once.');">
                     @csrf
                     <x-button type="submit" size="sm" variant="secondary">
@@ -73,7 +71,7 @@
                     </x-button>
                 </form>
                 @unless ($public->isRevoked())
-                    <form method="POST" action="{{ route('admin.reviewers.revoke', $public) }}"
+                    <form method="POST" action="{{ route('admin.reviewers.revoke', $public) }}" data-busy="Switching off…"
                           onsubmit="return confirm('Switch off public judge access? The README link stops working and open sessions end.');">
                         @csrf
                         <x-button type="submit" size="sm" variant="danger">Switch off</x-button>
@@ -87,7 +85,7 @@
 
     <x-card as="section" aria-labelledby="invite-heading">
         <h2 id="invite-heading" class="text-2xl font-semibold text-forest">Invite a reviewer</h2>
-        <form method="POST" action="{{ route('admin.reviewers.store') }}" class="mt-4 grid gap-4 md:grid-cols-3">
+        <form method="POST" action="{{ route('admin.reviewers.store') }}" data-busy="Creating…" class="mt-4 grid gap-4 md:grid-cols-3">
             @csrf
             <x-field name="name" label="Name">
                 <input id="name" name="name" type="text" required maxlength="100" value="{{ old('name') }}" autocomplete="off"
@@ -99,7 +97,7 @@
             </x-field>
             <x-field name="reviewer_type" label="Reviewer type">
                 <select id="reviewer_type" name="reviewer_type" required
-                        class="{{ $input }} @error('reviewer_type') border-hold @else border-muted @enderror">
+                        class="{{ $input }} @error('reviewer_type') border-hold @else border-muted @enderror" @error('reviewer_type') aria-invalid="true" aria-describedby="reviewer_type-error" @enderror>
                     @foreach ($types as $type)
                         <option value="{{ $type->value }}" @selected(old('reviewer_type') === $type->value)>{{ $type->label() }}</option>
                     @endforeach
@@ -116,8 +114,9 @@
         @if ($reviewers->isEmpty())
             <p class="mt-3 text-muted">No reviewers yet.</p>
         @else
-            <x-card class="mt-3 overflow-x-auto" padding="p-0">
+            <x-card class="mt-3 scroll-region" padding="p-0" role="region" tabindex="0" aria-label="Named reviewers table">
                 <table class="w-full text-left text-sm">
+                    <caption class="sr-only">Named reviewers, their status and their magic-link actions</caption>
                     <thead class="border-b border-line text-muted">
                         <tr>
                             <th scope="col" class="px-4 py-3 font-semibold">Reviewer</th>
@@ -146,14 +145,13 @@
                                 <td class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->last_seen_at) }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex flex-wrap justify-end gap-2">
-                                        <form method="POST" action="{{ route('admin.reviewers.link', $reviewer) }}">
+                                        <form method="POST" action="{{ route('admin.reviewers.link', $reviewer) }}" data-busy="Making a new link…">
                                             @csrf
-                                            <x-button type="submit" size="sm" variant="secondary" aria-label="New magic link for {{ $reviewer->name }} (the old one stops working)">
-                                                {{ $reviewer->isRevoked() ? 'Restore with new link' : 'New link' }}
-                                            </x-button>
+                                            @php $linkLabel = $reviewer->isRevoked() ? 'Restore with new link' : 'New link'; @endphp
+                                            <x-button type="submit" size="sm" variant="secondary" aria-label="{{ $linkLabel }} for {{ $reviewer->name }} (the old one stops working)">{{ $linkLabel }}</x-button>
                                         </form>
                                         @unless ($reviewer->isRevoked())
-                                            <form method="POST" action="{{ route('admin.reviewers.revoke', $reviewer) }}"
+                                            <form method="POST" action="{{ route('admin.reviewers.revoke', $reviewer) }}" data-busy="Revoking…"
                                                   onsubmit="return confirm('Revoke {{ e(addslashes($reviewer->name)) }}? Their link stops working and any open session ends.');">
                                                 @csrf
                                                 <x-button type="submit" size="sm" variant="danger" aria-label="Revoke access for {{ $reviewer->name }}">Revoke</x-button>
