@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\Ai\ClaudeClient;
+use App\Services\Eligibility\EligibilityAssessment;
 use App\Services\Eligibility\MerchantCandidates;
 use App\Services\Eligibility\MerchantEligibilityMatcher;
 use App\Services\Eligibility\MerchantLabels;
@@ -58,6 +59,30 @@ class MerchantEligibilityMatcherTest extends TestCase
         $this->assertTrue($this->matcherReturning($this->reply(['classification' => 'undetermined', 'confidence' => 0.95]))->assess(self::CANDIDATE)->needsHumanReview);
     }
 
+    public function test_the_review_threshold_is_exactly_seventy_percent(): void
+    {
+        $this->assertSame(0.7, config('eligibility.review_if_confidence_below'));
+
+        $this->assertFalse($this->matcherReturning($this->reply(['confidence' => 0.7]))->assess(self::CANDIDATE)->needsHumanReview);
+        $this->assertTrue($this->matcherReturning($this->reply(['confidence' => 0.69]))->assess(self::CANDIDATE)->needsHumanReview);
+    }
+
+    public function test_the_ais_own_request_for_review_is_kept(): void
+    {
+        $a = $this->matcherReturning($this->reply(['confidence' => 0.95, 'needs_human_review' => true]))->assess(self::CANDIDATE);
+
+        $this->assertTrue($a->needsHumanReview);
+        $this->assertFalse($a->isFallback());
+    }
+
+    public function test_an_assessment_survives_the_saved_file_round_trip(): void
+    {
+        $a = $this->matcherReturning($this->reply(['reasoning' => "  Owned locally.\n"]))->assess(self::CANDIDATE);
+
+        $this->assertSame('Owned locally.', $a->reasoning);
+        $this->assertEquals($a, EligibilityAssessment::fromArray(json_decode(json_encode($a->toArray()), true)));
+    }
+
     /** @return array<string, array{0: string|RuntimeException}> */
     public static function badReplies(): array
     {
@@ -75,6 +100,11 @@ class MerchantEligibilityMatcherTest extends TestCase
             'confidence as text' => [json_encode(['confidence' => 'high'] + $valid)],
             'blank reasoning' => [json_encode(['reasoning' => '  '] + $valid)],
             'missing field' => [json_encode(array_diff_key($valid, ['needs_human_review' => 1]))],
+            'eligible as text' => [json_encode(['eligible' => 'false'] + $valid)],
+            'review flag as a number' => [json_encode(['needs_human_review' => 0] + $valid)],
+            'reasoning not text' => [json_encode(['reasoning' => ['A franchise.']] + $valid)],
+            'a list, not an object' => ['[]'],
+            'empty reply' => [''],
         ];
     }
 
