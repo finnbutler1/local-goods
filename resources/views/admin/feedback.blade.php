@@ -65,7 +65,7 @@
             <x-field name="reviewer" label="Reviewer">
                 <select id="reviewer" name="reviewer" class="{{ $select }}">
                     <option value="">All</option>
-                    @foreach ($reviewers as $r)<option value="{{ $r->id }}" @selected((string) ($filters['reviewer'] ?? '') === (string) $r->id)>{{ $r->name }}</option>@endforeach
+                    @foreach ($reviewers as $r)<option value="{{ $r->id }}" @selected((string) ($filters['reviewer'] ?? '') === (string) $r->id)>{{ $r->adminLabel() }}</option>@endforeach
                 </select>
             </x-field>
             <x-field name="reviewer_type" label="Reviewer type">
@@ -94,7 +94,7 @@
                                     @if ($item->status === FeedbackStatus::New)<x-badge tone="amber">New</x-badge>@endif
                                 </p>
                                 <p class="text-sm text-muted">
-                                    {{ $item->user->name }}{{ $item->user->reviewer_type ? ' · '.$item->user->reviewer_type->label() : ' · '.$item->user->role->label() }}
+                                    {{ $item->user->adminLabel() }}{{ $item->user->reviewer_type ? ' · '.$item->user->reviewer_type->label() : ' · '.$item->user->role->label() }}
                                     · {{ $item->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}
                                 </p>
                                 <p class="mt-1 text-sm break-all">

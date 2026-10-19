@@ -95,9 +95,9 @@
                 <input id="email" name="email" type="email" required value="{{ old('email') }}" autocomplete="off"
                        class="{{ $input }} @error('email') border-hold @else border-muted @enderror" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
             </x-field>
-            <x-field name="reviewer_type" label="Reviewer type">
+            <x-field name="reviewer_type" label="Reviewer type" hint="A personal contact (someone who knows Finn) can only vote in the blind adjudication; their votes are reported separately and never in the headline. They appear here by initials only.">
                 <select id="reviewer_type" name="reviewer_type" required
-                        class="{{ $input }} @error('reviewer_type') border-hold @else border-muted @enderror" @error('reviewer_type') aria-invalid="true" aria-describedby="reviewer_type-error" @enderror>
+                        class="{{ $input }} @error('reviewer_type') border-hold @else border-muted @enderror" @error('reviewer_type') aria-invalid="true" aria-describedby="reviewer_type-hint reviewer_type-error" @else aria-describedby="reviewer_type-hint" @enderror>
                     @foreach ($types as $type)
                         <option value="{{ $type->value }}" @selected(old('reviewer_type') === $type->value)>{{ $type->label() }}</option>
                     @endforeach
@@ -132,8 +132,10 @@
                         @foreach ($reviewers as $reviewer)
                             <tr>
                                 <td class="px-4 py-3">
-                                    <p class="font-semibold">{{ $reviewer->name }}</p>
-                                    <p class="break-all text-muted">{{ $reviewer->email }}</p>
+                                    <p class="font-semibold">{{ $reviewer->adminLabel() }}</p>
+                                    @if ($reviewer->adminEmail())
+                                        <p class="break-all text-muted">{{ $reviewer->adminEmail() }}</p>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3">{{ $reviewer->reviewer_type?->label() ?? '—' }}</td>
                                 <td class="px-4 py-3">
@@ -148,13 +150,13 @@
                                         <form method="POST" action="{{ route('admin.reviewers.link', $reviewer) }}" data-busy="Making a new link…">
                                             @csrf
                                             @php $linkLabel = $reviewer->isRevoked() ? 'Restore with new link' : 'New link'; @endphp
-                                            <x-button type="submit" size="sm" variant="secondary" aria-label="{{ $linkLabel }} for {{ $reviewer->name }} (the old one stops working)">{{ $linkLabel }}</x-button>
+                                            <x-button type="submit" size="sm" variant="secondary" aria-label="{{ $linkLabel }} for {{ $reviewer->adminLabel() }} (the old one stops working)">{{ $linkLabel }}</x-button>
                                         </form>
                                         @unless ($reviewer->isRevoked())
                                             <form method="POST" action="{{ route('admin.reviewers.revoke', $reviewer) }}" data-busy="Revoking…"
-                                                  onsubmit="return confirm('Revoke {{ e(addslashes($reviewer->name)) }}? Their link stops working and any open session ends.');">
+                                                  onsubmit="return confirm('Revoke {{ e(addslashes($reviewer->adminLabel())) }}? Their link stops working and any open session ends.');">
                                                 @csrf
-                                                <x-button type="submit" size="sm" variant="danger" aria-label="Revoke access for {{ $reviewer->name }}">Revoke</x-button>
+                                                <x-button type="submit" size="sm" variant="danger" aria-label="Revoke access for {{ $reviewer->adminLabel() }}">Revoke</x-button>
                                             </form>
                                         @endunless
                                     </div>

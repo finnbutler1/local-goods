@@ -49,7 +49,7 @@ class FeedbackInboxController extends Controller
             'items' => $items,
             'filters' => $filters,
             'averages' => $averages,
-            'reviewers' => User::whereHas('feedback')->orderBy('name')->get(['id', 'name']),
+            'reviewers' => User::whereHas('feedback')->orderBy('name')->get(['id', 'name', 'role', 'reviewer_type']),
         ]);
     }
 
