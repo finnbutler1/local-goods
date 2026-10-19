@@ -24,3 +24,4 @@ trade-off in under a minute.
 | [0016](0016-fraud-detection-gates-stripe-transfers.md) | Redemption Fraud Detection gates Stripe transfers: one gate, recorded human decisions, denied credit to the employer for suspected abuse | Accepted, implemented |
 | [0017](0017-bid-impact-from-the-ledger.md) | BID impact numbers come from the ledger and roll up the HR dashboards; an outside study's recirculation rate shown only as a labelled estimate | Accepted, implemented |
 | [0018](0018-only-cloudfront-reaches-beanstalk.md) | Only CloudFront reaches Beanstalk (with a kill switch); unsafe production settings stop a deploy | Accepted, implemented |
+| [0019](0019-personal-contacts-vote-separately.md) | Personal contacts vote in the blind adjudication, reported separately and never in the headline | Accepted, implemented |

@@ -3,6 +3,24 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-19: Personal contacts can help check the AI
+
+- **A new reviewer type, "Personal contact (knows Finn)",** for friends,
+  family and classmates. Each gets their own magic link on
+  `/admin/reviewers` and votes blind on the same adjudication cases (one
+  vote per case), after the same "seen the eval page before?" question.
+- **Their votes are reported on their own.** The adjudication result on
+  `/eval` and the admin page still counts only BID staff and contest
+  judges. Personal contacts get a separate section, "Personal contacts
+  (know Finn): not counted in the result above", with their own numbers.
+  The two are never added together
+  ([ADR 0019](docs/adr/0019-personal-contacts-vote-separately.md)).
+- **Their link opens only the voting page** and the feedback button: no
+  reviewer tour, no "view as", no eval or admin pages. Their names never
+  appear on public or reviewer pages; admin pages show initials only.
+- The published case set and existing votes are unchanged. The public
+  judge link still can't vote.
+
 ## 2026-10-19: Security audit and test gaps
 
 - **No secrets in the history.** Every commit on every branch was searched
