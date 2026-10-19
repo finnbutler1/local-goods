@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Http\Middleware\BlockJudgeWrites;
+use App\Http\Middleware\KeepPersonalContactsToAdjudication;
 use App\Models\CreditPurchase;
 use App\Models\Employer;
 use App\Models\Merchant;
@@ -69,6 +70,20 @@ class JudgeReadOnlyTest extends TestCase
 
     public function test_every_write_route_refuses_a_judge_and_changes_nothing(): void
     {
+        $this->assertEveryWriteRouteRefuses($this->judge, 'a judge');
+    }
+
+    /** Personal contacts (ADR 0019) are judges too: the same writes are refused. */
+    public function test_every_write_route_refuses_a_personal_contact_and_changes_nothing(): void
+    {
+        $contact = User::factory()->role(Role::Judge)->create(['reviewer_type' => ReviewerType::PersonalContact]);
+        $this->actingAs($contact); // makes their link before the snapshot
+
+        $this->assertEveryWriteRouteRefuses($contact, 'a personal contact');
+    }
+
+    private function assertEveryWriteRouteRefuses(User $user, string $who): void
+    {
         $routes = collect(Route::getRoutes()->getRoutes())
             ->reject(fn (RoutingRoute $r) => in_array($r->getName(), BlockJudgeWrites::ALLOWED_ROUTES, true))
             ->filter(fn (RoutingRoute $r) => array_diff($r->methods(), ['GET', 'HEAD', 'OPTIONS']) !== [])
@@ -82,13 +97,13 @@ class JudgeReadOnlyTest extends TestCase
         foreach ($routes as $route) {
             foreach (array_diff($route->methods(), ['GET', 'HEAD', 'OPTIONS']) as $method) {
                 $uri = $this->fillParameters($route->uri());
-                $this->actingAs($this->judge)
+                $this->actingAs($user)
                     ->call($method, $uri, $this->plausibleInput())
-                    ->assertStatus(403, "{$method} /{$uri} should be forbidden for a judge.");
+                    ->assertStatus(403, "{$method} /{$uri} should be forbidden for {$who}.");
             }
         }
 
-        $this->assertEquals($before, $this->snapshot(), 'A judge request changed data.');
+        $this->assertEquals($before, $this->snapshot(), "A request from {$who} changed data.");
     }
 
     /**
@@ -127,6 +142,22 @@ class JudgeReadOnlyTest extends TestCase
             ],
             BlockJudgeWrites::ALLOWED_ROUTES,
         );
+    }
+
+    public function test_the_personal_contact_allowlist_is_short_and_known(): void
+    {
+        $this->assertSame(
+            [
+                'adjudication.show', 'adjudication.start', 'adjudication.vote', 'adjudication.submit',
+                'feedback.store', 'feedback.update', 'account', 'dashboard', 'logout',
+                'judge-access.show', 'judge-access.store',
+            ],
+            KeepPersonalContactsToAdjudication::ALLOWED_ROUTES,
+        );
+
+        // Every write they may make is also on the judge allowlist.
+        $writes = array_filter(KeepPersonalContactsToAdjudication::ALLOWED_ROUTES, fn ($name) => array_diff(Route::getRoutes()->getByName($name)->methods(), ['GET', 'HEAD', 'OPTIONS']) !== []);
+        $this->assertSame([], array_values(array_diff($writes, BlockJudgeWrites::ALLOWED_ROUTES)));
     }
 
     public function test_adjudication_routes_still_refuse_a_judge_who_may_not_vote(): void

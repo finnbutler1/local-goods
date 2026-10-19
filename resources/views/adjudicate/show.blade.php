@@ -5,6 +5,8 @@
     $total = isset($cases) ? $cases->count() : 0;
     $vote = isset($case, $votes) && $case ? $votes->get($case->id) : null;
     $radio = 'size-5 accent-forest';
+    // Personal contacts can't open the eval page (ADR 0019), so no links to it.
+    $votingOnly = auth()->user()->isPersonalContact();
 @endphp
 
 <x-app-shell title="Help check the AI" active="dashboard" context="CUA Busch School AI Vibe Coding Contest">
@@ -39,7 +41,14 @@
         @case('closed')
             <x-card>
                 <h2 class="text-2xl font-semibold text-forest">Voting has closed</h2>
-                <p class="mt-2 text-muted">Votes you saved but didn't submit are not counted. The results are on the <a href="{{ route('eval') }}" class="font-semibold text-forest underline underline-offset-4">AI eval page</a>.</p>
+                <p class="mt-2 text-muted">
+                    Votes you saved but didn't submit are not counted.
+                    @if ($votingOnly)
+                        Finn reports the results, with personal contacts' votes kept separate from the judges'.
+                    @else
+                        The results are on the <a href="{{ route('eval') }}" class="font-semibold text-forest underline underline-offset-4">AI eval page</a>.
+                    @endif
+                </p>
             </x-card>
             @break
 
@@ -48,8 +57,12 @@
                 <h2 class="text-2xl font-semibold text-forest">Thank you, your votes are in</h2>
                 <p class="mt-2">
                     You voted on all {{ $total }} cases. Votes are locked now.
-                    You can open the <a href="{{ route('eval') }}" class="font-semibold text-forest underline underline-offset-4">AI eval page</a>
-                    to see the person's labels and the AI's calls. Results from adjudicators appear there as people submit.
+                    @if ($votingOnly)
+                        Finn reports the results, with personal contacts' votes counted separately from BID staff and contest judges.
+                    @else
+                        You can open the <a href="{{ route('eval') }}" class="font-semibold text-forest underline underline-offset-4">AI eval page</a>
+                        to see the person's labels and the AI's calls. Results from adjudicators appear there as people submit.
+                    @endif
                 </p>
             </x-card>
             @break

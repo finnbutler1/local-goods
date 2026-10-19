@@ -8,6 +8,7 @@ use App\Models\AdjudicationSet;
 use App\Models\AdjudicationVote;
 use App\Models\User;
 use App\Services\Adjudication\AdjudicationSetBuilder;
+use App\Services\Fraud\FraudEvalReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -164,6 +165,46 @@ class AdjudicateTest extends TestCase
         $this->get('/adjudicate')->assertOk()->assertSee('Voting has closed');
     }
 
+    public function test_a_personal_contact_answers_the_question_votes_once_per_case_and_submits(): void
+    {
+        $user = $this->reviewer(ReviewerType::PersonalContact);
+        $this->actingAs($user);
+
+        $this->get('/adjudicate')->assertOk()->assertSee('Have you looked at the Local Goods eval results page before today?');
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'yes'])->assertRedirect('/adjudicate');
+
+        // Voting again on a case changes that vote; it never adds a second one.
+        $case = $this->set->cases()->firstOrFail();
+        $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'First thought.']);
+        $this->post("/adjudicate/cases/{$case->id}", ['label' => 'suspicious', 'reason' => 'Second thought.']);
+        $this->assertSame(1, AdjudicationVote::where('user_id', $user->id)->where('adjudication_case_id', $case->id)->count());
+        $this->assertSame('suspicious', AdjudicationVote::where('user_id', $user->id)->value('label'));
+
+        $this->voteOnEverything($user);
+        $this->post('/adjudicate/submit')->assertRedirect('/adjudicate');
+
+        $this->assertTrue($this->set->hasSubmitted($user));
+        $this->assertTrue($this->set->participantFor($user)->seen_eval_before);
+        $this->assertSame($this->set->cases()->count(), AdjudicationVote::where('user_id', $user->id)->count());
+        $this->get('/adjudicate')->assertOk()->assertSee('your votes are in')->assertDontSee(route('eval'), false);
+    }
+
+    public function test_the_public_link_still_cannot_vote_and_friends_still_cannot_either(): void
+    {
+        $case = $this->set->cases()->firstOrFail();
+
+        foreach ([ReviewerType::Public, ReviewerType::Friend] as $type) {
+            $user = $this->reviewer($type);
+            $this->assertFalse($user->canAdjudicate());
+            $this->actingAs($user);
+            $this->post('/adjudicate/start', ['seen_eval_before' => 'no'])->assertForbidden();
+            $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'x'])->assertForbidden();
+        }
+
+        $this->assertTrue($this->reviewer(ReviewerType::PersonalContact)->canAdjudicate());
+        $this->assertSame(0, AdjudicationVote::count());
+    }
+
     public function test_public_friend_and_other_reviewer_types_can_look_but_get_403_on_every_vote_route(): void
     {
         $case = $this->set->cases()->firstOrFail();
@@ -218,7 +259,7 @@ class AdjudicateTest extends TestCase
         $user = $this->reviewer(ReviewerType::Bid);
         $this->actingAs($user);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
-        $results = collect(app(\App\Services\Fraud\FraudEvalReport::class)->latest()['results'])->keyBy('case_id');
+        $results = collect(app(FraudEvalReport::class)->latest()['results'])->keyBy('case_id');
 
         foreach (range(1, $this->set->cases()->count()) as $n) {
             $html = $this->get("/adjudicate?n={$n}")->assertOk()->getContent();

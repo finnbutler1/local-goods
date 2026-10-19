@@ -16,6 +16,11 @@
     // A judge viewing as another role sees that role's menu, read-only.
     $viewAs = \App\Support\ViewAs::current(request());
     $nav = ($viewAs ?? $role)->navigation();
+    // Personal contacts only vote (ADR 0019): one menu item, no view-as.
+    $votingOnly = (bool) $user?->isPersonalContact();
+    if ($votingOnly) {
+        $nav = ['dashboard' => ['label' => 'Check the AI', 'short' => 'Vote', 'route' => 'adjudication.show', 'icon' => 'M12 3.75v16.5M7.5 20.25h9M4.5 7.5h15M6.75 7.5 3.75 13.5a3 3 0 0 0 6 0L6.75 7.5Zm10.5 0-3 6a3 3 0 0 0 6 0l-3-6Z']];
+    }
     if ($role === \App\Enums\Role::Judge && $viewAs) {
         $nav = ['judge-home' => ['label' => 'Judge home', 'short' => 'Judge', 'route' => 'judge.dashboard', 'icon' => 'M3.75 12 12 4.5l8.25 7.5M5.25 10.5v9h4.5v-5.25h4.5v5.25h4.5v-9']] + $nav;
     }
@@ -68,7 +73,9 @@
         <div class="m-3 rounded-xl border border-forest-soft p-4 text-sm text-sage">
             <p class="font-semibold text-cream">Demo mode</p>
             <p class="mt-1">All people and transactions are fictional.</p>
-            <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-cream underline underline-offset-4 hover:no-underline">Back to the public site</a>
+            @unless ($votingOnly)
+                <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-cream underline underline-offset-4 hover:no-underline">Back to the public site</a>
+            @endunless
         </div>
         <a href="{{ route('account') }}" @if ($active === 'account') aria-current="page" @endif
            class="mx-3 mb-2 rounded-xl px-3 py-2 text-sm font-semibold text-sage hover:bg-forest-soft hover:text-cream aria-[current=page]:bg-cream aria-[current=page]:text-forest">Your account</a>
@@ -91,7 +98,7 @@
                         <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>@if ($user)<a href="{{ route('account') }}" class="hover:underline underline-offset-4" title="Your account">{{ $userName }}</a>@else{{ $userName }}@endif</p>
                         <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs)<span class="hidden sm:inline"> · viewing as {{ $viewAs->label() }}</span>@endif</x-badge>
                     </div>
-                    @if ($role === \App\Enums\Role::Judge)
+                    @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
                         <details class="relative">
                             <summary class="cursor-pointer list-none rounded-full border-2 border-forest px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-forest hover:bg-forest hover:text-cream">View as<span aria-hidden="true"> ▾</span></summary>
                             <ul class="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-line bg-paper p-2 shadow-lg">
