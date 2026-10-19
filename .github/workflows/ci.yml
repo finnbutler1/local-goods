@@ -12,6 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history, so the secret scan (SecretScanScriptTest) sees every commit.
+          fetch-depth: 0
 
       - name: Set up PHP 8.4
         uses: shivammathur/setup-php@v2
@@ -76,6 +79,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history, so the secret scan (SecretScanScriptTest) sees every commit.
+          fetch-depth: 0
 
       - name: Set up PHP 8.4
         uses: shivammathur/setup-php@v2
