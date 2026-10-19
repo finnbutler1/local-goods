@@ -31,7 +31,7 @@ class BidAdminTest extends TestCase
             ->assertSee('Risk 91/100')
             ->assertSee('Under review')
             ->assertSee('The full balance was redeemed as a round number.')
-            ->assertSee('Round number')
+            ->assertSee('Round amount (a multiple of $10, and at least $20)')
             ->assertSee('Historical demo data');
     }
 
