@@ -112,7 +112,8 @@
                 @if (array_sum(array_column($weeks, 'visits')) === 0)
                     <p class="mt-6 rounded-xl bg-cream-deep p-4 text-muted">No visits yet. Once your team redeems credits, each week's visits show here.</p>
                 @else
-                    {{-- Hover or focus a bar for its week; the same numbers are in the table below. --}}
+                    {{-- Bars are hidden from screen readers: the sentence under them sums them up and
+                         "Show as a table" has every week's numbers. Hover a bar for its week. --}}
                     <div class="mt-6 flex h-44 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
                         @foreach ($weeks as $week)
                             <div class="group relative flex h-full flex-1 items-end justify-center">
