@@ -39,7 +39,7 @@ git log --all -p --no-color --no-ext-diff --format='commit %H' | COMMITS="$commi
             [secret_setting         => qr/\b((?:APP_KEY|DB_PASSWORD|STRIPE_SECRET|STRIPE_WEBHOOK_SECRET|STRIPE_CONNECT_WEBHOOK_SECRET|ANTHROPIC_API_KEY|CLOUDFRONT_ORIGIN_SECRET|AWS_SECRET_ACCESS_KEY|DEMO_PASSWORD_[A-Z_]+)\s*(=|:)\s*["\x27]?)(?![\$"\x27\s#{\\]|null\b)[^\s"\x27#]+/],
         );
         # Obvious test placeholders already in the history (see TRANSPARENCY.md).
-        $placeholder = qr/SECRETVALUE|SHOULDNOTSHOW|fake|not-real|not_real|example|placeholder|dummy/i;
+        $placeholder = qr/SECRETVALUE|SHOULDNOTSHOW|fake|not-real|not_real|not-a-real|example|placeholder|dummy/i;
         # The throwaway password of the CI-only MySQL service.
         %allowed = map { $_ => 1 } ("DB_PASSWORD: password");
         $hits = 0;
