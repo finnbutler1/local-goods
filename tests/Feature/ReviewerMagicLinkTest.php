@@ -38,9 +38,9 @@ class ReviewerMagicLinkTest extends TestCase
 
         $this->post('/admin/reviewers', ['name' => 'Casey Morgan', 'email' => $email, 'reviewer_type' => 'contest_judge'])
             ->assertRedirect('/admin/reviewers')
-            ->assertSessionHas('reviewer_link');
+            ->assertSessionHas('new_reviewer_link');
 
-        $link = session('reviewer_link')['url'];
+        $link = session('new_reviewer_link')['url'];
         $this->signOut();
 
         return $link;
@@ -121,6 +121,16 @@ class ReviewerMagicLinkTest extends TestCase
         $this->assertNotNull($user->invite_token_hash, 'Using the link does not use it up.');
     }
 
+    public function test_the_admin_can_open_reviewers_in_a_browser_that_used_a_judge_link(): void
+    {
+        $link = $this->invite();
+        $this->open($link)->assertRedirect('/judge');
+
+        // Same browser session, now the platform admin: the judge's session
+        // fingerprint must not be mistaken for the one-time "new link" message.
+        $this->actingAs($this->signIn(Role::PlatformAdmin))->get('/admin/reviewers')->assertOk();
+    }
+
     public function test_the_sign_in_page_never_asks_for_a_password_or_contains_the_token(): void
     {
         $link = $this->invite();
@@ -191,8 +201,8 @@ class ReviewerMagicLinkTest extends TestCase
         $user = $this->reviewer();
 
         $this->signIn(Role::PlatformAdmin);
-        $this->post("/admin/reviewers/{$user->id}/link")->assertSessionHas('reviewer_link');
-        $new = session('reviewer_link')['url'];
+        $this->post("/admin/reviewers/{$user->id}/link")->assertSessionHas('new_reviewer_link');
+        $new = session('new_reviewer_link')['url'];
         $this->assertNotSame($old, $new);
 
         // The browser still holding the old link's session is signed out on its next click.
@@ -298,7 +308,7 @@ class ReviewerMagicLinkTest extends TestCase
 
         $this->signIn(Role::PlatformAdmin);
         $this->post('/admin/reviewers/'.$this->reviewer()->id.'/link');
-        $new = session('reviewer_link')['url'];
+        $new = session('new_reviewer_link')['url'];
 
         // Same browser, still signed in with the old link's session.
         $this->flushSession();
