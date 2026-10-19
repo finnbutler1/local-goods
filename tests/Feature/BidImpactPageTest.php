@@ -86,7 +86,9 @@ class BidImpactPageTest extends TestCase
             ->assertSee('134 businesses in 10 U.S. communities, none in DC')
             ->assertSee('52.3%')
             ->assertSee('15.8%')
-            ->assertSee('https://www.bookweb.org/node/25783', false)
+            ->assertSee('https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html', false)
+            ->assertSee('Read the Publishers Weekly report on the study')
+            ->assertDontSee('bookweb.org', false)
             ->getContent();
 
         $this->assertDoesNotMatchRegularExpression('/\b3\s?x\b|3×|multiplier/i', strip_tags($html));

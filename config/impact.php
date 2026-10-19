@@ -16,6 +16,6 @@ return [
         'partner' => 'the American Booksellers Association',
         'data_years' => '2011–2012',
         'sample' => '134 businesses in 10 U.S. communities, none in DC',
-        'url' => 'https://www.bookweb.org/node/25783',
+        'url' => 'https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html',
     ],
 ];
