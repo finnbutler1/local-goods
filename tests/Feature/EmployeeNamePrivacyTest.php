@@ -15,8 +15,7 @@ use App\Support\ViewAs;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoHistorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Routing\Route as RoutingRoute;
-use Illuminate\Support\Facades\Route;
+use Tests\Concerns\SweepsPages;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
 
@@ -30,6 +29,7 @@ use Tests\TestCase;
 class EmployeeNamePrivacyTest extends TestCase
 {
     use RefreshDatabase;
+    use SweepsPages;
 
     /** @return list<string> */
     private function fullNames(): array
@@ -58,16 +58,6 @@ class EmployeeNamePrivacyTest extends TestCase
         }
 
         $this->assertGreaterThan(0, Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->count());
-    }
-
-    /** @return list<string> Every GET page with no route parameters. */
-    private function pages(): array
-    {
-        return collect(Route::getRoutes()->getRoutes())
-            ->filter(fn (RoutingRoute $r) => in_array('GET', $r->methods(), true) && ! str_contains($r->uri(), '{'))
-            ->map(fn (RoutingRoute $r) => '/'.ltrim($r->uri(), '/'))
-            ->reject(fn (string $uri) => str_starts_with($uri, '/up') || str_starts_with($uri, '/storage'))
-            ->values()->all();
     }
 
     private function assertNoFullNames(string $html, string $where): void

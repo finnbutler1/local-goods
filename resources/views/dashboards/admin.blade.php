@@ -30,6 +30,7 @@
             </p>
             <x-card class="mt-3 overflow-x-auto" padding="p-0">
                 <table class="w-full text-left">
+                    <caption class="sr-only">Accounts</caption>
                     <thead class="border-b border-line text-sm text-muted">
                         <tr>
                             <th scope="col" class="px-5 py-3 font-semibold">Name</th>
