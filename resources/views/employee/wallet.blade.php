@@ -10,7 +10,7 @@
                 $approved = $result->isApproved();
                 $when = $result->created_at->setTimezone('America/New_York');
             @endphp
-            <section aria-labelledby="confirmation-heading" @class([
+            <section aria-labelledby="confirmation-heading" tabindex="-1" data-flash @class([
                 'rounded-3xl border-2 p-6 text-center sm:p-8',
                 'border-ok bg-ok-bg text-ok' => $approved,
                 'border-hold bg-hold-bg text-hold' => ! $approved,
@@ -85,7 +85,7 @@
             </p>
         @endif
 
-        <form method="POST" action="{{ route('employee.redeem') }}" class="mt-5 space-y-5">
+        <form method="POST" action="{{ route('employee.redeem') }}" data-busy="Checking with Redemption Fraud Detection…" class="mt-5 space-y-5">
             @csrf
             <div>
                 <label for="merchant_id" class="block font-semibold">Merchant</label>

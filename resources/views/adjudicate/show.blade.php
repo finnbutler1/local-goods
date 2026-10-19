@@ -22,11 +22,9 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
+        <x-flash />
         @if ($errors->any())
-            <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">Not saved: {{ $errors->first() }}</p>
+            <p id="adjudicate-error" role="alert" class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">Not saved: {{ $errors->first() }}</p>
         @endif
     </div>
 
@@ -63,9 +61,9 @@
                     Please don't open the AI eval page until you've submitted: it shows the answers.
                     This question helps us report results fairly; any answer is fine.
                 </p>
-                <form method="POST" action="{{ route('adjudication.start') }}" class="mt-4 space-y-4">
+                <form method="POST" action="{{ route('adjudication.start') }}" data-busy="Saving…" class="mt-4 space-y-4">
                     @csrf
-                    <fieldset>
+                    <fieldset @if ($errors->has('seen_eval_before')) role="radiogroup" aria-invalid="true" aria-describedby="adjudicate-error" @endif>
                         <legend class="font-semibold">Have you looked at the Local Goods eval results page before today?</legend>
                         <div class="mt-2 flex gap-6">
                             @foreach (['yes' => 'Yes', 'no' => 'No'] as $value => $label)
@@ -91,6 +89,8 @@
                 </p>
             @endif
 
+            {{-- Opening a case (Save and next, or a number below) moves focus to its heading
+                 (data-flash), so keyboard users don't tab past every case number again. --}}
             <nav aria-label="Cases" class="space-y-2">
                 <p class="font-semibold">
                     @if ($case)
@@ -120,7 +120,7 @@
 
             @if ($case)
                 <x-card as="section" aria-labelledby="case-heading">
-                    <h2 id="case-heading" class="text-2xl font-semibold text-forest">Redemption {{ $n }}</h2>
+                    <h2 id="case-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-forest">Redemption {{ $n }}</h2>
                     <dl class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
                         @foreach (AdjudicationCase::FACTS as $key => $label)
                             @php $value = $case->facts[$key] ?? ''; @endphp
@@ -137,11 +137,11 @@
                         @endforeach
                     </dl>
 
-                    <form method="POST" action="{{ route('adjudication.vote', $case) }}" class="mt-6 space-y-4 border-t border-line/70 pt-5">
+                    <form method="POST" action="{{ route('adjudication.vote', $case) }}" data-busy="Saving…" class="mt-6 space-y-4 border-t border-line/70 pt-5">
                         @csrf
                         <input type="hidden" name="n" value="{{ $n }}">
                         <fieldset @disabled($state !== 'voting') class="space-y-4">
-                            <fieldset>
+                            <fieldset @if ($errors->has('label')) role="radiogroup" aria-invalid="true" aria-describedby="adjudicate-error" @endif>
                                 <legend class="font-semibold">Does this redemption look normal or suspicious?</legend>
                                 <div class="mt-2 flex gap-6">
                                     @foreach (['normal' => 'Normal', 'suspicious' => 'Suspicious'] as $value => $label)
@@ -172,13 +172,13 @@
             @else
                 @php $missing = $cases->keys()->filter(fn ($i) => ! $votes->has($cases[$i]->id))->map(fn ($i) => $i + 1); @endphp
                 <x-card as="section" aria-labelledby="submit-heading">
-                    <h2 id="submit-heading" class="text-2xl font-semibold text-forest">Submit all</h2>
+                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-forest">Submit all</h2>
                     @if ($missing->isNotEmpty())
                         <p class="mt-2">Still to answer: {{ $missing->implode(', ') }}. You can submit once every case has an answer.</p>
                     @else
                         <p class="mt-2">You've answered all {{ $total }}. You can still go back and change any of them. Once you submit, your votes are locked.</p>
                     @endif
-                    <form method="POST" action="{{ route('adjudication.submit') }}" class="mt-4">
+                    <form method="POST" action="{{ route('adjudication.submit') }}" data-busy="Submitting…" class="mt-4">
                         @csrf
                         <x-button type="submit" variant="accent" :disabled="$missing->isNotEmpty()">Submit all</x-button>
                     </form>

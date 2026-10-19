@@ -20,9 +20,7 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
+        <x-flash />
         @if ($errors->any())
             <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">Nothing saved: {{ $errors->first() }}</p>
         @endif
@@ -110,7 +108,7 @@
                         </div>
                         <p class="mt-3 whitespace-pre-line">{{ $item->comment }}</p>
 
-                        <form method="POST" action="{{ route('admin.feedback.update', $item) }}" class="mt-4 flex flex-wrap items-end gap-3 border-t border-line/70 pt-4">
+                        <form method="POST" action="{{ route('admin.feedback.update', $item) }}" data-busy="Saving…" class="mt-4 flex flex-wrap items-end gap-3 border-t border-line/70 pt-4">
                             @csrf
                             @method('PATCH')
                             <div>

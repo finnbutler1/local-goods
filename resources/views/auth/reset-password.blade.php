@@ -1,7 +1,7 @@
 <x-guest-shell title="Choose a new password">
     <h1 class="text-3xl font-semibold text-forest">Choose a new password</h1>
 
-    <form method="POST" action="{{ route('password.update') }}" class="mt-6 space-y-5">
+    <form method="POST" action="{{ route('password.update') }}" data-busy="Saving…" class="mt-6 space-y-5">
         @csrf
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 

@@ -14,20 +14,22 @@
         <h2 id="password-heading" class="text-2xl font-semibold text-forest">Change your password</h2>
         <div aria-live="polite">
             @if (session('status') === 'password-updated')
-                <p class="mt-3 rounded-xl bg-ok-bg p-3 font-semibold text-ok">Your password was changed.</p>
+                <p role="status" tabindex="-1" data-flash class="mt-3 rounded-xl bg-ok-bg p-3 font-semibold text-ok">Your password was changed.</p>
             @endif
         </div>
-        <form method="POST" action="{{ route('user-password.update') }}" class="mt-4 space-y-5">
+        <form method="POST" action="{{ route('user-password.update') }}" data-busy="Saving…" class="mt-4 space-y-5">
             @csrf
             @method('PUT')
             <input type="hidden" name="email" value="{{ auth()->user()->email }}" autocomplete="username">
 
             <x-field name="current_password" label="Current password" :error="$errors->updatePassword->first('current_password') ?: null">
                 <input id="current_password" name="current_password" type="password" autocomplete="current-password" required
+                       @if ($errors->updatePassword->has('current_password')) aria-invalid="true" aria-describedby="current_password-error" @endif
                        class="{{ $input }} {{ $errors->updatePassword->has('current_password') ? 'border-hold' : 'border-muted' }}">
             </x-field>
             <x-field name="password" label="New password" hint="At least 8 characters." :error="$errors->updatePassword->first('password') ?: null">
-                <input id="password" name="password" type="password" autocomplete="new-password" required aria-describedby="password-hint"
+                <input id="password" name="password" type="password" autocomplete="new-password" required aria-describedby="password-hint{{ $errors->updatePassword->has('password') ? ' password-error' : '' }}"
+                       @if ($errors->updatePassword->has('password')) aria-invalid="true" @endif
                        class="{{ $input }} {{ $errors->updatePassword->has('password') ? 'border-hold' : 'border-muted' }}">
             </x-field>
             <x-field name="password_confirmation" label="Confirm new password">
@@ -58,7 +60,7 @@
                         @endif
                         <details class="mt-3" @if ($errors->getBag('feedback-'.$item->id)->any()) open @endif>
                             <summary class="cursor-pointer text-sm font-semibold text-forest">Edit</summary>
-                            <form method="POST" action="{{ route('feedback.update', $item) }}" class="mt-3 space-y-4">
+                            <form method="POST" action="{{ route('feedback.update', $item) }}" data-busy="Saving…" class="mt-3 space-y-4">
                                 @csrf
                                 @method('PATCH')
                                 <x-feedback-fields :prefix="'fb'.$item->id" :bag="'feedback-'.$item->id" :feedback="$item" :page-url="$item->page_url" />

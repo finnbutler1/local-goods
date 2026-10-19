@@ -90,10 +90,10 @@
                 <h2 class="text-2xl font-semibold text-forest">Stripe account</h2>
                 <div aria-live="polite" class="empty:hidden">
                     @if (session('stripe_status'))
-                        <p class="mt-3 rounded-xl border-2 border-ok bg-ok-bg p-3 text-sm font-semibold text-ok">{{ session('stripe_status') }}</p>
+                        <p role="status" tabindex="-1" data-flash class="mt-3 rounded-xl border-2 border-ok bg-ok-bg p-3 text-sm font-semibold text-ok">{{ session('stripe_status') }}</p>
                     @endif
                     @if (session('stripe_error'))
-                        <p role="alert" class="mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ session('stripe_error') }}</p>
+                        <p role="alert" tabindex="-1" data-flash class="mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ session('stripe_error') }}</p>
                     @endif
                 </div>
                 <x-card class="mt-3">
@@ -112,12 +112,12 @@
                         </p>
                         @if ($canOnboard)
                             <div class="mt-4 flex flex-wrap gap-2">
-                                <form method="POST" action="{{ route('merchant.stripe.onboard') }}">
+                                <form method="POST" action="{{ route('merchant.stripe.onboard') }}" data-busy="Opening Stripe…">
                                     @csrf
                                     <x-button type="submit" variant="accent">{{ $merchant->stripe_account_id ? 'Continue Stripe onboarding' : 'Start Stripe onboarding' }} (test mode)</x-button>
                                 </form>
                                 @if ($merchant->stripe_account_id)
-                                    <form method="POST" action="{{ route('merchant.stripe.sync') }}">
+                                    <form method="POST" action="{{ route('merchant.stripe.sync') }}" data-busy="Checking with Stripe…">
                                         @csrf
                                         <x-button type="submit" size="sm">Check Stripe status</x-button>
                                     </form>

@@ -22,7 +22,7 @@
 
 <dialog id="feedback-dialog" aria-labelledby="feedback-heading" @if ($hasErrors) data-open-on-load @endif
         class="m-auto w-[min(100%-2rem,32rem)] rounded-2xl bg-paper p-0 text-ink shadow-xl backdrop:bg-ink/50">
-    <form method="POST" action="{{ route('feedback.store') }}" class="space-y-4 p-6">
+    <form method="POST" action="{{ route('feedback.store') }}" data-busy="Sending…" class="space-y-4 p-6">
         @csrf
         <div class="flex items-start justify-between gap-4">
             <div>

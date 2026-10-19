@@ -27,6 +27,51 @@ document.addEventListener('click', (event) => {
 // Reopen a dialog whose form came back with errors.
 document.querySelectorAll('dialog[data-open-on-load]').forEach((dialog) => dialog.showModal());
 
+// After a form posts and the page comes back, start where the answer is: the
+// first field with an error, or else the message saying what happened
+// ([data-flash], see the x-flash component). Screen readers announce it and
+// the next Tab continues from there instead of the top of the page.
+if (!document.querySelector('dialog[open]')) {
+    const firstError = document.querySelector('main [aria-invalid="true"]');
+    const answer = firstError?.matches('fieldset') ? firstError.querySelector('input, select, textarea') : firstError;
+    (answer ?? document.querySelector('[data-flash]'))?.focus();
+}
+
+// Slow submits: <form data-busy="Checking…">. While the next page loads, the
+// pressed button says what is happening and can't be pressed again, and a
+// screen reader hears the same words. Nothing about what is sent changes.
+const busyStatus = document.createElement('p');
+busyStatus.setAttribute('role', 'status');
+busyStatus.className = 'sr-only';
+document.body.append(busyStatus);
+document.addEventListener('submit', (event) => {
+    const form = event.target.closest('form[data-busy]');
+    if (!form || event.defaultPrevented) return;
+    if (form.hasAttribute('aria-busy')) {
+        event.preventDefault(); // already on its way
+        return;
+    }
+    form.setAttribute('aria-busy', 'true');
+    const button = event.submitter;
+    if (button) {
+        button.dataset.idleLabel = button.innerHTML;
+        button.setAttribute('aria-disabled', 'true');
+        button.textContent = form.dataset.busy;
+    }
+    busyStatus.textContent = form.dataset.busy;
+});
+// Back button: the browser may restore this page as it was left, mid-submit.
+window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    document.querySelectorAll('form[aria-busy]').forEach((form) => form.removeAttribute('aria-busy'));
+    document.querySelectorAll('[data-idle-label]').forEach((button) => {
+        button.innerHTML = button.dataset.idleLabel;
+        button.removeAttribute('aria-disabled');
+        delete button.dataset.idleLabel;
+    });
+    busyStatus.textContent = '';
+});
+
 // Reviewer magic links: /judge-access#<id>.<token>. The part after # never
 // reaches the server's logs. Move it into the form body, clear it from the
 // address bar (and history), then sign in.
