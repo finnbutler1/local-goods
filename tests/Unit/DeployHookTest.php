@@ -55,6 +55,23 @@ class DeployHookTest extends TestCase
         $this->assertStringContainsString('config:clear', $script);
     }
 
+    /**
+     * Checked by reading the hook, not running it: a passing check would go
+     * on to migrate whatever database the environment points at.
+     */
+    public function test_deploy_hook_checks_production_settings_before_touching_anything(): void
+    {
+        $script = $this->code(self::HOOK);
+        $check = strpos($script, 'php artisan app:check-production-config');
+
+        $this->assertNotFalse($check, 'The hook must run app:check-production-config.');
+        $this->assertStringContainsString('set -Eeuo pipefail', $script);
+        foreach (['mkdir -p storage', 'touch storage/database.sqlite', 'migrate --force', 'demo:seed-accounts'] as $later) {
+            $this->assertLessThan(strpos($script, $later), $check, "Check settings before: {$later}");
+        }
+        $this->assertStringNotContainsString('app:check-production-config ||', $script, 'A failed check must stop the deploy.');
+    }
+
     public static function badSettings(): array
     {
         return [

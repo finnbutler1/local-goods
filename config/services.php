@@ -63,6 +63,9 @@ return [
     // visitor's real IP) believed. See App\Http\Middleware\TrustCloudFront.
     'cloudfront' => [
         'origin_secret' => env('CLOUDFRONT_ORIGIN_SECRET'),
+        // Production refuses requests without the secret (RequireCloudFrontOrigin).
+        // Set ORIGIN_VERIFY_ENFORCE=false in Beanstalk to switch that off without a redeploy.
+        'enforce' => (bool) env('ORIGIN_VERIFY_ENFORCE', true),
     ],
 
 ];

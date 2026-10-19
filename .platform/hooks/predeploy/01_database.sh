@@ -52,6 +52,10 @@ case "${DB_CONNECTION:-sqlite}" in
     *) fail "DB_CONNECTION must be exactly 'mysql' or 'sqlite' (check for typos, such as the digit 1 instead of the letter l)." ;;
 esac
 
+# Stop here if a production setting is unsafe (APP_DEBUG, APP_ENV, secure
+# cookies, the CloudFront secret). Prints which setting, never its value.
+php artisan app:check-production-config --no-interaction
+
 # Make sure every folder Laravel writes to exists (sessions, cache, compiled
 # views, logs), even if the uploaded zip left an empty one out.
 mkdir -p storage/framework/sessions storage/framework/cache/data \

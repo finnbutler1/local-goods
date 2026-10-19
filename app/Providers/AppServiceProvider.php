@@ -8,6 +8,7 @@ use App\Services\Payments\NoticeSafeStripeGateway;
 use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeSdkGateway;
 use App\Support\AppUrl;
+use App\Support\ProductionConfig;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -42,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             AppUrl::force();
         }
+
+        // Production never shows debug pages, even if APP_DEBUG slipped through the deploy check.
+        ProductionConfig::forceDebugOff();
 
         // Who may change what. Judges pass none of these; BlockJudgeWrites
         // also stops them at the door, so both layers must agree.
