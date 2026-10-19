@@ -408,6 +408,14 @@ Civic Economics, "Indie Impact Study Series: National Summary Report" (with
 the American Booksellers Association), data from 2011–2012, 134 businesses in
 10 U.S. communities, none in DC. Local Goods has not measured it here.
 
+### Accessibility
+
+Every page was checked with keyboard only, at phone width and with the axe
+accessibility checker, and tests check labels, alt text and error wiring on
+every page for every role. It has not been tested with a screen reader or on
+a real phone. What was checked, what was fixed and what is still a known limit
+is in [docs/accessibility.md](docs/accessibility.md).
+
 ## How I built Local Goods with Claude Code
 
 I built Local Goods with [Claude Code](https://claude.com/claude-code), working

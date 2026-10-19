@@ -74,6 +74,17 @@ class AccessibilityTest extends TestCase
         $this->assertNoProblems($found);
     }
 
+    public function test_pages_with_a_parameter_in_their_address_pass_the_static_checks(): void
+    {
+        $found = array_filter([
+            'reset password' => AccessibilityAudit::problems($this->get('/reset-password/some-token?email=someone@example.com')->assertOk()->getContent()),
+            'old invite link' => AccessibilityAudit::problems($this->get('/invite/old-token')->getContent()),
+            'adjudication case' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Judge))->get('/adjudicate?n=1')->assertOk()->getContent()),
+        ]);
+
+        $this->assertNoProblems($found);
+    }
+
     public function test_the_styleguide_passes_the_static_checks(): void
     {
         $this->app['env'] = 'local';

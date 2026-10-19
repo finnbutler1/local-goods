@@ -1,0 +1,179 @@
+# Accessibility and UX check
+
+What was checked on every page of Local Goods, what was fixed, and what
+was not checked or could not be fixed. Done on 2026-10-19 (Prompt 9B).
+This page lists only checks that actually ran.
+
+## How it was checked
+
+There are two kinds of check: automated tests that run in CI on every
+push, and a one-off browser audit run locally for this pass.
+
+### Automated tests (in the repo, run in CI)
+
+| Test | What it checks |
+|---|---|
+| [`AccessibilityTest`](../tests/Feature/AccessibilityTest.php) | Opens every page whose address has no parameter, signed out and as each of the six roles, plus a judge viewing as each role, the reset-password page, the old invite link, an adjudication case and `/styleguide`. Each page goes through [`AccessibilityAudit`](../tests/Support/AccessibilityAudit.php): `<html lang>`, a `<title>`, exactly one `<main>` and one `<h1>`; every `<img>` has `alt`; every input, select and textarea has a label; every button, link and `<summary>` has a name; every `aria-describedby`/`aria-labelledby` points at an id that exists; no duplicate ids; no positive `tabindex`; every `<svg>` is either hidden or a named image; every table has a caption; radio groups sit in a `<fieldset>` with a `<legend>`; a field with a hint or error points at it; an invalid field points at its message; a box that scrolls sideways can be focused and has a name. |
+| Same file, forms with errors | Sends ten forms with bad input (log in, buy credits, give credits to one person and to several, program setup, redeem, deny without a reason, feedback, change password, invite a reviewer), checks a field is marked invalid, and runs the same audit on the page that comes back. |
+| Same file, other rules | `prefers-reduced-motion` turns off animations and transitions in `app.css`, and every animation in a view is `motion-safe:`; every form that posts has a "working…" label (`data-busy`); both charts keep their summary sentence and their table. |
+| [`EmptyStatesTest`](../tests/Feature/EmptyStatesTest.php) | With only the BID in the database (no employer, merchants or redemptions), every page as every role either opens or refuses politely (never a server error), and every page that opens passes the audit above. |
+| [`ErrorPagesTest`](../tests/Feature/ErrorPagesTest.php) | 403, 404, 419, 429, 500 and 503 each get a plain-English page that passes the audit; our own reasons ("Your account is read-only.") are shown, framework messages are not. |
+| [`ColorContrastTest`](../tests/Unit/ColorContrastTest.php) (already there) | Every text and background color pair the design allows is at least 4.5:1 (WCAG AA). |
+
+No accessibility test is skipped or marked as a known failure.
+
+### Browser audit (run once, locally, not in CI)
+
+- **Setup.** The app ran on `php -S` against a new SQLite file in a
+  scratch folder, seeded with the demo data (the real
+  `storage/database.sqlite` was not touched). Stripe and the Claude API
+  were switched off, so payments were simulated and every new redemption
+  was held for review (the AI check fails closed without a key).
+- **Tool.** Google Chrome 155 (headless), driven by puppeteer-core 24.43,
+  with axe-core 4.14 running the WCAG 2.0, 2.1 and 2.2 A and AA rules plus
+  axe's best-practice rules. Every `<details>` was opened first so
+  collapsed content was checked too.
+- **Pages.** 33 pages (34 visits: `/account` as two roles): the landing page, `/eval`, `/eval/merchants`,
+  log in, forgot password, the magic-link page, the old invite link, a
+  404, and every signed-in page for the employee, employer admin,
+  merchant, BID admin, platform admin and judge (including the judge
+  viewing as each role), plus `/user/confirm-password` and
+  `/styleguide`.
+- **Widths.** 375px (iPhone) and 1280px (laptop), then 320px, the width
+  WCAG's reflow rule uses (1280px at 400% zoom). Each page was checked
+  for horizontal overflow, and full-page screenshots at 375px were looked
+  at for cramped or cut-off content.
+- **Keyboard.** A script walked eight flows with keys only (Tab,
+  Shift+Tab, Enter, Space, arrow keys, typing; on a Mac, a dropdown is
+  chosen by typing the start of an option). At every stop it recorded
+  whether a focus outline was visible, whether something else covered the
+  focused element, and whether it was on screen. It ran at 1280px and at
+  375px.
+  1. Log in (a wrong password, then the right one)
+  2. Skip link (Enter on "Skip to content", then Tab)
+  3. Buy credits (a bad amount, then a good one), then Pay now
+  4. Give credits to one person
+  5. Redeem credits
+  6. Fraud review: Deny with no reason (stopped by the browser), Approve
+     with a reason, Deny with no denial reason picked (stopped by the
+     server), then Deny properly
+  7. Feedback widget: open, fill in, Escape, reopen, send
+  8. Magic-link landing (with and without the part after `#`), and an
+     adjudication vote (Start, then Save and next on several cases)
+- **Reduced motion.** Chrome's `prefers-reduced-motion: reduce` was turned
+  on, and the Feedback button's fade went from 0.15s to effectively none.
+- **"Working…" state.** The redeem request was slowed down on purpose: the
+  button read "Checking with Redemption Fraud Detection…", was marked
+  `aria-disabled`, the status was announced in a live region, a second
+  Enter was ignored, and exactly one redemption was saved.
+
+## What was found and fixed
+
+| Found | Fix | Commit |
+|---|---|---|
+| `/admin/reviewers` was 714px wide on a 375px phone: a screen-reader-only label inside the scrolling table escaped its box | Wide tables now scroll inside a `.scroll-region` (`position: relative`) | 4349e39 |
+| Tables that scroll sideways could not be reached by keyboard (axe `scrollable-region-focusable`, 6 pages, plus the false positive under Known limits) | Each one is a named, focusable region (`role="region"`, `tabindex="0"`, `aria-label`) | 4349e39 |
+| Button names that didn't start with their visible text (axe `label-content-name-mismatch`): "Needs research" on the merchant queue, "New link" on reviewers | Names now begin with the visible words | 4349e39 |
+| At 375px, keyboard focus landed on fields hidden behind the bottom tab bar or Feedback button (14 tab stops, some repeated, in 5 of the 8 flows) | `scroll-padding` keeps focus clear of the top bar and, on phones, the tab bar | 4349e39 |
+| No reduced-motion handling beyond the wallet's pulsing dots | `prefers-reduced-motion: reduce` turns off all animations and transitions | 4349e39 |
+| After a form error, focus went back to the top of the page | Focus starts on the first field with an error | c1c27f5 |
+| After an action, the result ("Paid", "Approved", "Denied") wasn't announced: messages were rendered six different ways, some not in a live region, and a live region doesn't speak on a new page anyway | One `x-flash` component; focus moves to the message (or to the redemption confirmation), so screen readers read it and Tab continues from there | c1c27f5 |
+| Errors not tied to their fields: give credits, deny reason, feedback, change password, adjudication answers, reviewer type | `aria-invalid` plus `aria-describedby` on each field or radio group | c1c27f5 |
+| No loading state on slow submits (redeem and "Run a collusion example" wait for the AI); a double press could send twice | Every form that posts shows what it is doing and ignores a second press (what is sent is unchanged) | c1c27f5 |
+| Adjudication: each "Save and next" sent keyboard users back past 32 case-number links | Focus moves to the new case's heading: 3 Tab presses per vote instead of about 40 | c1c27f5 |
+| Error pages were the framework's bare defaults | Plain-English 403, 404, 419, 429, 500 and 503 pages with a way back; the 500 page says to check before retrying a payment | 4790ea7 |
+| `/user/confirm-password` was a server error for any signed-in user (a login-library page that had no design) | A simple page in the login style | 458f89d |
+| `/admin/reviewers` crashed in a browser that had opened a judge link before logging in as platform admin (two things shared one session key) | Separate key; regression test | 83353e6 |
+| BID admin "Recent redemptions" showed nothing at all when empty | "No redemptions yet." with what will appear | 458f89d |
+| The BID impact chart had no text summary (the employer chart did) | One-line summary (this week, and the peak week) next to the table | 9064eb0 |
+| `/bid-admin/participation` called measured spending "Dollars recirculated"; ADR 0017 keeps "recirculation" for the outside estimate | "Spent at independent merchants" | 9064eb0 |
+| Wallet: merchant names cut off ("Connecticut Noo…") next to a Denied badge at 375px | Names wrap | 7d64000 |
+| Impact: the employer table squeezed to one word per line at 375px | Readable column widths; the table scrolls sideways | 7d64000 |
+| Deny-reason radio buttons were the browser's tiny default | Same size as every other radio | 7d64000 |
+| The 404 page showed the framework's message ("The route … could not be found") | Extra detail only for our own 403 reasons | 7d64000 |
+| `/bid-admin/merchants` was 30px too wide at 320px (a long badge that couldn't wrap) | `x-badge :wrap="true"` | e19f070 |
+| Every new pattern needed a home | `/styleguide` has a States section: result messages, busy button, empty state, errors | 7d64000 |
+
+The `/admin` accounts table also got its missing caption (80e1157).
+
+## Results after the fixes
+
+- **axe:** no violations on any of the 33 pages at 320px, 375px or
+  1280px, except one false positive (see Known limits). This was the
+  last run, on the final code.
+- **Overflow:** no page is wider than the screen at 320px or 375px.
+- **Keyboard:** all eight flows completed with keys only at 1280px and
+  375px, with a visible focus outline at every stop and nothing covering
+  the focused element.
+- **Tests:** all pass (`php artisan test`).
+
+## Pages checked
+
+Signed out: `/`, `/eval`, `/eval/merchants`, `/login`,
+`/forgot-password`, `/reset-password/{token}` (tests only),
+`/judge-access`, `/invite/{token}`, error pages.
+
+Employee: `/employee`, `/account`. Employer admin: `/employer`,
+`/account`. Merchant: `/merchant`, `/merchant/stripe/refresh`,
+`/merchant/stripe/return`. BID admin: `/bid-admin`, `/bid-admin/eval`,
+`/bid-admin/participation`, `/bid-admin/impact`, `/bid-admin/merchants`.
+Platform admin: `/admin`, `/admin/reviewers`, `/admin/reconciliation`,
+`/admin/feedback`, `/admin/changelog`, `/admin/adjudication`,
+`/user/confirm-password`, `/styleguide`. Judge: `/judge`, `/adjudicate`
+(start, cases, submit), view as employee, employer admin, merchant and BID
+admin. Every signed-in page: the Feedback button and its dialog.
+
+## Loading states
+
+Every page is rendered on the server, so nothing loads in pieces after the
+page appears. The only waits are after pressing a button that posts a
+form, and each of those now has a "working…" state (see above). There is
+no separate loading screen.
+
+## Not tested
+
+- **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session
+  was run. Names, labels and announcements were checked from the HTML and
+  with axe, which is not the same as listening to the pages.
+- **Not tested on a real phone.** Phone widths were Chrome's emulation of
+  a touch screen at 375px and 320px, not an iPhone or Android device.
+- **Not tested by a person with a keyboard.** The keyboard walkthrough was
+  a script pressing keys in headless Chrome.
+- **Not tested with browser zoom or larger text settings**, other than the
+  320px width check that WCAG's reflow rule treats as equal to 400% zoom.
+- **Not tested in Windows High Contrast (forced colors) mode, or in
+  Safari, Firefox or Edge.**
+- **Touch target sizes were not measured.** Buttons were looked at in the
+  screenshots only.
+- **Stripe mode was not audited.** The scratch server ran in simulated
+  mode, so the "Pay with Stripe" and onboarding buttons and the
+  reconciliation page with real Stripe data were not in the browser audit.
+  Stripe's own Checkout and Express onboarding pages are Stripe's and were
+  not checked.
+- **The pulsing dots on an approved redemption** were not seen in the
+  browser (without the AI key every new redemption is held). They use
+  `motion-safe:`, and a test checks that every animation in the views
+  does.
+
+## Known limits
+
+- **axe false positive on the read-only employee list.** When a judge views
+  the employer page, the "Choose people" list sits in a disabled form, so
+  its checkboxes can't take focus. The list itself has `tabindex="0"` so it
+  can still be scrolled by keyboard, and the script confirmed Tab reaches
+  it. axe still reports `scrollable-region-focusable` because it treats
+  everything inside a disabled `<fieldset>` as unfocusable.
+- **axe could not decide on some contrast.** On most pages axe marked a few
+  text elements (up to 31 on the busiest page, the employer dashboard) as "needs review", because
+  the Feedback button, the tab bar or a decorative element overlaps them in
+  the screenshot, or the element holds only a symbol such as an arrow. It
+  found no contrast failures. All text colors come from token pairs that
+  `ColorContrastTest` checks at 4.5:1 or more.
+- **Chart bars are for mouse users.** The bars are hidden from screen
+  readers and show their week's numbers on hover only. Everyone gets a
+  one-line summary under each chart and every number in "Show as a table".
+- **The "working…" state needs JavaScript.** Without it, forms still work
+  but the button doesn't change while the next page loads.
+- **The Feedback button steps aside** (fades out) while it would cover a
+  field or while someone is typing. That is on purpose, but on a phone it
+  can be out of sight while a form is in use.
