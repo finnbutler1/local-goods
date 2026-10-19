@@ -175,8 +175,8 @@
     {{-- Tables --}}
     <section id="tables" aria-labelledby="tables-heading" class="scroll-mt-24">
         <h2 id="tables-heading" class="text-3xl font-semibold text-forest">Tables</h2>
-        <p class="mt-1 text-muted">Use a <code>&lt;caption&gt;</code> and <code>scope</code> on header cells. Wrap wide tables in <code>overflow-x-auto</code>.</p>
-        <div class="mt-6 overflow-x-auto">
+        <p class="mt-1 text-muted">Use a <code>&lt;caption&gt;</code> and <code>scope</code> on header cells. Wrap wide tables in <code>&lt;div class="scroll-region" role="region" tabindex="0" aria-label="…"&gt;</code> so keyboard users can scroll them too.</p>
+        <div class="mt-6 scroll-region" role="region" tabindex="0" aria-label="Recent redemptions table">
             <table class="tabular w-full min-w-lg overflow-hidden rounded-2xl bg-paper text-left ring-1 ring-line/70">
                 <caption class="px-4 pt-4 pb-2 text-left font-semibold">Recent redemptions (example data)</caption>
                 <thead>

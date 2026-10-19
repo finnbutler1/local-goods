@@ -67,7 +67,7 @@
                     <em>False alarm</em>: labeled normal, AI held. The "why" comes from the AI's own explanations.
                 </p>
                 @foreach (['tags' => ['Pattern', FraudEvalPatterns::TAGS], 'categories' => ['Merchant category', []]] as $key => [$heading, $names])
-                    <div class="mt-3 overflow-x-auto">
+                    <div class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Misses and false alarms by {{ strtolower($heading) }} table">
                         <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
                             <caption class="sr-only">Misses and false alarms by {{ strtolower($heading) }}</caption>
                             <thead>
@@ -211,7 +211,7 @@
             <section aria-labelledby="history-heading">
                 <h2 id="history-heading" class="text-2xl font-semibold text-forest">Earlier runs</h2>
                 <p class="mt-1 text-sm text-muted">Every run is kept. A new prompt version means the prompt was changed between runs. Each cell: agreement, and how many of the suspicious cases the AI caught.</p>
-                <div class="mt-3 overflow-x-auto">
+                <div class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Agreement for every eval run table">
                     <table class="tabular w-full min-w-3xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
                         <caption class="sr-only">Agreement for every eval run</caption>
                         <thead>

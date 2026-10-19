@@ -159,7 +159,7 @@
                         </ul>
 
                         <div class="grid gap-6 lg:grid-cols-2">
-                            <div class="overflow-x-auto">
+                            <div class="scroll-region" role="region" tabindex="0" aria-label="Confusion matrix ({{ $title }}) table">
                                 <table class="tabular w-full rounded-2xl bg-paper text-left ring-1 ring-line/70">
                                     <caption class="px-4 pt-3 text-left text-sm font-semibold text-muted">Confusion matrix ({{ $title }}): rows are Finn's labels, columns the AI's answers</caption>
                                     <thead>
@@ -178,7 +178,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="overflow-x-auto">
+                            <div class="scroll-region" role="region" tabindex="0" aria-label="Not independent, by reason ({{ $title }}) table">
                                 <table class="tabular w-full rounded-2xl bg-paper text-left ring-1 ring-line/70">
                                     <caption class="px-4 pt-3 text-left text-sm font-semibold text-muted">Not independent, by the reason Finn gave ({{ $title }})</caption>
                                     <thead>
@@ -260,7 +260,7 @@
 
             <section aria-labelledby="history-heading">
                 <h2 id="history-heading" class="text-2xl font-semibold text-forest">Run history</h2>
-                <div class="mt-3 overflow-x-auto">
+                <div class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Every merchant eval run table">
                     <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
                         <caption class="sr-only">Every merchant eval run, oldest first</caption>
                         <thead>

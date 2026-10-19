@@ -67,7 +67,7 @@
                     </x-card>
                 @endforeach
             </ul>
-            <x-card padding="p-0" class="mt-3 hidden overflow-x-auto sm:block">
+            <x-card padding="p-0" class="mt-3 hidden scroll-region sm:block" role="region" tabindex="0" aria-label="Participating merchants table">
                 <table class="w-full text-left">
                     <caption class="sr-only">Participating merchants with this month's cleared sales, what they are owed through Stripe test mode and simulated, their last payout and Stripe onboarding</caption>
                     <thead class="border-b border-line/70 text-sm text-muted">

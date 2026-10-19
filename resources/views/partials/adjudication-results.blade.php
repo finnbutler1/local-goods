@@ -45,7 +45,7 @@
     </div>
 
     @foreach (['by_split' => ['Split', FraudEvalRunner::SPLITS], 'by_tag' => ['Pattern', FraudEvalPatterns::TAGS]] as $key => [$heading, $names])
-        <div class="overflow-x-auto">
+        <div class="scroll-region" role="region" tabindex="0" aria-label="Disputed cases by {{ strtolower($heading) }} table">
             <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
                 <caption class="px-4 pt-4 pb-1 text-left font-semibold">Disputed cases by {{ strtolower($heading) }}</caption>
                 <thead>

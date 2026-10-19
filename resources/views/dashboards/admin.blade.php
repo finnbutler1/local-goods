@@ -28,7 +28,7 @@
             <p class="mt-1 text-sm text-muted">
                 {{ $showRevoked ? 'Showing every account, revoked ones included.' : 'Revoked accounts are hidden.' }}
             </p>
-            <x-card class="mt-3 overflow-x-auto" padding="p-0">
+            <x-card class="mt-3 scroll-region" padding="p-0" role="region" tabindex="0" aria-label="Accounts table">
                 <table class="w-full text-left">
                     <caption class="sr-only">Accounts</caption>
                     <thead class="border-b border-line text-sm text-muted">

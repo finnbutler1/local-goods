@@ -17,9 +17,7 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('status'))
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
-        @endif
+        <x-flash />
         @if ($errors->any())
             <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">Nothing changed: {{ $errors->first() }}</p>
         @endif
@@ -36,7 +34,7 @@
                         (prompt <code>{{ $draft->prompt_version }}</code>).
                     </p>
                 </div>
-                <form method="POST" action="{{ route('admin.adjudication.publish') }}"
+                <form method="POST" action="{{ route('admin.adjudication.publish') }}" data-busy="Publishing…"
                       onsubmit="return confirm('Publish version {{ $draft->version }}? Its cases are locked once published; changing them needs a new version.');">
                     @csrf
                     <x-button type="submit" variant="accent">Publish and lock</x-button>
@@ -51,7 +49,7 @@
                         @if ($split !== '')
                             <h4 class="mt-3 font-sans text-sm font-semibold uppercase tracking-widest text-muted">{{ $splits[$split] ?? $split }}</h4>
                         @endif
-                        <div class="mt-2 overflow-x-auto">
+                        <div class="mt-2 scroll-region" role="region" tabindex="0" aria-label="{{ $title }} table">
                             <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
                                 <caption class="sr-only">{{ $title }} {{ $split !== '' ? '('.($splits[$split] ?? $split).')' : '' }}</caption>
                                 <thead>
@@ -73,7 +71,7 @@
                                             <td class="px-4 py-2">{{ $case->my_label }}</td>
                                             <td class="px-4 py-2">{{ $case->ai_label }}</td>
                                             <td class="px-4 py-2 text-right">
-                                                <form method="POST" action="{{ route('admin.adjudication.cases.destroy', $case) }}">
+                                                <form method="POST" action="{{ route('admin.adjudication.cases.destroy', $case) }}" data-busy="Removing…">
                                                     @csrf @method('DELETE')
                                                     <x-button type="submit" variant="ghost" size="sm">Remove<span class="sr-only"> {{ $case->case_id }}</span></x-button>
                                                 </form>
@@ -90,7 +88,7 @@
             @endforeach
 
             @if ($addable !== [])
-                <form method="POST" action="{{ route('admin.adjudication.cases.store') }}" class="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end">
+                <form method="POST" action="{{ route('admin.adjudication.cases.store') }}" data-busy="Adding…" class="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end">
                     @csrf
                     <x-field name="case_id" label="Add a case" class="grow">
                         <select id="case_id" name="case_id" class="{{ $select }}">
@@ -110,7 +108,7 @@
                 Starts a draft with every eval case where your label and the AI disagree, in every split,
                 plus the same number of agreed cases picked at random as blind controls. You can change it before publishing.
             </p>
-            <form method="POST" action="{{ route('admin.adjudication.store') }}" class="mt-4">
+            <form method="POST" action="{{ route('admin.adjudication.store') }}" data-busy="Building the set…" class="mt-4">
                 @csrf
                 <x-button type="submit">Build the draft</x-button>
             </form>
@@ -132,14 +130,14 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     @if ($current->isOpen())
-                        <form method="POST" action="{{ route('admin.adjudication.close') }}"
+                        <form method="POST" action="{{ route('admin.adjudication.close') }}" data-busy="Closing voting…"
                               onsubmit="return confirm('Close voting? Nobody can vote after this, and every vote and reason appears on /eval without names.');">
                             @csrf
                             <x-button type="submit" variant="danger">Close voting</x-button>
                         </form>
                     @endif
                     @unless ($draft)
-                        <form method="POST" action="{{ route('admin.adjudication.store') }}">
+                        <form method="POST" action="{{ route('admin.adjudication.store') }}" data-busy="Building the set…">
                             @csrf
                             <x-button type="submit" variant="secondary">Start version {{ $current->version + 1 }}</x-button>
                         </form>

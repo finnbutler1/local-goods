@@ -1,6 +1,6 @@
 {{-- Who has started and submitted the current adjudication set. Needs $current. --}}
 @php $participants = $current->participants()->with('user')->orderBy('id')->get(); @endphp
-<div class="overflow-x-auto">
+<div class="scroll-region" role="region" tabindex="0" aria-label="Adjudicators table">
     <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
         <caption class="px-4 pt-4 pb-1 text-left font-semibold">Adjudicators ({{ $participants->count() }})</caption>
         <thead>
