@@ -36,7 +36,7 @@ git log --all -p --no-color --no-ext-diff --format='commit %H' | COMMITS="$commi
             [laravel_app_key        => qr/(base64:)[A-Za-z0-9+\/]{40,}={0,2}/],
             [rds_endpoint           => qr/()[a-z0-9.-]+(?=\.rds\.amazonaws\.com)/],
             [private_key            => qr/(-----BEGIN [A-Z ]*PRIVATE KEY-----)/],
-            [secret_setting         => qr/\b((?:APP_KEY|DB_PASSWORD|STRIPE_SECRET|STRIPE_WEBHOOK_SECRET|STRIPE_CONNECT_WEBHOOK_SECRET|ANTHROPIC_API_KEY|CLOUDFRONT_ORIGIN_SECRET|AWS_SECRET_ACCESS_KEY|DEMO_PASSWORD_[A-Z_]+)\s*(=|:)\s*["\x27]?)(?![\$"\x27\s#]|null\b|\$\{)[^\s"\x27#]+/],
+            [secret_setting         => qr/\b((?:APP_KEY|DB_PASSWORD|STRIPE_SECRET|STRIPE_WEBHOOK_SECRET|STRIPE_CONNECT_WEBHOOK_SECRET|ANTHROPIC_API_KEY|CLOUDFRONT_ORIGIN_SECRET|AWS_SECRET_ACCESS_KEY|DEMO_PASSWORD_[A-Z_]+)\s*(=|:)\s*["\x27]?)(?![\$"\x27\s#{\\]|null\b)[^\s"\x27#]+/],
         );
         # Obvious test placeholders already in the history (see TRANSPARENCY.md).
         $placeholder = qr/SECRETVALUE|SHOULDNOTSHOW|fake|not-real|not_real|example|placeholder|dummy/i;
