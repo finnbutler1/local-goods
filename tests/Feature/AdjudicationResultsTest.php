@@ -13,7 +13,7 @@ use App\Services\Fraud\FraudEvalReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** What blind adjudicators said, on the admin page and /eval (ADR 0011). */
+/** What blind adjudicators said, on the admin page and /eval (ADR 0011; personal contacts apart, ADR 0019). */
 class AdjudicationResultsTest extends TestCase
 {
     use RefreshDatabase;
@@ -36,9 +36,9 @@ class AdjudicationResultsTest extends TestCase
      * $side: 'ai' or 'finn' on disputed cases; controls get the shared label
      * unless $controlsWrong.
      */
-    private function adjudicator(string $side, bool $seen = false, bool $submit = true, bool $controlsWrong = false, string $name = 'Synthetic Adjudicator'): User
+    private function adjudicator(string $side, bool $seen = false, bool $submit = true, bool $controlsWrong = false, string $name = 'Synthetic Adjudicator', ReviewerType $type = ReviewerType::Bid): User
     {
-        $user = User::factory()->role(Role::Judge)->create(['name' => $name, 'reviewer_type' => ReviewerType::Bid]);
+        $user = User::factory()->role(Role::Judge)->create(['name' => $name, 'reviewer_type' => $type]);
         $this->actingAs($user);
         $this->post('/adjudicate/start', ['seen_eval_before' => $seen ? 'yes' : 'no']);
 
@@ -213,10 +213,74 @@ class AdjudicationResultsTest extends TestCase
         $this->get('/eval')->assertOk()->assertDontSee('Hidden for now')->assertSee($explanation, false);
     }
 
+    public function test_personal_contact_votes_never_change_the_headline_result(): void
+    {
+        $this->adjudicator('finn', name: 'Pat Synthetic');
+        $this->adjudicator('ai', seen: true, type: ReviewerType::ContestJudge);
+        $before = $this->results();
+        $this->assertNull($before['personal']);
+
+        // Three personal contacts, all siding with the AI, would flip the headline if they were counted.
+        $this->adjudicator('ai', name: 'Riley Fakename', type: ReviewerType::PersonalContact);
+        $this->adjudicator('ai', name: 'Morgan Notreal', type: ReviewerType::PersonalContact);
+        $this->adjudicator('ai', seen: true, controlsWrong: true, name: 'Casey Example', type: ReviewerType::PersonalContact);
+        $after = $this->results();
+
+        $this->assertEquals($before['all'], $after['all']);
+        $this->assertEquals($before['unseen'], $after['unseen']);
+
+        $personal = $after['personal'];
+        $this->assertCount(3, $personal['all']['adjudicators']);
+        $this->assertCount(2, $personal['unseen']['adjudicators']);
+        $this->assertSame(['cases' => $this->disputed, 'ai' => $this->disputed, 'finn' => 0, 'split' => 0], $personal['all']['summary']);
+        $this->assertSame("On {$this->disputed} disputed cases, personal contacts sided with the AI in {$this->disputed}, with Finn in 0, split in 0.", $personal['all']['sentence']);
+        $this->assertLessThan($personal['all']['controls']['of'], $personal['all']['controls']['hits']);
+        $this->assertSame([1, 2, 3], array_column($personal['all']['adjudicators'], 'number'));
+        $this->assertSame(['R.F.', 'M.N.', 'C.E.'], array_column($personal['all']['adjudicators'], 'name'));
+
+        // The judge home card counts only the headline group.
+        $this->assertSame(2, $this->set->submittedCount());
+        $this->assertSame(3, $this->set->submittedCountForPersonalContacts());
+    }
+
+    public function test_personal_contacts_have_their_own_labeled_section_on_eval_and_admin(): void
+    {
+        $this->adjudicator('ai', name: 'Riley Fakename', type: ReviewerType::PersonalContact);
+
+        // Only a personal contact has submitted: the headline says so and stays empty.
+        $this->get('/eval')->assertOk()
+            ->assertSee('No BID staff or contest judges have submitted yet.')
+            ->assertSee('0 adjudicators voted')
+            ->assertDontSee('adjudicators sided with the AI')
+            ->assertSee('Personal contacts (know Finn): not counted in the result above')
+            ->assertSee("personal contacts sided with the AI in {$this->disputed}")
+            ->assertDontSee('Riley')->assertDontSee('R.F.');
+
+        $this->adjudicator('finn', name: 'Pat Synthetic');
+        app(AdjudicationSetBuilder::class)->close($this->set);
+
+        $this->get('/eval')->assertOk()
+            ->assertSeeInOrder(["adjudicators sided with the AI in 0, with Finn in {$this->disputed}", 'Personal contacts (know Finn): not counted in the result above', "personal contacts sided with the AI in {$this->disputed}"])
+            ->assertSee('Contact 1')
+            ->assertSee('Reason from Riley Fakename.')
+            ->assertDontSee('Riley Fakename</span>', false);
+
+        $this->signIn(Role::PlatformAdmin);
+        $this->get('/admin/adjudication')->assertOk()
+            ->assertSee('Personal contacts (know Finn): not counted in the result above')
+            ->assertSee('Personal contacts (know Finn), not counted in the headline (1)')
+            ->assertSee('BID and contest judges (1)')
+            ->assertSee('R.F.')
+            ->assertSee('Pat Synthetic (BID)')
+            ->assertDontSee('Riley Fakename</', false)
+            ->assertDontSee('Riley Fakename (', false);
+    }
+
     public function test_adjudication_never_changes_the_headline(): void
     {
         $before = app(FraudEvalReport::class)->latest()['headline'];
         $this->adjudicator('finn');
+        $this->adjudicator('ai', type: ReviewerType::PersonalContact);
         app(AdjudicationSetBuilder::class)->close($this->set);
 
         $this->assertSame($before, app(FraudEvalReport::class)->latest()['headline']);

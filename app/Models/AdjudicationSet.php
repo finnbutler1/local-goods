@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * One version of the blind adjudication set (ADR 0011). A draft can be edited
@@ -14,7 +15,9 @@ use Illuminate\Support\Carbon;
 class AdjudicationSet extends Model
 {
     public const DRAFT = 'draft';
+
     public const PUBLISHED = 'published';
+
     public const CLOSED = 'closed';
 
     protected $fillable = ['version', 'status', 'source_run', 'prompt_version', 'published_at', 'closed_at'];
@@ -99,17 +102,29 @@ class AdjudicationSet extends Model
         return $this->participants()->where('user_id', $user->id)->whereNotNull('submitted_at')->exists();
     }
 
-    /** How many adjudicators have pressed Submit all. */
+    /** How many BID and contest-judge adjudicators have pressed Submit all (personal contacts are counted apart, ADR 0019). */
     public function submittedCount(): int
     {
-        return $this->participants()->whereNotNull('submitted_at')->count();
+        return $this->submittedParticipants()->reject(fn ($p) => $p->user->isPersonalContact())->count();
+    }
+
+    /** How many personal contacts have pressed Submit all. */
+    public function submittedCountForPersonalContacts(): int
+    {
+        return $this->submittedParticipants()->filter(fn ($p) => $p->user->isPersonalContact())->count();
+    }
+
+    /** @return Collection<int, AdjudicationParticipant> */
+    private function submittedParticipants()
+    {
+        return $this->participants()->whereNotNull('submitted_at')->with('user')->get();
     }
 
     /**
      * This set's cases in a random-looking order that is different for each
      * reviewer and stays the same for one reviewer across visits.
      *
-     * @return \Illuminate\Support\Collection<int, AdjudicationCase>
+     * @return Collection<int, AdjudicationCase>
      */
     public function casesInOrderFor(User $user)
     {

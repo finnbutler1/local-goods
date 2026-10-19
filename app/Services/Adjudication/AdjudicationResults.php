@@ -18,14 +18,18 @@ use Illuminate\Support\Collection;
  * agreed) measure how reliable the adjudicators are.
  *
  * Reported on its own: it never changes a label or a headline number.
+ * Personal contacts' votes (ADR 0019) are a separate group, never merged
+ * into the BID and contest-judge result.
  */
 class AdjudicationResults
 {
     /**
-     * Results from every submitted adjudicator, and from only those who
-     * said they had not looked at the eval results page before.
+     * The headline: every submitted BID and contest-judge adjudicator, and
+     * only those who said they had not looked at the eval results page
+     * before. Personal contacts (ADR 0019) get the same two views under
+     * 'personal', numbered on their own and never counted in the headline.
      *
-     * @return array{all: array<string, mixed>, unseen: array<string, mixed>}|null null until someone submits
+     * @return array{all: array<string, mixed>, unseen: array<string, mixed>, personal: array{all: array<string, mixed>, unseen: array<string, mixed>}|null}|null null until someone submits
      */
     public function for(AdjudicationSet $set): ?array
     {
@@ -35,16 +39,32 @@ class AdjudicationResults
             return null;
         }
 
-        // Numbered once, so "Adjudicator 2" is the same person in both views.
-        $numbers = $participants->pluck('user_id')->flip()->map(fn ($i) => $i + 1);
         $cases = $set->cases()->orderBy('case_id')->get();
         $votes = AdjudicationVote::whereIn('adjudication_case_id', $cases->pluck('id'))
             ->whereIn('user_id', $participants->pluck('user_id'))
             ->get()->groupBy('adjudication_case_id');
 
+        [$headline, $personal] = $participants->partition(fn (AdjudicationParticipant $p) => ! $p->user->isPersonalContact());
+
         return [
-            'all' => $this->summarize($cases, $votes, $participants, $numbers),
-            'unseen' => $this->summarize($cases, $votes, $participants->reject->seen_eval_before->values(), $numbers),
+            ...$this->group($cases, $votes, $headline->values(), 'adjudicators'),
+            'personal' => $personal->isEmpty() ? null : $this->group($cases, $votes, $personal->values(), 'personal contacts'),
+        ];
+    }
+
+    /**
+     * One group of adjudicators, all of them and only the unseen ones.
+     *
+     * @return array{all: array<string, mixed>, unseen: array<string, mixed>}
+     */
+    private function group(Collection $cases, Collection $votes, Collection $participants, string $who): array
+    {
+        // Numbered once, so "Adjudicator 2" is the same person in both views.
+        $numbers = $participants->pluck('user_id')->flip()->map(fn ($i) => $i + 1);
+
+        return [
+            'all' => $this->summarize($cases, $votes, $participants, $numbers, $who),
+            'unseen' => $this->summarize($cases, $votes, $participants->reject->seen_eval_before->values(), $numbers, $who),
         ];
     }
 
@@ -53,9 +73,10 @@ class AdjudicationResults
      * @param  Collection<int, Collection<int, AdjudicationVote>>  $votes  grouped by case id
      * @param  Collection<int, AdjudicationParticipant>  $participants
      * @param  Collection<int, int>  $numbers  user id => adjudicator number
+     * @param  string  $who  how the sentence names the group
      * @return array<string, mixed>
      */
-    private function summarize(Collection $cases, Collection $votes, Collection $participants, Collection $numbers): array
+    private function summarize(Collection $cases, Collection $votes, Collection $participants, Collection $numbers, string $who): array
     {
         $byUser = $participants->keyBy('user_id');
         $votesFor = fn (AdjudicationCase $case) => ($votes[$case->id] ?? collect())
@@ -90,7 +111,7 @@ class AdjudicationResults
                 },
                 'votes' => $caseVotes->map(fn (AdjudicationVote $v) => [
                     'number' => $numbers[$v->user_id],
-                    'name' => $byUser[$v->user_id]->user->name,
+                    'name' => $byUser[$v->user_id]->user->adminLabel(),
                     'type' => $byUser[$v->user_id]->user->reviewer_type?->label(),
                     'seen_eval_before' => $byUser[$v->user_id]->seen_eval_before,
                     'label' => $v->label,
@@ -116,7 +137,7 @@ class AdjudicationResults
         return [
             'adjudicators' => $participants->map(fn (AdjudicationParticipant $p) => [
                 'number' => $numbers[$p->user_id],
-                'name' => $p->user->name,
+                'name' => $p->user->adminLabel(),
                 'type' => $p->user->reviewer_type?->label(),
                 'seen_eval_before' => $p->seen_eval_before,
             ])->values()->all(),
@@ -124,7 +145,7 @@ class AdjudicationResults
             'summary' => $summary,
             'sentence' => $participants->isEmpty()
                 ? 'No adjudicators in this group yet.'
-                : "On {$summary['cases']} disputed cases, adjudicators sided with the AI in {$summary['ai']}, with Finn in {$summary['finn']}, split in {$summary['split']}.",
+                : "On {$summary['cases']} disputed cases, {$who} sided with the AI in {$summary['ai']}, with Finn in {$summary['finn']}, split in {$summary['split']}.",
             'controls' => [
                 'hits' => $hits,
                 'of' => $of,
