@@ -162,7 +162,7 @@
     {{-- Badges --}}
     <section id="badges" aria-labelledby="badges-heading" class="scroll-mt-24">
         <h2 id="badges-heading" class="text-3xl font-semibold text-forest">Badges</h2>
-        <p class="mt-1 text-muted"><code>&lt;x-badge tone="neutral|forest|ok|hold|amber"&gt;</code>. Status badges pair color with a word, never color alone.</p>
+        <p class="mt-1 text-muted wrap-anywhere"><code>&lt;x-badge tone="neutral|forest|ok|hold|amber"&gt;</code> (add <code>:wrap="true"</code> for long text). Status badges pair color with a word, never color alone.</p>
         <x-card class="mt-6 flex flex-wrap items-center gap-3">
             <x-badge>Neutral</x-badge>
             <x-badge tone="forest">Employee</x-badge>
