@@ -45,7 +45,9 @@ class ErrorPagesTest extends TestCase
 
     public function test_an_unknown_address_gets_the_friendly_404(): void
     {
-        $this->get('/no-such-page')->assertNotFound()->assertSee("We can't find that page");
+        $this->get('/no-such-page')->assertNotFound()->assertSee("We can't find that page")
+            // The framework's own message names internals; it stays off the page.
+            ->assertDontSee('could not be found');
     }
 
     public function test_signed_in_people_are_sent_to_their_dashboard(): void

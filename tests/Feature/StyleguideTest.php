@@ -28,6 +28,8 @@ class StyleguideTest extends TestCase
             ->assertSee('Form inputs')
             ->assertSee('Badges')
             ->assertSee('Tables')
+            ->assertSee('States')
+            ->assertSee('Checking with Redemption Fraud Detection…')
             ->assertSee('aria-invalid="true"', false);
     }
 }

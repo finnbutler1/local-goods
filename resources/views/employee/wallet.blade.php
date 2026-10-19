@@ -178,14 +178,14 @@
             @forelse ($recent as $redemption)
                 <li class="flex items-center justify-between gap-3 px-5 py-4">
                     <div class="min-w-0">
-                        <p class="truncate font-semibold">{{ $redemption->merchant->name }}</p>
+                        <p class="font-semibold break-words">{{ $redemption->merchant->name }}</p>
                         <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}</p>
                     </div>
-                    <div class="text-right">
+                    <div class="shrink-0 text-right">
                         <p class="tabular font-semibold">{{ Money::format($redemption->amount_cents) }}</p>
                         <x-status-badge :redemption="$redemption" class="mt-1" />
                         @if ($redemption->isRejected())
-                            <p class="mt-1 text-xs text-muted">{{ $redemption->decision?->credit_returned_to === 'employer' ? 'Credit returned to your employer' : 'Credit back in your balance' }}</p>
+                            <p class="mt-1 max-w-36 text-xs text-muted">{{ $redemption->decision?->credit_returned_to === 'employer' ? 'Credit returned to your employer' : 'Credit back in your balance' }}</p>
                         @endif
                     </div>
                 </li>

@@ -9,7 +9,7 @@
             <code>ColorContrastTest</code> fails if an approved pair drops below WCAG AA (4.5:1).
         </p>
         <nav aria-label="Styleguide sections" class="mt-6 flex flex-wrap gap-2">
-            @foreach (['colors' => 'Colors', 'type' => 'Type', 'buttons' => 'Buttons', 'cards' => 'Cards', 'forms' => 'Form inputs', 'badges' => 'Badges', 'tables' => 'Tables'] as $id => $label)
+            @foreach (['colors' => 'Colors', 'type' => 'Type', 'buttons' => 'Buttons', 'cards' => 'Cards', 'forms' => 'Form inputs', 'badges' => 'Badges', 'tables' => 'Tables', 'states' => 'States'] as $id => $label)
                 <a href="#{{ $id }}" class="rounded-full bg-paper px-3 py-1 text-sm font-semibold text-forest ring-1 ring-line hover:bg-forest-tint">{{ $label }}</a>
             @endforeach
         </nav>
@@ -201,6 +201,41 @@
                 </tbody>
             </table>
         </div>
+    </section>
+
+    {{-- States --}}
+    <section id="states" aria-labelledby="states-heading" class="scroll-mt-24 space-y-6">
+        <div>
+            <h2 id="states-heading" class="text-3xl font-semibold text-forest">States</h2>
+            <p class="mt-1 text-muted">What a page says after an action, while it works, when it's empty and when it fails.</p>
+        </div>
+
+        <x-card class="space-y-3">
+            <h3 class="text-xl font-semibold">Result of an action</h3>
+            <p class="text-sm text-muted"><code>&lt;x-flash /&gt;</code> shows <code>session('status')</code> and <code>session('error')</code>. After the page reloads, focus moves to it so screen readers announce it (here <code>:focus="false"</code>, as this is only a sample).</p>
+            <x-flash status="$500.00 paid (simulated, no real money). The credits are ready to give to your team." :error="null" :focus="false" />
+            <x-flash :status="null" error="Nothing changed: this redemption is approved." :focus="false" />
+        </x-card>
+
+        <x-card class="space-y-3">
+            <h3 class="text-xl font-semibold">Working</h3>
+            <p class="text-sm text-muted">Every form that posts has <code>data-busy="…"</code>. When it is sent, the pressed button shows that text, can't be pressed again, and a screen reader hears it. Say what is happening: "Checking with Redemption Fraud Detection…", not "Loading".</p>
+            <div class="flex flex-wrap gap-3">
+                <x-button variant="accent">Confirm redemption</x-button>
+                <x-button variant="accent" aria-disabled="true">Checking with Redemption Fraud Detection…</x-button>
+            </div>
+        </x-card>
+
+        <x-card class="border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-10">
+            <h3 class="text-xl font-semibold">Empty</h3>
+            <p class="mx-auto mt-1 max-w-md text-muted">Never a blank space: say what will appear here and what makes it appear. "No redemptions yet. When an employee spends credits, the redemption shows here."</p>
+        </x-card>
+
+        <x-card class="space-y-2">
+            <h3 class="text-xl font-semibold">Errors</h3>
+            <p class="text-sm text-muted">Field errors use <code>&lt;x-field&gt;</code> (see Form inputs): the control gets <code>aria-invalid="true"</code> and <code>aria-describedby="{id}-error"</code>, and focus starts on the first one. Page errors (403, 404, 419, 429, 500, 503) have their own pages in <code>resources/views/errors</code>: what happened in plain words and where to go next.</p>
+        </x-card>
+    </section>
     </section>
 </div>
 </x-app-shell>

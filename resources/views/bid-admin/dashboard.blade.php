@@ -163,7 +163,7 @@
                                     <legend class="font-semibold">If you deny it, where does the credit go?</legend>
                                     @foreach (\App\Enums\DenialReason::cases() as $why)
                                         <label class="flex items-start gap-2 text-sm">
-                                            <input type="radio" name="denial" value="{{ $why->value }}" class="mt-0.5" @checked($bag->any() && old('denial') === $why->value)>
+                                            <input type="radio" name="denial" value="{{ $why->value }}" class="mt-0.5 size-5 shrink-0 accent-forest" @checked($bag->any() && old('denial') === $why->value)>
                                             <span>{{ $why->label() }}</span>
                                         </label>
                                     @endforeach
