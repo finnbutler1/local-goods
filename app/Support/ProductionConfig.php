@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Log;
  */
 class ProductionConfig
 {
+    /** Set when forceDebugOff() found debug on, so the deploy check still reports it. */
+    private static bool $debugWasForcedOff = false;
+
     /** @return list<string> What is wrong, in plain English; empty when all is well. */
     public static function problems(): array
     {
@@ -21,7 +24,7 @@ class ProductionConfig
         if (config('app.env') !== 'production') {
             $problems[] = 'APP_ENV must be "production".';
         }
-        if (config('app.debug') === true) {
+        if (config('app.debug') === true || self::$debugWasForcedOff) {
             $problems[] = 'APP_DEBUG must be "false": debug pages show code, settings and data to anyone.';
         }
         if (config('session.secure') !== true) {
@@ -42,6 +45,7 @@ class ProductionConfig
     {
         if (config('app.env') === 'production' && config('app.debug') === true) {
             config(['app.debug' => false]);
+            self::$debugWasForcedOff = true;
             Log::critical('APP_DEBUG was true in production; it has been turned off for this request. Set APP_DEBUG to "false" in Beanstalk.');
         }
     }

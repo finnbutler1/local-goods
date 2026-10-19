@@ -16,6 +16,12 @@ class ProductionConfigTest extends TestCase
 {
     private const SECRET = 'test-origin-secret-not-real';
 
+    protected function tearDown(): void
+    {
+        (fn () => self::$debugWasForcedOff = false)->bindTo(null, ProductionConfig::class)();
+        parent::tearDown();
+    }
+
     private function safeProduction(): void
     {
         config([
@@ -80,6 +86,10 @@ class ProductionConfigTest extends TestCase
 
         $this->assertFalse(config('app.debug'));
         Log::shouldHaveReceived('critical')->once();
+
+        // The deploy check runs after boot has turned debug off, and must still fail.
+        config(['session.secure' => true, 'services.cloudfront.origin_secret' => self::SECRET]);
+        $this->artisan('app:check-production-config')->expectsOutputToContain('APP_DEBUG must be "false"')->assertFailed();
     }
 
     public function test_debug_is_left_alone_outside_production(): void
