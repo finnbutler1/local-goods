@@ -277,7 +277,7 @@ keeps them fully separate and is free:
 ### Production webhook (Stripe dashboard, test mode)
 
 **Two event destinations, both "snapshot" events, same URL:**
-`https://d4ghrpm72uczx.cloudfront.net/stripe/webhook`. Create them in the
+`https://d4ghrpm72uczx.cloudfront.net/stripe/webhook`. Always the CloudFront address: production refuses requests sent straight to Beanstalk ([ADR 0018](adr/0018-only-cloudfront-reaches-beanstalk.md)). Create them in the
 same test-mode environment (or sandbox) your `sk_test_…` key comes from.
 In Stripe: Developers → Webhooks (in Workbench: Event destinations) → Add
 destination.

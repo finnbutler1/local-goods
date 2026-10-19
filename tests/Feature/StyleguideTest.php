@@ -11,6 +11,8 @@ class StyleguideTest extends TestCase
         $this->get('/styleguide')->assertNotFound();
 
         $this->app['env'] = 'production';
+        // A direct request is refused by the origin lock first (BehindCloudFrontTest); this checks the route itself.
+        config(['services.cloudfront.enforce' => false]);
         $this->get('/styleguide')->assertNotFound();
     }
 
