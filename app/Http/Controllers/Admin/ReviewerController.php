@@ -51,7 +51,7 @@ class ReviewerController extends Controller
 
         return redirect()->route('admin.reviewers.index')
             // Not ReviewerLinks::SESSION_KEY: that holds a judge's session fingerprint, a string.
-            ->with('new_reviewer_link', ['name' => $user->name, 'url' => $link]);
+            ->with('new_reviewer_link', ['name' => $user->adminLabel(), 'url' => $link]);
     }
 
     public function link(User $user): RedirectResponse
@@ -60,7 +60,7 @@ class ReviewerController extends Controller
         abort_unless($user->role === Role::Judge, 404);
 
         return redirect()->route('admin.reviewers.index')
-            ->with('new_reviewer_link', ['name' => $user->name, 'url' => $this->links->newLink($user)]);
+            ->with('new_reviewer_link', ['name' => $user->adminLabel(), 'url' => $this->links->newLink($user)]);
     }
 
     public function revoke(User $user): RedirectResponse
@@ -71,6 +71,6 @@ class ReviewerController extends Controller
         $this->links->revoke($user);
 
         return redirect()->route('admin.reviewers.index')
-            ->with('status', "{$user->name}'s link no longer works, and any open session ends on its next click.");
+            ->with('status', "{$user->adminLabel()}'s link no longer works, and any open session ends on its next click.");
     }
 }

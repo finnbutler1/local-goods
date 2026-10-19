@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Models\User;
+use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Ai\ClaudeClient;
 use App\Services\Eligibility\MerchantCandidates;
 use App\Services\RedemptionReviewService;
@@ -160,6 +161,59 @@ class EmployeeNamePrivacyTest extends TestCase
         }
 
         $this->assertGreaterThan(10, $checked, 'Too few pages were checked.');
+    }
+
+    /**
+     * Personal contacts (ADR 0019) know Finn, so their name and email never
+     * appear on any page for anyone: signed out, every role (admin pages show
+     * initials only) and the public judge account.
+     */
+    public function test_a_personal_contacts_name_and_email_appear_nowhere(): void
+    {
+        $builder = app(AdjudicationSetBuilder::class);
+        $set = $builder->newDraft();
+        $builder->publish($set);
+
+        // A different judge first, so the sweep's judge (the first one) isn't the contact on their own pages.
+        $this->signIn(Role::Judge);
+        $contact = User::factory()->role(Role::Judge)->create([
+            'name' => 'Quincy Fakecontact', 'email' => 'quincy.fakecontact@example.test', 'reviewer_type' => ReviewerType::PersonalContact,
+        ]);
+        $this->actingAs($contact)->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+        foreach ($set->cases as $case) {
+            $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'Synthetic reason.']);
+        }
+        $this->post('/adjudicate/submit')->assertRedirect();
+        $contact->feedback()->create([
+            'page_url' => url('/adjudicate'), 'category' => FeedbackCategory::AiIntegration, 'rating' => 4,
+            'severity' => FeedbackSeverity::ShouldFix, 'comment' => 'A note from a personal contact.',
+        ]);
+        $builder->close($set);
+        auth()->logout();
+
+        $check = function (string $html, string $where) {
+            $this->assertStringNotContainsString('Quincy', $html, "A personal contact's name appears on {$where}.");
+            $this->assertStringNotContainsString('Fakecontact', $html, "A personal contact's name appears on {$where}.");
+            $this->assertStringNotContainsString('quincy.fakecontact', $html, "A personal contact's email appears on {$where}.");
+        };
+
+        $checked = $this->sweepPages($check);
+
+        $public = User::factory()->role(Role::Judge)->create(['reviewer_type' => ReviewerType::Public]);
+        foreach ($this->pages() as $uri) {
+            $response = $this->actingAs($public)->get($uri);
+            if ($response->isOk()) {
+                $check($response->getContent(), "{$uri} as the public judge");
+                $checked++;
+            }
+        }
+        $this->assertGreaterThan(30, $checked, 'Too few pages were checked.');
+
+        // Admin pages name them by initials.
+        $this->signIn(Role::PlatformAdmin);
+        $this->get('/admin/adjudication')->assertOk()->assertSee('Q.F.');
+        $this->get('/admin/reviewers')->assertOk()->assertSee('Q.F.');
+        $this->get('/admin/feedback')->assertOk()->assertSee('Q.F. · Personal contact (knows Finn)');
     }
 
     public function test_the_employee_sees_their_own_name_but_nobody_elses(): void
