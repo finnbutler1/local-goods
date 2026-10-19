@@ -1,0 +1,210 @@
+@php
+    use App\Support\Money;
+
+    $link = 'font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest';
+    $month = $impact['this_month'];
+    $all = $impact['all_time'];
+    $monthName = $impact['month']->format('F');
+@endphp
+
+<x-app-shell title="Impact" active="impact"
+             :context="($bid?->name ?? 'Golden Triangle').' BID · '.($bid?->city ?? 'Washington, DC')">
+<div class="space-y-10">
+    <header class="max-w-3xl">
+        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">{{ $bid?->name ?? 'Golden Triangle' }} BID · Impact</p>
+        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">What the program did for the district</h1>
+        <p class="mt-3 text-lg text-muted">
+            Dollars spent at independent merchants, and who took part. Every number is read from the credit ledger and uses
+            the same definitions as the employer dashboards, so the two always agree. Employees are counted, never named.
+        </p>
+        <p class="mt-3 inline-block rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">
+            Demo data: all people and transactions are fictional.
+        </p>
+    </header>
+
+    @if (! $impact['has_activity'])
+        <x-card as="section" aria-labelledby="empty-heading" class="border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-12">
+            <h2 id="empty-heading" class="text-2xl font-semibold text-forest">No cleared redemptions yet</h2>
+            <p class="mx-auto mt-2 max-w-md text-muted">
+                Once employees spend their credits and the redemptions clear, the dollars spent, merchants reached and
+                weekly trend appear here.
+                @if ($impact['held_count'] > 0)
+                    {{ Money::format($impact['held_cents']) }} is held for review and not counted yet.
+                @endif
+            </p>
+            <p class="mt-4 text-sm text-muted">
+                {{ $impact['employers_total'] }} {{ Str::plural('employer', $impact['employers_total']) }},
+                {{ $impact['enrolled'] }} enrolled {{ Str::plural('employee', $impact['enrolled']) }} and
+                {{ $impact['merchants_total'] }} participating {{ Str::plural('merchant', $impact['merchants_total']) }} so far.
+            </p>
+        </x-card>
+    @else
+        <section aria-labelledby="totals-heading" class="space-y-4">
+            <h2 id="totals-heading" class="text-2xl font-semibold text-forest">{{ $monthName }} so far, and since launch</h2>
+
+            @php
+                $tiles = [
+                    [
+                        'label' => 'Spent at independent merchants',
+                        'value' => Money::format($month['spent_cents']),
+                        'detail' => Money::format($all['spent_cents']).' since launch'.($impact['held_count'] > 0 ? ' · '.Money::format($impact['held_cents']).' more waiting for review' : ''),
+                        'how' => 'The total of cleared redemptions: each is one "merchant earned" entry in the ledger, written only when a redemption clears. Held and denied redemptions are left out. A redemption counts in the month it happened, in Washington, DC time, even if a person cleared it later. The same total as "Spent locally" on the employer dashboards, added up.',
+                        'forest' => true,
+                    ],
+                    [
+                        'label' => 'Merchants reached',
+                        'value' => $month['merchants'].' of '.$impact['merchants_total'],
+                        'unit' => 'participating',
+                        'detail' => $all['merchants'].' since launch',
+                        'how' => 'Different merchants with at least one cleared redemption, out of every merchant taking part in the BID. All are fictional demo businesses, never the real candidates under eligibility review.',
+                    ],
+                    [
+                        'label' => 'Employees participating',
+                        'value' => number_format($month['employees']),
+                        'unit' => 'of '.$impact['enrolled'].' enrolled',
+                        'detail' => $all['employees'].' since launch',
+                        'how' => 'Employees with at least one cleared redemption, counted only: this page never shows who. This month\'s number is "Employees who got out" from each employer dashboard, added up.',
+                    ],
+                    [
+                        'label' => 'Employers participating',
+                        'value' => $month['employers'].' of '.$impact['employers_total'],
+                        'detail' => $all['employers'].' since launch',
+                        'how' => 'Employers with at least one employee who had a cleared redemption, out of every employer in the program.',
+                    ],
+                ];
+            @endphp
+            <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                @foreach ($tiles as $tile)
+                    @php $forest = $tile['forest'] ?? false; @endphp
+                    <x-card :tone="$forest ? 'forest' : 'paper'" class="flex flex-col">
+                        <dt class="text-sm font-semibold {{ $forest ? 'text-sage' : 'text-muted' }}">{{ $tile['label'] }}</dt>
+                        <dd class="mt-2 {{ $forest ? 'text-amber' : 'text-forest' }}">
+                            <span class="tabular font-display text-4xl font-semibold">{{ $tile['value'] }}</span>
+                            @isset($tile['unit'])<span class="font-semibold"> {{ $tile['unit'] }}</span>@endisset
+                        </dd>
+                        <dd class="mt-1 text-sm {{ $forest ? 'text-sage' : 'text-muted' }}">{{ $monthName }} so far · {{ $tile['detail'] }}</dd>
+                        <dd class="mt-3 border-t {{ $forest ? 'border-sage/40' : 'border-line/70' }} pt-2 text-sm">
+                            <details>
+                                <summary class="cursor-pointer font-semibold {{ $forest ? 'text-cream' : 'text-forest' }}">How we count this</summary>
+                                <p class="mt-1 {{ $forest ? 'text-sage' : 'text-muted' }}">{{ $tile['how'] }}</p>
+                            </details>
+                        </dd>
+                    </x-card>
+                @endforeach
+            </dl>
+        </section>
+
+        <x-card as="section" aria-labelledby="trend-heading">
+            @php
+                $weeks = $impact['weeks'];
+                $max = max(1, max(array_column($weeks, 'cents')));
+            @endphp
+            <h2 id="trend-heading" class="text-xl font-semibold">Spent at independent merchants per week, last {{ count($weeks) }} weeks</h2>
+            <p class="mt-1 text-sm text-muted">Monday to Sunday. The last bar is this week so far.</p>
+
+            @if (array_sum(array_column($weeks, 'cents')) === 0)
+                <p class="mt-6 rounded-xl bg-cream-deep p-4 text-muted">No cleared redemptions in the last {{ count($weeks) }} weeks.</p>
+            @else
+                {{-- Hover a bar for its week; the same numbers are in the table below. --}}
+                <div class="mt-6 flex h-44 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
+                    @foreach ($weeks as $week)
+                        <div class="group relative flex h-full flex-1 items-end justify-center">
+                            <div class="w-full max-w-12 rounded-t-[4px] bg-forest transition-colors group-hover:bg-forest-soft"
+                                 style="height: {{ max(2, round(100 * $week['cents'] / $max)) }}%"></div>
+                            <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-max -translate-x-1/2 rounded-lg bg-ink px-2.5 py-1.5 text-xs text-cream shadow group-hover:block">
+                                <span class="font-semibold">Week of {{ $week['start']->format('M j') }}</span><br>
+                                {{ Money::format($week['cents']) }} · {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="mt-1.5 flex gap-1.5 text-center text-xs text-muted sm:gap-3" aria-hidden="true">
+                    @foreach ($weeks as $i => $week)
+                        <span class="flex-1">{{ $i % 2 === count($weeks) % 2 ? '' : $week['start']->format('M j') }}</span>
+                    @endforeach
+                </div>
+            @endif
+
+            <details class="mt-3 text-sm">
+                <summary class="cursor-pointer font-semibold text-forest">Show as a table</summary>
+                <table class="mt-2 w-full text-left">
+                    <caption class="sr-only">Cleared redemptions and dollars spent at independent merchants per week</caption>
+                    <thead class="text-muted"><tr><th scope="col" class="py-1 font-semibold">Week of</th><th scope="col" class="py-1 text-right font-semibold">Visits</th><th scope="col" class="py-1 text-right font-semibold">Spent</th></tr></thead>
+                    <tbody class="tabular divide-y divide-line/70">
+                        @foreach ($weeks as $week)
+                            <tr><th scope="row" class="py-1 font-normal">{{ $week['start']->format('M j') }}</th><td class="py-1 text-right">{{ $week['visits'] }}</td><td class="py-1 text-right">{{ Money::format($week['cents']) }}</td></tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </details>
+            <details class="mt-2 text-sm">
+                <summary class="cursor-pointer font-semibold text-forest">How we count this</summary>
+                <p class="mt-1 text-muted">Cleared redemptions by the week they happened, in Washington, DC time: the employer dashboards' weekly trend, added up across employers.</p>
+            </details>
+        </x-card>
+
+        <section aria-labelledby="employers-heading">
+            <h2 id="employers-heading" class="text-2xl font-semibold text-forest">Employer engagement, {{ $monthName }} so far</h2>
+            <p class="mt-1 text-sm text-muted">Each row is the employer's own HR dashboard, unchanged, so the numbers match what HR sees.</p>
+
+            <x-card padding="p-0" class="mt-3 overflow-x-auto">
+                <table class="w-full text-left">
+                    <caption class="sr-only">Each employer's engagement this month, as shown on its HR dashboard</caption>
+                    <thead class="border-b border-line/70 text-sm text-muted">
+                        <tr>
+                            <th scope="col" class="px-5 py-3 font-semibold">Employer</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">Employees who got out</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">Visits out of the office</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">Local businesses visited</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">First-time visits</th>
+                            <th scope="col" class="px-5 py-3 text-right font-semibold">Spent locally</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tabular divide-y divide-line/70">
+                        @foreach ($impact['employers'] as ['employer' => $employer, 'metrics' => $m])
+                            <tr>
+                                <th scope="row" class="px-5 py-3 font-semibold">{{ $employer->name }}</th>
+                                <td class="px-5 py-3 text-right">{{ $m['redeemers'] }} of {{ $m['enrolled'] }} <span class="text-sm text-muted">({{ $m['participation_pct'] }}%)</span></td>
+                                <td class="px-5 py-3 text-right">{{ $m['visits'] }}</td>
+                                <td class="px-5 py-3 text-right">{{ $m['businesses'] }} of {{ $m['participating'] }}</td>
+                                <td class="px-5 py-3 text-right">{{ $m['first_visits'] }}</td>
+                                <td class="px-5 py-3 text-right">{{ Money::format($m['spent_cents']) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </x-card>
+            <details class="mt-2 text-sm">
+                <summary class="cursor-pointer font-semibold text-forest">How we count this</summary>
+                <p class="mt-1 text-muted">
+                    The same definitions as the employer dashboard: employees with at least one cleared redemption this month, out of those enrolled;
+                    each cleared redemption is one visit; different businesses visited, out of every participating business; a first-time visit is
+                    someone going to a business they had never redeemed at before; spent locally is the total of cleared redemptions.
+                </p>
+            </details>
+        </section>
+
+        @if ($impact['recirculation_cents'] !== null)
+            <aside aria-labelledby="estimate-heading" class="rounded-3xl border-2 border-dashed border-muted bg-cream-deep p-6 sm:p-8" data-recirculation-estimate>
+                <p class="text-sm font-semibold uppercase tracking-widest text-muted">Estimate from an outside study, not measured by Local Goods</p>
+                <h2 id="estimate-heading" class="mt-2 text-2xl font-semibold text-forest">How much of this spending might stay local</h2>
+                <p class="mt-3 max-w-3xl text-lg">
+                    If the national study's rate held here, about
+                    <strong class="tabular font-semibold">{{ Money::format($impact['recirculation_cents']) }}</strong>
+                    of this spending would recirculate locally.
+                </p>
+                <p class="mt-3 max-w-3xl text-sm text-muted">
+                    The study found independent retailers and restaurants recirculated {{ round(100 * $source['independent_rate'], 1) }}% of their revenue locally,
+                    against {{ round(100 * $source['chain_rate'], 1) }}% for chains. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch by
+                    {{ round(100 * $source['independent_rate'], 1) }}%. Local Goods has not measured this in the Golden Triangle; the real share here could be higher or lower.
+                </p>
+                <p class="mt-3 max-w-3xl text-sm">
+                    Source: {{ $source['publisher'] }}, “{{ $source['title'] }}” (with {{ $source['partner'] }}), data from {{ $source['data_years'] }},
+                    {{ $source['sample'] }}.
+                    <a href="{{ $source['url'] }}" class="{{ $link }}" rel="noopener">Read the American Booksellers Association write-up</a>.
+                </p>
+            </aside>
+        @endif
+    @endif
+</div>
+</x-app-shell>
