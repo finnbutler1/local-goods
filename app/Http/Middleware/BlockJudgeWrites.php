@@ -18,7 +18,9 @@ class BlockJudgeWrites
     /**
      * The only routes a judge may send changes to: their own session (magic
      * link, log out), feedback, and blind adjudication votes (ADR 0011; the
-     * `adjudicate` gate then lets only BID and contest-judge reviewers through).
+     * `adjudicate` gate then lets only BID, contest-judge and personal-contact
+     * reviewers through; KeepPersonalContactsToAdjudication narrows personal
+     * contacts further, ADR 0019).
      */
     public const ALLOWED_ROUTES = [
         'judge-access.store',

@@ -66,6 +66,24 @@ class User extends Authenticatable
         return $this->isReadOnly() && $this->reviewer_type === ReviewerType::Public;
     }
 
+    /** Friends, family and classmates who vote in the blind adjudication only (ADR 0019). */
+    public function isPersonalContact(): bool
+    {
+        return $this->isReadOnly() && $this->reviewer_type === ReviewerType::PersonalContact;
+    }
+
+    /** How admin pages name this person: personal contacts by initials only (ADR 0019). */
+    public function adminLabel(): string
+    {
+        return $this->isPersonalContact() ? self::initialsOf($this->name) : $this->name;
+    }
+
+    /** The email admin pages show; never a personal contact's. */
+    public function adminEmail(): ?string
+    {
+        return $this->isPersonalContact() ? null : $this->email;
+    }
+
     /**
      * Real merchant candidates' names (Merchant Eligibility Matching) are
      * shown only to BID and platform admins and to named reviewers. The
@@ -83,15 +101,16 @@ class User extends Authenticatable
     }
 
     /**
-     * Blind adjudication of the fraud eval (ADR 0011): only named BID and
-     * contest-judge reviewers vote. Not the shared public account, friends,
-     * other reviewer types or staff (the person who labeled the cases).
+     * Blind adjudication of the fraud eval (ADR 0011): named BID and
+     * contest-judge reviewers vote, and so do personal contacts, whose votes
+     * are reported separately (ADR 0019). Not the shared public account,
+     * friends, other reviewer types or staff (the person who labeled the cases).
      */
     public function canAdjudicate(): bool
     {
         return $this->isReadOnly()
             && ! $this->isRevoked()
-            && in_array($this->reviewer_type, [ReviewerType::Bid, ReviewerType::ContestJudge], true);
+            && ($this->reviewer_type?->mayAdjudicate() ?? false);
     }
 
     public function isRevoked(): bool

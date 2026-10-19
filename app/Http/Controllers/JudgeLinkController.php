@@ -38,7 +38,8 @@ class JudgeLinkController extends Controller
         $request->session()->regenerateToken();
         $request->session()->put(ReviewerLinks::SESSION_KEY, $this->links->sessionFingerprint($user));
 
-        return redirect()->route('judge.dashboard');
+        // Personal contacts only vote (ADR 0019), so they skip the judge home.
+        return redirect()->route($user->isPersonalContact() ? 'adjudication.show' : 'judge.dashboard');
     }
 
     /** The same friendly page whatever the reason, so it never hints at which part was wrong. */
