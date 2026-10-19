@@ -143,6 +143,8 @@ class BehindCloudFrontTest extends TestCase
         $this->viaCloudFront('GET', '/_test/ip', forwardedFor: '6.6.6.6, 203.0.113.7')->assertSeeText('203.0.113.7');
 
         // Straight to Beanstalk, with no secret, a wrong one, or a blank one: the header is ignored.
+        // (Those are refused outright while the origin lock is on, so switch it off to see this layer.)
+        config(['services.cloudfront.enforce' => false]);
         foreach ([null, 'wrong-secret', ''] as $secret) {
             $this->viaCloudFront('GET', '/_test/ip', forwardedFor: '6.6.6.6', secret: $secret)->assertSeeText(self::EDGE_IP);
         }
@@ -173,11 +175,68 @@ class BehindCloudFrontTest extends TestCase
     {
         $user = User::factory()->create(['password' => 'correct-horse-battery']);
         $wrong = ['email' => $user->email, 'password' => 'wrong'];
+        // Even with the origin lock switched off (ORIGIN_VERIFY_ENFORCE=false).
+        config(['services.cloudfront.enforce' => false]);
 
         for ($i = 1; $i <= 5; $i++) {
             $this->viaCloudFront('POST', '/login', "198.51.100.{$i}", $wrong, secret: null)->assertStatus(302);
         }
         $this->viaCloudFront('POST', '/login', '198.51.100.99', $wrong, secret: null)->assertStatus(429);
+    }
+
+    public function test_calling_beanstalk_directly_is_refused(): void
+    {
+        foreach ([null, 'wrong-secret', ''] as $secret) {
+            foreach (['/', '/login', '/eval', '/judge-access'] as $path) {
+                $response = $this->viaCloudFront('GET', $path, secret: $secret)->assertForbidden();
+                $this->assertSame('Forbidden', $response->getContent());
+            }
+            $this->viaCloudFront('POST', '/login', data: ['email' => 'a@example.test', 'password' => 'x'], secret: $secret)->assertForbidden();
+            $this->viaCloudFront('POST', '/stripe/webhook', secret: $secret)->assertForbidden();
+        }
+
+        // Through CloudFront, everything works as before.
+        $this->viaCloudFront('GET', '/')->assertOk();
+        $this->viaCloudFront('GET', '/login')->assertOk();
+    }
+
+    public function test_the_health_check_is_never_refused(): void
+    {
+        $this->viaCloudFront('GET', '/up', secret: null)->assertOk();
+        $this->viaCloudFront('GET', '/up')->assertOk();
+    }
+
+    public function test_an_empty_configured_secret_refuses_everyone_while_the_lock_is_on(): void
+    {
+        // The deploy hook refuses this setting (app:check-production-config); if it got through, fail closed.
+        config(['services.cloudfront.origin_secret' => '']);
+
+        $this->viaCloudFront('GET', '/login', secret: '')->assertForbidden();
+        $this->viaCloudFront('GET', '/login', secret: null)->assertForbidden();
+    }
+
+    public function test_the_kill_switch_lets_direct_requests_through(): void
+    {
+        config(['services.cloudfront.enforce' => false]);
+
+        $this->viaCloudFront('GET', '/login', secret: null)->assertOk();
+        $this->viaCloudFront('GET', '/login')->assertOk();
+    }
+
+    public function test_the_kill_switch_reads_the_beanstalk_property(): void
+    {
+        foreach (['false' => false, '0' => false, 'true' => true, null => true] as $value => $enforced) {
+            $value === '' ? putenv('ORIGIN_VERIFY_ENFORCE') : putenv("ORIGIN_VERIFY_ENFORCE={$value}");
+            $this->assertSame($enforced, (require base_path('config/services.php'))['cloudfront']['enforce'], "ORIGIN_VERIFY_ENFORCE={$value}");
+        }
+        putenv('ORIGIN_VERIFY_ENFORCE');
+    }
+
+    public function test_outside_production_nothing_is_refused(): void
+    {
+        $this->app['env'] = 'local';
+
+        $this->viaCloudFront('GET', '/login', secret: null)->assertOk();
     }
 
     public function test_outside_production_the_request_address_is_left_alone(): void

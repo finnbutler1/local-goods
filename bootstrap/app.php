@@ -3,6 +3,7 @@
 use App\Http\Middleware\BlockJudgeWrites;
 use App\Http\Middleware\EndReviewerSessions;
 use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\RequireCloudFrontOrigin;
 use App\Http\Middleware\TrackLastSeen;
 use App\Http\Middleware\TrustCloudFront;
 use App\Http\Middleware\UseAppUrl;
@@ -25,6 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Behind CloudFront: production URLs use APP_URL, and the visitor's
         // real IP is believed only from CloudFront itself (ADR 0009).
         $middleware->prepend(UseAppUrl::class);
+        // In production, only CloudFront may reach Beanstalk (kill switch: ORIGIN_VERIFY_ENFORCE).
+        $middleware->prepend(RequireCloudFrontOrigin::class);
         $middleware->replace(TrustProxies::class, TrustCloudFront::class);
         $middleware->alias(['role' => EnsureUserHasRole::class]);
         $middleware->appendToGroup('web', [EndReviewerSessions::class, BlockJudgeWrites::class, TrackLastSeen::class]);

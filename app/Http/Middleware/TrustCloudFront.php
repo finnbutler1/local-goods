@@ -28,14 +28,15 @@ class TrustCloudFront extends TrustProxies
     {
         $request::setTrustedProxies([], Request::HEADER_X_FORWARDED_FOR);
 
-        if ($this->cameThroughCloudFront($request)) {
+        if (self::cameThroughCloudFront($request)) {
             $request::setTrustedProxies([$request->server->get('REMOTE_ADDR')], Request::HEADER_X_FORWARDED_FOR);
         }
 
         return $next($request);
     }
 
-    private function cameThroughCloudFront(Request $request): bool
+    /** True when the request carries the X-Origin-Verify secret (also used by RequireCloudFrontOrigin). */
+    public static function cameThroughCloudFront(Request $request): bool
     {
         $secret = (string) config('services.cloudfront.origin_secret');
         $sent = $request->headers->get(self::SECRET_HEADER);

@@ -374,16 +374,27 @@ snapshot step by name when the build says the deploy includes migrations.
    build ends by listing the migrations since the last deployed commit, or
    saying "No migrations in this deploy." (`scripts/deploy-migrations.sh`;
    a reminder only, it never blocks the build).
-4. Upload `deploy.zip` in Elastic Beanstalk with the next version label and
+4. Origin lock (ADR 0018): Beanstalk must have `CLOUDFRONT_ORIGIN_SECRET`,
+   and the CloudFront origin must send the same value as its custom header
+   `X-Origin-Verify`. The deploy stops ("CLOUDFRONT_ORIGIN_SECRET is empty")
+   if the secret is missing while `ORIGIN_VERIFY_ENFORCE` is on (default),
+   and also if `APP_DEBUG` is true, `APP_ENV` isn't production or
+   `SESSION_SECURE_COOKIE` isn't true (`app:check-production-config`).
+   **Kill switch:** if the live site returns a bare "Forbidden" through
+   CloudFront, set the Beanstalk environment property
+   `ORIGIN_VERIFY_ENFORCE` to `false` (a configuration change, no
+   redeploy), fix the header, then set it back to `true`.
+5. Upload `deploy.zip` in Elastic Beanstalk with the next version label and
    wait for green. Then run `scripts/mark-deployed.sh` to record the commit
    the zip was built from in `.last-deploy-commit` (git-ignored).
-5. After deploy: open the CloudFront site, log in as each demo role, check
+6. After deploy: open the CloudFront site and check that the raw
+   `…elasticbeanstalk.com` address returns "Forbidden". Log in as each demo role, check
    `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
    as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
    With Stripe keys set: the employer page shows "Stripe test mode", and
    `/admin/reconciliation` says everything matches. As the BID admin, press
    "Run a collusion example" once (one AI call) and check its path line.
-6. Never click New link on the live public judge or named reviewer rows.
+7. Never click New link on the live public judge or named reviewer rows.
 
 ## Contest
 

@@ -44,3 +44,4 @@ and does not pass on the Host header, so Laravel sees every request as
   Restricting Beanstalk's security group to CloudFront's AWS-managed prefix
   list would also stop direct calls entirely.
 - `BehindCloudFrontTest` replays requests the way Beanstalk receives them.
+- Superseded in part by [0018](0018-only-cloudfront-reaches-beanstalk.md): direct calls to Beanstalk are now refused outright in production.
