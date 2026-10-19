@@ -464,4 +464,17 @@ class FraudGateTest extends TestCase
         $this->post(route('bid-admin.collusion-example'))->assertSessionHas('error', fn ($m) => str_contains($m, 'Press Reset demo first'));
         $this->assertSame($redemptions, Redemption::count());
     }
+
+    public function test_the_collusion_example_says_so_when_the_demo_merchant_is_missing(): void
+    {
+        $fake = FakeClaudeClient::verdict(88, 'hold');
+        $this->app->instance(ClaudeClient::class, $fake);
+        config(['demo.accounts.merchant.business' => 'A Merchant That Is Not Seeded']);
+        $redemptions = Redemption::count();
+        $this->signIn(Role::BidAdmin);
+
+        $this->post(route('bid-admin.collusion-example'))->assertSessionHas('error', 'The demo merchant is missing. Press Reset demo first.');
+        $this->assertSame($redemptions, Redemption::count());
+        $this->assertSame([], $fake->calls, 'No AI call without a merchant.');
+    }
 }
