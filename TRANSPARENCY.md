@@ -214,15 +214,24 @@ judges check the disagreements, blind
   score or explanation, or anyone else's vote. They choose normal or
   suspicious and write a short reason, and can change their mind until they
   press Submit all.
-- **Who votes:** only BID staff and contest judges with their own personal
-  link. The public judge link, friends and Finn can't vote. They see an
-  "Independent check of the AI" card on the reviewer home page instead: what
-  the check is, how many adjudicators have submitted, when voting closes
-  (shown as November 13, 2026; Finn ends voting by pressing Close voting) and
-  a link to the results on `/eval`.
+- **Who votes:** BID staff and contest judges, each with their own personal
+  link; their votes make the result. Personal contacts (friends, family and
+  classmates who know Finn) also vote, each with their own link and one vote
+  per case, on the same cases and just as blind
+  ([ADR 0019](docs/adr/0019-personal-contacts-vote-separately.md)). Because
+  they know Finn, their votes are **never counted in the result**: they are
+  reported on their own (see below). Their link opens only the voting page and
+  the feedback button: no reviewer tour, no "view as", no eval or admin pages.
+  The public judge link, reviewers of the "Friend" type and Finn can't vote.
+  Reviewers who can't vote see an "Independent check of the AI" card on the
+  reviewer home page instead: what the check is, how many BID and
+  contest-judge adjudicators have submitted, when voting closes (shown as
+  November 13, 2026; Finn ends voting by pressing Close voting) and a link to
+  the results on `/eval`.
 - **One question first:** "Have you looked at the Local Goods eval results
-  page before today?" Someone who has may already know the answers, so results
-  are shown for everyone and again for only those who said no. While voting is
+  page before today?" (personal contacts too). Someone who has may already
+  know the answers, so results are shown for everyone and again for only those
+  who said no, in each group. While voting is
   open, the eval pages hide the per-case answers from adjudicators who haven't
   submitted. Anyone not signed in can still see them, which is why the question
   is asked.
@@ -230,9 +239,15 @@ judges check the disagreements, blind
   headline. "On N disputed cases, adjudicators sided with the AI in X, with
   Finn in Y, split in Z", how many adjudicators voted, how often they agreed
   with the shared label on the control cases (a reliability check), and
-  results by split and by pattern. Each case's votes and reasons, without
-  names, appear once voting closes. **Adjudication never changes Finn's
-  labels or any headline number.**
+  results by split and by pattern. This counts **only BID staff and contest
+  judges.** Below it, a section headed "Personal contacts (know Finn): not
+  counted in the result above" gives the same numbers for personal contacts
+  alone (their own "sided with the AI / with Finn" tallies, controls and
+  "hadn't seen the eval page" view). The two groups are never added together
+  in any total. Each case's votes and reasons, without names, appear once
+  voting closes. Personal contacts' names never appear on public or reviewer
+  pages; the admin pages show only their initials. **Adjudication never
+  changes Finn's labels or any headline number.**
 
 ### Which merchants are eligible
 

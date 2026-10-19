@@ -5,6 +5,24 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Personal contacts vote in blind adjudication — done (ADR 0019).** No
+migration, no money/AI/eval changes; published case set and votes untouched.
+
+- `ReviewerType::PersonalContact` ("Personal contact (knows Finn)"):
+  `mayAdjudicate()` (BID, contest judge, personal contact) drives
+  `canAdjudicate`; `countsInAdjudicationHeadline()` (BID, contest judge)
+  says whose votes make the result. Friend and Public still can't vote.
+- `KeepPersonalContactsToAdjudication::ALLOWED_ROUTES`: voting, feedback,
+  account, logout, magic link only; `/judge` and `/` redirect to
+  `/adjudicate`, everything else 403 (`PersonalContactAccessTest`). A new
+  page needs no change; it's refused for them automatically.
+- `AdjudicationResults::for()`: `all`/`unseen` = headline only; `personal`
+  is separate, numbered on its own. Never add the groups together.
+  `AdjudicationSet::submittedCount()` is headline only.
+- Admin pages name a personal contact with `User::adminLabel()` /
+  `adminEmail()` (initials, no email); never their name anywhere
+  (`EmployeeNamePrivacyTest`).
+
 **Security audit and test gaps — done (Prompt 9C, ADR 0018).** No
 migration, no money/AI/eval changes. Summary in TRANSPARENCY.md "Security";
 keep it true.
@@ -193,7 +211,8 @@ adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
 Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
 Stripe Connect test mode (ADR 0015), the fraud gate on transfers
 (ADR 0016, Prompt 8), the BID impact dashboard (ADR 0017, Prompt 9A), the accessibility and UX
-pass (Prompt 9B) and the security audit (ADR 0018, Prompt 9C).
+pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
+contacts in adjudication (ADR 0019).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -225,8 +244,9 @@ pass (Prompt 9B) and the security audit (ADR 0018, Prompt 9C).
 - Blind adjudication (ADR 0011): `/admin/adjudication` builds a set from the
   latest eval run (every disagreement plus as many random agreed cases as
   blind controls; locked once published, new version to change). Only judges
-  with reviewer type BID or contest judge vote (`adjudicate` gate,
-  `User::canAdjudicate`) at `/adjudicate`; `adjudication.start/vote/submit`
+  with reviewer type BID, contest judge or personal contact (ADR 0019,
+  reported separately) vote (`adjudicate` gate, `User::canAdjudicate`) at
+  `/adjudicate`; `adjudication.start/vote/submit`
   are on the judge write allowlist. Results (`AdjudicationResults`) on the
   admin page and `/eval#adjudication`; they never change labels or the
   headline. Judges who can't vote get an "Independent check of the AI" card
