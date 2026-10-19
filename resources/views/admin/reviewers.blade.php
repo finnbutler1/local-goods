@@ -31,12 +31,12 @@
     </header>
 
     <div aria-live="polite">
-        @if (session('reviewer_link'))
+        @if (session('new_reviewer_link'))
             <x-card class="border-2 border-ok">
-                <p class="font-semibold text-ok">Magic link for {{ session('reviewer_link')['name'] }}. Copy it now: only a fingerprint of it is kept, so it can't be shown again.</p>
+                <p class="font-semibold text-ok">Magic link for {{ session('new_reviewer_link')['name'] }}. Copy it now: only a fingerprint of it is kept, so it can't be shown again.</p>
                 <div class="mt-3 flex flex-col gap-2 sm:flex-row">
                     <label for="reviewer-link" class="sr-only">Magic link</label>
-                    <input id="reviewer-link" type="text" readonly value="{{ session('reviewer_link')['url'] }}"
+                    <input id="reviewer-link" type="text" readonly value="{{ session('new_reviewer_link')['url'] }}"
                            class="{{ $input }} border-muted font-mono text-sm" onfocus="this.select()">
                     <x-button data-copy="#reviewer-link" class="shrink-0">Copy link</x-button>
                 </div>

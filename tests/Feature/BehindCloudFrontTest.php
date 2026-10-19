@@ -111,7 +111,7 @@ class BehindCloudFrontTest extends TestCase
         $this->signIn(Role::PlatformAdmin);
         $this->viaCloudFront('POST', '/admin/reviewers', data: ['name' => 'Casey Morgan', 'email' => 'casey.judge@example.test', 'reviewer_type' => 'contest_judge'])
             ->assertRedirect(self::APP_URL.'/admin/reviewers');
-        $link = session('reviewer_link')['url'];
+        $link = session('new_reviewer_link')['url'];
         auth()->logout();
 
         return $link;

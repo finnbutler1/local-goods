@@ -118,8 +118,8 @@ class PublicJudgeAccessTest extends TestCase
             ->assertSeeInOrder(['Public judge access', 'No link yet', 'New public link', 'Invite a reviewer', 'Named reviewers'])
             ->assertDontSee('<option value="public"', false);
 
-        $this->post("/admin/reviewers/{$this->public->id}/link")->assertSessionHas('reviewer_link');
-        $this->assertStringContainsString('/judge-access#'.$this->public->id.'.', session('reviewer_link')['url']);
+        $this->post("/admin/reviewers/{$this->public->id}/link")->assertSessionHas('new_reviewer_link');
+        $this->assertStringContainsString('/judge-access#'.$this->public->id.'.', session('new_reviewer_link')['url']);
     }
 
     public function test_the_invite_form_cannot_make_a_second_public_account(): void

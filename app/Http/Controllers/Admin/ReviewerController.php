@@ -50,7 +50,8 @@ class ReviewerController extends Controller
         [$user, $link] = $this->links->invite($data['name'], $data['email'], ReviewerType::from($data['reviewer_type']));
 
         return redirect()->route('admin.reviewers.index')
-            ->with('reviewer_link', ['name' => $user->name, 'url' => $link]);
+            // Not ReviewerLinks::SESSION_KEY: that holds a judge's session fingerprint, a string.
+            ->with('new_reviewer_link', ['name' => $user->name, 'url' => $link]);
     }
 
     public function link(User $user): RedirectResponse
@@ -59,7 +60,7 @@ class ReviewerController extends Controller
         abort_unless($user->role === Role::Judge, 404);
 
         return redirect()->route('admin.reviewers.index')
-            ->with('reviewer_link', ['name' => $user->name, 'url' => $this->links->newLink($user)]);
+            ->with('new_reviewer_link', ['name' => $user->name, 'url' => $this->links->newLink($user)]);
     }
 
     public function revoke(User $user): RedirectResponse
