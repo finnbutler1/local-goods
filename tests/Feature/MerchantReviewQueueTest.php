@@ -47,7 +47,8 @@ class MerchantReviewQueueTest extends TestCase
 
     private function judge(?ReviewerType $type): User
     {
-        return User::factory()->role(Role::Judge)->create(['reviewer_type' => $type]);
+        // A fixed name: a random one can contain a short candidate name ("Ala" in "Alaina").
+        return User::factory()->role(Role::Judge)->create(['name' => 'Test Judge', 'reviewer_type' => $type]);
     }
 
     public function test_sam_sees_each_candidate_with_the_ai_answer_and_the_candidate_label(): void
