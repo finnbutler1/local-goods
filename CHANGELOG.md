@@ -3,6 +3,33 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-19: Accessibility and UX pass
+
+- **Checked every page** with keyboard only, at phone width (375px and
+  320px) and with the axe accessibility checker; what ran, what was fixed
+  and what wasn't tested (including: not tested with a screen reader) is
+  in [docs/accessibility.md](docs/accessibility.md).
+- **Forms:** every error is tied to its field, and after a form comes back
+  focus starts on the first error or on the message saying what happened,
+  so screen readers announce it. Buttons say what is happening while the
+  next page loads ("Checking with Redemption Fraud Detection…") and can't
+  be pressed twice.
+- **Friendly error pages** for 403, 404, "page expired", "too many tries",
+  500 and 503, each with a way back.
+- **Phones:** wide tables scroll inside a box keyboard users can reach;
+  nothing is wider than a 320px screen; focus no longer hides behind the
+  bottom tab bar; merchant names no longer get cut off.
+- **Less motion** for people who ask their system for it.
+- **Empty states** everywhere, checked by a test that opens every page on
+  an empty database.
+- **Fixed:** `/admin/reviewers` crashed in a browser that had used a judge
+  link; `/user/confirm-password` was a server error.
+- **Wording:** the participation page says "Spent at independent
+  merchants" instead of "Dollars recirculated" (ADR 0017 keeps
+  "recirculation" for the outside estimate).
+- **New tests** check labels, alt text, names, error wiring, scroll boxes,
+  table captions and more on every page for every role.
+
 ## 2026-10-18: BID impact dashboard
 
 - **BID impact page** (`/bid-admin/impact`, BID and platform admins;

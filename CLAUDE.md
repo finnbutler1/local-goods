@@ -5,6 +5,26 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Accessibility and UX pass — done (Prompt 9B, `docs/accessibility.md`).**
+No migration, no money/AI/eval changes.
+
+- `docs/accessibility.md` lists only checks that actually ran (not tested
+  with a screen reader or a real phone). Keep it true when adding pages.
+- Tests: `AccessibilityTest` (+ `Tests\Support\AccessibilityAudit`) and
+  `EmptyStatesTest` sweep every parameterless GET page as every role via
+  `Tests\Concerns\SweepsPages` (also used by `EmployeeNamePrivacyTest`);
+  `ErrorPagesTest`. New pages are covered automatically and must pass.
+- Patterns (all on `/styleguide` → States): `<x-flash />` for every
+  status/error message (focus moves to `[data-flash]` after reload; first
+  `aria-invalid` field wins); every POST form has `data-busy="…"` (a test
+  checks; logout and magic link exempt); wide tables in
+  `.scroll-region` with `role="region" tabindex="0" aria-label`; fields
+  with a hint/error point at `{id}-hint`/`{id}-error`; animations only
+  `motion-safe:`; `x-badge :wrap="true"` for long text.
+- Error pages in `resources/views/errors` show detail only for our own 403
+  reasons. The admin's new-link flash is `new_reviewer_link`
+  (`ReviewerLinks::SESSION_KEY` is the judge fingerprint).
+
 **BID impact dashboard — built (Prompt 9A, ADR 0017).** No migration.
 
 - `App\Services\BidImpactMetrics`: spending = `merchant_earned` ledger
@@ -152,7 +172,8 @@ Done: Prompts 0, S, R, DB, E, 1, 2 and 3, magic links (ADR 0010), blind
 adjudication (ADR 0011), the three-account ledger (ADR 0012), Merchant
 Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
 Stripe Connect test mode (ADR 0015), the fraud gate on transfers
-(ADR 0016, Prompt 8) and the BID impact dashboard (ADR 0017, Prompt 9A).
+(ADR 0016, Prompt 8), the BID impact dashboard (ADR 0017, Prompt 9A) and
+the accessibility and UX pass (Prompt 9B).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
