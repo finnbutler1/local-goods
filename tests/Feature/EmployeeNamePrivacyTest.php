@@ -3,12 +3,16 @@
 namespace Tests\Feature;
 
 use App\Enums\DenialReason;
+use App\Enums\FeedbackCategory;
+use App\Enums\FeedbackSeverity;
+use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Services\Ai\ClaudeClient;
+use App\Services\Eligibility\MerchantCandidates;
 use App\Services\RedemptionReviewService;
 use App\Services\RedemptionService;
 use App\Support\ViewAs;
@@ -107,6 +111,55 @@ class EmployeeNamePrivacyTest extends TestCase
                 $this->assertNoFullNames($response->getContent(), "{$uri} signed out");
             }
         }
+    }
+
+    /**
+     * The shared "Public judge access" account is anyone with the README
+     * link, so it gets the strictest view: no employee names, no real
+     * candidate business names, and no names or emails of real reviewers or
+     * any other account, on any page or "view as" page.
+     */
+    public function test_the_public_judge_account_sees_no_personal_data_anywhere(): void
+    {
+        $named = User::factory()->role(Role::Judge)->create([
+            'name' => 'Rowan Examplereviewer', 'email' => 'rowan.reviewer@cua.example', 'reviewer_type' => ReviewerType::ContestJudge,
+        ]);
+        $this->actingAs($named)->get('/judge')->assertOk();
+        $named->feedback()->create([
+            'page_url' => url('/judge'), 'category' => FeedbackCategory::AiIntegration, 'rating' => 4,
+            'severity' => FeedbackSeverity::ShouldFix, 'comment' => 'A note from a named reviewer.',
+        ]);
+
+        $public = User::factory()->role(Role::Judge)->create(['name' => 'Public judge access', 'reviewer_type' => ReviewerType::Public]);
+        $others = User::whereKeyNot($public->id)->get(['name', 'email']);
+        $candidates = array_column(MerchantCandidates::load(), 'name');
+        $this->assertNotEmpty($candidates);
+
+        $check = function (string $html, string $where) use ($others, $candidates) {
+            $this->assertNoFullNames($html, $where);
+            foreach ($candidates as $name) {
+                $this->assertStringNotContainsString(e($name), $html, "Candidate {$name} appears on {$where}.");
+            }
+            foreach ($others as $user) {
+                $this->assertStringNotContainsString(e($user->email), $html, "An account email appears on {$where}.");
+            }
+            $this->assertStringNotContainsString('Rowan Examplereviewer', $html, "A reviewer's name appears on {$where}.");
+        };
+
+        $checked = 0;
+        foreach ($this->pages() as $uri) {
+            $response = $this->actingAs($public)->get($uri);
+            if ($response->isOk()) {
+                $check($response->getContent(), "{$uri} as the public judge");
+                $checked++;
+            }
+        }
+        foreach (ViewAs::ROLES as $role) {
+            $html = $this->actingAs($public)->followingRedirects()->get(route('judge.view-as', $role->value))->assertOk()->getContent();
+            $check($html, "the {$role->value} view as the public judge");
+        }
+
+        $this->assertGreaterThan(10, $checked, 'Too few pages were checked.');
     }
 
     public function test_the_employee_sees_their_own_name_but_nobody_elses(): void
