@@ -3,6 +3,21 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-19: Honest claims about Stripe and impact
+
+- **Stripe:** the landing page and judge home no longer say payouts "come
+  in a later build". They say what is true: payments and merchant payouts
+  run on Stripe in test mode, real Stripe transactions, no real money.
+- **No "3x" claim in the README.** The study figure is now the same
+  labelled outside estimate as the impact page: Civic Economics / American
+  Booksellers Association Indie Impact study, 52.3% against 15.8%
+  recirculated locally, 2011–2012, 134 businesses in 10 U.S. communities,
+  none in DC, not measured by Local Goods.
+- **Tests** check every public page and the README for "3x", "three times"
+  and "multiplier" claims, and that no public page calls Stripe missing or
+  live. The fraud check's own "3x or more the usual amount" signal (one
+  employee's spend against their usual) is not an economic claim and stays.
+
 ## 2026-10-19: Accessibility and UX pass
 
 - **Checked every page** with keyboard only, at phone width (375px and
