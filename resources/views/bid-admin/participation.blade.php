@@ -29,7 +29,7 @@
             <dd class="mt-1 text-sm text-muted">Fictional demo businesses</dd>
         </x-card>
         <x-card tone="forest">
-            <dt class="text-sm font-semibold text-sage">Dollars recirculated</dt>
+            <dt class="text-sm font-semibold text-sage">Spent at independent merchants</dt>
             <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($monthCents) }}</dd>
             <dd class="mt-1 text-sm text-sage">this month · {{ Money::format($allTimeCents) }} since launch</dd>
         </x-card>

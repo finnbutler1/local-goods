@@ -142,4 +142,16 @@ class AccessibilityTest extends TestCase
             }
         }
     }
+
+    public function test_each_chart_has_a_summary_sentence_and_a_table(): void
+    {
+        foreach ([[Role::EmployerAdmin, '/employer'], [Role::BidAdmin, '/bid-admin/impact']] as [$role, $page]) {
+            $this->actingAs($this->signIn($role))->get($page)->assertOk()
+                // The bars themselves are hidden from screen readers…
+                ->assertSee('items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true"', false)
+                // …so a sentence sums them up and a table has every number.
+                ->assertSeeInOrder(['so far this week,', 'out of a peak of'], false)
+                ->assertSeeInOrder(['Show as a table', '<table', 'Week of'], false);
+        }
+    }
 }

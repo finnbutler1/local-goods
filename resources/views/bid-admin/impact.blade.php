@@ -105,7 +105,8 @@
             @if (array_sum(array_column($weeks, 'cents')) === 0)
                 <p class="mt-6 rounded-xl bg-cream-deep p-4 text-muted">No cleared redemptions in the last {{ count($weeks) }} weeks.</p>
             @else
-                {{-- Hover a bar for its week; the same numbers are in the table below. --}}
+                {{-- Bars are hidden from screen readers: the sentence under them sums them up and
+                     "Show as a table" has every week's numbers. Hover a bar for its week. --}}
                 <div class="mt-6 flex h-44 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
                     @foreach ($weeks as $week)
                         <div class="group relative flex h-full flex-1 items-end justify-center">
@@ -123,6 +124,11 @@
                         <span class="flex-1">{{ $i % 2 === count($weeks) % 2 ? '' : $week['start']->format('M j') }}</span>
                     @endforeach
                 </div>
+                @php $peak = collect($weeks)->sortByDesc('cents')->first(); @endphp
+                <p class="mt-3 text-sm">
+                    <span class="font-semibold">{{ Money::format($weeks[count($weeks) - 1]['cents']) }}</span> so far this week,
+                    out of a peak of <span class="font-semibold">{{ Money::format($peak['cents']) }}</span> (week of {{ $peak['start']->format('M j') }}).
+                </p>
             @endif
 
             <details class="mt-3 text-sm">

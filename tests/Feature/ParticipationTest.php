@@ -37,7 +37,9 @@ class ParticipationTest extends TestCase
         $allTime = (int) Redemption::where('status', Redemption::STATUS_APPROVED)->sum('amount_cents');
 
         $this->get('/bid-admin/participation')->assertOk()
-            ->assertSee('Dollars recirculated')
+            ->assertSee('Spent at independent merchants')
+            // "Recirculation" is reserved for the outside-study estimate on /bid-admin/impact (ADR 0017).
+            ->assertDontSee('recirculated')
             ->assertSee(Money::format($month))
             ->assertSee(Money::format($allTime).' since launch')
             ->assertSee('$11.11 more is held for review and not counted yet')
