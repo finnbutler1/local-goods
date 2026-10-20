@@ -12,13 +12,15 @@
         @if ($adjudication && $adjudication['can_vote'])
             <x-card as="section" tone="forest" aria-labelledby="adjudicate-heading" class="max-w-3xl">
                 <h2 id="adjudicate-heading" class="text-2xl font-semibold text-cream">
-                    <a href="{{ route('adjudication.show') }}" class="underline decoration-amber decoration-2 underline-offset-4 hover:decoration-cream">Help check the AI, about 15 minutes</a>
+                    <a href="{{ route('adjudication.show') }}" class="underline decoration-amber decoration-2 underline-offset-4 hover:decoration-cream">Help check the AI, about 5 minutes</a>
                 </h2>
                 <p class="mt-2 text-sage">
                     @if ($adjudication['submitted'])
                         Thank you: your votes are submitted.
                     @elseif ($adjudication['answered'] > 0)
-                        {{ $adjudication['answered'] }} of {{ $adjudication['total'] }} answered. Pick up where you left off, then press Submit all.
+                        {{ $adjudication['answered'] }} of {{ $adjudication['total'] }} answered. Pick up where you left off, then submit them.
+                    @elseif ($adjudication['counted'] > 0)
+                        Thank you: your {{ $adjudication['counted'] }} votes count. You can do 10 more if you like.
                     @else
                         Look at {{ $adjudication['total'] }} synthetic redemptions, one at a time, and say whether each looks normal or suspicious. You won't see the AI's answer or ours.
                     @endif

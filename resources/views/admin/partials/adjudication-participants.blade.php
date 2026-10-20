@@ -2,7 +2,7 @@
      BID and contest judges (the headline) and personal contacts (ADR 0019),
      never counted together. Personal contacts are shown by initials. Needs $current. --}}
 @php
-    [$headline, $personal] = $current->participants()->with('user')->orderBy('id')->get()
+    [$headline, $personal] = $current->participants()->with(['user', 'assignments'])->orderBy('id')->get()
         ->partition(fn ($p) => ! $p->user->isPersonalContact());
     $caseIds = $current->cases()->select('id');
     $caseCount = $current->cases()->count();
@@ -19,8 +19,9 @@
                     <th scope="col" class="px-4 py-2">Reviewer</th>
                     <th scope="col" class="px-4 py-2">Type</th>
                     <th scope="col" class="px-4 py-2">Saw eval before</th>
-                    <th scope="col" class="px-4 py-2">Votes</th>
-                    <th scope="col" class="px-4 py-2">Submitted</th>
+                    <th scope="col" class="px-4 py-2">Batches submitted</th>
+                    <th scope="col" class="px-4 py-2">Votes that count</th>
+                    <th scope="col" class="px-4 py-2">Finished</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,11 +30,19 @@
                         <th scope="row" class="px-4 py-2 font-semibold">{{ $p->user->adminLabel() }}</th>
                         <td class="px-4 py-2">{{ $p->user->reviewer_type?->label() }}</td>
                         <td class="px-4 py-2">{{ $p->seen_eval_before ? 'yes' : 'no' }}</td>
-                        <td class="px-4 py-2">{{ \App\Models\AdjudicationVote::where('user_id', $p->user_id)->whereIn('adjudication_case_id', $caseIds)->count() }} of {{ $caseCount }}</td>
+                        @php $submitted = $p->assignments->whereNotNull('submitted_at'); @endphp
+                        @if ($p->assignments->isEmpty() && $p->submitted_at)
+                            {{-- Pressed Submit all before batches (ADR 0020): every vote counts. --}}
+                            <td class="px-4 py-2">Before batches</td>
+                            <td class="px-4 py-2">{{ \App\Models\AdjudicationVote::where('user_id', $p->user_id)->whereIn('adjudication_case_id', $caseIds)->count() }} of {{ $caseCount }}</td>
+                        @else
+                            <td class="px-4 py-2">{{ $submitted->pluck('batch')->unique()->count() }}</td>
+                            <td class="px-4 py-2">{{ $submitted->count() }} of {{ $caseCount }}</td>
+                        @endif
                         <td class="px-4 py-2">{{ $p->submitted_at ? $p->submitted_at->setTimezone('America/New_York')->format('M j, g:i A') : 'Not yet' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-4 py-3 text-muted">{{ $empty }}</td></tr>
+                    <tr><td colspan="6" class="px-4 py-3 text-muted">{{ $empty }}</td></tr>
                 @endforelse
             </tbody>
         </table>

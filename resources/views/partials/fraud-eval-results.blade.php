@@ -179,7 +179,7 @@
                 <p class="mt-3 rounded-2xl border-2 border-line bg-cream-deep p-4">
                     Hidden for now: you're invited to
                     <a href="{{ route('adjudication.show') }}" class="font-semibold text-forest underline underline-offset-4">help check the AI</a>,
-                    and this list would show you the answers. It appears here once you press Submit all.
+                    and this list would show you the answers. It appears here once you say you're done (or have seen every case).
                 </p>
             @elseif ($disagreements === [])
                 <p class="mt-3">The AI agreed with the person on every case.</p>

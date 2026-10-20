@@ -1,5 +1,7 @@
-{{-- One group of blind adjudicators (ADR 0011, 0019): the all/unseen cards, the
-     by-split and by-pattern tables and, when $showCases, every disputed case.
+{{-- One group of blind adjudicators (ADR 0011, 0019, 0020): the all/unseen cards,
+     the by-split and by-pattern tables and, when $showCases, every disputed case.
+     Every figure shows the votes behind it; a case with fewer than
+     AdjudicationResults::MIN_VOTES votes is "too few votes to call".
      Needs $all, $unseen, $noun ("Adjudicator" or "Contact"), $plural, $showNames, $showCases. --}}
 @php
     use App\Services\Fraud\FraudEvalPatterns;
@@ -8,7 +10,9 @@
     // Everyone in the personal-contact group has the same type, so it isn't repeated there.
     $who = fn ($v) => ($showNames ? $v['name'] : "{$noun} {$v['number']}")
         .($v['type'] && $noun === 'Adjudicator' ? " ({$v['type']})" : '');
-    $sided = ['ai' => ['ok', 'Sided with the AI'], 'finn' => ['amber', 'Sided with Finn'], 'split' => ['neutral', 'Split']];
+    $sided = ['ai' => ['ok', 'Sided with the AI'], 'finn' => ['amber', 'Sided with Finn'], 'split' => ['neutral', 'Split'], 'too_few' => ['neutral', 'Too few votes to call']];
+    $withVotes = fn ($row, $side) => $row[$side].' ('.$row["{$side}_votes"].' '.Str::plural('vote', $row["{$side}_votes"]).')';
+    $minVotes = \App\Services\Adjudication\AdjudicationResults::MIN_VOTES;
     $th = 'px-4 py-2';
     $label = ucfirst($plural);
 @endphp
@@ -18,6 +22,13 @@
             <x-card>
                 <h3 class="text-lg font-semibold">{{ $title }} <span class="text-muted">({{ count($group['adjudicators']) }})</span></h3>
                 <p class="mt-2 font-display text-xl font-semibold text-forest">{{ $group['sentence'] }}</p>
+                @if (! $showCases && count($group['cases']) > 0)
+                    @php $counts = array_column($group['cases'], 'vote_count'); @endphp
+                    <p class="mt-2 text-sm text-muted">
+                        Votes per disputed case so far: {{ min($counts) }} to {{ max($counts) }}.
+                        {{ count(array_filter($counts, fn ($n) => $n >= $minVotes)) }} of {{ count($counts) }} cases have the {{ $minVotes }} or more needed to call.
+                    </p>
+                @endif
                 @if ($group['controls']['of'] > 0)
                     <p class="mt-2 text-sm text-muted">
                         Reliability check: on the {{ $group['controls']['cases'] }} control cases, their votes matched the shared label
@@ -35,11 +46,12 @@
                 <thead>
                     <tr class="bg-cream-deep/60 text-sm text-muted">
                         <th scope="col" class="{{ $th }}">{{ $heading }}</th>
-                        <th scope="col" class="{{ $th }}">Disputed cases</th>
+                        <th scope="col" class="{{ $th }}">Disputed cases (votes)</th>
                         <th scope="col" class="{{ $th }}">All: with the AI</th>
                         <th scope="col" class="{{ $th }}">All: with Finn</th>
                         <th scope="col" class="{{ $th }}">All: split</th>
-                        <th scope="col" class="{{ $th }}">Hadn't seen eval: AI / Finn / split</th>
+                        <th scope="col" class="{{ $th }}">All: too few votes to call</th>
+                        <th scope="col" class="{{ $th }}">Hadn't seen eval: AI / Finn / split / too few</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,11 +59,12 @@
                         @php $u = $unseen[$key][$name] ?? null; @endphp
                         <tr class="border-t border-line/70">
                             <th scope="row" class="{{ $th }} font-semibold">{{ $names[$name] ?? $name }}</th>
-                            <td class="{{ $th }}">{{ $row['cases'] }}</td>
-                            <td class="{{ $th }}">{{ $row['ai'] }}</td>
-                            <td class="{{ $th }}">{{ $row['finn'] }}</td>
-                            <td class="{{ $th }}">{{ $row['split'] }}</td>
-                            <td class="{{ $th }}">{{ count($unseen['adjudicators']) > 0 && $u ? "{$u['ai']} / {$u['finn']} / {$u['split']}" : '—' }}</td>
+                            <td class="{{ $th }}">{{ $row['cases'] }} ({{ $row['votes'] }} {{ Str::plural('vote', $row['votes']) }})</td>
+                            <td class="{{ $th }}">{{ $withVotes($row, 'ai') }}</td>
+                            <td class="{{ $th }}">{{ $withVotes($row, 'finn') }}</td>
+                            <td class="{{ $th }}">{{ $withVotes($row, 'split') }}</td>
+                            <td class="{{ $th }}">{{ $withVotes($row, 'too_few') }}</td>
+                            <td class="{{ $th }}">{{ count($unseen['adjudicators']) > 0 && $u ? "{$u['ai']} / {$u['finn']} / {$u['split']} / {$u['too_few']}" : '—' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -64,17 +77,17 @@
             <h3 class="text-xl font-semibold">{{ $label }}: every disputed case ({{ count($all['cases']) }})</h3>
             <ul class="mt-3 space-y-3">
                 @foreach ($all['cases'] as $c)
-                    @php [$tone, $label] = $sided[$c['sided_with']]; @endphp
+                    @php [$tone, $badge] = $sided[$c['sided_with']]; @endphp
                     <li class="rounded-2xl bg-paper p-5 ring-1 ring-line/70">
                         <p class="flex flex-wrap items-center gap-2 font-semibold">
                             {{ $c['case_id'] }} · ${{ $c['facts']['amount'] }} at {{ $c['facts']['merchant'] }}, {{ $c['facts']['local_time'] }}
                             <x-badge>{{ $c['split'] }}</x-badge>
-                            <x-badge :tone="$tone">{{ $label }}</x-badge>
+                            <x-badge :tone="$tone">{{ $badge }}</x-badge>
                         </p>
                         <p class="mt-1 text-sm text-muted">
                             Finn: {{ $c['my_label'] }} · AI: {{ $c['ai_label'] }} ·
-                            Votes: {{ $c['suspicious'] }} suspicious, {{ $c['normal'] }} normal ·
-                            Majority: {{ $c['majority'] ?? 'none (tie)' }}
+                            {{ $c['vote_count'] }} {{ Str::plural('vote', $c['vote_count']) }}: {{ $c['suspicious'] }} suspicious, {{ $c['normal'] }} normal ·
+                            Majority: {{ $c['sided_with'] === 'too_few' ? "not called (fewer than {$minVotes} votes)" : ($c['majority'] ?? 'none (tie)') }}
                         </p>
                         <ul class="mt-3 space-y-2 border-t border-line/70 pt-3">
                             @foreach ($c['votes'] as $v)
