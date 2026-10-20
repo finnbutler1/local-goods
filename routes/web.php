@@ -120,6 +120,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/adjudicate/start', [AdjudicateController::class, 'start'])->name('adjudication.start');
             Route::post('/adjudicate/cases/{adjudicationCase}', [AdjudicateController::class, 'vote'])->name('adjudication.vote');
             Route::post('/adjudicate/submit', [AdjudicateController::class, 'submit'])->name('adjudication.submit');
+            Route::post('/adjudicate/more', [AdjudicateController::class, 'more'])->name('adjudication.more');
+            Route::post('/adjudicate/finish', [AdjudicateController::class, 'finish'])->name('adjudication.finish');
         });
     });
     Route::middleware('role:platform_admin')->group(function () {

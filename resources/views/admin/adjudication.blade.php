@@ -151,7 +151,7 @@
         @if ($adjudication)
             @include('partials.adjudication-results', ['adjudicationSet' => $current, 'showNames' => true, 'showCases' => true])
         @else
-            <p class="text-muted">Results appear here once a reviewer presses Submit all.</p>
+            <p class="text-muted">Results appear here once a reviewer submits their first batch.</p>
         @endif
     @endif
 </div>

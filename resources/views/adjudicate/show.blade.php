@@ -18,8 +18,8 @@
             Our fraud check was tested against cases a person labeled by hand. Where the person and the AI disagree,
             the person may be the one who got it wrong. You'll see synthetic redemptions one at a time, with only the facts,
             and decide whether each looks <strong class="text-ink">normal</strong> or <strong class="text-ink">suspicious</strong>,
-            for example a way to turn credits into cash. It takes about 15 minutes. Some are cases where the person and the AI disagreed and some are not;
-            you won't be told which.
+            for example a way to turn credits into cash. You'll get 10 at a time; it takes about 5 minutes, and afterwards you can do 10 more if you like.
+            Some are cases where the person and the AI disagreed and some are not; you won't be told which.
         </p>
     </header>
 
@@ -56,7 +56,14 @@
             <x-card class="border-2 border-ok">
                 <h2 class="text-2xl font-semibold text-forest">Thank you, your votes are in</h2>
                 <p class="mt-2">
-                    You voted on all {{ $total }} cases. Votes are locked now.
+                    @if ($had === 0)
+                        You voted on all {{ $totalCases }} cases.
+                    @elseif ($had >= $totalCases)
+                        You've seen all {{ $totalCases }} cases, and voted on {{ $counted }}.
+                    @else
+                        You voted on {{ $counted }} of the {{ $totalCases }} cases.
+                    @endif
+                    Votes are locked now.
                     @if ($votingOnly)
                         Finn reports the results, with personal contacts' votes counted separately from BID staff and contest judges.
                     @else
@@ -64,6 +71,26 @@
                         to see the person's labels and the AI's calls. Results from adjudicators appear there as people submit.
                     @endif
                 </p>
+            </x-card>
+            @break
+
+        @case('more')
+            <x-card as="section" aria-labelledby="more-heading" class="border-2 border-ok">
+                <h2 id="more-heading" tabindex="-1" data-flash class="text-2xl font-semibold text-forest">Thanks! Want to do {{ $nextBatchSize }} more?</h2>
+                <p class="mt-2">
+                    Your {{ $counted }} {{ Str::plural('vote', $counted) }} already count. More is optional: another {{ $nextBatchSize }} takes about 5 minutes,
+                    and you'll never see a case twice ({{ $had }} of {{ $totalCases }} seen so far).
+                </p>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <form method="POST" action="{{ route('adjudication.more') }}" data-busy="Getting your cases…">
+                        @csrf
+                        <x-button type="submit">Yes, {{ $nextBatchSize }} more</x-button>
+                    </form>
+                    <form method="POST" action="{{ route('adjudication.finish') }}" data-busy="Saving…">
+                        @csrf
+                        <x-button type="submit" variant="secondary">No thanks, I'm done</x-button>
+                    </form>
+                </div>
             </x-card>
             @break
 
@@ -185,15 +212,15 @@
             @else
                 @php $missing = $cases->keys()->filter(fn ($i) => ! $votes->has($cases[$i]->id))->map(fn ($i) => $i + 1); @endphp
                 <x-card as="section" aria-labelledby="submit-heading">
-                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-forest">Submit all</h2>
+                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-forest">Submit these {{ $total }}</h2>
                     @if ($missing->isNotEmpty())
                         <p class="mt-2">Still to answer: {{ $missing->implode(', ') }}. You can submit once every case has an answer.</p>
                     @else
-                        <p class="mt-2">You've answered all {{ $total }}. You can still go back and change any of them. Once you submit, your votes are locked.</p>
+                        <p class="mt-2">You've answered all {{ $total }}. You can still go back and change any of them. Once you submit, these votes are locked and count.</p>
                     @endif
                     <form method="POST" action="{{ route('adjudication.submit') }}" data-busy="Submitting…" class="mt-4">
                         @csrf
-                        <x-button type="submit" variant="accent" :disabled="$missing->isNotEmpty()">Submit all</x-button>
+                        <x-button type="submit" variant="accent" :disabled="$missing->isNotEmpty()">Submit these {{ $total }}</x-button>
                     </form>
                     <p class="mt-4 text-sm text-muted">
                         You said you {{ $participant->seen_eval_before ? 'had' : 'had not' }} looked at the eval results page before today.

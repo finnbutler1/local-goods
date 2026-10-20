@@ -21,6 +21,8 @@ class KeepPersonalContactsToAdjudication
         'adjudication.start',
         'adjudication.vote',
         'adjudication.submit',
+        'adjudication.more',
+        'adjudication.finish',
         'feedback.store',
         'feedback.update',
         'account',

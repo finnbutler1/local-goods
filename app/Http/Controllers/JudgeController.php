@@ -8,9 +8,13 @@ use App\Models\AdjudicationSet;
 use App\Models\AdjudicationVote;
 use App\Models\ChangelogEntry;
 use App\Models\User;
+use App\Services\Adjudication\AdjudicationAssigner;
 use App\Support\ViewAs;
+use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class JudgeController extends Controller
@@ -80,7 +84,7 @@ class JudgeController extends Controller
      * Changelog entries and the judge's own feedback marked fixed since their
      * previous visit. On a first visit: the latest few entries and every fix.
      *
-     * @return array{since: ?\Carbon\CarbonInterface, entries: \Illuminate\Support\Collection, fixed: \Illuminate\Support\Collection}
+     * @return array{since: ?CarbonInterface, entries: Collection, fixed: Collection}
      */
     public static function whatsNew(User $user): array
     {
@@ -115,7 +119,7 @@ class JudgeController extends Controller
      * open; everyone else gets "Independent check of the AI", which explains
      * the check and counts submissions. Null before any set is published.
      *
-     * @return array{can_vote: bool, open: bool, total: int, answered: int, submitted: bool, submitted_count: int, ends_at: \Illuminate\Support\Carbon}|null
+     * @return array{can_vote: bool, open: bool, total: int, answered: int, counted: int, submitted: bool, submitted_count: int, ends_at: Carbon}|null
      */
     public static function adjudicationStatus(User $user): ?array
     {
@@ -125,13 +129,16 @@ class JudgeController extends Controller
             return null;
         }
 
-        $caseIds = $set->cases()->pluck('id');
+        // Progress in the batch they are on (ADR 0020), or a fresh batch of 10.
+        $participant = $set->participantFor($user);
+        $batch = $participant?->openBatch()->pluck('adjudication_case_id') ?? collect();
 
         return [
             'can_vote' => $user->canAdjudicate() && $set->isOpen(),
             'open' => $set->isOpen(),
-            'total' => $caseIds->count(),
-            'answered' => AdjudicationVote::where('user_id', $user->id)->whereIn('adjudication_case_id', $caseIds)->count(),
+            'total' => $batch->isEmpty() ? min(AdjudicationAssigner::BATCH_SIZE, $set->cases()->count()) : $batch->count(),
+            'answered' => $batch->isEmpty() ? 0 : AdjudicationVote::where('user_id', $user->id)->whereIn('adjudication_case_id', $batch)->count(),
+            'counted' => $participant?->assignments()->whereNotNull('submitted_at')->count() ?? 0,
             'submitted' => $set->hasSubmitted($user),
             'submitted_count' => $set->submittedCount(),
             'ends_at' => AdjudicationSet::votingEndsAt(),

@@ -46,8 +46,8 @@ class AdjudicationSet extends Model
     }
 
     /**
-     * True while voting is open and this user may vote but hasn't pressed
-     * Submit all: the eval pages then hide the per-case disagreements, which
+     * True while voting is open and this user may vote but hasn't finished
+     * (seen every case or said they're done): the eval pages then hide the per-case disagreements, which
      * would show them the person's label and the AI's call.
      */
     public static function hidesCaseDetailsFor(?User $user): bool
@@ -102,22 +102,29 @@ class AdjudicationSet extends Model
         return $this->participants()->where('user_id', $user->id)->whereNotNull('submitted_at')->exists();
     }
 
-    /** How many BID and contest-judge adjudicators have pressed Submit all (personal contacts are counted apart, ADR 0019). */
+    /**
+     * How many BID and contest-judge adjudicators have a vote that counts: a
+     * submitted batch (ADR 0020), or Submit all from before batches.
+     * Personal contacts are counted apart (ADR 0019).
+     */
     public function submittedCount(): int
     {
-        return $this->submittedParticipants()->reject(fn ($p) => $p->user->isPersonalContact())->count();
+        return $this->countingParticipants()->reject(fn ($p) => $p->user->isPersonalContact())->count();
     }
 
-    /** How many personal contacts have pressed Submit all. */
+    /** How many personal contacts have a vote that counts. */
     public function submittedCountForPersonalContacts(): int
     {
-        return $this->submittedParticipants()->filter(fn ($p) => $p->user->isPersonalContact())->count();
+        return $this->countingParticipants()->filter(fn ($p) => $p->user->isPersonalContact())->count();
     }
 
     /** @return Collection<int, AdjudicationParticipant> */
-    private function submittedParticipants()
+    private function countingParticipants()
     {
-        return $this->participants()->whereNotNull('submitted_at')->with('user')->get();
+        return $this->participants()->with('user')
+            ->where(fn ($q) => $q->whereHas('assignments', fn ($a) => $a->whereNotNull('submitted_at'))
+                ->orWhere(fn ($q) => $q->whereNotNull('submitted_at')->whereDoesntHave('assignments')))
+            ->get();
     }
 
     /**

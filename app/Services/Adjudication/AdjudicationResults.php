@@ -2,6 +2,7 @@
 
 namespace App\Services\Adjudication;
 
+use App\Models\AdjudicationAssignment;
 use App\Models\AdjudicationCase;
 use App\Models\AdjudicationParticipant;
 use App\Models\AdjudicationSet;
@@ -12,10 +13,13 @@ use App\Support\WilsonInterval;
 use Illuminate\Support\Collection;
 
 /**
- * What the blind adjudicators said (ADR 0011). Only reviewers who pressed
- * Submit all count. On each disputed case the majority of votes sides with
- * the AI or with Finn's label; a tie is "split". Control cases (where both
- * agreed) measure how reliable the adjudicators are.
+ * What the blind adjudicators said (ADR 0011). A vote counts once its batch
+ * of 10 is submitted (ADR 0020), so someone who stops after one batch still
+ * counts; votes from before batches count if the reviewer pressed Submit all.
+ * On each disputed case the majority of votes sides with the AI or with
+ * Finn's label; a tie is "split", and a case with fewer than MIN_VOTES votes
+ * in the group is "too few votes to call". Control cases (where both agreed)
+ * measure how reliable the adjudicators are.
  *
  * Reported on its own: it never changes a label or a headline number.
  * Personal contacts' votes (ADR 0019) are a separate group, never merged
@@ -23,8 +27,11 @@ use Illuminate\Support\Collection;
  */
 class AdjudicationResults
 {
+    /** A case needs this many votes in a group before the group's majority is reported. */
+    public const MIN_VOTES = 3;
+
     /**
-     * The headline: every submitted BID and contest-judge adjudicator, and
+     * The headline: every BID and contest-judge adjudicator with a counted vote, and
      * only those who said they had not looked at the eval results page
      * before. Personal contacts (ADR 0019) get the same two views under
      * 'personal', numbered on their own and never counted in the headline.
@@ -33,16 +40,21 @@ class AdjudicationResults
      */
     public function for(AdjudicationSet $set): ?array
     {
-        $participants = $set->participants()->whereNotNull('submitted_at')->with('user')->orderBy('id')->get();
+        $cases = $set->cases()->orderBy('case_id')->get();
+        $counted = $this->countedCases($set, $cases);
+        $participants = $set->participants()->with('user')->orderBy('id')->get()
+            ->filter(fn (AdjudicationParticipant $p) => ($counted[$p->id] ?? collect())->isNotEmpty())->values();
 
         if ($participants->isEmpty()) {
             return null;
         }
 
-        $cases = $set->cases()->orderBy('case_id')->get();
+        $caseIdsFor = $participants->mapWithKeys(fn ($p) => [$p->user_id => $counted[$p->id]->flip()]);
         $votes = AdjudicationVote::whereIn('adjudication_case_id', $cases->pluck('id'))
             ->whereIn('user_id', $participants->pluck('user_id'))
-            ->get()->groupBy('adjudication_case_id');
+            ->get()
+            ->filter(fn (AdjudicationVote $v) => $caseIdsFor[$v->user_id]->has($v->adjudication_case_id))
+            ->groupBy('adjudication_case_id');
 
         [$headline, $personal] = $participants->partition(fn (AdjudicationParticipant $p) => ! $p->user->isPersonalContact());
 
@@ -50,6 +62,25 @@ class AdjudicationResults
             ...$this->group($cases, $votes, $headline->values(), 'adjudicators'),
             'personal' => $personal->isEmpty() ? null : $this->group($cases, $votes, $personal->values(), 'personal contacts'),
         ];
+    }
+
+    /**
+     * Which cases' votes count for each participant: those in their submitted
+     * batches, or every case for someone who pressed Submit all before batches.
+     *
+     * @return Collection<int, Collection<int, int>> participant id => case ids
+     */
+    private function countedCases(AdjudicationSet $set, Collection $cases): Collection
+    {
+        $participantIds = $set->participants()->pluck('id');
+        $assignments = AdjudicationAssignment::whereIn('adjudication_participant_id', $participantIds)->get()
+            ->groupBy('adjudication_participant_id');
+
+        return $set->participants()->get()->mapWithKeys(fn (AdjudicationParticipant $p) => [
+            $p->id => isset($assignments[$p->id])
+                ? $assignments[$p->id]->whereNotNull('submitted_at')->pluck('adjudication_case_id')->values()
+                : ($p->hasSubmitted() ? $cases->pluck('id') : collect()),
+        ]);
     }
 
     /**
@@ -89,6 +120,7 @@ class AdjudicationResults
             $suspicious = $caseVotes->where('label', 'suspicious')->count();
             $normal = $caseVotes->count() - $suspicious;
             $majority = match (true) {
+                $caseVotes->count() < self::MIN_VOTES => null,
                 $suspicious > $normal => 'suspicious',
                 $normal > $suspicious => 'normal',
                 default => null,
@@ -103,9 +135,11 @@ class AdjudicationResults
                 'ai_label' => $case->ai_label,
                 'normal' => $normal,
                 'suspicious' => $suspicious,
+                'vote_count' => $caseVotes->count(),
                 'majority' => $majority,
                 'sided_with' => match (true) {
-                    $caseVotes->isEmpty(), $majority === null => 'split',
+                    $caseVotes->count() < self::MIN_VOTES => 'too_few',
+                    $majority === null => 'split',
                     $majority === $case->ai_label => 'ai',
                     default => 'finn',
                 },
@@ -125,12 +159,14 @@ class AdjudicationResults
         $hits = $controlVotes->filter()->count();
         $of = $controlVotes->count();
 
-        $tally = fn (Collection $group) => [
-            'cases' => $group->count(),
-            'ai' => $group->where('sided_with', 'ai')->count(),
-            'finn' => $group->where('sided_with', 'finn')->count(),
-            'split' => $group->where('sided_with', 'split')->count(),
-        ];
+        // Each figure with the number of votes behind it.
+        $tally = fn (Collection $group) => collect(['ai', 'finn', 'split', 'too_few'])
+            ->flatMap(fn ($side) => [
+                $side => $group->where('sided_with', $side)->count(),
+                "{$side}_votes" => $group->where('sided_with', $side)->sum('vote_count'),
+            ])
+            ->merge(['cases' => $group->count(), 'votes' => $group->sum('vote_count')])
+            ->all();
 
         $summary = $tally($disputed);
 
@@ -140,12 +176,15 @@ class AdjudicationResults
                 'name' => $p->user->adminLabel(),
                 'type' => $p->user->reviewer_type?->label(),
                 'seen_eval_before' => $p->seen_eval_before,
+                'votes' => $votes->flatten(1)->where('user_id', $p->user_id)->count(),
             ])->values()->all(),
             'by_type' => $participants->countBy(fn ($p) => $p->user->reviewer_type?->label())->all(),
             'summary' => $summary,
             'sentence' => $participants->isEmpty()
                 ? 'No adjudicators in this group yet.'
-                : "On {$summary['cases']} disputed cases, {$who} sided with the AI in {$summary['ai']}, with Finn in {$summary['finn']}, split in {$summary['split']}.",
+                : "On {$summary['cases']} disputed cases ({$summary['votes']} votes), {$who} sided with the AI in {$summary['ai']} ({$summary['ai_votes']} votes), "
+                    ."with Finn in {$summary['finn']} ({$summary['finn_votes']} votes), split in {$summary['split']} ({$summary['split_votes']} votes); "
+                    .$summary['too_few'].' had too few votes to call (fewer than '.self::MIN_VOTES.').',
             'controls' => [
                 'hits' => $hits,
                 'of' => $of,

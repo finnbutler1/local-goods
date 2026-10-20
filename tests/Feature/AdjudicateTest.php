@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Fraud\FraudEvalReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 /** Reviewers voting, blind, on the published adjudication set (ADR 0011). */
@@ -32,41 +33,137 @@ class AdjudicateTest extends TestCase
         return User::factory()->role(Role::Judge)->create(['reviewer_type' => $type]);
     }
 
-    private function voteOnEverything(User $user, string $label = 'suspicious'): void
+    /** The cases in the batch this reviewer is working on, in their order. */
+    private function batch(User $user): Collection
     {
-        foreach ($this->set->cases as $case) {
+        return $this->set->participantFor($user)->openBatch()->pluck('adjudicationCase');
+    }
+
+    private function voteOnBatch(User $user, string $label = 'suspicious'): void
+    {
+        foreach ($this->batch($user) as $case) {
             $this->post("/adjudicate/cases/{$case->id}", ['label' => $label, 'reason' => 'Synthetic reason.'])->assertRedirect();
         }
     }
 
-    public function test_a_bid_reviewer_answers_the_question_votes_on_every_case_and_submits(): void
+    /** Batch after batch until they have seen every case. */
+    private function voteOnEverything(User $user, string $label = 'suspicious'): void
+    {
+        while (true) {
+            $this->voteOnBatch($user, $label);
+            $this->post('/adjudicate/submit')->assertRedirect();
+            if ($this->set->hasSubmitted($user)) {
+                return;
+            }
+            $this->post('/adjudicate/more')->assertRedirect();
+        }
+    }
+
+    public function test_a_bid_reviewer_answers_the_question_votes_on_a_batch_of_10_and_can_stop(): void
     {
         $user = $this->reviewer(ReviewerType::Bid);
         $this->actingAs($user);
 
-        $this->get('/adjudicate')->assertOk()->assertSee('Have you looked at the Local Goods eval results page before today?');
+        $this->get('/adjudicate')->assertOk()
+            ->assertSee('Have you looked at the Local Goods eval results page before today?')
+            ->assertSee('about 5 minutes')->assertDontSee('15 minutes');
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no'])->assertRedirect('/adjudicate');
 
-        $total = $this->set->cases()->count();
-        $this->get('/adjudicate')->assertOk()->assertSee("1 of {$total}");
+        $this->get('/adjudicate')->assertOk()->assertSee('1 of 10');
 
-        $this->voteOnEverything($user);
-        $this->assertSame($total, AdjudicationVote::where('user_id', $user->id)->count());
+        $this->voteOnBatch($user);
+        $this->assertSame(10, AdjudicationVote::where('user_id', $user->id)->count());
 
-        $this->get('/adjudicate')->assertOk()->assertSee('Submit all');
+        $this->get('/adjudicate?n=11')->assertOk()->assertSee('Submit these 10');
         $this->post('/adjudicate/submit')->assertRedirect('/adjudicate');
 
+        // Optional: more, or done.
+        $this->assertFalse($this->set->hasSubmitted($user));
+        $this->get('/adjudicate')->assertOk()->assertSee('Thanks! Want to do 10 more?')->assertSee("No thanks, I'm done", false);
+
+        $this->post('/adjudicate/finish')->assertRedirect('/adjudicate');
         $this->assertTrue($this->set->hasSubmitted($user));
         $this->assertFalse($this->set->participantFor($user)->seen_eval_before);
-        $this->get('/adjudicate')->assertOk()->assertSee('your votes are in');
+        $this->get('/adjudicate')->assertOk()->assertSee('your votes are in')->assertSee('You voted on 10 of the 32 cases.');
+        $this->post('/adjudicate/more')->assertForbidden();
+    }
+
+    public function test_each_batch_is_10_with_about_7_disputed_and_never_repeats_a_case(): void
+    {
+        $user = $this->reviewer(ReviewerType::Bid);
+        $this->actingAs($user);
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+        $total = $this->set->cases()->count();
+
+        $first = $this->batch($user);
+        $this->assertCount(10, $first);
+        $this->assertSame(7, $first->where('kind', 'disputed')->count());
+        $this->assertSame(3, $first->where('kind', 'control')->count());
+
+        $sizes = [];
+        $seen = collect();
+        while (true) {
+            $batch = $this->batch($user);
+            $sizes[] = $batch->count();
+            $this->assertEmpty($seen->intersect($batch->pluck('id')), 'A case came up twice.');
+            $seen = $seen->merge($batch->pluck('id'));
+            $this->voteOnBatch($user);
+            $this->post('/adjudicate/submit');
+            if ($this->set->hasSubmitted($user)) {
+                break;
+            }
+            $this->post('/adjudicate/more');
+        }
+
+        // 32 cases: 10, 10, 10, then the last 2, and then it stops.
+        $this->assertSame([10, 10, 10, $total - 30], $sizes);
+        $this->assertEqualsCanonicalizing($this->set->cases()->pluck('id')->all(), $seen->all());
+        $this->get('/adjudicate')->assertOk()->assertSee("You've seen all {$total} cases", false);
+        $this->post('/adjudicate/more')->assertForbidden();
+    }
+
+    public function test_the_order_is_shuffled_per_person(): void
+    {
+        $a = $this->reviewer(ReviewerType::Bid);
+        $this->actingAs($a);
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+        $orderA = $this->batch($a)->pluck('id');
+
+        $this->assertEquals($orderA, $this->batch($a)->pluck('id'), 'Stable across visits.');
+        $this->assertNotEquals($orderA->sort()->values(), $orderA, 'Not in id order.');
+
+        // Disputed and control cases are mixed, not one kind first (checked over several people).
+        $grouped = 0;
+        foreach (range(1, 5) as $ignored) {
+            $user = $this->reviewer(ReviewerType::ContestJudge);
+            $this->actingAs($user);
+            $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+            $kinds = $this->batch($user)->pluck('kind');
+            $grouped += (int) ($kinds->all() === $kinds->sort()->values()->all() || $kinds->all() === $kinds->sortDesc()->values()->all());
+        }
+        $this->assertLessThan(5, $grouped);
+    }
+
+    public function test_only_cases_in_the_current_batch_can_be_voted_on(): void
+    {
+        $user = $this->reviewer(ReviewerType::Bid);
+        $this->actingAs($user);
+        $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
+        $outside = $this->set->cases()->whereNotIn('id', $this->batch($user)->pluck('id'))->firstOrFail();
+
+        $this->post("/adjudicate/cases/{$outside->id}", ['label' => 'normal', 'reason' => 'x'])->assertForbidden();
+        $this->post('/adjudicate/more')->assertForbidden();
+        $this->post('/adjudicate/finish')->assertForbidden();
+        $this->assertSame(0, AdjudicationVote::count());
     }
 
     public function test_a_contest_judge_can_vote_too(): void
     {
-        $this->actingAs($this->reviewer(ReviewerType::ContestJudge));
+        $user = $this->reviewer(ReviewerType::ContestJudge);
+        $this->actingAs($user);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'yes'])->assertRedirect();
 
-        $case = $this->set->cases()->firstOrFail();
+        $case = $this->batch($user)->first();
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'Looks like lunch.'])->assertRedirect();
         $this->assertSame(1, AdjudicationVote::count());
     }
@@ -100,9 +197,10 @@ class AdjudicateTest extends TestCase
 
     public function test_a_reason_and_a_valid_label_are_required(): void
     {
-        $this->actingAs($this->reviewer(ReviewerType::Bid));
+        $user = $this->reviewer(ReviewerType::Bid);
+        $this->actingAs($user);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
-        $case = $this->set->cases()->firstOrFail();
+        $case = $this->batch($user)->first();
 
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'suspicious', 'reason' => ''])->assertSessionHasErrors('reason');
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'maybe', 'reason' => 'Hmm.'])->assertSessionHasErrors('label');
@@ -114,7 +212,7 @@ class AdjudicateTest extends TestCase
         $user = $this->reviewer(ReviewerType::Bid);
         $this->actingAs($user);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
-        $case = $this->set->cases()->firstOrFail();
+        $case = $this->batch($user)->first();
 
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'suspicious', 'reason' => 'First thought.']);
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'Second thought.']);
@@ -122,23 +220,24 @@ class AdjudicateTest extends TestCase
         $this->assertSame(1, AdjudicationVote::count());
         $this->assertSame('normal', AdjudicationVote::sole()->label);
 
-        $this->voteOnEverything($user);
+        $this->voteOnBatch($user);
         $this->post('/adjudicate/submit');
 
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'suspicious', 'reason' => 'Too late.'])->assertForbidden();
         $this->assertSame('suspicious', AdjudicationVote::where('adjudication_case_id', $case->id)->value('label'));
     }
 
-    public function test_submit_all_needs_every_case_answered(): void
+    public function test_submitting_a_batch_needs_every_case_in_it_answered(): void
     {
         $user = $this->reviewer(ReviewerType::Bid);
         $this->actingAs($user);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
-        $case = $this->set->cases()->firstOrFail();
+        $case = $this->batch($user)->first();
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'Fine.']);
 
         $this->post('/adjudicate/submit')->assertSessionHasErrors('submit');
         $this->assertFalse($this->set->hasSubmitted($user));
+        $this->assertSame(0, $this->set->participantFor($user)->assignments()->whereNotNull('submitted_at')->count());
     }
 
     public function test_a_case_from_another_set_is_refused(): void
@@ -174,14 +273,13 @@ class AdjudicateTest extends TestCase
         $this->post('/adjudicate/start', ['seen_eval_before' => 'yes'])->assertRedirect('/adjudicate');
 
         // Voting again on a case changes that vote; it never adds a second one.
-        $case = $this->set->cases()->firstOrFail();
+        $case = $this->batch($user)->first();
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'First thought.']);
         $this->post("/adjudicate/cases/{$case->id}", ['label' => 'suspicious', 'reason' => 'Second thought.']);
         $this->assertSame(1, AdjudicationVote::where('user_id', $user->id)->where('adjudication_case_id', $case->id)->count());
         $this->assertSame('suspicious', AdjudicationVote::where('user_id', $user->id)->value('label'));
 
         $this->voteOnEverything($user);
-        $this->post('/adjudicate/submit')->assertRedirect('/adjudicate');
 
         $this->assertTrue($this->set->hasSubmitted($user));
         $this->assertTrue($this->set->participantFor($user)->seen_eval_before);
@@ -261,9 +359,10 @@ class AdjudicateTest extends TestCase
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
         $results = collect(app(FraudEvalReport::class)->latest()['results'])->keyBy('case_id');
 
-        foreach (range(1, $this->set->cases()->count()) as $n) {
+        $batch = $this->batch($user);
+        foreach (range(1, $batch->count()) as $n) {
             $html = $this->get("/adjudicate?n={$n}")->assertOk()->getContent();
-            $case = $this->set->casesInOrderFor($user)[$n - 1];
+            $case = $batch[$n - 1];
             $r = $results[$case->case_id];
 
             $this->assertStringContainsString(e($case->facts['merchant']), $html);
@@ -295,7 +394,7 @@ class AdjudicateTest extends TestCase
         $user = $this->reviewer(ReviewerType::Bid);
         $this->actingAs($user);
 
-        $this->get('/judge')->assertOk()->assertSee('Help check the AI, about 15 minutes')->assertSee(route('adjudication.show'));
+        $this->get('/judge')->assertOk()->assertSee('Help check the AI, about 5 minutes')->assertSee(route('adjudication.show'));
 
         app(AdjudicationSetBuilder::class)->close($this->set);
         $this->get('/judge')->assertOk()->assertDontSee('Help check the AI');
@@ -324,7 +423,7 @@ class AdjudicateTest extends TestCase
         $this->actingAs($this->reviewer(ReviewerType::ContestJudge));
 
         $this->get('/judge')->assertOk()
-            ->assertSee('Help check the AI, about 15 minutes')
+            ->assertSee('Help check the AI, about 5 minutes')
             ->assertDontSee('id="independent-check-heading"', false);
     }
 
@@ -334,7 +433,6 @@ class AdjudicateTest extends TestCase
         $this->actingAs($voter);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
         $this->voteOnEverything($voter);
-        $this->post('/adjudicate/submit')->assertRedirect();
 
         // Someone who started but didn't submit doesn't count.
         $this->actingAs($this->reviewer(ReviewerType::ContestJudge));
@@ -363,7 +461,6 @@ class AdjudicateTest extends TestCase
         $this->actingAs($voter);
         $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
         $this->voteOnEverything($voter);
-        $this->post('/adjudicate/submit');
 
         $this->actingAs($this->reviewer(ReviewerType::Public));
         $this->get('/eval')->assertOk()->assertSee('id="adjudication"', false)

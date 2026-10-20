@@ -30,6 +30,8 @@ class BlockJudgeWrites
         'adjudication.start',
         'adjudication.vote',
         'adjudication.submit',
+        'adjudication.more',
+        'adjudication.finish',
     ];
 
     public function handle(Request $request, Closure $next): Response
