@@ -16,7 +16,7 @@ trade-off in under a minute.
 | [0008](0008-read-only-reviewers-with-single-use-invite-links.md) | Read-only reviewers with single-use invite links | Partly superseded by 0010 |
 | [0009](0009-https-through-cloudfront.md) | HTTPS through CloudFront in front of Beanstalk | Accepted, implemented |
 | [0010](0010-magic-links-for-reviewers.md) | Magic links for reviewers, and one public judge account | Accepted, implemented |
-| [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Accepted, implemented |
+| [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Accepted, implemented; batches in 0020 |
 | [0012](0012-one-ledger-three-account-kinds.md) | One ledger with three kinds of account: employee, employer, merchant | Accepted, implemented |
 | [0013](0013-merchant-eligibility-matching.md) | Merchant Eligibility Matching: an AI suggestion, a person's decision, measured against locked labels | Accepted, implemented |
 | [0014](0014-employer-program-pending-purchases-and-initials.md) | Employer program, purchases locked until paid, and initials only outside an employee's own wallet | Accepted, implemented |
@@ -25,3 +25,4 @@ trade-off in under a minute.
 | [0017](0017-bid-impact-from-the-ledger.md) | BID impact numbers come from the ledger and roll up the HR dashboards; an outside study's recirculation rate shown only as a labelled estimate | Accepted, implemented |
 | [0018](0018-only-cloudfront-reaches-beanstalk.md) | Only CloudFront reaches Beanstalk (with a kill switch); unsafe production settings stop a deploy | Accepted, implemented |
 | [0019](0019-personal-contacts-vote-separately.md) | Personal contacts vote in the blind adjudication, reported separately and never in the headline | Accepted, implemented |
+| [0020](0020-adjudication-in-balanced-batches-of-10.md) | Blind adjudication in balanced batches of 10, with vote counts and "too few votes to call" | Accepted, implemented |

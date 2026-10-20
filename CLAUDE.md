@@ -5,6 +5,20 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Blind adjudication in batches of 10 — done (ADR 0020).** One migration
+(`adjudication_assignments`, additive). Case set, blind view, opening
+question and existing votes unchanged.
+
+- `AdjudicationAssigner::nextBatch`: 7 disputed + 3 controls, no repeats,
+  fewest votes first within the person's group (headline and personal
+  contacts balanced separately), per-person order. `adjudication.more` /
+  `adjudication.finish` are on both allowlists.
+- A vote counts once its batch is submitted; participants with no
+  assignments and `submitted_at` set pressed Submit all before batches and
+  all their votes count. `submitted_at` now means finished.
+- Results: `vote_count` per case, `*_votes` per figure, fewer than
+  `AdjudicationResults::MIN_VOTES` (3) = `too_few`, per group.
+
 **Personal contacts vote in blind adjudication — done (ADR 0019).** No
 migration, no money/AI/eval changes; published case set and votes untouched.
 

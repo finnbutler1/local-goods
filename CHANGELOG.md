@@ -3,6 +3,23 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-19: Shorter blind adjudication, in batches of 10
+
+- **About 5 minutes instead of 15.** Each reviewer gets 10 cases (about 7
+  disputed, 3 controls) in an order of their own. After submitting:
+  "Thanks! Want to do 10 more?" It's optional, never repeats a case, and
+  stops once they've seen all 32.
+- **Balanced.** Each batch takes the cases with the fewest votes so far in
+  the reviewer's group, so every case ends up with a similar number of
+  votes. BID staff and contest judges are balanced separately from
+  personal contacts.
+- **Every batch counts,** even if the reviewer stops after one.
+- **Results show their votes.** Each case and each figure says how many
+  votes are behind it, and a case with fewer than 3 votes is marked "too
+  few votes to call" ([ADR 0020](docs/adr/0020-adjudication-in-balanced-batches-of-10.md)).
+- The published case set, what reviewers see, the opening question and
+  every existing vote are unchanged. One new table (a migration).
+
 ## 2026-10-19: Personal contacts can help check the AI
 
 - **A new reviewer type, "Personal contact (knows Finn)",** for friends,
