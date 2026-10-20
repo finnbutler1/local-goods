@@ -213,7 +213,19 @@ judges check the disagreements, blind
   random order of their own. Never Finn's label or note, the AI's decision,
   score or explanation, or anyone else's vote. They choose normal or
   suspicious and write a short reason, and can change their mind until they
-  press Submit all.
+  submit the batch.
+- **How cases are assigned:** each person gets a batch of 10 cases (about 5
+  minutes): 7 disputed and 3 controls while enough are left, never a case they
+  have had before, shown in an order of their own. Within each kind, the
+  batch takes the cases with the fewest votes so far in that person's group,
+  so votes spread evenly. BID staff and contest judges are balanced among
+  themselves, and personal contacts separately. A batch counts as soon as it
+  is submitted. Then "Thanks! Want to do 10 more?" is optional; it stops
+  when they have seen all 32. Cases handed out but never submitted still count
+  towards the balance, so an abandoned batch can leave a few cases slightly
+  short. Disputed cases get more votes than controls on purpose: they are what
+  the check is for. Anyone who pressed Submit all before batches existed keeps
+  every vote they made.
 - **Who votes:** BID staff and contest judges, each with their own personal
   link; their votes make the result. Personal contacts (friends, family and
   classmates who know Finn) also vote, each with their own link and one vote
@@ -239,8 +251,10 @@ judges check the disagreements, blind
   headline. "On N disputed cases, adjudicators sided with the AI in X, with
   Finn in Y, split in Z", how many adjudicators voted, how often they agreed
   with the shared label on the control cases (a reliability check), and
-  results by split and by pattern. This counts **only BID staff and contest
-  judges.** Below it, a section headed "Personal contacts (know Finn): not
+  results by split and by pattern. Each number shows how many votes are behind
+  it, and each case shows its vote count. A case with fewer than 3 votes in a
+  group is marked **"too few votes to call"** and isn't counted as siding with
+  anyone. This counts **only BID staff and contest judges.** Below it, a section headed "Personal contacts (know Finn): not
   counted in the result above" gives the same numbers for personal contacts
   alone (their own "sided with the AI / with Finn" tallies, controls and
   "hadn't seen the eval page" view). The two groups are never added together

@@ -1,6 +1,7 @@
 # 0011. Blind adjudication of eval disagreements
 
-**Status:** Accepted, implemented.
+**Status:** Accepted, implemented. Voting in batches of 10 and the minimum of
+3 votes per case: [ADR 0020](0020-adjudication-in-balanced-batches-of-10.md).
 
 ## Context
 
