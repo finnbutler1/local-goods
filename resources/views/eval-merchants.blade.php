@@ -246,7 +246,7 @@
                                                 </div>
                                                 <div>
                                                     <dt class="text-xs font-semibold uppercase tracking-widest text-muted">AI</dt>
-                                                    <dd class="mt-1"><span class="font-semibold">{{ MerchantEvalReport::CLASS_NAMES[$r['ai_classification']] }}, confidence {{ round(100 * $r['confidence']) }}%.</span> {{ $r['reasoning'] }}</dd>
+                                                    <dd class="mt-1"><span class="font-semibold">{{ MerchantEvalReport::CLASS_NAMES[$r['ai_classification']] }}, confidence {{ round(100 * $r['confidence']) }}%.</span> {{ $r['reasoning'] }}@if (! empty($r['redacted']))<span class="mt-1 block text-sm text-muted">{{ $r['redacted'] }}</span>@endif</dd>
                                                 </div>
                                             </dl>
                                         </x-card>

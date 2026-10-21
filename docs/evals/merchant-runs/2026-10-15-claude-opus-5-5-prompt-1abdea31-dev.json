@@ -332,7 +332,8 @@
             "model": "claude-opus-5-5",
             "agree": true,
             "class_match": true,
-            "cached": false
+            "cached": false,
+            "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
         },
         {
             "candidate_id": "MC-060",
@@ -552,7 +553,8 @@
             "model": "claude-opus-5-5",
             "agree": true,
             "class_match": true,
-            "cached": false
+            "cached": false,
+            "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
         },
         {
             "candidate_id": "MC-101",
@@ -992,7 +994,8 @@
             "model": "claude-opus-5-5",
             "agree": true,
             "class_match": true,
-            "cached": false
+            "cached": false,
+            "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
         },
         {
             "candidate_id": "MC-215",
