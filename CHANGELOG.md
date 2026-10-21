@@ -3,6 +3,25 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-21: Merchant data is public business information only
+
+- **No real people in the AI's reasoning.** Merchant Eligibility Matching had
+  named a restaurateur and two chefs from memory, and described one café's
+  founders. Those words are now "[name removed]" (or "local founders") in
+  the review queue, the eval page and every eval file, each with a
+  "redacted" note. Classifications, confidence and every result are
+  unchanged. A new test fails if a merchant output names a person again.
+- **No owner names anywhere.** The "DC license record" link no longer asks
+  DC for the legal owner's name, and the map points file no longer lists
+  license numbers.
+- **219 candidates instead of 224.** Five whose names are a person's were
+  removed. None was labeled, so the labels, the lock and the results are
+  unchanged. Ordinary shop names like "Henry's Salon" stay.
+- **Evidence links without tracking IDs.** Eight of Finn's evidence links had
+  Finn's own Google ad-click IDs; they are stripped wherever the links are
+  shown. The locked label file keeps them so the lock stays intact.
+- Earlier versions remain in the public git history (see TRANSPARENCY.md).
+
 ## 2026-10-19: Shorter blind adjudication, in batches of 10
 
 - **About 5 minutes instead of 15.** Each reviewer gets 10 cases (about 7

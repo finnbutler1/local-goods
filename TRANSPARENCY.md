@@ -286,8 +286,9 @@ DC's spatial query, the license's own BID field and our own point-in-polygon
 check all place it inside the boundary
 (`data/sources/merchant_candidates_report.md` has the counts). Each license's
 business activity (for example "Restaurant" or "Barber Shop") is in
-`data/sources/merchant_candidate_activity.csv`. Owner names are never
-downloaded, and a license whose only name is a person's is left out.
+`data/sources/merchant_candidate_activity.csv`. Owner and agent names are
+never requested, and a license whose only name is a person's is left out
+(see "Merchant data: public business information only" below).
 **None of these businesses has joined Local Goods**, none appears in the
 demo's synthetic transactions, and every page that shows one labels it
 "Candidate — not a Local Goods participant."
@@ -396,6 +397,64 @@ and admins see the businesses, each labeled as a candidate. The committed
 files in the repo (`data/merchant_candidates.csv`, `data/merchant_labels.csv`,
 `data/merchant_assessments.json` and the results under `docs/evals/`) do name
 them, because the repo holds the public source data the eval is built from.
+
+### Merchant data: public business information only
+
+The contest rule (Professor Yoest): "public business information only, with
+no owner names or personal details." The merchant candidates are real
+businesses from public DC records, and nothing about real people is kept.
+For each candidate we keep its trade name, premises address, our category,
+the license's business activity, a map point and a link to the public DC
+record. Nothing else.
+
+**What we never keep.** Owner, registrant or agent names, email addresses or
+phone numbers. The build reads each license's legal entity name for one
+purpose only, to leave out sole traders whose only name is a person's (16 were
+left out), and never writes it to a file. The link to the DC record asks DC
+for the trade name, address, business activity and status only.
+
+**Removed on 2026-10-21, after an audit:**
+
+- **Real people named by the AI.** Merchant Eligibility Matching judges from
+  its own memory, and in a few answers it named a restaurateur and two chefs,
+  and described one café's founders as military veterans. Those words are
+  replaced with "[name removed]" (or "local founders") in
+  `data/merchant_assessments.json` and every eval output under `docs/evals/`.
+  Each edited answer carries a "redacted" note, shown next to the reasoning.
+  The classification and confidence are the AI's original answer: no metric
+  changed and nothing was re-run. `MerchantOutputPrivacyTest` fails if a
+  committed merchant output names an individual again. The prompt is frozen
+  and unchanged; telling the AI not to name people would be a new prompt
+  version with a fresh holdout.
+- **Five candidates whose names are a person's** (a surname as the company
+  name, a personal first name, a person's initials). None was labeled or
+  assessed. The candidate list went from 224 to 219, and a rebuild skips them
+  (`eligibility.excluded_candidates` holds only a hash, not the names).
+- **The legal entity name in the DC record link** (for a sole trader that is a
+  person's name, shown by DC's site) and **license numbers in the points
+  file**.
+
+**Kept on purpose.**
+
+- **Shop names that include a first or family name** ("Henry's Salon",
+  family-named jewelers and pharmacies) are the businesses' own public trade
+  names, on their signs. Several of the 60 labeled businesses have one. They
+  stay exactly as they are: they are business information, the AI was
+  measured on these exact names, and changing a labeled row would break the
+  label lock and the eval.
+- **Finn's own tracking IDs in 8 evidence links.** Eight links in the locked
+  label file (`data/merchant_labels.csv`) contain Finn's own Google ad-click
+  and search tracking IDs (`gclid`, `gbraid`, `gad_*`, `utm_*`, `srsltid`),
+  picked up while researching. They are Finn's data, no one else's. They are
+  left in place to keep the label lock intact, and are stripped wherever the
+  links are shown: on `/eval/merchants`, in the eval reports and in every eval
+  output (`EvidenceUrl::withoutTracking`).
+
+**Earlier versions remain in the public git history.** History was not
+rewritten: the merchant label lock and the fraud eval lock point at specific
+commits, and rewriting would break them. Commits before 2026-10-21 still
+contain the AI's original reasoning, the five candidates, the license numbers
+and the old link format.
 
 ### How reviewers get in
 
