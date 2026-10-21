@@ -5,6 +5,25 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Merchant data: public business information only — done (2026-10-21).**
+Professor Yoest's rule: "public business information only, with no owner
+names or personal details." No migration, no prompt, label or lock change;
+summary in TRANSPARENCY.md "Merchant data: public business information
+only" (keep it true).
+
+- AI reasoning that named people is redacted to "[name removed]" with a
+  `redacted` note (shown next to the reasoning). `MerchantOutputPrivacyTest`
+  scans every committed merchant output for named individuals: a new
+  `merchant:eval` run that names someone must be redacted before committing.
+- Candidates: 219 (5 person-named removed; a rebuild skips
+  `eligibility.excluded_candidates`, hashes of `MerchantCandidateBuilder::key`).
+  `source_url` never asks for `ENTITYNAME`; the points file has no license
+  numbers (`fetch-activity` reads them from `source_url`).
+- Evidence links: `EvidenceUrl::withoutTracking` wherever they are shown or
+  copied into eval outputs. The locked `merchant_labels.csv` keeps 8 links
+  with Finn's own tracking IDs, on purpose (lock intact).
+- History was not rewritten; never rewrite it (both locks name commits).
+
 **Blind adjudication in batches of 10 — done (ADR 0020).** One migration
 (`adjudication_assignments`, additive). Case set, blind view, opening
 question and existing votes unchanged.
