@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 /**
  * Writes data/sources/merchant_candidate_activity.csv: the license "business
  * activity" (e.g. "Restaurant", "Barber Shop") of every candidate, looked
- * up by the license number saved in the points file. Asks DC's license
+ * up by the license number in its source link. Asks DC's license
  * server for that one field only, never owner or entity names, and leaves
  * the candidates and label files untouched.
  */
@@ -21,8 +21,13 @@ class FetchMerchantActivity extends Command
 
     public function handle(): int
     {
-        $points = MerchantCandidates::readCsv(config('eligibility.points_path'), ['candidate_id', 'lat', 'lng', 'license_number'], 'candidate_id');
-        $licenses = array_column($points, 'license_number', 'candidate_id');
+        $licenses = array_map(fn ($c) => MerchantCandidates::licenseNumber($c['source_url']), MerchantCandidates::load());
+
+        if (in_array(null, $licenses, true)) {
+            $this->error('No license number in the source link of '.implode(', ', array_keys($licenses, null, true)).'. Nothing was written.');
+
+            return self::FAILURE;
+        }
 
         $activityByLicense = [];
         foreach (array_chunk(array_values(array_unique($licenses)), 100) as $batch) {

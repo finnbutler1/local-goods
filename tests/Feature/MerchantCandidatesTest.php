@@ -32,13 +32,15 @@ class MerchantCandidatesTest extends TestCase
             $this->assertMatchesRegularExpression('/\bNW\b/i', $c['address'], $id); // the whole BID is in Northwest DC
             $this->assertContains($c['category'], array_keys(config('fraud.category_ticket_ranges')), $id);
             $this->assertStringStartsWith(config('eligibility.licenses_url').'?', $c['source_url'], $id);
+            $this->assertStringNotContainsString('ENTITYNAME', $c['source_url'], "{$id}: the source link must not ask DC for the legal owner name");
+            $this->assertNotNull(MerchantCandidates::licenseNumber($c['source_url']), $id);
         }
     }
 
     public function test_every_real_candidate_is_inside_the_bid_boundary(): void
     {
         $boundary = BidBoundary::fromFile(config('eligibility.boundary_path'));
-        $points = MerchantCandidates::readCsv(config('eligibility.points_path'), ['candidate_id', 'lat', 'lng', 'license_number'], 'candidate_id');
+        $points = MerchantCandidates::readCsv(config('eligibility.points_path'), MerchantCandidates::POINT_COLUMNS, 'candidate_id');
 
         $this->assertSame(array_keys(MerchantCandidates::load()), array_keys($points), 'Every candidate has exactly one point.');
         foreach ($points as $id => $point) {
@@ -125,6 +127,9 @@ class MerchantCandidatesTest extends TestCase
         $this->assertSame(['MC-001'], array_keys(MerchantCandidates::load()));
         $this->assertSame(['MC-001' => 'Barber Shop'], MerchantCandidates::activity());
         $this->assertStringContainsString('Candidates kept** | **1', file_get_contents("{$dir}/report.md"));
+        $this->assertSame("candidate_id,lat,lng\nMC-001,38.905000,-77.040000\n", file_get_contents("{$dir}/points.csv"));
+        $this->assertStringNotContainsString('ENTITYNAME', MerchantCandidates::load()['MC-001']['source_url']);
+        $this->assertStringNotContainsString('EXAMPLE BARBERS LLC', implode("\n", array_map('file_get_contents', glob("{$dir}/*.csv"))));
         Http::assertSent(fn ($request) => ! str_contains($request->body(), 'OWNER') && ! str_contains($request->body(), 'AGENT'));
     }
 
@@ -132,8 +137,7 @@ class MerchantCandidatesTest extends TestCase
     {
         $dir = sys_get_temp_dir().'/lg-activity-'.uniqid();
         mkdir($dir);
-        file_put_contents("{$dir}/points.csv", "candidate_id,lat,lng,license_number\nMC-001,38.9,-77.04,123\nMC-002,38.9,-77.04,456\n");
-        config(['eligibility.points_path' => "{$dir}/points.csv", 'eligibility.activity_path' => "{$dir}/activity.csv"]);
+        $this->writeCandidates($dir, ['MC-001' => '123', 'MC-002' => '456']);
 
         Http::fake([config('eligibility.licenses_url') => Http::response(['features' => [
             ['attributes' => ['CUSTOMERNUMBER' => '123', 'BUSINESSACTIVITY' => 'Barber Shop']],
@@ -150,12 +154,30 @@ class MerchantCandidatesTest extends TestCase
     {
         $dir = sys_get_temp_dir().'/lg-activity-'.uniqid();
         mkdir($dir);
-        file_put_contents("{$dir}/points.csv", "candidate_id,lat,lng,license_number\nMC-001,38.9,-77.04,123\n");
-        config(['eligibility.points_path' => "{$dir}/points.csv", 'eligibility.activity_path' => "{$dir}/activity.csv"]);
+        $this->writeCandidates($dir, ['MC-001' => '123']);
         Http::fake([config('eligibility.licenses_url') => Http::response(['features' => []])]);
 
         $this->artisan('eligibility:fetch-activity')->assertFailed();
 
         $this->assertFileDoesNotExist("{$dir}/activity.csv");
+    }
+
+    public function test_the_license_number_is_read_from_the_source_link(): void
+    {
+        $url = config('eligibility.licenses_url').'?'.http_build_query(['where' => "CUSTOMERNUMBER='70103696'", 'f' => 'html']);
+
+        $this->assertSame('70103696', MerchantCandidates::licenseNumber($url));
+        $this->assertNull(MerchantCandidates::licenseNumber(config('eligibility.licenses_url')));
+    }
+
+    /** @param  array<string, string>  $licenses  candidate_id => license number */
+    private function writeCandidates(string $dir, array $licenses): void
+    {
+        $rows = array_map(
+            fn ($id, $license) => "{$id},Example {$id},\"1700 K ST NW, WASHINGTON, DC, 20006\",cafe,".config('eligibility.licenses_url').'?'.http_build_query(['where' => "CUSTOMERNUMBER='{$license}'", 'f' => 'html']),
+            array_keys($licenses), $licenses,
+        );
+        file_put_contents("{$dir}/candidates.csv", implode("\n", ['candidate_id,name,address,category,source_url', ...$rows])."\n");
+        config(['eligibility.candidates_path' => "{$dir}/candidates.csv", 'eligibility.activity_path' => "{$dir}/activity.csv"]);
     }
 }
