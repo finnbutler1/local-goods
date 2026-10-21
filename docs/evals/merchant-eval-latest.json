@@ -362,12 +362,13 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.8,
-                    "reasoning": "Compass Coffee is a DC-founded coffee company started by two local Marine veterans and headquartered in Washington, DC. From my knowledge it operates well over five cafe locations across the DC area, so it fails part 2 of the rule (five or fewer locations). I am not aware of a franchise model or outside parent, but I cannot rule out outside investment or recent ownership changes, and my information may be out of date.",
+                    "reasoning": "Compass Coffee is a DC-founded coffee company started by local founders and headquartered in Washington, DC. From my knowledge it operates well over five cafe locations across the DC area, so it fails part 2 of the rule (five or fewer locations). I am not aware of a franchise model or outside parent, but I cannot rule out outside investment or recent ownership changes, and my information may be out of date.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
                     "class_match": true,
-                    "cached": false
+                    "cached": false,
+                    "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
                 },
                 {
                     "candidate_id": "MC-060",
@@ -582,12 +583,13 @@
                     "ai_eligible": true,
                     "ai_outcome": "eligible",
                     "confidence": 0.8,
-                    "reasoning": "From my training knowledge, Kaz Sushi Bistro at 1915 I St NW is a long-running single-location restaurant opened by local chef Kaz Okochi. As far as I know, it has no outside parent, investor control, franchise ties or other locations, so it meets all three parts of the rule. My information may be out of date, so ownership and location count should be confirmed.",
+                    "reasoning": "From my training knowledge, Kaz Sushi Bistro at 1915 I St NW is a long-running single-location restaurant opened by local chef [name removed]. As far as I know, it has no outside parent, investor control, franchise ties or other locations, so it meets all three parts of the rule. My information may be out of date, so ownership and location count should be confirmed.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": true,
                     "class_match": true,
-                    "cached": false
+                    "cached": false,
+                    "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
                 },
                 {
                     "candidate_id": "MC-101",
@@ -1345,12 +1347,13 @@
                     "ai_eligible": false,
                     "ai_outcome": "not_eligible",
                     "confidence": 0.75,
-                    "reasoning": "From my training, Bombay Club at 815 Connecticut Ave NW is owned by restaurateur Ashok Bajaj's Knightsbridge Restaurant Group, which is based in DC with no known outside parent or investor control. Its sister restaurants have included two Rasika locations, Bindaas locations, Annabelle, Sababa and Modena, which together appear to exceed five locations. That fails part 2 of the rule. My knowledge may be out of date, since restaurants in this group have opened and closed over time, so the current location count should be checked.",
+                    "reasoning": "From my training, Bombay Club at 815 Connecticut Ave NW is owned by restaurateur [name removed]'s Knightsbridge Restaurant Group, which is based in DC with no known outside parent or investor control. Its sister restaurants have included two Rasika locations, Bindaas locations, Annabelle, Sababa and Modena, which together appear to exceed five locations. That fails part 2 of the rule. My knowledge may be out of date, since restaurants in this group have opened and closed over time, so the current location count should be checked.",
                     "needs_human_review": true,
                     "model": "claude-opus-5-5",
                     "agree": false,
                     "class_match": false,
-                    "cached": false
+                    "cached": false,
+                    "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
                 },
                 {
                     "candidate_id": "MC-021",

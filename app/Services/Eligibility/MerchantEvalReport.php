@@ -151,7 +151,7 @@ class MerchantEvalReport
                 'reasoning' => $r['reasoning'],
                 'needs_human_review' => $r['needs_human_review'],
                 'assessed_by' => $r['model'],
-            ];
+            ] + (isset($r['redacted']) ? ['redacted' => $r['redacted']] : []);
         }
         ksort($saved);
 
@@ -269,7 +269,8 @@ class MerchantEvalReport
             $lines[] = '';
             $lines[] = '- '.($r['agree'] ? $head : "**{$head}**")." ({$r['category']}, {$r['business_activity']}). Candidate, not a participant.";
             $lines[] = "  - Finn: {$finn}. ".str_replace("\n", ' ', $r['my_note']).($r['evidence_url'] ? " [Source]({$r['evidence_url']})" : '');
-            $lines[] = '  - AI: '.self::CLASS_NAMES[$r['ai_classification']].', confidence '.round(100 * $r['confidence']).'%. '.str_replace("\n", ' ', $r['reasoning']);
+            $lines[] = '  - AI: '.self::CLASS_NAMES[$r['ai_classification']].', confidence '.round(100 * $r['confidence']).'%. '.str_replace("\n", ' ', $r['reasoning'])
+                .(($r['redacted'] ?? null) ? " _{$r['redacted']}_" : '');
         }
 
         return implode("\n", $lines);

@@ -46,7 +46,7 @@ Disagreements (12): every case where the AI's classification differs from Finn's
 
 - **MC-020 BOMBAY CLUB INC** (restaurant, Restaurant). Candidate, not a participant.
   - Finn: Independent. only one location right outside of the White House [Source](https://www.bombayclubdc.com/history)
-  - AI: Local chain, confidence 75%. From my training, Bombay Club at 815 Connecticut Ave NW is owned by restaurateur Ashok Bajaj's Knightsbridge Restaurant Group, which is based in DC with no known outside parent or investor control. Its sister restaurants have included two Rasika locations, Bindaas locations, Annabelle, Sababa and Modena, which together appear to exceed five locations. That fails part 2 of the rule. My knowledge may be out of date, since restaurants in this group have opened and closed over time, so the current location count should be checked.
+  - AI: Local chain, confidence 75%. From my training, Bombay Club at 815 Connecticut Ave NW is owned by restaurateur [name removed]'s Knightsbridge Restaurant Group, which is based in DC with no known outside parent or investor control. Its sister restaurants have included two Rasika locations, Bindaas locations, Annabelle, Sababa and Modena, which together appear to exceed five locations. That fails part 2 of the rule. My knowledge may be out of date, since restaurants in this group have opened and closed over time, so the current location count should be checked. _Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer._
 
 - **MC-076 GCDC** (restaurant, Restaurant). Candidate, not a participant.
   - Finn: Independent. one location [Source](https://www.grilledcheesebar.com/)

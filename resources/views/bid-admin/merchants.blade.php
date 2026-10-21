@@ -120,6 +120,7 @@
                             <div class="md:col-span-2">
                                 <h3 class="font-sans text-xs font-semibold uppercase tracking-widest text-muted">AI reasoning</h3>
                                 <p class="mt-1">{{ $a['reasoning'] }}</p>
+                                @if (! empty($a['redacted']))<p class="mt-1 text-sm text-muted">{{ $a['redacted'] }}</p>@endif
                                 <p class="mt-2 text-sm text-muted">{{ MerchantEligibilityMatcher::KNOWLEDGE_NOTICE }}</p>
                             </div>
                             <dl class="space-y-1 text-sm">

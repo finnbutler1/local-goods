@@ -327,12 +327,13 @@
             "ai_eligible": false,
             "ai_outcome": "not_eligible",
             "confidence": 0.8,
-            "reasoning": "From my training, Compass Coffee is a DC-founded and DC-headquartered coffee company started by two Marine veterans, with well more than five cafes across the DC area. That fails part 2 of the rule (five or fewer locations). I don't know of a controlling outside parent or private-equity owner, but the company has raised outside investment, so this should be checked. My information may be out of date.",
+            "reasoning": "From my training, Compass Coffee is a DC-founded and DC-headquartered coffee company started by local founders, with well more than five cafes across the DC area. That fails part 2 of the rule (five or fewer locations). I don't know of a controlling outside parent or private-equity owner, but the company has raised outside investment, so this should be checked. My information may be out of date.",
             "needs_human_review": true,
             "model": "claude-opus-5-5",
             "agree": true,
             "class_match": true,
-            "cached": false
+            "cached": false,
+            "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
         },
         {
             "candidate_id": "MC-060",
@@ -547,12 +548,13 @@
             "ai_eligible": true,
             "ai_outcome": "eligible",
             "confidence": 0.75,
-            "reasoning": "From my training knowledge, Kaz Sushi Bistro at 1915 I St NW is a long-running single-location sushi restaurant owned and run by local chef Kazuhiro Okochi, with no known parent company, franchise, or other locations. On that basis it appears to meet all three parts of the rule. However, my knowledge may be out of date (ownership changes or new locations would not be reflected), so a person should confirm current ownership before relying on this.",
+            "reasoning": "From my training knowledge, Kaz Sushi Bistro at 1915 I St NW is a long-running single-location sushi restaurant owned and run by local chef [name removed], with no known parent company, franchise, or other locations. On that basis it appears to meet all three parts of the rule. However, my knowledge may be out of date (ownership changes or new locations would not be reflected), so a person should confirm current ownership before relying on this.",
             "needs_human_review": true,
             "model": "claude-opus-5-5",
             "agree": true,
             "class_match": true,
-            "cached": false
+            "cached": false,
+            "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
         },
         {
             "candidate_id": "MC-101",
@@ -987,12 +989,13 @@
             "ai_eligible": false,
             "ai_outcome": "not_eligible",
             "confidence": 0.75,
-            "reasoning": "Uchi is a Japanese restaurant brand founded by chef Tyson Cole in Austin, Texas, and operated by Hai Hospitality, which runs Uchi locations in several states plus sister brands. As far as I know, there is no Uchi location at 1700 M St NW, so I am not certain this license belongs to that company. If it does, the operator is headquartered outside the DC metro area, which fails part 1 of the rule. My knowledge may be out of date, so please confirm the operator on this license before relying on this answer.",
+            "reasoning": "Uchi is a Japanese restaurant brand founded by chef [name removed] in Austin, Texas, and operated by Hai Hospitality, which runs Uchi locations in several states plus sister brands. As far as I know, there is no Uchi location at 1700 M St NW, so I am not certain this license belongs to that company. If it does, the operator is headquartered outside the DC metro area, which fails part 1 of the rule. My knowledge may be out of date, so please confirm the operator on this license before relying on this answer.",
             "needs_human_review": true,
             "model": "claude-opus-5-5",
             "agree": true,
             "class_match": true,
-            "cached": false
+            "cached": false,
+            "redacted": "Redacted on 2026-10-21: a real person's name or personal detail was removed from this reasoning. The classification and confidence are the AI's original answer."
         },
         {
             "candidate_id": "MC-215",
