@@ -268,7 +268,7 @@ class MerchantEvalReport
             $head = "{$r['candidate_id']} {$r['name']}";
             $lines[] = '';
             $lines[] = '- '.($r['agree'] ? $head : "**{$head}**")." ({$r['category']}, {$r['business_activity']}). Candidate, not a participant.";
-            $lines[] = "  - Finn: {$finn}. ".str_replace("\n", ' ', $r['my_note']).($r['evidence_url'] ? " [Source]({$r['evidence_url']})" : '');
+            $lines[] = "  - Finn: {$finn}. ".str_replace("\n", ' ', $r['my_note']).($r['evidence_url'] ? ' [Source]('.EvidenceUrl::withoutTracking($r['evidence_url']).')' : '');
             $lines[] = '  - AI: '.self::CLASS_NAMES[$r['ai_classification']].', confidence '.round(100 * $r['confidence']).'%. '.str_replace("\n", ' ', $r['reasoning'])
                 .(($r['redacted'] ?? null) ? " _{$r['redacted']}_" : '');
         }

@@ -78,7 +78,7 @@ Disagreements (28): every case where the AI's classification differs from Finn's
   - AI: National chain, confidence 85%. Le Pain Quotidien is an international bakery-restaurant chain founded in Belgium. Its US locations have been operated by companies headquartered outside the DC metro area, so it fails part 1 of the rule. My memory of its ownership may be out of date, since the US business changed hands around 2020, but no version I know of is a DC-area independent.
 
 - MC-110 LUKE'S LOBSTER (restaurant, Restaurant). Candidate, not a participant.
-  - Finn: Not independent (Franchise). global chain with around 30 stores [Source](https://lukeslobster.com/pages/shack-locations?srsltid=AU7gw4U_fU10PGFSqAaWFkkv-fhjutQaCmsPGhVR_j0IafZOrJD1aEhS)
+  - Finn: Not independent (Franchise). global chain with around 30 stores [Source](https://lukeslobster.com/pages/shack-locations)
   - AI: National chain, confidence 85%. Luke's Lobster is a seafood shack chain founded and headquartered in New York City, with many locations across the U.S. and abroad. That means it fails part 1 of the rule (not headquartered in the DC metro area), and it also has far more than five locations. This is based on my training knowledge, which may be out of date regarding current ownership (the company has reportedly had outside investment), so a quick check is advised, though it would not be eligible either way.
 
 - MC-111 Lulus cafe (cafe, Delicatessen). Candidate, not a participant.
@@ -94,11 +94,11 @@ Disagreements (28): every case where the AI's classification differs from Finn's
   - AI: National chain, confidence 90%. This appears to be a location of Morton's The Steakhouse, a national steakhouse chain founded in Chicago with dozens of locations, owned by Landry's (headquartered in Houston, Texas), based on what I know from training. Because it belongs to a chain headquartered outside the DC metro area, it fails part 1 of the rule. My ownership information may be out of date, but a change that would make this location independent is very unlikely.
 
 - MC-124 NANDO'S PERI PERI (restaurant, Restaurant). Candidate, not a participant.
-  - Finn: Not independent (Franchise). global chain [Source](https://www.nandosperiperi.com/find?utm_source=p-max&utm_medium=cpc&utm_campaign=wingman%20bogo&utm_content=wingman-bogo&gad_source=1&gad_campaignid=24293335350&gbraid=0AAAAACyDYRPGIwIP87ziUiWzqcFOvZrfi&gclid=CjwKCAjw88HWBhA3EiwAo2Zd6MvqnyY33c6YibgzOJoscNktQ_oD6uqwtlIO3ObSchBLyELBXl_i3xoC13AQAvD_BwE)
+  - Finn: Not independent (Franchise). global chain [Source](https://www.nandosperiperi.com/find)
   - AI: National chain, confidence 85%. Nando's PERi-PERi is an international restaurant chain founded in South Africa, and from my knowledge its US locations, including those in the DC area, are run by the company's US arm (Nando's Restaurant Group) rather than a local independent owner. It has far more than five locations, and its parent is headquartered outside the DC metro area, so it fails part 1 of the rule. I recognize the brand name and am relying on memory that may be out of date, but I am not aware of this being a franchised location; either way it would not be eligible.
 
 - MC-134 PEET'S COFFEE & TEA (cafe, Restaurant). Candidate, not a participant.
-  - Finn: Not independent (Local chain). dc chain [Source](https://www.peets.com/?utm_source=google&utm_medium=cpc&utm_campaign=Tinuiti_PMax_DTC_Evergreen&utm_content=&utm_term=&utm_campaign=23281581250&utm_device=c&utm_content=&utm_term=&utm_keymatch=&utm_adposition=&gad_source=1&gad_campaignid=23277373829&gbraid=0AAAAAD4KhuRa-vGnvwBMZRDBcPGWpSWJn&gclid=CjwKCAjw88HWBhA3EiwAo2Zd6H5Fh-iCeTB7kbdry8TicSTnNLP7dSJTaf0H7D-OqYQek-vLIKOsIRoCv6kQAvD_BwE)
+  - Finn: Not independent (Local chain). dc chain [Source](https://www.peets.com/)
   - AI: National chain, confidence 93%. Peet's Coffee is a large coffee chain headquartered in Emeryville, California, with hundreds of locations. It is owned by JDE Peet's, a publicly traded company based in the Netherlands. That fails part 1 of the rule because it is run from outside the DC metro area. Peet's company-operated cafes are not generally franchised, but a person should confirm this specific location's operator, since my knowledge may be out of date.
 
 - MC-142 POTBELLY SANDWICH SHOP (restaurant, Restaurant). Candidate, not a participant.
@@ -114,7 +114,7 @@ Disagreements (28): every case where the AI's classification differs from Finn's
   - AI: Undetermined, confidence 60%. The name matches Residents, a cafe and bar I recall in the Dupont Circle area, and it appears to be a single-location local business, but I am not certain of its owners or whether there are sister brands. The licensed address may also not match the one I remember, so I can't be sure it is the same business. Without clear ownership information, the independence rule cannot be confirmed, and my knowledge may be out of date.
 
 - MC-158 Roti Restaurant Group LLC (restaurant, Restaurant). Candidate, not a participant.
-  - Finn: Not independent (Franchise). global chain [Source](https://roti.com/pages/locations?gad_campaignid=24239431159&gad_source=1&gbraid=0AAAAADQ2Q7ny9d8Hb0lL5s5c-WuhikGXa&gclid=CjwKCAjw88HWBhA3EiwAo2Zd6KpYJIcvvGNVDJ2iV5QojyUaKrjmbWe8oGGoYDwhDfI4L_XmPVCR8hoC1fcQAvD_BwE&utm_campaign=Brand_WashingtonDC&utm_medium=cpc&utm_source=google)
+  - Finn: Not independent (Franchise). global chain [Source](https://roti.com/pages/locations)
   - AI: National chain, confidence 80%. This appears to be Roti Mediterranean Grill (Roti Modern Mediterranean), a fast-casual chain founded in DC but which, as I recall, moved its headquarters to Chicago and has operated dozens of locations in several states. That would fail part 1 (headquartered outside the DC metro area), and it also far exceeds the five-location limit in part 2. I am matching on the corporate name and my memory may be out of date regarding its headquarters or ownership, so a person should confirm.
 
 - **MC-169 SICHUAN PAVILION** (restaurant, Restaurant). Candidate, not a participant.
@@ -126,11 +126,11 @@ Disagreements (28): every case where the AI's classification differs from Finn's
   - AI: National chain, confidence 95%. The license names Starbucks Corporation, the Seattle-headquartered public company that operates thousands of coffee shops. Because the licensee is the corporation itself, this appears to be a company-operated store rather than a franchise, so it fails part 1 of the rule (headquartered outside the DC metro area). It also far exceeds the five-location limit. Note that the ZIP code 20007 is unusual for an L St NW address (that block is normally 20036), so the address may be worth a quick check, but it does not change the outcome.
 
 - **MC-193 TEAISM** (restaurant, Restaurant). Candidate, not a participant.
-  - Finn: Not independent (Local chain). have locations in penn quarter, dupont, etc [Source](https://www.teaism.com/restaurants/dupont-circle/?srsltid=AU7gw4VFLTOmrEGzYEMDTG0DfRh3QrLYT4EiU54n3-1bTHYeUVQlh8RA)
+  - Finn: Not independent (Local chain). have locations in penn quarter, dupont, etc [Source](https://www.teaism.com/restaurants/dupont-circle/)
   - AI: Independent, confidence 70%. From my training knowledge, Teaism is a small DC-founded and DC-owned tea house and casual restaurant group, with only a handful of locations (such as Dupont Circle, Penn Quarter and Lafayette Square). I am not aware of any franchising, outside parent company or private-equity ownership, so it appears to meet all three parts of the rule. My information may be out of date, though: locations have opened and closed over the years and ownership could have changed. A person should confirm the current location count and ownership before relying on this.
 
 - **MC-205 Top Shelf Wine & Liquor** (retail, Cigarette Sales (Retail)). Candidate, not a participant.
-  - Finn: Independent. only one location, not to be confused with the separate entity with a similar name in Towson [Source](https://topshelfwineandspirits.com/?gad_source=1&gad_campaignid=21205792045&gbraid=0AAAAACTWAXX4r41AurOfVNvSoNcnUD5bV&gclid=CjwKCAjw88HWBhA3EiwAo2Zd6Makpp--qHZ7jIuw6wFPVITuHZCjpjfGiC9X7IFBdXG1kPHQHOpNQxoCDx4QAvD_BwE)
+  - Finn: Independent. only one location, not to be confused with the separate entity with a similar name in Towson [Source](https://topshelfwineandspirits.com/)
   - AI: Undetermined, confidence 85%. I do not specifically recognize a business called Top Shelf Wine & Liquor at 1033 Connecticut Ave NW, and the name is generic enough that it could match unrelated stores elsewhere. I can't establish who owns it, how many locations it or any sister stores have, or whether it is a franchise, so none of the three parts of the rule can be confirmed. A person should check its ownership and location count from public records before deciding eligibility.
 
 - **MC-215 VOORTHUIS OPTICIAN INC** (retail, General Business). Candidate, not a participant.

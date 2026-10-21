@@ -6,6 +6,7 @@ use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\User;
 use App\Services\Eligibility\EligibilityAssessment;
+use App\Services\Eligibility\EvidenceUrl;
 use App\Services\Eligibility\MerchantCandidates;
 use App\Services\Eligibility\MerchantEvalRunner;
 use App\Services\Eligibility\MerchantLabels;
@@ -59,7 +60,7 @@ class MerchantEvalPageTest extends TestCase
             $this->assertDoesNotMatchRegularExpression('/\b'.preg_quote(e($c['name']), '/').'\b/', $html, "{$who}: {$id} {$c['name']} is shown");
         }
         foreach ($this->labels as $id => $label) {
-            $this->assertStringNotContainsString(e($label['evidence_url']), $html, "{$who}: {$id} evidence link is shown");
+            $this->assertStringNotContainsString(e(EvidenceUrl::withoutTracking($label['evidence_url'])), $html, "{$who}: {$id} evidence link is shown");
             if (strlen($label['my_note']) >= 30) {
                 $this->assertStringNotContainsString(e($label['my_note']), $html, "{$who}: {$id} note is shown");
             }
@@ -113,6 +114,8 @@ class MerchantEvalPageTest extends TestCase
             $this->get('/eval/merchants')->assertOk()
                 ->assertSee($first['merchant_name'])
                 ->assertSee($first['evidence_url'])
+                ->assertDontSee('gclid=')
+                ->assertDontSee('srsltid=')
                 ->assertSee('does not recognize this business')
                 ->assertSee('Disagreements (40)')
                 ->assertSee(config('eligibility.candidate_label'))

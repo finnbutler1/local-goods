@@ -43,6 +43,13 @@ class MerchantOutputPrivacyTest extends TestCase
         }
     }
 
+    public function test_evidence_links_in_committed_outputs_carry_no_tracking_ids(): void
+    {
+        foreach ([config('eligibility.eval_latest_path'), config('eligibility.eval_dir').'/merchant-eval-results.md', ...File::glob(config('eligibility.eval_dir').'/merchant-runs/*')] as $file) {
+            $this->assertDoesNotMatchRegularExpression('/[?&](gclid|gbraid|wbraid|srsltid|gad_\w+|utm_\w+)=/', file_get_contents($file), basename($file));
+        }
+    }
+
     public function test_every_redaction_carries_a_note(): void
     {
         $assessments = json_decode(file_get_contents(config('eligibility.assessments_path')), true)['assessments'];
