@@ -39,6 +39,18 @@ return [
         'barrys' => 'fitness',
     ],
 
+    // Businesses removed by hand on 2026-10-21 because the name is or
+    // contains a person's name (public business information only, no owner
+    // names). Stored as the SHA-256 of MerchantCandidateBuilder::key(name,
+    // address) so the names aren't repeated here; a rebuild skips them.
+    'excluded_candidates' => [
+        '982ca90782e619ff9b72688ae9b2045c9f4ff6ce9f05339573c1b5ae6cbdd2ee',
+        '371ca498efca419f0587ad82169ef87ce739226c321f86cade6e30a080b97907',
+        '0250d52dc090d4a7836bc972657867ed7321e53798c94d3fda72ba0fe5af1c17',
+        'ebaf0f72fcc923e95f8171204ef4acb8883a2d9639b0961c1bbddb006df1c674',
+        'c7082cade6f4c514feb0016e3b2416b9cd35f2a7eba036f64ab6b031a4f207e6',
+    ],
+
     // merchant:eval results (docs/evals, linked from /eval/merchants) and the
     // AI-only answers the BID review queue reads. Committed, so production
     // never calls the API to show them.

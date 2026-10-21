@@ -39,8 +39,9 @@ class MerchantCandidateBuilder
 
     /**
      * @param  array<string, string>  $overrides  normalised name => category, for licenses that name the wrong kind of business
+     * @param  list<string>  $excluded  SHA-256 of key(name, address) for businesses removed by hand because the name is a person's
      */
-    public function __construct(private array $overrides = []) {}
+    public function __construct(private array $overrides = [], private array $excluded = []) {}
 
     /**
      * @param  list<array{attributes: array<string, mixed>, geometry?: array{x: float, y: float}}>  $licenses
@@ -56,6 +57,7 @@ class MerchantCandidateBuilder
             'outside_our_polygon_check' => 0,
             'not_consumer_facing' => 0,
             'only_a_personal_name' => 0,
+            'personal_name_removed_by_hand' => 0,
             'duplicate_locations_merged' => 0,
         ];
         $byKey = [];
@@ -96,6 +98,13 @@ class MerchantCandidateBuilder
 
             $category = $this->overrides[$this->normalise($name)] ?? $category;
             $address = $this->address((string) $a['PREMISEADDRESS']);
+
+            if (in_array(hash('sha256', $this->key($name, $address)), $this->excluded, true)) {
+                $this->report['personal_name_removed_by_hand']++;
+
+                continue;
+            }
+
             $key = $this->similarKey($byKey, $this->key($name, $address));
 
             if (isset($byKey[$key])) {

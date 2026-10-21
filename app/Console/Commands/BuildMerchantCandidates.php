@@ -28,7 +28,7 @@ class BuildMerchantCandidates extends Command
 
     public function handle(): int
     {
-        $builder = new MerchantCandidateBuilder(config('eligibility.category_overrides'));
+        $builder = new MerchantCandidateBuilder(config('eligibility.category_overrides'), config('eligibility.excluded_candidates'));
 
         try {
             $boundary = $this->boundary();

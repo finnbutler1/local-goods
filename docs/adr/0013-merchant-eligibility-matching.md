@@ -10,7 +10,8 @@ Whether a business is independent comes from the independence rule in
 public-company control; five or fewer locations including sister brands; not
 a franchisee; "undetermined" if public sources can't settle it.
 
-We already have 224 real candidates from DC Open Data
+We already have 224 real candidates from DC Open Data (219 since 2026-10-21,
+when 5 whose names are a person's were removed; see TRANSPARENCY.md)
 (`data/merchant_candidates.csv`), and Finn hand-labeled 60 of them (40 dev,
 20 holdout) with a public source each, locked in
 `data/merchant_labels_lock.json` before any AI run. The second named AI
