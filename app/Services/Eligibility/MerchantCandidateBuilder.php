@@ -9,7 +9,9 @@ namespace App\Services\Eligibility;
  * license's own BUSINESSIMPROVEMENTDISTRICT field, and our point-in-polygon
  * test on its map point. Only business names are kept: a license whose only
  * name looks like a person's (a sole trader) is left out, and owner and
- * agent names are never requested.
+ * agent names are never requested. The legal entity name is read only to
+ * spot those sole traders: it is never written to a file, and the source
+ * link asks DC for the trade name only.
  */
 class MerchantCandidateBuilder
 {
@@ -145,7 +147,7 @@ class MerchantCandidateBuilder
 
         return [
             'candidates' => array_map(fn ($r) => array_intersect_key($r, array_flip(self::COLUMNS)) + array_fill_keys(self::COLUMNS, ''), $rows),
-            'points' => array_map(fn ($r) => ['candidate_id' => $r['candidate_id'], 'lat' => $r['lat'], 'lng' => $r['lng'], 'license_number' => $r['license']], $rows),
+            'points' => array_map(fn ($r) => ['candidate_id' => $r['candidate_id'], 'lat' => $r['lat'], 'lng' => $r['lng']], $rows),
             'activity' => array_map(fn ($r) => ['candidate_id' => $r['candidate_id'], 'business_activity' => $r['business_activity']], $rows),
         ];
     }
@@ -267,7 +269,7 @@ class MerchantCandidateBuilder
     {
         return $licensesUrl.'?'.http_build_query([
             'where' => "CUSTOMERNUMBER='{$licenseNumber}'",
-            'outFields' => 'ENTITYTRADENAME,ENTITYNAME,PREMISEADDRESS,BUSINESSACTIVITY,LICENSESTATUS,BUSINESSIMPROVEMENTDISTRICT',
+            'outFields' => 'ENTITYTRADENAME,PREMISEADDRESS,BUSINESSACTIVITY,LICENSESTATUS,BUSINESSIMPROVEMENTDISTRICT',
             'f' => 'html',
         ]);
     }

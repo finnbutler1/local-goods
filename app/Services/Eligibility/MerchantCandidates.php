@@ -14,6 +14,9 @@ class MerchantCandidates
 {
     public const ACTIVITY_COLUMNS = ['candidate_id', 'business_activity'];
 
+    /** The map point only: no license number, which could lead to a sole trader's legal name. */
+    public const POINT_COLUMNS = ['candidate_id', 'lat', 'lng'];
+
     /**
      * @return array<string, array<string, string>> keyed by candidate_id
      */
@@ -33,6 +36,14 @@ class MerchantCandidates
         $path ??= config('eligibility.activity_path');
 
         return is_file($path) ? array_column(self::readCsv($path, self::ACTIVITY_COLUMNS, 'candidate_id'), 'business_activity', 'candidate_id') : [];
+    }
+
+    /** The DC license number in a candidate's source link, or null if it has none. */
+    public static function licenseNumber(string $sourceUrl): ?string
+    {
+        parse_str((string) parse_url($sourceUrl, PHP_URL_QUERY), $query);
+
+        return preg_match("/^CUSTOMERNUMBER='([^']+)'$/", (string) ($query['where'] ?? ''), $m) ? $m[1] : null;
     }
 
     /**

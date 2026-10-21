@@ -15,6 +15,8 @@ return [
     'licenses_url' => 'https://maps2.dcgis.dc.gov/dcgis/rest/services/FEEDS/DCRA/FeatureServer/13/query',
 
     // Real businesses inside the boundary, and where each one's point is.
+    // Business information only: no owner, agent or entity names, and the
+    // points file holds no license numbers.
     'candidates_path' => base_path('data/merchant_candidates.csv'),
     'points_path' => base_path('data/sources/merchant_candidate_points.csv'),
     'report_path' => base_path('data/sources/merchant_candidates_report.md'),
