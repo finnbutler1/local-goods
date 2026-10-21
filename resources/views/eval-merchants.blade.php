@@ -3,6 +3,7 @@
 @section('title', 'Merchant eligibility eval · Local Goods')
 
 @php
+    use App\Services\Eligibility\EvidenceUrl;
     use App\Services\Eligibility\MerchantEligibilityMatcher;
     use App\Services\Eligibility\MerchantEvalReport;
     use App\Services\Eligibility\MerchantEvalRunner;
@@ -241,7 +242,7 @@
                                                 <div>
                                                     <dt class="text-xs font-semibold uppercase tracking-widest text-muted">Finn</dt>
                                                     <dd class="mt-1"><span class="font-semibold">{{ MerchantEvalReport::LABEL_NAMES[$r['my_label']] }}@if ($r['fail_reason']) ({{ MerchantEvalReport::CLASS_NAMES[$r['fail_reason']] }})@endif.</span> {{ $r['my_note'] }}
-                                                        @if ($r['evidence_url'])<a href="{{ $r['evidence_url'] }}" class="underline underline-offset-4" rel="noopener" target="_blank">Source<span class="sr-only"> for {{ $r['name'] }} (opens in a new tab)</span></a>@endif
+                                                        @if ($r['evidence_url'])<a href="{{ EvidenceUrl::withoutTracking($r['evidence_url']) }}" class="underline underline-offset-4" rel="noopener" target="_blank">Source<span class="sr-only"> for {{ $r['name'] }} (opens in a new tab)</span></a>@endif
                                                     </dd>
                                                 </div>
                                                 <div>

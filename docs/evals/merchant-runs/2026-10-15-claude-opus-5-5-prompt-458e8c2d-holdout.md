@@ -69,7 +69,7 @@ Disagreements (12): every case where the AI's classification differs from Finn's
   - AI: Undetermined, confidence 60%. I have only a vague recollection of the Qargo Coffee name and cannot reliably confirm who owns it, where it is headquartered, or how many locations it and any sister brands have. Without clear knowledge of ownership and location count, I cannot confirm it meets all three parts of the rule. This judgment rests mostly on the name, and any memory I have may be out of date.
 
 - MC-165 SHAKE SHACK 18TH STREET NW WASHINGTON DC LLC (restaurant, Restaurant). Candidate, not a participant.
-  - Finn: Not independent (Franchise). global chain [Source](https://shakeshack.com/?utm_source=google&utm_medium=paidsearch&utm_campaign=search_br_conversion_go_text_x_exact&utm_adgroup=conversion_x_menu_br&utm_keyword=shake%20shack%20near%20me&utm_content=kwd-311927045454&gad_source=1&gad_campaignid=10936666222&gbraid=0AAAAADRyPRXLA0aD49m6h8MWoaGCXqejA&gclid=CjwKCAjw88HWBhA3EiwAo2Zd6PAADvqtbjF-wM6x9f4e2kMhsZPa9DBoMQ0GqKHuw66LsoQosIgPExoCyQ0QAvD_BwE)
+  - Finn: Not independent (Franchise). global chain [Source](https://shakeshack.com/)
   - AI: National chain, confidence 93%. Shake Shack is a widely known burger chain headquartered in New York and publicly traded, with hundreds of locations. Its domestic restaurants are generally company-operated rather than franchised, so it fails part 1 of the rule because it belongs to an operator headquartered outside the DC metro area. The license name follows Shake Shack's usual pattern for location-specific LLCs, though this is based on my training knowledge rather than a check of current records.
 
 - MC-186 SWEETGREEN DUPONT, LLC. (restaurant, Delicatessen). Candidate, not a participant.

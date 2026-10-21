@@ -173,7 +173,7 @@ class MerchantEvalRunner
             'business_activity' => $case['business_activity'],
             'my_label' => $case['my_label'],
             'fail_reason' => $case['fail_reason'],
-            'evidence_url' => $case['evidence_url'],
+            'evidence_url' => EvidenceUrl::withoutTracking($case['evidence_url']),
             'my_note' => $case['my_note'],
             'ai_classification' => $a->classification,
             'ai_eligible' => $a->eligible,
