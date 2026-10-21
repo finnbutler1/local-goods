@@ -37,6 +37,17 @@ class MerchantCandidatesTest extends TestCase
         }
     }
 
+    public function test_businesses_removed_for_a_personal_name_stay_out_and_the_report_count_matches(): void
+    {
+        $builder = new MerchantCandidateBuilder;
+        $keys = array_map(fn ($c) => hash('sha256', $builder->key($c['name'], $c['address'])), MerchantCandidates::load());
+
+        $this->assertCount(5, config('eligibility.excluded_candidates'));
+        $this->assertSame([], array_values(array_intersect($keys, config('eligibility.excluded_candidates'))));
+        $this->assertStringContainsString('**Candidates kept** | **'.count($keys).'**', file_get_contents(config('eligibility.report_path')));
+        $this->assertSame(array_keys($keys), array_keys(MerchantCandidates::activity()), 'Every candidate has exactly one business activity.');
+    }
+
     public function test_every_real_candidate_is_inside_the_bid_boundary(): void
     {
         $boundary = BidBoundary::fromFile(config('eligibility.boundary_path'));
@@ -96,6 +107,23 @@ class MerchantCandidatesTest extends TestCase
             array_map(fn ($c) => [$c['candidate_id'], $c['name'], $c['category']], $result['candidates']),
         );
         $this->assertStringNotContainsString('Pat Example', json_encode($result));
+    }
+
+    public function test_the_builder_skips_a_business_removed_by_hand(): void
+    {
+        $boundary = new BidBoundary([[[[-77.05, 38.90], [-77.03, 38.90], [-77.03, 38.91], [-77.05, 38.91], [-77.05, 38.90]]]]);
+        $license = fn (string $name) => ['attributes' => [
+            'CUSTOMERNUMBER' => (string) random_int(1, 999999), 'LICENSESTATUS' => 'Active', 'BUSINESSIMPROVEMENTDISTRICT' => 'Golden Triangle BID',
+            'CATEGORYSERVICETYPE' => 'Food Services', 'BUSINESSACTIVITY' => 'Restaurant', 'ENTITYTRADENAME' => $name,
+            'ENTITYNAME' => strtoupper($name).' LLC', 'PREMISEADDRESS' => '1700 K ST NW, WASHINGTON, DC, 20006, USA',
+        ], 'geometry' => ['x' => -77.04, 'y' => 38.905]];
+        $excluded = hash('sha256', (new MerchantCandidateBuilder)->key('Pat Example Kitchen', '1700 K ST NW, WASHINGTON, DC, 20006'));
+
+        $builder = new MerchantCandidateBuilder([], [$excluded]);
+        $result = $builder->build([$license('Pat Example Kitchen'), $license('Corner Kitchen')], $boundary, 'Golden Triangle BID', 'https://example.test/licenses');
+
+        $this->assertSame(['Corner Kitchen'], array_column($result['candidates'], 'name'));
+        $this->assertSame(1, $builder->report['personal_name_removed_by_hand']);
     }
 
     public function test_the_command_writes_the_candidates_from_dc_open_data(): void

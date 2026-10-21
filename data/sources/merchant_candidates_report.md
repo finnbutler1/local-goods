@@ -14,7 +14,8 @@ A license is kept only if DC's spatial query, the license's own BID field and ou
 | Outside our polygon check | 0 |
 | Not consumer facing | 1618 |
 | Only a personal name | 16 |
+| Personal name removed by hand | 5 |
 | Duplicate locations merged | 16 |
-| **Candidates kept** | **224** |
+| **Candidates kept** | **219** |
 
-By category: cafe 28, fitness 2, restaurant 158, retail 15, salon 21.
+By category: cafe 28, fitness 2, restaurant 154, retail 15, salon 20.

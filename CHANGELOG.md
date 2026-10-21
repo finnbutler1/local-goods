@@ -260,7 +260,8 @@ commit history.
   synthetic history at the fictional merchants, with monthly credit purchases,
   allowances on the 1st and simulated Friday payouts. Two collusion patterns
   are planted for a future check. Reset demo restores exactly this state.
-- **Real merchant candidates:** 224 consumer-facing businesses inside the
+- **Real merchant candidates:** 224 consumer-facing businesses (219 since
+  2026-10-21, when 5 named after a person were removed) inside the
   Golden Triangle BID, from DC Open Data business licenses and the DC GIS
   boundary, each checked three ways to be inside it
   (`php artisan eligibility:build-candidates`). They are candidates only, not

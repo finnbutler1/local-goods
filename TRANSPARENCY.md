@@ -279,7 +279,7 @@ fictional merchants: approving a real candidate records a decision and nothing
 else ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)).
 
 **Real candidates from public data.** `data/merchant_candidates.csv` lists
-224 real, consumer-facing businesses inside the BID, built by
+219 real, consumer-facing businesses inside the BID, built by
 `php artisan eligibility:build-candidates` from DC Open Data (the BID boundary
 from DC GIS, and active Basic Business Licenses). A business is kept only if
 DC's spatial query, the license's own BID field and our own point-in-polygon
