@@ -141,6 +141,7 @@ Route::middleware('auth')->group(function () {
         // Ledger next to Stripe, Stripe-funded activity only (ADR 0015).
         Route::get('/admin/reconciliation', [ReconciliationController::class, 'index'])->name('admin.reconciliation');
         Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1,admin.reconciliation.retry')->name('admin.reconciliation.retry');
+        Route::post('/admin/stripe/demo-merchants', [ReconciliationController::class, 'connectDemoMerchants'])->middleware('throttle:5,1,admin.stripe.demo-merchants')->name('admin.stripe.demo-merchants');
 
         Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
         Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');

@@ -93,6 +93,12 @@
                         <p class="font-semibold" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">{{ $merchant->stripeOnboardingLabel() }}</p>
                         <x-money-mode :mode="$merchant->stripe_account_id ? 'stripe' : null" :id="$merchant->stripe_account_id" />
                     </div>
+                    @if ($merchant->stripe_set_up_by_platform && $merchant->stripe_account_id)
+                        <p class="mt-2 text-sm text-muted" data-platform-setup>
+                            This fictional merchant's test account was set up by the Local Goods platform for the demo, with Stripe's test values.
+                            Real merchants always onboard themselves through Stripe's Express pages.
+                        </p>
+                    @endif
                     @if (! $stripe)
                         <p class="mt-2 text-sm text-muted">Stripe isn't connected on this server, so there is nothing to onboard yet.</p>
                     @elseif ($merchant->isStripeOnboarded())

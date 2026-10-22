@@ -31,7 +31,7 @@ class StripeOnboarding
             // has stored with that refusal (ADR 0015).
             $account = $this->stripe->createExpressAccount([
                 'display_name' => $merchant->name,
-                'contact_email' => $this->contactEmail($merchant),
+                'contact_email' => $merchant->stripeContactEmail(),
                 'identity' => ['country' => 'US'],
                 'defaults' => ['responsibilities' => ['fees_collector' => 'application', 'losses_collector' => 'application']],
                 'configuration' => ['recipient' => ['capabilities' => ['stripe_balance' => ['stripe_transfers' => ['requested' => true]]]]],
@@ -92,12 +92,5 @@ class StripeOnboarding
             'stripe_payouts_enabled' => ($balance['payouts']['status'] ?? null) === 'active',
             'stripe_transfers_active' => ($balance['stripe_transfers']['status'] ?? null) === 'active',
         ];
-    }
-
-    /** Stripe requires a contact email on a v2 account that receives transfers. Fictional for the demo merchants. */
-    private function contactEmail(Merchant $merchant): string
-    {
-        return $merchant->user?->email
-            ?? 'merchant-'.$merchant->id.'@example.com';
     }
 }
