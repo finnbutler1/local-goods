@@ -93,6 +93,13 @@ A held redemption is never thrown away and never approved automatically.
   test-mode transfer; otherwise payouts are simulated. Every money page
   says which. Nothing sent to Stripe names an employee. See
   [docs/STRIPE.md](docs/STRIPE.md).
+- **Demo merchants' Stripe accounts say who set them up.** Stripe won't
+  let a platform accept its terms for an Express account. So the
+  fictional demo merchants with no login get test accounts that Local
+  Goods filled in with Stripe's test values, and each reads "Demo account
+  set up by Local Goods in test mode". Real merchants always onboard
+  themselves through Stripe's Express pages, and real DC businesses never
+  get a Stripe account (ADR 0022).
 - Each redemption shows its path, e.g. *AI held (risk 88) → approved by
   BID admin S.T. → transferred tr_…*, on the review page and the merchant's
   dashboard. People are shown by initials only.

@@ -22,6 +22,8 @@ With Stripe Connect the money never sits in a Local Goods account:
 - Each merchant has its **own Stripe Express account** (created with Accounts v2). Stripe collects and
   checks the merchant's details on its own pages; we store only the account
   id (`acct_…`) and whether Stripe says it can receive transfers.
+  (The fictional demo merchants with no login are the one exception: see
+  [Demo merchants set up by the platform](#demo-merchants-set-up-by-the-platform).)
 - When a redemption clears, Local Goods asks Stripe to **transfer** the
   amount from the platform balance to the merchant's account.
 
@@ -138,6 +140,48 @@ redemption beyond the Stripe-paid money. Simulated money owed stays on the
 simulated path and is never sent through Stripe. The merchant dashboard and
 the BID roster show the two separately: **Owed via Stripe test mode** and
 **Owed, simulated**.
+
+### Demo merchants set up by the platform
+
+Only a merchant with a login can onboard itself, and in the demo only
+Farragut Grind has one. So that a cleared redemption at **any** demo
+merchant sends a test transfer, the platform admin can press **Connect demo
+merchants to Stripe (test mode)** on `/admin/reconciliation`
+([ADR 0022](adr/0022-platform-set-up-stripe-accounts-for-demo-merchants.md),
+`App\Services\Payments\DemoMerchantStripeSetup`).
+
+- **Why not Express.** We tried first: Stripe refuses to let a platform
+  accept its terms for an Express account (`tos_acceptance_on_behalf_not_allowed`,
+  real test-mode call, 2026-10-22). These accounts are therefore Accounts v2
+  with **no Stripe dashboard**, filled in by Local Goods with Stripe's test
+  values: a fictional "Demo Owner", DOB 1901-01-01, SSN 000000000, address
+  `address_full_match`, and Stripe's test bank account `btok_us_verified`. They can
+  receive transfers at once; Stripe enables payouts about 30 seconds later
+  (press again, or wait for `account.updated`, to see it).
+- **Who gets one.** Only the fictional merchants in
+  `DatabaseSeeder::DEMO_MERCHANTS` that have **no login**, and never a name
+  that is also a real candidate in `data/merchant_candidates.csv`. Any
+  merchant with a login (Farragut Grind) keeps **Start Stripe onboarding**.
+  **Real merchants always onboard themselves through Stripe's Express
+  pages**, and real DC businesses never get a Stripe account.
+- **Honest label.** Their status reads **"Demo account set up by Local
+  Goods in test mode"** (`merchants.stripe_set_up_by_platform`) on the
+  merchant dashboard, the BID roster and this page. The merchant dashboard
+  also says the platform set it up for the demo.
+- **Safe to press twice.** It skips merchants that already have an account,
+  and reuses the same idempotency keys (`lg-demo-account-v2-…`,
+  `lg-demo-bank-…`). It refuses unless Stripe test mode is on, so never
+  with live keys. Each account carries `lg_env`, `lg_instance` and
+  `lg_demo_setup=1`. If Stripe refuses one merchant, the rest still connect,
+  and the message names the one that failed.
+- **After Reset demo.** The accounts are kept (matched by name, like
+  Farragut Grind's), so you only need to press it again if a demo merchant
+  shows "Not connected to Stripe".
+
+Checked against real Stripe test mode on 2026-10-22, in a scratch database
+labelled `trial`: 7 accounts created, the second press created nothing,
+a cleared $12 redemption at Press Room Deli became a transfer to Press
+Room Deli's own account, and reconciliation matched.
 
 ### The transfer gate
 
@@ -357,6 +401,8 @@ keeps them fully separate and is free:
 5. Restart the app. The Farragut Grind account in your local database was
    made in the old sandbox, so clear its Stripe account in a local scratch
    database (or start from a fresh scratchpad SQLite) and onboard again.
+   The same goes for the demo merchants the platform set up: clear them and
+   press **Connect demo merchants to Stripe (test mode)** again.
    Production keeps the existing sandbox and changes nothing.
 
 ### Production webhook (Stripe dashboard, test mode)

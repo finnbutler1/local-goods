@@ -27,3 +27,4 @@ trade-off in under a minute.
 | [0019](0019-personal-contacts-vote-separately.md) | Personal contacts vote in the blind adjudication, reported separately and never in the headline | Accepted, implemented |
 | [0020](0020-adjudication-in-balanced-batches-of-10.md) | Blind adjudication in balanced batches of 10, with vote counts and "too few votes to call" | Accepted, implemented |
 | [0021](0021-one-step-buy-credits-and-a-platform-fee-account.md) | One-step Buy credits with embedded Checkout, and a platform fee (off) on its own platform account | Accepted, implemented |
+| [0022](0022-platform-set-up-stripe-accounts-for-demo-merchants.md) | Platform-set-up Stripe test accounts for the fictional demo merchants with no login (Express can't be prefilled), honestly labelled | Accepted, implemented |
