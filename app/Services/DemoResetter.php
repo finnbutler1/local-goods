@@ -37,7 +37,7 @@ class DemoResetter
     /** Stripe connection columns kept across a reset, matched by merchant name (ADR 0015). */
     private const KEPT_STRIPE_COLUMNS = [
         'stripe_account_id', 'stripe_onboarding_key', 'stripe_details_submitted',
-        'stripe_payouts_enabled', 'stripe_transfers_active', 'stripe_synced_at',
+        'stripe_payouts_enabled', 'stripe_transfers_active', 'stripe_synced_at', 'stripe_set_up_by_platform',
     ];
 
     public function reset(): void
