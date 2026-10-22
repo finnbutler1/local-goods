@@ -33,7 +33,9 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Install JS dependencies
-        run: npm ci
+        # No automatic audit: since 2026-10-21 npm's old audit endpoint can hang
+        # for 5+ minutes before answering. It only ever printed a report.
+        run: npm ci --no-audit --no-fund
 
       - name: Build front-end assets
         run: npm run build
@@ -101,7 +103,9 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Install JS dependencies
-        run: npm ci
+        # No automatic audit: since 2026-10-21 npm's old audit endpoint can hang
+        # for 5+ minutes before answering. It only ever printed a report.
+        run: npm ci --no-audit --no-fund
 
       - name: Build front-end assets
         run: npm run build
