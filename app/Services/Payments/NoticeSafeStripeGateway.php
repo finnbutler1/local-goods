@@ -31,6 +31,16 @@ class NoticeSafeStripeGateway implements StripeGateway
         return StripeNotices::quietly('accounts.create', fn () => $this->inner->createExpressAccount($params, $idempotencyKey));
     }
 
+    public function createDemoAccount(array $params, string $idempotencyKey): array
+    {
+        return StripeNotices::quietly('accounts.create', fn () => $this->inner->createDemoAccount($params, $idempotencyKey));
+    }
+
+    public function addTestBankAccount(string $accountId, string $idempotencyKey): array
+    {
+        return StripeNotices::quietly('external_accounts.create', fn () => $this->inner->addTestBankAccount($accountId, $idempotencyKey));
+    }
+
     public function createAccountLink(string $accountId, string $refreshUrl, string $returnUrl): array
     {
         return StripeNotices::quietly('account_links.create', fn () => $this->inner->createAccountLink($accountId, $refreshUrl, $returnUrl));
