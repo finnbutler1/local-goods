@@ -16,6 +16,7 @@ push, and a one-off browser audit run locally for this pass.
 | [`AccessibilityTest`](../tests/Feature/AccessibilityTest.php) | Opens every page whose address has no parameter, signed out and as each of the six roles, plus a judge viewing as each role, the reset-password page, the old invite link, an adjudication case and `/styleguide`. Each page goes through [`AccessibilityAudit`](../tests/Support/AccessibilityAudit.php): `<html lang>`, a `<title>`, exactly one `<main>` and one `<h1>`; every `<img>` has `alt`; every input, select and textarea has a label; every button, link and `<summary>` has a name; every `aria-describedby`/`aria-labelledby` points at an id that exists; no duplicate ids; no positive `tabindex`; every `<svg>` is either hidden or a named image; every table has a caption; radio groups sit in a `<fieldset>` with a `<legend>`; a field with a hint or error points at it; an invalid field points at its message; a box that scrolls sideways can be focused and has a name. |
 | Same file, forms with errors | Sends ten forms with bad input (log in, buy credits, give credits to one person and to several, program setup, redeem, deny without a reason, feedback, change password, invite a reviewer), checks a field is marked invalid, and runs the same audit on the page that comes back. |
 | Same file, other rules | `prefers-reduced-motion` turns off animations and transitions in `app.css`, and every animation in a view is `motion-safe:`; every form that posts has a "working…" label (`data-busy`); both charts keep their summary sentence and their table. |
+| [`ToastTest`](../tests/Feature/ToastTest.php), [`ActionConfirmationsTest`](../tests/Feature/ActionConfirmationsTest.php) | The confirmation toast (`x-flash`): status and notice are `role="status"` (polite), errors `role="alert"`; each has a "Dismiss message" button; only status and notice may fade; the error comes first so it gets focus; it appears once, before `<main>`. Every action (give credits, buy and pay, Checkout return, redeem approved or held, approve and deny, merchant decision, feedback, adjudication, Stripe onboarding) shows its toast with the amount and the employee's initials, never a full name. |
 | [`EmptyStatesTest`](../tests/Feature/EmptyStatesTest.php) | With only the BID in the database (no employer, merchants or redemptions), every page as every role either opens or refuses politely (never a server error), and every page that opens passes the audit above. |
 | [`ErrorPagesTest`](../tests/Feature/ErrorPagesTest.php) | 403, 404, 419, 429, 500 and 503 each get a plain-English page that passes the audit; our own reasons ("Your account is read-only.") are shown, framework messages are not. |
 | [`ColorContrastTest`](../tests/Unit/ColorContrastTest.php) (already there) | Every text and background color pair the design allows is at least 4.5:1 (WCAG AA). |
@@ -122,6 +123,29 @@ Platform admin: `/admin`, `/admin/reviewers`, `/admin/reconciliation`,
 `/user/confirm-password`, `/styleguide`. Judge: `/judge`, `/adjudicate`
 (start, cases, submit), view as employee, employer admin, merchant and BID
 admin. Every signed-in page: the Feedback button and its dialog.
+
+## Confirmation toasts
+
+After every action, one toast at the top of the screen says what happened
+(see `/styleguide` → States). Checked in headless Chrome (a script, on a
+scratch SQLite database, simulated payments, no AI key) at 1280px and
+375px, with and without emulated `prefers-reduced-motion: reduce`:
+
+- It sits 12px from the top, centered, 16px from each edge at 375px, and
+  the page doesn't scroll sideways, even when the redirect jumps to an
+  `#anchor` far down the page.
+- It takes focus after the page loads. This needed a fix: Chrome clears
+  focus when it jumps to an `#anchor` after load, so on those redirects
+  focus now moves once the jump is done.
+- Escape and × remove it, and focus moves to the page's own answer (the
+  redemption card on the wallet) or the `#anchor` section, never `<body>`.
+- Without reduced motion, a status toast was gone 9 seconds later and focus
+  had moved to the `#anchor` section. With reduced motion it was still
+  there after 9.5 seconds.
+- A form sent with a bad amount still put focus on that field, not the toast.
+
+Not checked: hovering to pause the fade, and how a screen reader actually
+reads it (see Not tested).
 
 ## Loading states
 
