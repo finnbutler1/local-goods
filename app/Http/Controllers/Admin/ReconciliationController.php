@@ -11,7 +11,6 @@ use App\Services\Payments\StripeReconciliation;
 use App\Support\StripeMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -23,33 +22,43 @@ use Illuminate\View\View;
  */
 class ReconciliationController extends Controller
 {
-    public function index(StripeReconciliation $reconciliation): View
+    public function index(Request $request, StripeReconciliation $reconciliation, DemoMerchantStripeSetup $setup): View
     {
         return view('admin.reconciliation', [
             'report' => $reconciliation->report(),
             'demoMerchants' => DemoMerchantStripeSetup::demoMerchants(),
+            'demoProgress' => $setup->progress(),
+            // Set only by the redirect after a step that left work to do.
+            'continueRound' => $request->has('connecting') ? $request->integer('connecting') : null,
         ]);
     }
 
+    /**
+     * One demo merchant per request (DemoMerchantStripeSetup::step), then
+     * back to the page, which presses again by itself (data-auto-submit)
+     * until all are done. Without JavaScript the person presses Continue.
+     * `round` counts the automatic presses, so a merchant Stripe is slow to
+     * confirm can never make the page loop forever.
+     */
     public function connectDemoMerchants(Request $request, DemoMerchantStripeSetup $setup): RedirectResponse
     {
-        $back = redirect()->to(route('admin.reconciliation').'#demo-merchants');
-
         try {
-            $result = $setup->run((string) $request->ip());
+            $step = $setup->step((string) $request->ip());
         } catch (StripeGatewayException $e) {
-            return $back->with('error', $e->getMessage());
+            return redirect()->to(route('admin.reconciliation').'#demo-merchants')
+                ->with('error', $e->getMessage().' Press Continue to try that merchant again; nothing is duplicated.');
         }
 
-        $sentence = 'Connected '.count($result['connected']).' demo '.Str::plural('merchant', count($result['connected'])).' to Stripe (test mode); '
-            .count($result['already']).' already connected.'
-            .($result['self_onboarding'] !== [] ? ' '.implode(', ', $result['self_onboarding']).' '.(count($result['self_onboarding']) === 1 ? 'has a login and onboards itself' : 'have logins and onboard themselves').'.' : '');
+        if ($step['done'] < $step['total']) {
+            $round = $request->integer('round') + 1;
+            $auto = $step['merchant'] !== null && $round < 2 * $step['total'];
 
-        if ($result['failed'] !== []) {
-            return $back->with('error', $sentence.' Stripe refused '.implode('; ', array_map(fn ($name, $why) => $name.': '.$why, array_keys($result['failed']), $result['failed'])).' Press again to retry.');
+            return redirect()->to(route('admin.reconciliation', $auto ? ['connecting' => $round] : []).'#demo-merchants')
+                ->with('notice', "{$step['done']} of {$step['total']} demo merchants connected".($auto ? ', continuing…' : '. Press Continue connecting to go on.'));
         }
 
-        return $back->with('status', $sentence);
+        return redirect()->to(route('admin.reconciliation').'#demo-merchants')->with('status',
+            "All {$step['total']} demo merchants are connected to Stripe (test mode). Stripe turns on their payouts within a minute or so; their status updates by itself.");
     }
 
     public function retry(MerchantPayouts $payouts): RedirectResponse

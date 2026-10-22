@@ -147,11 +147,21 @@
             </table>
         </div>
         @if ($report['active'])
-            <form method="POST" action="{{ route('admin.stripe.demo-merchants') }}" data-busy="Connecting demo merchants…" class="mt-4">
-                @csrf
-                <x-button type="submit">Connect demo merchants to Stripe (test mode)</x-button>
-                <p class="mt-2 text-sm text-muted">Creates an account only for a demo merchant with no login that doesn't have one yet; pressing it again creates nothing new.</p>
-            </form>
+            @if ($demoProgress['done'] < $demoProgress['total'])
+                {{-- One merchant per press, so no request waits long on Stripe. With JavaScript the page presses again by itself. --}}
+                <form method="POST" action="{{ route('admin.stripe.demo-merchants') }}" data-busy="Connecting the next demo merchant…" class="mt-4"
+                      @if ($continueRound !== null) data-auto-submit @endif>
+                    @csrf
+                    <input type="hidden" name="round" value="{{ $continueRound ?? 0 }}">
+                    <x-button type="submit">{{ $demoProgress['done'] === 0 ? 'Connect demo merchants to Stripe (test mode)' : 'Continue connecting ('.$demoProgress['done'].' of '.$demoProgress['total'].' done)' }}</x-button>
+                    <p class="mt-2 text-sm text-muted" data-demo-progress>
+                        {{ $demoProgress['done'] }} of {{ $demoProgress['total'] }} demo merchants with no login are connected.
+                        Each press connects one; the page continues by itself, or press again to continue. Pressing again never creates a second account.
+                    </p>
+                </form>
+            @else
+                <p class="mt-4 text-sm text-muted" data-demo-progress>All {{ $demoProgress['total'] }} demo merchants with no login are connected.</p>
+            @endif
         @endif
     </x-card>
 
