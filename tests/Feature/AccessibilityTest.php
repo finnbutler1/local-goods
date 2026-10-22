@@ -12,6 +12,7 @@ use App\Support\ViewAs;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\SweepsPages;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\Support\AccessibilityAudit;
@@ -80,6 +81,8 @@ class AccessibilityTest extends TestCase
             'reset password' => AccessibilityAudit::problems($this->get('/reset-password/some-token?email=someone@example.com')->assertOk()->getContent()),
             'old invite link' => AccessibilityAudit::problems($this->get('/invite/old-token')->getContent()),
             'adjudication case' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Judge))->get('/adjudicate?n=1')->assertOk()->getContent()),
+            'redeem from a menu' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Employee))->get('/employee?merchant='.Merchant::where('name', 'Farragut Grind')->value('id'))->assertOk()->getContent()),
+            'redeem, suspicious example' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Employee))->get('/employee?suspicious=1')->assertOk()->getContent()),
         ]);
 
         $this->assertNoProblems($found);
@@ -102,6 +105,8 @@ class AccessibilityTest extends TestCase
             'give credits to several, nobody ticked' => [Role::EmployerAdmin, '/employer', 'post', '/employer/allocations', ['mode' => 'bulk', 'occasion' => 'monthly', 'recipients' => 'selected', 'amount' => '5']],
             'program setup, bad budget' => [Role::EmployerAdmin, '/employer', 'post', '/employer/program', ['monthly_budget' => 'abc', 'monthly_allowance' => '']],
             'redeem, nothing chosen' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => '', 'amount' => 'abc']],
+            'redeem from a menu, bad quantity' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => 'grind', 'items' => ['latte' => '99']]],
+            'redeem from a menu, nothing picked' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => 'grind', 'items' => ['latte' => '0']]],
             'deny, no reason given' => [Role::BidAdmin, '/bid-admin', 'post', 'deny', ['reason' => '']],
             'feedback, empty' => [Role::Employee, '/employee', 'post', '/feedback', ['page_url' => 'http://localhost/employee']],
             'change password, wrong current one' => [Role::Employee, '/account', 'put', '/user/password', ['current_password' => 'wrong', 'password' => 'x', 'password_confirmation' => 'y']],
@@ -110,11 +115,15 @@ class AccessibilityTest extends TestCase
     }
 
     /** @param array<string, mixed> $data */
-    #[\PHPUnit\Framework\Attributes\DataProvider('formsWithErrors')]
+    #[DataProvider('formsWithErrors')]
     public function test_a_form_sent_with_errors_ties_each_error_to_its_field(?Role $role, string $page, string $method, string $action, array $data): void
     {
         if ($role) {
             $this->actingAs($this->signIn($role));
+        }
+        if (($data['merchant_id'] ?? null) === 'grind') {
+            $grind = Merchant::where('name', 'Farragut Grind')->firstOrFail();
+            $data = ['merchant_id' => $grind->id, 'items' => [$grind->products()->where('name', 'Latte')->value('id') => $data['items']['latte']]];
         }
         if ($action === 'deny') {
             $action = route('bid-admin.deny', Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->firstOrFail());

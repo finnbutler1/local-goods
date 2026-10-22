@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\Employer;
 use App\Models\Merchant;
 use App\Services\Ai\ClaudeClient;
+use App\Services\CreditLedger;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Fakes\FakeClaudeClient;
@@ -74,7 +76,9 @@ class JudgeViewAsTest extends TestCase
         $this->signIn(Role::Judge);
         $this->get('/judge/view-as/employee');
 
-        $html = $this->get('/employee')->assertOk()
+        $this->get('/employee')->assertOk()->assertSee("Read-only: judges can see the menus but can't make redemptions.", false);
+
+        $html = $this->get('/employee?merchant='.Merchant::firstOrFail()->id)->assertOk()
             ->assertSee("Read-only: judges can't make redemptions.", false)
             ->getContent();
 
@@ -98,7 +102,7 @@ class JudgeViewAsTest extends TestCase
     public function test_employer_view_shows_the_dashboard_with_every_write_disabled(): void
     {
         // A pending purchase: judges see it, but never a button that pays it.
-        $pending = app(\App\Services\CreditLedger::class)->requestPurchase(\App\Models\Employer::firstOrFail(), 10000, 'MPG-TEST-1');
+        $pending = app(CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 10000, 'MPG-TEST-1');
         $this->signIn(Role::Judge);
         $this->get('/judge/view-as/employer_admin');
 

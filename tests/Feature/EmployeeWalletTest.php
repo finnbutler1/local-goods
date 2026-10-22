@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Services\Ai\ClaudeClient;
+use App\Support\Money;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -171,7 +172,8 @@ class EmployeeWalletTest extends TestCase
         $deli = $this->merchant('Press Room Deli');
 
         $this->get('/employee?merchant='.$deli->id)
-            ->assertSee('<option value="'.$deli->id.'" selected', false);
+            ->assertSee('At Press Room Deli')
+            ->assertSee('<input type="hidden" name="merchant_id" value="'.$deli->id.'">', false);
     }
 
     public function test_history_lists_ledger_entries_with_the_balance_after_each(): void
@@ -183,8 +185,8 @@ class EmployeeWalletTest extends TestCase
         $this->get('/employee')->assertOk()
             ->assertSee('Transaction history')
             ->assertSeeInOrder([
-                $entries[0]->description, 'Balance '.\App\Support\Money::format($balance),
-                $entries[1]->description, 'Balance '.\App\Support\Money::format($balance - $entries[0]->amount_cents),
+                $entries[0]->description, 'Balance '.Money::format($balance),
+                $entries[1]->description, 'Balance '.Money::format($balance - $entries[0]->amount_cents),
             ]);
 
         // Jordan has 12 redemptions plus allowances, more than the first 20 shown.
