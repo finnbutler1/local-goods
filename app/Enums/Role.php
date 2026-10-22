@@ -76,7 +76,8 @@ enum Role: string
             ],
             self::BidAdmin => ['bid-admin' => $fraudReview, 'impact' => $impact, 'participation' => $participation, 'merchants' => $merchants, 'eval' => $eval],
             self::Employee => ['wallet' => ['label' => 'My wallet', 'short' => 'Wallet', 'route' => 'employee.wallet', 'icon' => $wallet]],
-            self::EmployerAdmin, self::Merchant, self::Judge => ['dashboard' => $dashboard],
+            self::Merchant => ['dashboard' => $dashboard, 'menu' => ['label' => 'Menu', 'short' => 'Menu', 'route' => 'merchant.menu', 'icon' => $store]],
+            self::EmployerAdmin, self::Judge => ['dashboard' => $dashboard],
         };
     }
 }

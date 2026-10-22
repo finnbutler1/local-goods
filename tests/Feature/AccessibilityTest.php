@@ -108,6 +108,8 @@ class AccessibilityTest extends TestCase
             'redeem from a menu, bad quantity' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => 'grind', 'items' => ['latte' => '99']]],
             'redeem from a menu, nothing picked' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => 'grind', 'items' => ['latte' => '0']]],
             'deny, no reason given' => [Role::BidAdmin, '/bid-admin', 'post', 'deny', ['reason' => '']],
+            'menu, change a product badly' => [Role::Merchant, '/merchant/menu', 'post', 'menu-product', ['name' => '', 'price' => 'free']],
+            'menu, add a product badly' => [Role::Merchant, '/merchant/menu', 'post', '/merchant/menu', ['name' => '', 'price' => '0']],
             'feedback, empty' => [Role::Employee, '/employee', 'post', '/feedback', ['page_url' => 'http://localhost/employee']],
             'change password, wrong current one' => [Role::Employee, '/account', 'put', '/user/password', ['current_password' => 'wrong', 'password' => 'x', 'password_confirmation' => 'y']],
             'invite reviewer, empty' => [Role::PlatformAdmin, '/admin/reviewers', 'post', '/admin/reviewers', []],
@@ -124,6 +126,9 @@ class AccessibilityTest extends TestCase
         if (($data['merchant_id'] ?? null) === 'grind') {
             $grind = Merchant::where('name', 'Farragut Grind')->firstOrFail();
             $data = ['merchant_id' => $grind->id, 'items' => [$grind->products()->where('name', 'Latte')->value('id') => $data['items']['latte']]];
+        }
+        if ($action === 'menu-product') {
+            $action = route('merchant.menu.update', Merchant::where('name', 'Farragut Grind')->firstOrFail()->products()->firstOrFail());
         }
         if ($action === 'deny') {
             $action = route('bid-admin.deny', Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->firstOrFail());
