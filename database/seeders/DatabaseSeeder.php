@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
+use App\Models\MerchantProduct;
 use App\Models\Redemption;
 use App\Services\CreditLedger;
 use Illuminate\Database\Seeder;
@@ -52,6 +53,76 @@ class DatabaseSeeder extends Seeder
         'books' => ['Page & Quill Books', 'retail', '2000 block of L St NW'],
     ];
 
+    /**
+     * Each demo merchant's menu (ADR 0023): name, price in cents, short
+     * description. Downtown DC prices. Display only: products are never sent
+     * to Redemption Fraud Detection. No gift cards, which would be cash.
+     */
+    public const DEMO_MENUS = [
+        'cafe' => [
+            ['Drip coffee', 375, '12 oz, house blend'],
+            ['Latte', 575, null],
+            ['Cappuccino', 550, null],
+            ['Cold brew', 525, null],
+            ['Chai latte', 595, null],
+            ['Croissant', 425, 'Butter, baked in the morning'],
+            ['Blueberry muffin', 400, null],
+            ['Avocado toast', 1150, 'Sourdough, chili flakes'],
+        ],
+        'kitchen' => [
+            ['Grain bowl', 1650, 'Roast chicken, farro, greens'],
+            ['Kitchen burger', 1800, 'With fries'],
+            ['Seasonal salad', 1400, null],
+            ['Soup of the day', 850, null],
+            ['Side of fries', 600, null],
+            ['Lemonade', 450, null],
+        ],
+        'noodle' => [
+            ['Tonkotsu ramen', 1700, 'Pork broth, chashu, egg'],
+            ['Spicy miso ramen', 1750, null],
+            ['Vegetable ramen', 1550, 'Vegan'],
+            ['Pork buns (2)', 900, null],
+            ['Gyoza (6)', 850, null],
+            ['Iced green tea', 375, null],
+        ],
+        'deli' => [
+            ['Turkey club', 1350, null],
+            ['Italian hero', 1425, 'Salami, ham, provolone'],
+            ['Veggie wrap', 1200, null],
+            ['Soup and half sandwich', 1275, null],
+            ['Chips', 225, null],
+            ['Fountain drink', 275, null],
+        ],
+        'salon' => [
+            ['Classic cut', 4200, null],
+            ['Cut and style', 7500, null],
+            ['Beard trim', 2200, null],
+            ['Blowout', 5500, null],
+            ['Kids\' cut', 3000, 'Under 12'],
+        ],
+        'cycle' => [
+            ['Drop-in class', 3200, '45-minute ride'],
+            ['5-class pack', 14500, 'Use within 2 months'],
+            ['Shoe rental', 400, null],
+            ['Bottled water', 300, null],
+            ['Recovery smoothie', 900, null],
+        ],
+        'florist' => [
+            ['Single stem', 600, null],
+            ['Seasonal bouquet', 3800, null],
+            ['Desk arrangement', 5500, 'Small, in a glass vase'],
+            ['Potted orchid', 4800, null],
+            ['Greeting card', 650, null],
+        ],
+        'books' => [
+            ['Paperback', 1800, 'Most new paperbacks'],
+            ['Hardcover', 3000, 'Most new hardcovers'],
+            ['Notebook', 1400, null],
+            ['Tote bag', 2200, null],
+            ['Bookmark', 400, null],
+        ],
+    ];
+
     public function run(): void
     {
         $bid = Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);
@@ -77,6 +148,8 @@ class DatabaseSeeder extends Seeder
         $merchants = collect(self::DEMO_MERCHANTS)->map(fn ($m) => Merchant::create([
             'bid_id' => $bid->id, 'name' => $m[0], 'category' => $m[1], 'address' => $m[2],
         ]));
+
+        self::seedMenus($merchants);
 
         $ledger = app(CreditLedger::class);
         $now = Carbon::now(self::TIMEZONE);
@@ -142,6 +215,24 @@ class DatabaseSeeder extends Seeder
 
         DemoAccountSeeder::linkDemoEmployee();
         DemoAccountSeeder::linkDemoMerchant();
+    }
+
+    /**
+     * Gives each demo merchant its menu from DEMO_MENUS. Also used by
+     * demo:seed-if-empty to add the menus to an already seeded database.
+     *
+     * @param  Collection<string, Merchant>  $merchants  keyed like DEMO_MERCHANTS
+     */
+    public static function seedMenus($merchants): void
+    {
+        foreach (self::DEMO_MENUS as $key => $products) {
+            foreach ($products as $position => [$name, $cents, $description]) {
+                MerchantProduct::create([
+                    'merchant_id' => $merchants[$key]->id, 'name' => $name, 'price_cents' => $cents,
+                    'description' => $description, 'position' => $position,
+                ]);
+            }
+        }
     }
 
     /**

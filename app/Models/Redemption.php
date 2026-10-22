@@ -6,6 +6,7 @@ use App\Services\Fraud\FraudVerdict;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Redemption extends Model
@@ -36,6 +37,18 @@ class Redemption extends Model
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    /** What it was for, if the employee picked from the menu (ADR 0023). Display only. */
+    public function items(): HasMany
+    {
+        return $this->hasMany(RedemptionItem::class)->orderBy('id');
+    }
+
+    /** "2× Latte, 1× Croissant", or null for a bare amount. Load items first. */
+    public function itemsSummary(): ?string
+    {
+        return $this->items->isEmpty() ? null : $this->items->map->label()->implode(', ');
     }
 
     /** A person's Approve or Deny, if there was one (ADR 0016). */

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Eligibility\MerchantCandidates;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,6 +41,24 @@ class Merchant extends Model
     public function redemptions(): HasMany
     {
         return $this->hasMany(Redemption::class);
+    }
+
+    /** Its menu, in menu order (ADR 0023). Only the demo merchants have one. */
+    public function products(): HasMany
+    {
+        return $this->hasMany(MerchantProduct::class)->orderBy('position')->orderBy('id');
+    }
+
+    /**
+     * Only the fictional demo merchants may have products: a name in
+     * DatabaseSeeder::DEMO_MERCHANTS and never a real candidate's name.
+     */
+    public function mayHaveProducts(): bool
+    {
+        $name = mb_strtolower($this->name);
+
+        return in_array($this->name, array_column(DatabaseSeeder::DEMO_MERCHANTS, 0), true)
+            && ! in_array($name, array_map(fn ($c) => mb_strtolower($c['name']), MerchantCandidates::load()), true);
     }
 
     public function ledgerEntries(): HasMany

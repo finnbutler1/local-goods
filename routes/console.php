@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Merchant;
 use App\Services\DemoResetter;
 use App\Support\RetiredDemoAccounts;
 use Database\Seeders\DatabaseSeeder;
@@ -17,6 +18,17 @@ Artisan::command('inspire', function () {
 Artisan::command('demo:seed-if-empty', function () {
     $seeded = array_diff(DemoResetter::DEMO_TABLES, DemoResetter::EMPTY_AFTER_SEED);
     $filled = array_filter($seeded, fn ($table) => DB::table($table)->exists());
+
+    // The menus came after the live demo was seeded: add only them (ADR 0023).
+    $menuless = array_diff($seeded, [DemoResetter::MENUS_TABLE]);
+    if (! in_array(DemoResetter::MENUS_TABLE, $filled, true) && count($filled) === count($menuless)
+        && Merchant::whereIn('name', array_column(DatabaseSeeder::DEMO_MERCHANTS, 0))->count() === count(DatabaseSeeder::DEMO_MERCHANTS)) {
+        DB::transaction(fn () => DatabaseSeeder::seedMenus(collect(DatabaseSeeder::DEMO_MERCHANTS)
+            ->map(fn ($m) => Merchant::where('name', $m[0])->firstOrFail())));
+        $this->info('Added the demo merchants\' product menus; nothing else changed.');
+
+        return;
+    }
 
     if ($filled === []) {
         DB::transaction(fn () => (new DatabaseSeeder)->run());
