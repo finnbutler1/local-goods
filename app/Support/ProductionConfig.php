@@ -33,6 +33,10 @@ class ProductionConfig
         if (config('services.cloudfront.enforce') && (string) config('services.cloudfront.origin_secret') === '') {
             $problems[] = 'CLOUDFRONT_ORIGIN_SECRET is empty, so every visitor would be refused. Set it to the X-Origin-Verify value CloudFront sends, or set ORIGIN_VERIFY_ENFORCE to "false".';
         }
+        // Unset or blank is fine (no fee); only a bad value stops the deploy.
+        if (($fee = PlatformFee::problem()) !== null) {
+            $problems[] = $fee;
+        }
 
         return $problems;
     }

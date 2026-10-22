@@ -61,6 +61,35 @@ class ProductionConfigTest extends TestCase
         $this->artisan('app:check-production-config')->expectsOutputToContain($message)->assertFailed();
     }
 
+    public static function usableFees(): array
+    {
+        return ['unset' => [null], 'blank' => [''], 'spaces' => ['  '], 'zero' => ['0'], 'two and a half' => ['2.5'], 'the most' => ['20']];
+    }
+
+    /** PLATFORM_FEE_PERCENT missing from Beanstalk means no fee, and the deploy goes ahead (ADR 0021). */
+    #[DataProvider('usableFees')]
+    public function test_an_unset_or_valid_platform_fee_passes(?string $fee): void
+    {
+        $this->safeProduction();
+        config(['payments.platform_fee_percent' => $fee]);
+
+        $this->artisan('app:check-production-config')->expectsOutput('Production settings are safe.')->assertSuccessful();
+    }
+
+    public static function badFees(): array
+    {
+        return ['words' => ['abc'], 'negative' => ['-1'], 'too high' => ['25'], 'percent sign' => ['2%'], 'three decimals' => ['2.505']];
+    }
+
+    #[DataProvider('badFees')]
+    public function test_a_bad_platform_fee_stops_the_deploy(string $fee): void
+    {
+        $this->safeProduction();
+        config(['payments.platform_fee_percent' => $fee]);
+
+        $this->artisan('app:check-production-config')->expectsOutputToContain('PLATFORM_FEE_PERCENT must be a number from 0 to 20')->assertFailed();
+    }
+
     public function test_the_kill_switch_allows_an_empty_secret(): void
     {
         $this->safeProduction();

@@ -115,6 +115,12 @@ class StripeWebhookHandler
             return 'refused: '.$e->getMessage();
         }
 
+        if (! $paid && $purchase->isCancelled()) {
+            Log::warning('Stripe payment for a cancelled purchase', ['purchase' => $purchase->reference, 'payment_intent' => $pi['id']]);
+
+            return 'refused: '.$purchase->reference.' was cancelled, so '.$pi['id'].' is not credited (see reconciliation)';
+        }
+
         return $paid
             ? 'paid: '.$purchase->reference
             : ($purchase->stripe_payment_intent_id === $pi['id']

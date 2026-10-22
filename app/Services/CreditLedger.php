@@ -12,6 +12,7 @@ use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Support\Money;
+use App\Support\PlatformFee;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -53,7 +54,9 @@ class CreditLedger
     /**
      * The employer asks to buy credits. Only a pending purchase record is
      * written, never a ledger entry: until it is paid the credits can't be
-     * handed out or spent (ADR 0014).
+     * handed out or spent (ADR 0014). The platform fee (0 unless it is on,
+     * ADR 0021) is fixed here, so a later change to the setting never
+     * changes what this purchase costs.
      */
     public function requestPurchase(Employer $employer, int $amountCents, string $reference, ?Carbon $at = null): CreditPurchase
     {
@@ -62,6 +65,7 @@ class CreditLedger
         return CreditPurchase::create([
             'employer_id' => $employer->id,
             'amount_cents' => $amountCents,
+            'platform_fee_cents' => PlatformFee::centsFor($amountCents),
             'reference' => $reference,
             'purchased_at' => $at ?? now(),
             'status' => CreditPurchase::STATUS_PENDING,
@@ -86,7 +90,7 @@ class CreditLedger
             $purchase->refresh();
 
             if ($changed === 0) {
-                throw new InvalidArgumentException('That purchase is already paid.');
+                throw new InvalidArgumentException($purchase->isCancelled() ? 'That purchase was cancelled.' : 'That purchase is already paid.');
             }
 
             CreditLedgerEntry::create([
@@ -97,6 +101,7 @@ class CreditLedger
                 'description' => 'Credits purchased ('.$purchase->reference.'), paid (simulated, no real money)',
                 'created_at' => $at,
             ]);
+            $this->recordPlatformFee($purchase, $at, 'simulated, no real money');
 
             return $purchase;
         });
@@ -107,14 +112,15 @@ class CreditLedger
      * test mode. The only place a Stripe payment reaches the ledger. Like
      * payPurchase it only flips a purchase that is still pending, so a
      * replayed or duplicate event writes nothing. Refuses a payment whose
-     * amount or currency doesn't match the purchase. Returns false when the
-     * purchase was already paid (nothing written).
+     * amount or currency doesn't match the purchase (credits plus any
+     * platform fee). Returns false when the purchase was already paid or was
+     * cancelled (nothing written).
      */
     public function markPurchasePaidByStripe(CreditPurchase $purchase, string $paymentIntentId, ?string $chargeId, int $amountCents, string $currency, ?Carbon $at = null): bool
     {
-        if ($amountCents !== $purchase->amount_cents || strtolower($currency) !== config('services.stripe.currency')) {
+        if ($amountCents !== $purchase->totalCents() || strtolower($currency) !== config('services.stripe.currency')) {
             throw new InvalidArgumentException('The Stripe payment ('.Money::format($amountCents).' '.strtoupper($currency)
-                .') does not match purchase '.$purchase->reference.' ('.Money::format($purchase->amount_cents).' USD).');
+                .') does not match purchase '.$purchase->reference.' ('.Money::format($purchase->totalCents()).' USD).');
         }
 
         $at ??= now();
@@ -144,9 +150,31 @@ class CreditLedger
                 'description' => 'Credits purchased ('.$purchase->reference.'), paid by card in Stripe test mode ('.$paymentIntentId.')',
                 'created_at' => $at,
             ]);
+            $this->recordPlatformFee($purchase, $at, 'Stripe test mode, '.$paymentIntentId);
 
             return true;
         });
+    }
+
+    /**
+     * The platform fee on its own line on the platform account (ADR 0021),
+     * in the same transaction as the purchase entry. Nothing when the
+     * purchase has no fee, so with the fee off the ledger is as before.
+     */
+    private function recordPlatformFee(CreditPurchase $purchase, Carbon $at, string $how): void
+    {
+        if ($purchase->platform_fee_cents <= 0) {
+            return;
+        }
+
+        CreditLedgerEntry::create([
+            'platform' => true,
+            'amount_cents' => $purchase->platform_fee_cents,
+            'type' => CreditLedgerEntry::TYPE_PLATFORM_FEE,
+            'credit_purchase_id' => $purchase->id,
+            'description' => 'Platform fee on '.$purchase->reference.' ('.$how.')',
+            'created_at' => $at,
+        ]);
     }
 
     /**
