@@ -5,6 +5,23 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Every demo merchant can receive Stripe test transfers — done
+(2026-10-22, ADR 0022).** One migration
+(`merchants.stripe_set_up_by_platform`, additive, kept by Reset demo).
+
+- `/admin/reconciliation` → "Connect demo merchants to Stripe (test mode)"
+  (`admin.stripe.demo-merchants`, `DemoMerchantStripeSetup`): v2 accounts
+  with **no Stripe dashboard** (Stripe refuses ToS on behalf for Express:
+  `tos_acceptance_on_behalf_not_allowed`), Stripe test identity values plus
+  `btok_us_verified`. Only `DatabaseSeeder::DEMO_MERCHANTS` with no login,
+  never a name in `merchant_candidates.csv`. Idempotent, test mode only.
+- Label "Demo account set up by Local Goods in test mode"
+  (`Merchant::PLATFORM_SETUP_LABEL`). Never use this path for anyone with a
+  login or any real business; they self-onboard on Express pages.
+- Scratch trials against real Stripe use their own `APP_KEY`/`APP_ENV`
+  (a different `lg_instance` from Finn's local app) and delete throwaway
+  accounts afterwards.
+
 **Buy credits in one step, platform fee ready but off — done (2026-10-21,
 ADR 0021).** One migration (`platform_fee_cents` default 0, nullable
 `credit_ledger_entries.platform`). Money rules unchanged.
@@ -283,8 +300,9 @@ Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
 Stripe Connect test mode (ADR 0015), the fraud gate on transfers
 (ADR 0016, Prompt 8), the BID impact dashboard (ADR 0017, Prompt 9A), the accessibility and UX
 pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
-contacts in adjudication (ADR 0019) and one-step Buy credits with the
-platform fee ready but off (ADR 0021).
+contacts in adjudication (ADR 0019), one-step Buy credits with the
+platform fee ready but off (ADR 0021) and platform-set-up Stripe test
+accounts for the demo merchants (ADR 0022).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -503,6 +521,9 @@ snapshot step by name when the build says the deploy includes migrations.
    `…elasticbeanstalk.com` address returns "Forbidden". Log in as each demo role, check
    `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
    as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
+   If any demo merchant shows "Not connected to Stripe" on
+   `/admin/reconciliation`, press "Connect demo merchants to Stripe (test
+   mode)" (Reset demo keeps existing accounts, so usually only once).
    With Stripe keys set: the employer page shows "Stripe test mode", and
    `/admin/reconciliation` says everything matches. As the BID admin, press
    "Run a collusion example" once (one AI call) and check its path line.

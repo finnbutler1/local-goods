@@ -3,6 +3,24 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-22: Every demo merchant can receive Stripe test transfers
+
+- **Connect demo merchants to Stripe (test mode).** A new platform-admin
+  button on `/admin/reconciliation`. It gives each fictional demo merchant
+  that has no login a Stripe test account, so a cleared, Stripe-funded
+  redemption at any of them becomes a test transfer to that merchant's own
+  account, not only at Farragut Grind. Pressing it again creates nothing
+  new. It refuses with live keys, and judges can't run it.
+- **Honest about who set it up.** Stripe won't let a platform accept its
+  terms for an Express account, so these are test accounts with no Stripe
+  dashboard, filled in by Local Goods with Stripe's test values. Each one
+  reads "Demo account set up by Local Goods in test mode". Real merchants,
+  and any merchant with a login, still onboard themselves through Stripe's
+  Express pages. Real DC businesses never get a Stripe account
+  ([ADR 0022](docs/adr/0022-platform-set-up-stripe-accounts-for-demo-merchants.md)).
+- **One migration** (`merchants.stripe_set_up_by_platform`, additive).
+  Reset demo keeps these accounts, like Farragut Grind's.
+
 ## 2026-10-21: Buy credits in one step
 
 - **One step for HR.** Enter an amount and press **Buy credits**. In Stripe
