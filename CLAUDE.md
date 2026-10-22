@@ -15,6 +15,13 @@ building, for whom, and the rules for working in this repo.
   `tos_acceptance_on_behalf_not_allowed`), Stripe test identity values plus
   `btok_us_verified`. Only `DatabaseSeeder::DEMO_MERCHANTS` with no login,
   never a name in `merchant_candidates.csv`. Idempotent, test mode only.
+- One merchant per request (`DemoMerchantStripeSetup::step`, about 7s; the
+  CloudFront origin limit is 30s). The id is saved right after create, then
+  the bank account is added and the status read once, with no waiting and
+  no transfers in the step. The page auto-continues (`form[data-auto-submit]`,
+  `?connecting=<round>`, stops at 2× merchants); without JS, "Continue
+  connecting". Throttle 30/min. A cut-off press is resumed with the same
+  idempotency keys.
 - Label "Demo account set up by Local Goods in test mode"
   (`Merchant::PLATFORM_SETUP_LABEL`). Never use this path for anyone with a
   login or any real business; they self-onboard on Express pages.

@@ -53,3 +53,14 @@ always waits for someone to click through Stripe's form.
   connected".
 - These seven accounts have no Stripe dashboard to log in to. That is
   acceptable: nobody runs these fictional businesses.
+
+## Addendum (2026-10-22): one merchant per request
+
+The first version connected all seven in one request (about 49 seconds).
+It timed out behind CloudFront (504; the origin gets 30 seconds) and
+locally (PHP's 30-second limit). A second press finished the job each
+time, and no account was duplicated. Each request now handles one
+merchant: create, save the id, add the bank account, read the status once.
+The page continues by itself, and without JavaScript the person presses
+**Continue connecting**. The same idempotency keys make a cut-off request
+safe to repeat.

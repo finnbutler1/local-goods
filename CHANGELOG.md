@@ -20,6 +20,13 @@ commit history.
   ([ADR 0022](docs/adr/0022-platform-set-up-stripe-accounts-for-demo-merchants.md)).
 - **One migration** (`merchants.stripe_set_up_by_platform`, additive).
   Reset demo keeps these accounts, like Farragut Grind's.
+- **No more timeouts.** The first version did all seven merchants in one
+  request, about 49 seconds. That timed out on the live site (CloudFront
+  waits 30 seconds) and locally. Now each press connects one merchant
+  (about 7 seconds), and the page continues by itself, showing "3 of 7
+  demo merchants connected, continuing…". Without JavaScript, press
+  **Continue connecting**. A press cut off midway is finished by the next
+  one with the same Stripe account, never a second one.
 
 ## 2026-10-21: Buy credits in one step
 
