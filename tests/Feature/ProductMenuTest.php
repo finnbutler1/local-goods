@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Bid;
 use App\Models\Merchant;
 use App\Models\MerchantProduct;
 use App\Services\Eligibility\MerchantCandidates;
@@ -52,8 +53,9 @@ class ProductMenuTest extends TestCase
     public function test_a_product_cannot_be_saved_for_a_merchant_outside_the_demo(): void
     {
         $candidate = collect(MerchantCandidates::load())->first();
-        $real = Merchant::create(['bid_id' => 1, 'name' => $candidate['name'], 'category' => 'restaurant', 'address' => 'x']);
-        $other = Merchant::create(['bid_id' => 1, 'name' => 'Not In The Demo', 'category' => 'cafe', 'address' => 'x']);
+        $bid = Bid::firstOrFail()->id;
+        $real = Merchant::create(['bid_id' => $bid, 'name' => $candidate['name'], 'category' => 'restaurant', 'address' => 'x']);
+        $other = Merchant::create(['bid_id' => $bid, 'name' => 'Not In The Demo', 'category' => 'cafe', 'address' => 'x']);
 
         foreach ([$real, $other] as $merchant) {
             $this->assertFalse($merchant->mayHaveProducts());
