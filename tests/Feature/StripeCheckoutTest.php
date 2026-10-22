@@ -131,18 +131,18 @@ class StripeCheckoutTest extends TestCase
         $this->assertSame(route('employer.dashboard').'?checkout=cancelled&purchase='.$this->purchase->reference.'#credits', $session['cancel_url']);
     }
 
-    public function test_when_stripe_refuses_checkout_the_reason_shows_in_the_credits_section(): void
+    public function test_when_stripe_refuses_checkout_the_reason_shows_in_an_error_toast(): void
     {
         $this->stripe->checkoutFailure = 'Stripe refused the request (InvalidRequestException, field success_url).';
 
         $this->post("/employer/purchases/{$this->purchase->id}/pay")
             ->assertRedirect(route('employer.dashboard').'#credits')
-            ->assertSessionHas('credits_error');
+            ->assertSessionHas('error');
 
         $html = $this->get('/employer')->assertOk()->getContent();
-        $credits = substr($html, strpos($html, 'id="purchases-heading"'));
-        $this->assertStringContainsString("Payment didn't start: Stripe refused the request (InvalidRequestException, field success_url).", $credits);
-        $this->assertStringContainsString('Nothing was charged; the purchase is still pending.', $credits);
+        $toast = substr($html, strpos($html, 'data-toast="error"'), 1500);
+        $this->assertStringContainsString(e("Payment didn't start: Stripe refused the request (InvalidRequestException, field success_url)."), $toast);
+        $this->assertStringContainsString('Nothing was charged; the purchase is still pending.', $toast);
         $this->assertTrue($this->purchase->fresh()->isPending());
     }
 }

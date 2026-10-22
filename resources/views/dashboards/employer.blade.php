@@ -25,21 +25,6 @@
         </p>
     </header>
 
-    <div aria-live="polite" class="empty:hidden">
-        @if ($checkout === 'returned' && $checkoutPurchase?->isPending())
-            <p class="rounded-2xl border-2 border-amber bg-cream-deep p-4 font-semibold">
-                Back from Stripe. {{ $checkoutPurchase->reference }} stays pending until Stripe confirms the payment to Local Goods,
-                usually within a few seconds. Refresh this page to check.
-            </p>
-        @elseif ($checkout === 'returned' && $checkoutPurchase?->isStripe())
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">
-                Stripe confirmed {{ $checkoutPurchase->reference }} ({{ Money::format($checkoutPurchase->amount_cents) }}, test mode). The credits are ready to give to your team.
-            </p>
-        @elseif ($checkout === 'cancelled')
-            <p class="rounded-2xl border-2 border-line bg-cream-deep p-4 font-semibold">Payment cancelled. Nothing was charged; the purchase is still pending.</p>
-        @endif
-    </div>
-
     @if ($readOnly)
         <p id="read-only-note" class="rounded-2xl bg-cream-deep p-4 text-sm">
             <span class="font-semibold">Read-only view.</span> Judges can look at every form here but can't buy, pay or give credits.
@@ -256,11 +241,6 @@
 
             <x-card as="section" aria-labelledby="purchases-heading" padding="p-0">
                 <h3 id="purchases-heading" class="px-5 pt-5 text-xl font-semibold sm:px-6 sm:pt-6">{{ $returned['count'] > 0 ? 'Purchases and returned credit' : 'Purchases' }}</h3>
-                @if (session('credits_error'))
-                    <p role="alert" tabindex="-1" data-flash class="mx-5 mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold sm:mx-6">
-                        <span aria-hidden="true">⚑</span> Payment didn't start: {{ session('credits_error') }} Nothing was charged; the purchase is still pending.
-                    </p>
-                @endif
                 @php
                     // Purchases and returned credit in one list, newest first.
                     $activity = $purchases->map(fn ($p) => ['at' => $p->purchased_at, 'purchase' => $p, 'entry' => null])

@@ -54,11 +54,11 @@ class EmployerDashboardController extends Controller
             ->withSum('ledgerEntries as balance_cents', 'amount_cents')
             ->get();
 
+        $this->checkoutMessage($request, $employer);
+
         return view('dashboards.employer', [
             'employer' => $employer,
             'stripe' => StripeMode::active(),
-            'checkout' => in_array($request->query('checkout'), ['returned', 'cancelled'], true) ? $request->query('checkout') : null,
-            'checkoutPurchase' => $request->query('checkout') ? $employer->creditPurchases()->where('reference', (string) $request->query('purchase'))->first() : null,
             'metrics' => $metrics->for($employer),
             'balance' => $employer->balanceCents(),
             'pendingCents' => EmployerProgram::pendingCents($employer),
@@ -69,6 +69,26 @@ class EmployerDashboardController extends Controller
             'allocationGroups' => self::recentAllocationGroups($employer),
             'employees' => $employees,
         ]);
+    }
+
+    /**
+     * Back from Stripe Checkout (?checkout=returned|cancelled&purchase=…): say
+     * how it went in the page's toast. Only Stripe's signed webhook marks a
+     * purchase paid, so "returned" alone may still be pending.
+     */
+    private function checkoutMessage(Request $request, Employer $employer): void
+    {
+        $checkout = $request->query('checkout');
+        $purchase = in_array($checkout, ['returned', 'cancelled'], true)
+            ? $employer->creditPurchases()->where('reference', (string) $request->query('purchase'))->first()
+            : null;
+
+        match (true) {
+            $checkout === 'cancelled' => $request->session()->now('notice', 'Payment cancelled. Nothing was charged; the purchase is still pending.'),
+            $purchase?->isPending() => $request->session()->now('notice', "Back from Stripe. {$purchase->reference} stays pending until Stripe confirms the payment to Local Goods, usually within a few seconds. Refresh this page to check."),
+            (bool) $purchase?->isStripe() => $request->session()->now('status', Money::format($purchase->amount_cents)." in credits added (Stripe test mode, {$purchase->reference}). Ready to give."),
+            default => null,
+        };
     }
 
     /**
@@ -173,15 +193,14 @@ class EmployerDashboardController extends Controller
             try {
                 return redirect()->away($checkout->start($purchase));
             } catch (InvalidArgumentException|StripeGatewayException $e) {
-                // Shown inside the credits section: the redirect jumps there, past the top-of-page messages.
-                return redirect()->to(route('employer.dashboard').'#credits')->with('credits_error', $e->getMessage());
+                return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Payment didn't start: {$e->getMessage()} Nothing was charged; the purchase is still pending.");
             }
         }
 
         try {
             $ledger->payPurchase($purchase);
         } catch (InvalidArgumentException $e) {
-            return redirect()->to(route('employer.dashboard').'#credits')->with('credits_error', $e->getMessage());
+            return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Nothing changed: {$e->getMessage()}");
         }
 
         return redirect()->to(route('employer.dashboard').'#credits')->with('status',

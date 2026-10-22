@@ -36,7 +36,7 @@ class StripeOnboardingController extends Controller
         $merchant = $this->ownMerchant($request);
 
         if ($merchant->isStripeOnboarded()) {
-            return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_status', 'Stripe onboarding is already complete.');
+            return redirect()->to(route('merchant.dashboard').'#stripe')->with('notice', 'Stripe onboarding is already complete. Nothing to do.');
         }
 
         try {
@@ -80,7 +80,7 @@ class StripeOnboardingController extends Controller
             Log::error('Stripe onboarding failed', ['step' => $step, 'type' => class_basename($e)]);
         }
 
-        return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_error',
+        return redirect()->to(route('merchant.dashboard').'#stripe')->with('error',
             ($e instanceof StripeGatewayException ? $e->getMessage().' ' : 'Something went wrong talking to Stripe. ')
             .'Nothing was lost: press the button again in a moment. If it keeps happening, tell the BID team.');
     }
@@ -94,13 +94,13 @@ class StripeOnboardingController extends Controller
         }
 
         if (! $merchant->isStripeOnboarded()) {
-            return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_status', $merchant->stripeOnboardingLabel().'. Money owed through Stripe waits until it is complete.');
+            return redirect()->to(route('merchant.dashboard').'#stripe')->with('notice', $merchant->stripeOnboardingLabel().'. Money owed through Stripe waits until it is complete.');
         }
 
         $owed = $merchant->owedViaStripeCents();
         $result = $payouts->send($merchant);
 
-        return redirect()->to(route('merchant.dashboard').'#stripe')->with('stripe_status', 'Stripe onboarding complete.'
+        return redirect()->to(route('merchant.dashboard').'#stripe')->with($result['failed'] > 0 ? 'notice' : 'status', 'Stripe onboarding complete.'
             .($result['sent'] > 0 ? ' '.$result['sent'].' Stripe test-mode '.str('transfer')->plural($result['sent']).' sent ('.Money::format($owed - $merchant->owedViaStripeCents()).').' : '')
             .($result['failed'] > 0 ? ' '.$result['failed'].' could not be sent yet and stay owed.' : ''));
     }

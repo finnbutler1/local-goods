@@ -22,7 +22,7 @@ class FeedbackController extends Controller
 
         $request->user()->feedback()->create($this->validated($request, 'feedback'));
 
-        return back()->with('feedback_status', 'Thanks, your feedback was saved.');
+        return back()->with('status', 'Thanks, your feedback was sent.');
     }
 
     public function update(Request $request, Feedback $feedback): RedirectResponse
@@ -32,7 +32,7 @@ class FeedbackController extends Controller
         $feedback->update($this->validated($request, "feedback-{$feedback->id}"));
 
         return redirect()->to(route('account').'#feedback-'.$feedback->id)
-            ->with('feedback_status', 'Your feedback was updated.');
+            ->with('status', 'Your feedback was updated.');
     }
 
     /** @return array<string, mixed> */

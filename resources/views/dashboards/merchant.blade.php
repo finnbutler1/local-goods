@@ -88,14 +88,6 @@
         <section aria-labelledby="payouts-heading" class="space-y-8 lg:col-span-2">
             <div id="stripe" class="scroll-mt-24">
                 <h2 class="text-2xl font-semibold text-forest">Stripe account</h2>
-                <div aria-live="polite" class="empty:hidden">
-                    @if (session('stripe_status'))
-                        <p role="status" tabindex="-1" data-flash class="mt-3 rounded-xl border-2 border-ok bg-ok-bg p-3 text-sm font-semibold text-ok">{{ session('stripe_status') }}</p>
-                    @endif
-                    @if (session('stripe_error'))
-                        <p role="alert" tabindex="-1" data-flash class="mt-3 rounded-xl border-2 border-hold bg-hold-bg p-3 text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ session('stripe_error') }}</p>
-                    @endif
-                </div>
                 <x-card class="mt-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <p class="font-semibold" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">{{ $merchant->stripeOnboardingLabel() }}</p>
