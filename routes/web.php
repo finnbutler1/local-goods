@@ -21,6 +21,7 @@ use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Merchant\MenuController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\MerchantEvalController;
@@ -106,6 +107,10 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('role:merchant')->group(function () {
         Route::get('/merchant', MerchantDashboardController::class)->name('merchant.dashboard');
+        // The merchant's own product menu (ADR 0023). Display only; never sent to the fraud AI.
+        Route::get('/merchant/menu', [MenuController::class, 'show'])->name('merchant.menu');
+        Route::post('/merchant/menu', [MenuController::class, 'store'])->middleware('throttle:20,1,merchant.menu.store')->name('merchant.menu.store');
+        Route::post('/merchant/menu/{product}', [MenuController::class, 'update'])->middleware('throttle:30,1,merchant.menu.update')->name('merchant.menu.update');
         // Stripe Express onboarding, test mode (ADR 0015). Only the merchant's own login; GETs create nothing.
         Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1,merchant.stripe.onboard')->name('merchant.stripe.onboard');
         Route::post('/merchant/stripe/sync', [StripeOnboardingController::class, 'sync'])->middleware('throttle:20,1,merchant.stripe.sync')->name('merchant.stripe.sync');

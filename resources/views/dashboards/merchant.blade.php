@@ -20,6 +20,7 @@
                 Stripe isn't connected on this server, so payouts are simulated: recorded in the ledger, no money moves.
             @endif
         </p>
+        <p class="mt-3"><a href="{{ route('merchant.menu') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">See and change your menu</a> ({{ $merchant->products()->count() }} {{ Str::plural('product', $merchant->products()->count()) }})</p>
         <x-money-mode class="mt-3" />
     </header>
 
