@@ -44,6 +44,7 @@
 </head>
 <body class="min-h-screen bg-cream font-sans text-ink antialiased">
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 rounded-full bg-amber px-4 py-2 font-semibold text-ink">Skip to content</a>
+    <x-flash />
 
     {{-- Desktop sidebar --}}
     <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-forest text-cream lg:flex">

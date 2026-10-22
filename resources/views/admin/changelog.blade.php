@@ -11,10 +11,6 @@
         </p>
     </header>
 
-    <div aria-live="polite">
-        <x-flash />
-    </div>
-
     <x-card as="section" aria-labelledby="new-heading" class="max-w-2xl">
         <h2 id="new-heading" class="text-2xl font-semibold text-forest">New entry</h2>
         <form method="POST" action="{{ route('admin.changelog.store') }}" data-busy="Saving…" class="mt-4 space-y-4">

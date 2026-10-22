@@ -37,6 +37,49 @@ if (!document.querySelector('dialog[open]')) {
     (answer ?? document.querySelector('[data-flash]'))?.focus();
 }
 
+// Toasts (x-flash): × or Escape dismisses one. Status and notice toasts fade
+// out on their own after 8 seconds (paused while the pointer is on them or the
+// × has focus); errors, and everything when reduced motion is on, stay until
+// dismissed. Focus inside a toast that goes moves on to the page's own answer
+// (a [data-flash] in main), else the #anchor the redirect jumped to, else main.
+const dismissToast = (toast) => {
+    const hadFocus = toast.contains(document.activeElement);
+    toast.remove();
+    if (!hadFocus) return;
+
+    const anchor = window.location.hash.length > 1 ? document.getElementById(decodeURIComponent(window.location.hash.slice(1))) : null;
+    const next = document.querySelector('main [data-flash]') ?? anchor ?? document.getElementById('main');
+    if (next && !next.matches('a[href], button, input, select, textarea, summary, [tabindex]')) next.setAttribute('tabindex', '-1');
+    next?.focus();
+};
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.querySelectorAll('[data-toast]').forEach((toast) => {
+    const button = toast.querySelector('[data-toast-dismiss]');
+    button.addEventListener('click', () => dismissToast(toast));
+    toast.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') dismissToast(toast);
+    });
+    if (!toast.hasAttribute('data-toast-autohide') || reducedMotion) return;
+
+    let timer;
+    const pause = () => {
+        clearTimeout(timer);
+        toast.classList.remove('opacity-0');
+    };
+    const start = () => {
+        pause();
+        timer = setTimeout(() => {
+            toast.classList.add('opacity-0');
+            timer = setTimeout(() => dismissToast(toast), 500);
+        }, 8000);
+    };
+    toast.addEventListener('pointerenter', pause);
+    toast.addEventListener('pointerleave', start);
+    button.addEventListener('focus', pause);
+    button.addEventListener('blur', start);
+    start();
+});
+
 // Slow submits: <form data-busy="Checking…">. While the next page loads, the
 // pressed button says what is happening and can't be pressed again, and a
 // screen reader hears the same words. Nothing about what is sent changes.

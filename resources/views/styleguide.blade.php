@@ -212,9 +212,10 @@
 
         <x-card class="space-y-3">
             <h3 class="text-xl font-semibold">Result of an action</h3>
-            <p class="text-sm text-muted"><code>&lt;x-flash /&gt;</code> shows <code>session('status')</code> and <code>session('error')</code>. After the page reloads, focus moves to it so screen readers announce it (here <code>:focus="false"</code>, as this is only a sample).</p>
-            <x-flash status="$500.00 paid (simulated, no real money). The credits are ready to give to your team." :error="null" :focus="false" />
-            <x-flash :status="null" error="Nothing changed: this redemption is approved." :focus="false" />
+            <p class="text-sm text-muted">Every layout shows <code>&lt;x-flash /&gt;</code> once, as a toast at the top of the screen, from <code>session('status')</code> (it worked), <code>session('notice')</code> (it worked, but something still waits) or <code>session('error')</code> (nothing happened). Say exactly what happened, with the amount and who: employees by initials only. After the page reloads, focus moves to it so screen readers announce it, unless a field has an error, which wins. × or Escape dismisses it; status and notice fade out after 8 seconds, unless reduced motion is on. Errors stay. (Here <code>:floating="false" :focus="false"</code>, as these are only samples.)</p>
+            <x-flash status="$50.00 sent to J.R. They can spend it now." :notice="null" :error="null" :floating="false" :focus="false" />
+            <x-flash :status="null" notice="Held for a quick review: no money moves until a BID admin decides." :error="null" :floating="false" :focus="false" />
+            <x-flash :status="null" :notice="null" error="Nothing changed: this redemption is approved." :floating="false" :focus="false" />
         </x-card>
 
         <x-card class="space-y-3">

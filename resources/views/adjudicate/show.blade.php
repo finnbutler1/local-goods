@@ -24,7 +24,6 @@
     </header>
 
     <div aria-live="polite">
-        <x-flash />
         @if ($errors->any())
             <p id="adjudicate-error" role="alert" class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">Not saved: {{ $errors->first() }}</p>
         @endif

@@ -38,7 +38,6 @@
         @elseif ($checkout === 'cancelled')
             <p class="rounded-2xl border-2 border-line bg-cream-deep p-4 font-semibold">Payment cancelled. Nothing was charged; the purchase is still pending.</p>
         @endif
-        <x-flash />
     </div>
 
     @if ($readOnly)

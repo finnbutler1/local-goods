@@ -25,7 +25,6 @@
     </header>
 
     <div aria-live="polite">
-        <x-flash />
         @if ($example = $exampleId ? $redemptions->firstWhere('id', $exampleId) : null)
             <div class="rounded-2xl border-2 {{ $example->isUnderReview() ? 'border-hold bg-hold-bg' : 'border-ok bg-ok-bg' }} p-4" tabindex="-1" data-flash data-collusion-example="{{ $example->id }}">
                 <p class="font-semibold">

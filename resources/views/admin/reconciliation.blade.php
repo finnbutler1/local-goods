@@ -14,10 +14,6 @@
         <x-money-mode class="mt-3" />
     </header>
 
-    <div aria-live="polite" class="empty:hidden">
-        <x-flash />
-    </div>
-
     @if (! $report['active'])
         <x-card class="max-w-3xl">
             <h2 class="text-xl font-semibold">Stripe test mode is off</h2>

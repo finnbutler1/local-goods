@@ -10,6 +10,7 @@
 </head>
 <body class="flex min-h-screen flex-col bg-cream font-sans text-ink antialiased">
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 rounded-full bg-amber px-4 py-2 font-semibold text-ink">Skip to content</a>
+    <x-flash />
 
     <header class="relative z-10">
         <div class="awning h-2" aria-hidden="true"></div>

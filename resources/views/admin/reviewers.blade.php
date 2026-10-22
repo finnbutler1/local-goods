@@ -42,7 +42,6 @@
                 </div>
             </x-card>
         @endif
-        <x-flash />
     </div>
 
     <x-card as="section" aria-labelledby="public-heading">
