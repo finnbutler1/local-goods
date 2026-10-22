@@ -11,9 +11,10 @@ use LogicException;
  * a new entry, never by editing or deleting an old one.
  *
  * Every entry belongs to exactly one account: an employee (their wallet),
- * the employer (credits bought but not yet handed out) or a merchant
- * (cleared redemptions not yet paid out). A balance is always the sum of an
- * account's entries. See docs/adr/0012.
+ * the employer (credits bought but not yet handed out), a merchant
+ * (cleared redemptions not yet paid out) or the Local Goods platform (fees
+ * it earned, ADR 0021). A balance is always the sum of an account's
+ * entries. See docs/adr/0012.
  */
 class CreditLedgerEntry extends Model
 {
@@ -45,14 +46,23 @@ class CreditLedgerEntry extends Model
     /** Merchant account: a Stripe transfer was reversed, so the merchant is owed that amount again. */
     public const TYPE_PAYOUT_REVERSED = 'payout_reversed';
 
-    public const ACCOUNT_COLUMNS = ['employee_id', 'employer_id', 'merchant_id'];
+    /** Platform account: the platform fee paid on top of a purchase's credits (ADR 0021). Never on the employer's balance. */
+    public const TYPE_PLATFORM_FEE = 'platform_fee';
+
+    /** "platform" is true on platform-account entries and null on every other one. */
+    public const ACCOUNT_COLUMNS = ['employee_id', 'employer_id', 'merchant_id', 'platform'];
 
     public const UPDATED_AT = null;
 
     protected $fillable = [
         'employee_id', 'employer_id', 'merchant_id', 'amount_cents', 'type', 'redemption_id',
-        'credit_purchase_id', 'credit_allocation_id', 'merchant_payout_id', 'description', 'decided_by', 'created_at',
+        'credit_purchase_id', 'credit_allocation_id', 'merchant_payout_id', 'description', 'decided_by', 'created_at', 'platform',
     ];
+
+    protected function casts(): array
+    {
+        return ['platform' => 'boolean'];
+    }
 
     protected static function booted(): void
     {
@@ -60,7 +70,11 @@ class CreditLedgerEntry extends Model
             $accounts = collect(self::ACCOUNT_COLUMNS)->filter(fn ($column) => $entry->{$column} !== null)->count();
 
             if ($accounts !== 1) {
-                throw new LogicException('A ledger entry must belong to exactly one account (employee, employer or merchant).');
+                throw new LogicException('A ledger entry must belong to exactly one account (employee, employer, merchant or platform).');
+            }
+
+            if ($entry->platform === false) {
+                throw new LogicException('The platform marker is true or empty, never false.');
             }
         });
         static::updating(fn () => throw new LogicException('Ledger entries are immutable.'));
