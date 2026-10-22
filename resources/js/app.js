@@ -215,3 +215,36 @@ document.querySelectorAll('form[data-auto-submit]').forEach((form) => {
     const button = form.querySelector('[type="submit"]');
     window.addEventListener('load', () => form.requestSubmit(button ?? undefined));
 });
+
+// Redeem from a menu: <form data-basket>. Quantity fields carry data-price (in
+// cents); the "Other amount" field is [data-basket-other]. Shows the − / +
+// buttons and a running total (read out politely). Display only: the server
+// works out the real total from the menu's own prices.
+document.querySelectorAll('form[data-basket]').forEach((form) => {
+    const quantities = [...form.querySelectorAll('input[data-price]')];
+    const other = form.querySelector('[data-basket-other]');
+    const summary = form.querySelector('[data-basket-summary]');
+    const total = form.querySelector('[data-basket-total]');
+    const cents = (value) => {
+        const match = /^(\d{1,4})(?:\.(\d{1,2}))?$/.exec(value.trim());
+        return match ? Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0')) : 0;
+    };
+    const update = () => {
+        const sum = quantities.reduce((acc, input) => acc + Math.max(0, Math.trunc(Number(input.value) || 0)) * Number(input.dataset.price), 0)
+            + (other ? cents(other.value) : 0);
+        total.textContent = '$' + (sum / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    form.querySelectorAll('button[data-step]').forEach((button) => {
+        button.hidden = false;
+        button.addEventListener('click', () => {
+            const input = document.getElementById(button.getAttribute('aria-controls'));
+            const next = (Math.trunc(Number(input.value) || 0)) + Number(button.dataset.step);
+            input.value = String(Math.min(Number(input.max), Math.max(0, next)));
+            update();
+        });
+    });
+    form.addEventListener('input', update);
+    summary.hidden = false;
+    update();
+});

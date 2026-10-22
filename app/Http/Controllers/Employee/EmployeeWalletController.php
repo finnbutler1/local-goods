@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
+use App\Services\RedemptionBasket;
 use App\Services\RedemptionService;
 use App\Support\Money;
 use App\Support\PayoutOutcome;
@@ -44,7 +45,7 @@ class EmployeeWalletController extends Controller
     {
         $employee = $this->employee($request);
         $balance = $employee->balanceCents();
-        $recent = $employee->redemptions()->with(['merchant', 'decision'])->latest()->latest('id')->take(8)->get();
+        $recent = $employee->redemptions()->with(['merchant', 'decision', 'items'])->latest()->latest('id')->take(8)->get();
 
         // "Redeem here" on a merchant card picks that merchant in the form.
         $prefill = ['merchant_id' => $request->integer('merchant') ?: null, 'amount' => null];
@@ -59,6 +60,9 @@ class EmployeeWalletController extends Controller
         }
 
         $merchants = Merchant::orderBy('name')->get();
+        // Step 2 of the redeem form: the chosen merchant's menu (ADR 0023). A form sent back with errors keeps its merchant.
+        $menuMerchant = $merchants->firstWhere('id', (int) $request->old('merchant_id', $prefill['merchant_id']));
+        $menu = $menuMerchant?->products()->available()->get() ?? collect();
         $search = trim((string) $request->query('q', ''));
         $category = (string) $request->query('category', '');
         $browse = $merchants
@@ -90,8 +94,10 @@ class EmployeeWalletController extends Controller
             'showAllHistory' => $showAll,
             'recent' => $recent,
             'prefill' => $prefill,
+            'menuMerchant' => $menuMerchant,
+            'menu' => $menu,
             'suspicious' => $suspicious,
-            'result' => Redemption::with('merchant')->find($request->session()->get('redemption_id')),
+            'result' => Redemption::with(['merchant', 'items'])->find($request->session()->get('redemption_id')),
         ]);
     }
 
@@ -101,20 +107,24 @@ class EmployeeWalletController extends Controller
 
         $data = $request->validate([
             'merchant_id' => ['required', 'integer', 'exists:merchants,id'],
-            'amount' => ['required', 'regex:/^\d{1,4}(\.\d{1,2})?$/', 'not_regex:/^0+(\.0+)?$/'],
+            // Menu quantities, product id => how many (ADR 0023). The amount is the "Other amount" part.
+            'items' => ['nullable', 'array', 'max:50'],
+            'items.*' => ['nullable', 'integer', 'min:0', 'max:'.RedemptionBasket::MAX_QUANTITY],
+            'amount' => ['nullable', 'regex:/^\d{1,4}(\.\d{1,2})?$/', 'not_regex:/^0+(\.0+)?$/'],
         ], [
             'amount.regex' => 'Enter an amount in dollars, like 12.50.',
             'amount.not_regex' => 'Enter an amount greater than zero.',
+            'items.*' => 'Quantities are whole numbers from 0 to '.RedemptionBasket::MAX_QUANTITY.'.',
         ]);
 
-        $redemption = $service->redeem(
-            $this->employee($request),
-            Merchant::findOrFail($data['merchant_id']),
-            (int) round(((float) $data['amount']) * 100),
-        );
+        $merchant = Merchant::findOrFail($data['merchant_id']);
+        $basket = RedemptionBasket::build($merchant, $data['items'] ?? [], isset($data['amount']) ? Money::toCents($data['amount']) : 0);
 
-        $redemption->load('merchant');
-        $at = Money::format($redemption->amount_cents)." at {$redemption->merchant->name}";
+        $redemption = $service->redeem($this->employee($request), $merchant, $basket['total_cents'], $basket['items']);
+
+        $redemption->load(['merchant', 'items']);
+        $for = $redemption->itemsSummary();
+        $at = Money::format($redemption->amount_cents).($for ? " ({$for})" : '')." at {$redemption->merchant->name}";
 
         return redirect()->route('employee.wallet')->with('redemption_id', $redemption->id)->with(...($redemption->isApproved()
             ? ['status', "{$at} approved. ".PayoutOutcome::sentence($redemption)]

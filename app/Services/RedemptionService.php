@@ -12,6 +12,7 @@ use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use LogicException;
 
 class RedemptionService
 {
@@ -30,9 +31,19 @@ class RedemptionService
      * credits the merchant; a held one earns it nothing until approved. A
      * cleared one funded by Stripe-paid credits is then transferred to the
      * merchant through Stripe (test mode), after the transaction commits.
+     *
+     * $items (from RedemptionBasket) are display only (ADR 0023): they are
+     * stored with the redemption after scoring and never reach the signals
+     * or the AI, which see exactly the amount and nothing else.
+     *
+     * @param  list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int}>  $items
      */
-    public function redeem(Employee $employee, Merchant $merchant, int $amountCents): Redemption
+    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = []): Redemption
     {
+        if ($items !== [] && array_sum(array_map(fn ($i) => $i['unit_price_cents'] * $i['quantity'], $items)) !== $amountCents) {
+            throw new LogicException('The items must add up to the redemption amount.');
+        }
+
         $this->ensureAffordable($employee, $amountCents);
 
         $signals = $this->signals->calculate($employee, $merchant, $amountCents);
@@ -40,7 +51,7 @@ class RedemptionService
         // The AI call happens outside the transaction so the database is never locked while we wait.
         $verdict = $this->detector->score($signals);
 
-        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $signals, $verdict) {
+        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $signals, $verdict) {
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.
@@ -60,6 +71,10 @@ class RedemptionService
                 'signals' => $signals,
                 'scored_by' => $verdict->scoredBy,
             ]);
+
+            foreach ($items as $item) {
+                $redemption->items()->create($item);
+            }
 
             CreditLedgerEntry::create([
                 'employee_id' => $employee->id,
