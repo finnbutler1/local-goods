@@ -11,6 +11,7 @@ class Merchant extends Model
     protected $fillable = [
         'bid_id', 'name', 'category', 'address', 'user_id', 'stripe_account_id', 'stripe_onboarding_key',
         'stripe_details_submitted', 'stripe_payouts_enabled', 'stripe_transfers_active', 'stripe_synced_at',
+        'stripe_set_up_by_platform',
     ];
 
     protected function casts(): array
@@ -20,6 +21,7 @@ class Merchant extends Model
             'stripe_payouts_enabled' => 'boolean',
             'stripe_transfers_active' => 'boolean',
             'stripe_synced_at' => 'datetime',
+            'stripe_set_up_by_platform' => 'boolean',
         ];
     }
 
@@ -89,8 +91,15 @@ class Merchant extends Model
         };
     }
 
+    /** Shown wherever a merchant's Stripe status is, so a platform-made demo account is never passed off as self-onboarded. */
+    public const PLATFORM_SETUP_LABEL = 'Demo account set up by Local Goods in test mode';
+
     public function stripeOnboardingLabel(): string
     {
+        if ($this->stripe_set_up_by_platform && $this->stripe_account_id !== null) {
+            return $this->isStripeOnboarded() ? self::PLATFORM_SETUP_LABEL : self::PLATFORM_SETUP_LABEL.' (Stripe is still checking it)';
+        }
+
         return match ($this->stripeOnboardingStatus()) {
             'not_started' => 'Not connected to Stripe',
             'complete' => 'Stripe onboarding complete',
