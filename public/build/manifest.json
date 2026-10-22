@@ -24,7 +24,7 @@
     "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-C9LPiG1v.css",
+    "file": "assets/app-DtWUHBn9.css",
     "name": "app",
     "names": [
       "app.css"
@@ -41,7 +41,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DWyEC81x.js",
+    "file": "assets/app-C8qQb7KW.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

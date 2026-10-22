@@ -40,10 +40,6 @@
         </p>
     </header>
 
-    <div aria-live="polite">
-        <x-flash />
-    </div>
-
     <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <x-card padding="p-4 sm:p-5">
             <dt class="text-sm font-semibold text-muted">Assessed by the AI</dt>
