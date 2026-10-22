@@ -19,9 +19,11 @@ class DemoResetter
         'credit_ledger_entries',
         'redemption_decisions',
         'merchant_payouts',
+        'redemption_items',
         'credit_allocations',
         'credit_purchases',
         'redemptions',
+        'merchant_products',
         'merchants',
         'employees',
         'employers',
@@ -30,9 +32,17 @@ class DemoResetter
 
     /**
      * Demo tables the seed leaves empty: decisions only exist once a person
-     * reviews a held redemption, so demo:seed-if-empty doesn't count them.
+     * reviews a held redemption, and items only once an employee picks from
+     * a menu (seeded history is bare amounts), so demo:seed-if-empty doesn't
+     * count them.
      */
-    public const EMPTY_AFTER_SEED = ['redemption_decisions'];
+    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items'];
+
+    /**
+     * Added after the live demo was first seeded (ADR 0023): if only this
+     * is empty, demo:seed-if-empty adds the menus and nothing else.
+     */
+    public const MENUS_TABLE = 'merchant_products';
 
     /** Stripe connection columns kept across a reset, matched by merchant name (ADR 0015). */
     private const KEPT_STRIPE_COLUMNS = [

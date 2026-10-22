@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Bid;
 use App\Models\Employee;
+use App\Models\MerchantProduct;
 use App\Models\Redemption;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -55,6 +56,21 @@ class SeedDemoIfEmptyTest extends TestCase
         $this->assertSame(1, Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->count());
         $this->assertTrue(User::whereKey($user->id)->exists());
         $this->assertTrue(DB::table('sessions')->where('id', 'keep-me')->exists());
+    }
+
+    public function test_adds_only_the_menus_to_a_demo_seeded_before_them(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        DB::table('merchant_products')->delete();
+        $before = [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents()];
+
+        $this->artisan('demo:seed-if-empty')
+            ->expectsOutputToContain('product menus')
+            ->assertSuccessful();
+
+        $this->assertSame(collect(DatabaseSeeder::DEMO_MENUS)->flatten(1)->count(), MerchantProduct::count());
+        $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents()]);
+        $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
     }
 
     public function test_leaves_a_partly_filled_database_alone(): void
