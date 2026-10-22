@@ -347,6 +347,18 @@ If `APP_KEY` is ever rotated, the instance id changes and older objects
 from that server look like another environment's. Objects this database
 knows by id are still counted.
 
+**Trials run outside the app get their own label.** A one-off script or
+scratch database run against real Stripe test mode must use its own
+`APP_ENV` (e.g. `trial`) and a fresh `APP_KEY`, so its objects are never
+mistaken for the local app's. One early Buy-credits trial (2026-10-21)
+reused the local `APP_KEY`. Its two payments, `pi_3UTC951FdzFRuuh61hYEltse`
+($256.25, MPG-20261021-12) and `pi_3UTBzi1FdzFRuuh61aqLJwJ4` ($250.00,
+MPG-20261021-5), then showed as mismatches on the local reconciliation
+page. On 2026-10-22 their metadata was corrected in Stripe test mode to
+`lg_env=trial`, with an `lg_retagged` note saying what they were. They now
+appear under "From another environment, not counted". No refund was made,
+no ledger was changed, and production reconciliation is unchanged.
+
 ## Privacy
 
 Nothing sent to Stripe names an employee: Checkout carries the purchase
