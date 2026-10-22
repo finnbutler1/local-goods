@@ -124,6 +124,33 @@ class FakeStripeGateway implements StripeGateway
         });
     }
 
+    /** Like Stripe: transfers active at once; payouts wait for a bank account. */
+    public function createDemoAccount(array $params, string $idempotencyKey): array
+    {
+        return $this->remember($idempotencyKey, function () use ($params) {
+            $this->calls[] = ['demo_account', $params];
+            $id = 'acct_test_'.$this->next();
+
+            $account = self::v2Account($id, 'active', waitingOnMerchant: false);
+            $account['dashboard'] = 'none';
+            $account['configuration']['recipient']['capabilities']['stripe_balance']['payouts']['status'] = 'restricted';
+            $account['requirements']['entries'] = [['awaiting_action_from' => 'user', 'description' => 'external_account', 'errors' => []]];
+
+            return $this->accounts[$id] = $account;
+        });
+    }
+
+    public function addTestBankAccount(string $accountId, string $idempotencyKey): array
+    {
+        return $this->remember($idempotencyKey, function () use ($accountId) {
+            $this->calls[] = ['bank_account', ['account' => $accountId]];
+            $this->accounts[$accountId] ?? throw new StripeGatewayException('No such account.');
+            $this->accounts[$accountId] = ['dashboard' => 'none'] + self::v2Account($accountId, 'active', waitingOnMerchant: false);
+
+            return ['id' => 'ba_test_'.$this->next(), 'object' => 'bank_account', 'account' => $accountId];
+        });
+    }
+
     public function createAccountLink(string $accountId, string $refreshUrl, string $returnUrl): array
     {
         $this->calls[] = ['account_link', compact('accountId', 'refreshUrl', 'returnUrl')];

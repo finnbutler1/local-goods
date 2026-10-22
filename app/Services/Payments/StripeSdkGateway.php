@@ -61,6 +61,27 @@ class StripeSdkGateway implements StripeGateway
         ));
     }
 
+    /**
+     * The same v2 account, but with no Stripe dashboard, so Local Goods may
+     * fill in Stripe's test details and accept the terms itself. Stripe
+     * refuses that for Express ("tos_acceptance_on_behalf_not_allowed").
+     */
+    public function createDemoAccount(array $params, string $idempotencyKey): array
+    {
+        return $this->call('v2.accounts.create', fn () => $this->client()->v2->core->accounts->create(
+            ['dashboard' => 'none', 'include' => self::ACCOUNT_INCLUDE] + $params,
+            ['idempotency_key' => $idempotencyKey],
+        ));
+    }
+
+    /** btok_us_verified is Stripe's test-mode token for a verified US bank account; it only works with test keys. */
+    public function addTestBankAccount(string $accountId, string $idempotencyKey): array
+    {
+        return $this->call('external_accounts.create', fn () => $this->client()->accounts->createExternalAccount(
+            $accountId, ['external_account' => 'btok_us_verified'], ['idempotency_key' => $idempotencyKey],
+        ));
+    }
+
     public function createAccountLink(string $accountId, string $refreshUrl, string $returnUrl): array
     {
         return $this->call('v2.account_links.create', fn () => $this->client()->v2->core->accountLinks->create([

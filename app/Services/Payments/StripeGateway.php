@@ -22,6 +22,17 @@ interface StripeGateway
     /** @return array<string, mixed> an Account */
     public function createExpressAccount(array $params, string $idempotencyKey): array;
 
+    /**
+     * A v2 account with no Stripe dashboard, details filled in by Local Goods.
+     * Only for fictional demo merchants with no login (DemoMerchantStripeSetup).
+     *
+     * @return array<string, mixed> an Account
+     */
+    public function createDemoAccount(array $params, string $idempotencyKey): array;
+
+    /** Gives a test-mode account Stripe's verified test bank account, so payouts are enabled. @return array<string, mixed> a bank account */
+    public function addTestBankAccount(string $accountId, string $idempotencyKey): array;
+
     /** @return array{url: string} */
     public function createAccountLink(string $accountId, string $refreshUrl, string $returnUrl): array;
 
