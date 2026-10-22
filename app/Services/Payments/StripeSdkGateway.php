@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiConnectionException;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\AuthenticationException;
-use Stripe\Exception\PermissionException;
 use Stripe\Exception\ExceptionInterface as StripeExceptionInterface;
+use Stripe\Exception\PermissionException;
 use Stripe\StripeClient;
 use Stripe\StripeObject;
 
@@ -35,6 +35,16 @@ class StripeSdkGateway implements StripeGateway
     public function createCheckoutSession(array $params, string $idempotencyKey): array
     {
         return $this->call('checkout.create', fn () => $this->client()->checkout->sessions->create($params, ['idempotency_key' => $idempotencyKey]));
+    }
+
+    public function retrieveCheckoutSession(string $sessionId): array
+    {
+        return $this->call('checkout.retrieve', fn () => $this->client()->checkout->sessions->retrieve($sessionId));
+    }
+
+    public function expireCheckoutSession(string $sessionId): array
+    {
+        return $this->call('checkout.expire', fn () => $this->client()->checkout->sessions->expire($sessionId));
     }
 
     /**

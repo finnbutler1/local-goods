@@ -99,16 +99,15 @@ class ActionConfirmationsTest extends TestCase
         $this->assertNoFullNames($toast);
     }
 
-    public function test_requesting_then_paying_for_credits_in_simulated_mode(): void
+    public function test_buying_credits_in_simulated_mode_is_one_step(): void
     {
         $this->signIn(Role::EmployerAdmin);
 
-        $toast = $this->toast($this->followingRedirects()->post('/employer/purchases', ['purchase_amount' => '500']), 'notice');
-        $this->assertStringContainsString('for $500.00 requested. Press "Pay now" to add the credits.', $toast);
-
+        $toast = $this->toast($this->followingRedirects()->post('/employer/purchases', ['purchase_amount' => '500']));
         $purchase = CreditPurchase::latest('id')->firstOrFail();
-        $toast = $this->toast($this->followingRedirects()->post("/employer/purchases/{$purchase->id}/pay"));
-        $this->assertStringContainsString('$500.00 in credits added (simulated, no real money). Ready to give.', $toast);
+
+        $this->assertStringContainsString("\$500.00 in credits added (simulated, no real money, {$purchase->reference}). Ready to give.", $toast);
+        $this->assertStringNotContainsString('fee', $toast);
     }
 
     public function test_back_from_stripe_checkout_once_paid(): void
@@ -122,13 +121,16 @@ class ActionConfirmationsTest extends TestCase
         $this->assertStringContainsString("\$500.00 in credits added (Stripe test mode, {$purchase->reference}). Ready to give.", $toast);
     }
 
-    public function test_back_from_stripe_checkout_cancelled(): void
+    public function test_cancelling_a_stripe_payment_says_nothing_was_charged(): void
     {
+        $this->fakeStripe();
         $this->signIn(Role::EmployerAdmin);
+        $this->post('/employer/purchases', ['purchase_amount' => '500']);
+        $purchase = CreditPurchase::latest('id')->firstOrFail();
 
-        $toast = $this->toast($this->get('/employer?checkout=cancelled&purchase=X'), 'notice');
+        $toast = $this->toast($this->followingRedirects()->post("/employer/purchases/{$purchase->id}/cancel"), 'notice');
 
-        $this->assertStringContainsString('Payment cancelled. Nothing was charged', $toast);
+        $this->assertStringContainsString("Payment cancelled. Nothing was charged for {$purchase->reference} (\$500.00 in credits).", $toast);
     }
 
     public function test_a_held_redemption_says_no_money_moves_yet(): void

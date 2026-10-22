@@ -15,6 +15,7 @@ use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
 use App\Support\Money;
 use App\Support\StripeMode;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -25,9 +26,10 @@ use Illuminate\View\View;
 use InvalidArgumentException;
 
 /**
- * The employer/HR dashboard: program setup, buying credits (pending until
- * paid: by Stripe Checkout in test mode, or simulated when Stripe keys are
- * missing; ADR 0015), handing them to
+ * The employer/HR dashboard: program setup, buying credits in one step
+ * (Stripe's embedded Checkout on this page in test mode, the credits locked
+ * until Stripe's webhook confirms; or paid at once, simulated, when Stripe
+ * keys are missing; ADR 0015), handing them to
  * employees, and how much the team got out into the neighborhood. The MVP
  * has one employer (ADR 0002). Judges see it read-only; employees are shown
  * by initials and staff number, never by name (ADR 0014).
@@ -59,6 +61,7 @@ class EmployerDashboardController extends Controller
         return view('dashboards.employer', [
             'employer' => $employer,
             'stripe' => StripeMode::active(),
+            'buy' => $this->buyState($request, $employer),
             'metrics' => $metrics->for($employer),
             'balance' => $employer->balanceCents(),
             'pendingCents' => EmployerProgram::pendingCents($employer),
@@ -72,23 +75,57 @@ class EmployerDashboardController extends Controller
     }
 
     /**
-     * Back from Stripe Checkout (?checkout=returned|cancelled&purchase=…): say
-     * how it went in the page's toast. Only Stripe's signed webhook marks a
-     * purchase paid, so "returned" alone may still be pending.
+     * Back from Stripe's embedded Checkout (?checkout=returned&purchase=…):
+     * once Stripe's signed webhook has marked it paid, the green toast says
+     * so. Until then the Buy credits card shows "Confirming with Stripe…"
+     * and checks by itself (buyState), so there is no toast yet.
      */
     private function checkoutMessage(Request $request, Employer $employer): void
     {
-        $checkout = $request->query('checkout');
-        $purchase = in_array($checkout, ['returned', 'cancelled'], true)
-            ? $employer->creditPurchases()->where('reference', (string) $request->query('purchase'))->first()
-            : null;
+        $purchase = $request->query('checkout') === 'returned' ? $this->purchaseFromQuery($employer, 'purchase') : null;
 
-        match (true) {
-            $checkout === 'cancelled' => $request->session()->now('notice', 'Payment cancelled. Nothing was charged; the purchase is still pending.'),
-            $purchase?->isPending() => $request->session()->now('notice', "Back from Stripe. {$purchase->reference} stays pending until Stripe confirms the payment to Local Goods, usually within a few seconds. Refresh this page to check."),
-            (bool) $purchase?->isStripe() => $request->session()->now('status', Money::format($purchase->amount_cents)." in credits added (Stripe test mode, {$purchase->reference}). Ready to give."),
-            default => null,
+        if ($purchase?->isStripe()) {
+            $request->session()->now('status', Money::format($purchase->amount_cents)." in credits added (Stripe test mode, {$purchase->reference}".self::feeClause($purchase, 'charged').'). Ready to give.');
+        }
+    }
+
+    /**
+     * What the Buy credits card shows: "paying" (Stripe's card form for this
+     * purchase), "confirming" (paid at Stripe, waiting for the webhook),
+     * "cancelled" (the form again, filled in, with Try again) or the plain
+     * form. Paying is only for someone who may buy; judges see the form.
+     *
+     * @return array{state: string, purchase: ?CreditPurchase}
+     */
+    private function buyState(Request $request, Employer $employer): array
+    {
+        $paying = StripeMode::active() && Gate::allows('manage-employer-program') ? $this->purchaseFromQuery($employer, 'pay') : null;
+        $returned = $request->query('checkout') === 'returned' ? $this->purchaseFromQuery($employer, 'purchase') : null;
+        $cancelled = $this->purchaseFromQuery($employer, 'cancelled');
+
+        return match (true) {
+            (bool) $paying?->isPending() => ['state' => 'paying', 'purchase' => $paying],
+            (bool) $returned?->isPending() => ['state' => 'confirming', 'purchase' => $returned],
+            (bool) $cancelled?->isCancelled() => ['state' => 'cancelled', 'purchase' => $cancelled],
+            default => ['state' => 'form', 'purchase' => null],
         };
+    }
+
+    private function purchaseFromQuery(Employer $employer, string $key): ?CreditPurchase
+    {
+        $reference = request()->query($key);
+
+        return is_string($reference) && $reference !== ''
+            ? $employer->creditPurchases()->where('reference', $reference)->first()
+            : null;
+    }
+
+    /** "; $102.50 charged, including a $2.50 platform fee", or nothing when the purchase has no fee (ADR 0021). */
+    public static function feeClause(CreditPurchase $purchase, string $verb): string
+    {
+        return $purchase->platform_fee_cents > 0
+            ? '; '.Money::format($purchase->totalCents()).' '.$verb.', including a '.Money::format($purchase->platform_fee_cents).' platform fee'
+            : '';
     }
 
     /**
@@ -164,6 +201,12 @@ class EmployerDashboardController extends Controller
             'Program saved. These amounts now fill in the Give credits form, and the monthly budget is checked on every gift from now on. Credits already given don\'t change.');
     }
 
+    /**
+     * "Buy credits", one step. Stripe test mode: the pending purchase is
+     * written and the page comes back with Stripe's card form for it; the
+     * credits unlock only when the webhook confirms. Simulated mode (no
+     * Stripe keys): paid straight away with no real money.
+     */
     public function storePurchase(Request $request, CreditLedger $ledger): RedirectResponse
     {
         Gate::authorize('manage-employer-program');
@@ -175,27 +218,68 @@ class EmployerDashboardController extends Controller
 
         $purchase = $ledger->requestPurchase($employer, Money::toCents($data['purchase_amount']), EmployerProgram::nextReference($employer));
 
-        return redirect()->to(route('employer.dashboard').'#credits')->with('notice',
-            'Purchase '.$purchase->reference.' for '.Money::format($purchase->amount_cents).' requested. '
-            .(StripeMode::active() ? 'Press "Pay with Stripe (test mode)" to add the credits.' : 'Press "Pay now" to add the credits.'));
+        if (StripeMode::active()) {
+            return redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy');
+        }
+
+        $ledger->payPurchase($purchase);
+
+        return redirect()->to(route('employer.dashboard').'#credits')->with('status',
+            Money::format($purchase->amount_cents)." in credits added (simulated, no real money, {$purchase->reference}".self::feeClause($purchase, 'paid').'). Ready to give.');
     }
 
     /**
-     * Stripe test mode: off to Stripe Checkout; the purchase stays pending
-     * until the webhook confirms payment. Simulated mode (no Stripe keys):
-     * marks it paid with no real money, as before.
+     * Stripe's embedded Checkout asks for this (resources/js/checkout.js):
+     * the client secret for the purchase's Checkout. Opening it writes
+     * nothing to the ledger.
      */
-    public function payPurchase(Request $request, CreditPurchase $purchase, CreditLedger $ledger, StripeCheckout $checkout): RedirectResponse
+    public function checkout(CreditPurchase $purchase, StripeCheckout $checkout): JsonResponse
     {
-        Gate::authorize('manage-employer-program');
+        $this->authorizeOwn($purchase);
+        abort_unless(StripeMode::active(), 404);
+
+        try {
+            return response()->json(['client_secret' => $checkout->start($purchase)]);
+        } catch (InvalidArgumentException|StripeGatewayException $e) {
+            return response()->json(['message' => "Payment didn't start: {$e->getMessage()} Nothing was charged."], 422);
+        }
+    }
+
+    /** "Confirming with Stripe…" asks this every few seconds until the webhook has decided. Reads only. */
+    public function purchaseStatus(CreditPurchase $purchase): JsonResponse
+    {
         abort_unless($purchase->employer_id === $this->employer()?->id, 404);
 
+        return response()->json([
+            'status' => in_array($purchase->status, CreditPurchase::PAID_STATUSES, true) ? 'paid' : $purchase->status,
+            'error' => $purchase->payment_error,
+        ]);
+    }
+
+    /**
+     * "Continue paying" / "Try again" on a pending purchase. Stripe test
+     * mode: the old Checkout is closed first, then a fresh one opens on this
+     * page; if Stripe already has the payment, we wait for it instead.
+     * Simulated mode: marks it paid with no real money, as before.
+     */
+    public function payPurchase(CreditPurchase $purchase, CreditLedger $ledger, StripeCheckout $checkout): RedirectResponse
+    {
+        $this->authorizeOwn($purchase);
+
         if (StripeMode::active()) {
-            try {
-                return redirect()->away($checkout->start($purchase));
-            } catch (InvalidArgumentException|StripeGatewayException $e) {
-                return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Payment didn't start: {$e->getMessage()} Nothing was charged; the purchase is still pending.");
+            if (! $purchase->isPending()) {
+                return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Nothing changed: {$purchase->reference} is ".($purchase->isCancelled() ? 'cancelled' : 'already paid').'.');
             }
+
+            try {
+                $fresh = $checkout->restart($purchase);
+            } catch (StripeGatewayException $e) {
+                return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Payment didn't start: {$e->getMessage()} Nothing was charged; {$purchase->reference} is still pending.");
+            }
+
+            return $fresh
+                ? redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy')
+                : redirect()->to(route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy');
         }
 
         try {
@@ -205,7 +289,45 @@ class EmployerDashboardController extends Controller
         }
 
         return redirect()->to(route('employer.dashboard').'#credits')->with('status',
-            Money::format($purchase->amount_cents).' in credits added (simulated, no real money). Ready to give.');
+            Money::format($purchase->amount_cents)." in credits added (simulated, no real money, {$purchase->reference}".self::feeClause($purchase, 'paid').'). Ready to give.');
+    }
+
+    /**
+     * "Cancel payment". The purchase is cancelled only once Stripe confirms
+     * its Checkout can't take a payment any more; if Stripe already has the
+     * payment, it is confirmed instead. Never touches the ledger.
+     */
+    public function cancelPurchase(CreditPurchase $purchase, StripeCheckout $checkout): RedirectResponse
+    {
+        $this->authorizeOwn($purchase);
+
+        if (! $purchase->isPending()) {
+            return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Nothing changed: {$purchase->reference} is ".($purchase->isCancelled() ? 'already cancelled' : 'already paid').'.');
+        }
+
+        if (StripeMode::active()) {
+            try {
+                $closed = $checkout->close($purchase);
+            } catch (StripeGatewayException $e) {
+                return redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy')->with('error', "Couldn't cancel: {$e->getMessage()} Nothing was charged and nothing changed.");
+            }
+
+            if (! $closed) {
+                return redirect()->to(route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy')->with('notice',
+                    "Stripe already has the payment for {$purchase->reference}, so it can't be cancelled. The credits arrive once Stripe confirms it.");
+            }
+        }
+
+        CreditPurchase::whereKey($purchase->id)->where('status', CreditPurchase::STATUS_PENDING)->update(['status' => CreditPurchase::STATUS_CANCELLED]);
+
+        return redirect()->to(route('employer.dashboard', ['cancelled' => $purchase->reference]).'#buy')->with('notice',
+            'Payment cancelled. Nothing was charged for '.$purchase->reference.' ('.Money::format($purchase->amount_cents).' in credits).');
+    }
+
+    private function authorizeOwn(CreditPurchase $purchase): void
+    {
+        Gate::authorize('manage-employer-program');
+        abort_unless($purchase->employer_id === $this->employer()?->id, 404);
     }
 
     public function allocate(Request $request, CreditLedger $ledger): RedirectResponse

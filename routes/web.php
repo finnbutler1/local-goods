@@ -92,12 +92,16 @@ Route::middleware('auth')->group(function () {
             ->where('candidate', 'MC-\d{3}')->middleware('throttle:30,1,bid-admin.merchants.decide')->name('merchants.decide');
     });
 
-    // Employer/HR dashboard. Purchases stay pending until "Pay now" (simulated, ADR 0014).
+    // Employer/HR dashboard. "Buy credits" is one step: Stripe's embedded Checkout on the page
+    // (credits locked until the webhook confirms), or paid at once when simulated (ADR 0014, 0015).
     Route::middleware('role:employer_admin')->prefix('employer')->name('employer.')->group(function () {
         Route::get('/', [EmployerDashboardController::class, 'show'])->name('dashboard');
         Route::post('/program', [EmployerDashboardController::class, 'updateProgram'])->name('program.update');
-        Route::post('/purchases', [EmployerDashboardController::class, 'storePurchase'])->name('purchases.store');
-        Route::post('/purchases/{purchase}/pay', [EmployerDashboardController::class, 'payPurchase'])->name('purchases.pay');
+        Route::post('/purchases', [EmployerDashboardController::class, 'storePurchase'])->middleware('throttle:20,1,employer.purchases.store')->name('purchases.store');
+        Route::post('/purchases/{purchase}/pay', [EmployerDashboardController::class, 'payPurchase'])->middleware('throttle:20,1,employer.purchases.pay')->name('purchases.pay');
+        Route::post('/purchases/{purchase}/checkout', [EmployerDashboardController::class, 'checkout'])->middleware('throttle:20,1,employer.purchases.checkout')->name('purchases.checkout');
+        Route::get('/purchases/{purchase}/status', [EmployerDashboardController::class, 'purchaseStatus'])->middleware('throttle:90,1,employer.purchases.status')->name('purchases.status');
+        Route::post('/purchases/{purchase}/cancel', [EmployerDashboardController::class, 'cancelPurchase'])->middleware('throttle:10,1,employer.purchases.cancel')->name('purchases.cancel');
         Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
     });
     Route::middleware('role:merchant')->group(function () {

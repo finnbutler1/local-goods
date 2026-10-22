@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Bid;
+use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
 use App\Models\MerchantPayout;
 use App\Support\Money;
@@ -12,7 +13,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * Puts the ledger next to Stripe for Stripe-funded activity only (ADR 0015):
- * purchases paid in Stripe test mode against Stripe's payments, Stripe-
+ * purchases paid in Stripe test mode (credits plus any platform fee, ADR
+ * 0021) against Stripe's payments, Stripe-
  * channel payouts against Stripe's transfers, and the platform balance.
  * Simulated purchases and payouts are not part of the check; they are only
  * counted. Each difference comes back as a plain-English sentence.
@@ -89,8 +91,13 @@ class StripeReconciliation
         $report['mismatches'] = [...$this->comparePurchases($intents), ...$this->compareTransfers($transfers)];
 
         if ($local['purchase_cents'] !== $report['stripe']['purchase_cents']) {
-            $report['mismatches'][] = 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe; Stripe received '
+            $report['mismatches'][] = 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe'.self::feeSplit($local).'; Stripe received '
                 .Money::format($report['stripe']['purchase_cents']).'. Difference: '.Money::format($report['stripe']['purchase_cents'] - $local['purchase_cents']).'.';
+        }
+        // The fee's own ledger lines, on the platform account, must add up to the fees those purchases charged.
+        if ($local['fee_cents'] !== $local['fee_line_cents']) {
+            $report['mismatches'][] = 'Platform fees: Stripe-paid purchases charged '.Money::format($local['fee_cents']).' in platform fees, but the platform account in the ledger has '
+                .Money::format($local['fee_line_cents']).' for them.';
         }
         if ($local['transfer_cents'] !== $report['stripe']['transfer_cents']) {
             $report['mismatches'][] = 'Transfers: the ledger counts '.Money::format($local['transfer_cents']).' sent to merchants through Stripe; Stripe shows '
@@ -117,14 +124,25 @@ class StripeReconciliation
         return $report;
     }
 
-    /** @return array{purchase_cents: int, purchases: int, transfer_cents: int, transfers: int} */
+    /**
+     * purchase_cents is what the employer paid: credits plus platform fees
+     * (fees are 0 while the fee is off).
+     *
+     * @return array{purchase_cents: int, credit_cents: int, fee_cents: int, fee_line_cents: int, purchases: int, transfer_cents: int, transfers: int}
+     */
     private function localTotals(): array
     {
         $paid = CreditPurchase::where('status', CreditPurchase::STATUS_PAID);
         $sent = MerchantPayout::where('status', MerchantPayout::STATUS_SENT);
+        $credits = (int) (clone $paid)->sum('amount_cents');
+        $fees = (int) (clone $paid)->sum('platform_fee_cents');
 
         return [
-            'purchase_cents' => (int) (clone $paid)->sum('amount_cents'),
+            'purchase_cents' => $credits + $fees,
+            'credit_cents' => $credits,
+            'fee_cents' => $fees,
+            'fee_line_cents' => (int) CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_PLATFORM_FEE)
+                ->whereIn('credit_purchase_id', (clone $paid)->select('id'))->sum('amount_cents'),
             'purchases' => (clone $paid)->count(),
             'transfer_cents' => (int) (clone $sent)->sum('amount_cents'),
             'transfers' => (clone $sent)->count(),
@@ -140,10 +158,12 @@ class StripeReconciliation
         foreach ($paid as $purchase) {
             $pi = $intents->get($purchase->stripe_payment_intent_id);
             if ($pi === null) {
-                $out[] = 'Local Goods counts '.$purchase->reference.' ('.Money::format($purchase->amount_cents).') as paid through Stripe ('
+                $out[] = 'Local Goods counts '.$purchase->reference.' ('.Money::format($purchase->totalCents()).') as paid through Stripe ('
                     .$purchase->stripe_payment_intent_id.'), but Stripe has no such successful payment since the last reset.';
-            } elseif (($pi['amount_received'] ?? $pi['amount']) !== $purchase->amount_cents) {
-                $out[] = $purchase->reference.' is '.Money::format($purchase->amount_cents).' in the ledger but Stripe received '
+            } elseif (($pi['amount_received'] ?? $pi['amount']) !== $purchase->totalCents()) {
+                $out[] = $purchase->reference.' is '.Money::format($purchase->totalCents()).' in the ledger'
+                    .($purchase->platform_fee_cents > 0 ? ' (credits '.Money::format($purchase->amount_cents).' + platform fee '.Money::format($purchase->platform_fee_cents).')' : '')
+                    .' but Stripe received '
                     .Money::format($pi['amount_received'] ?? $pi['amount']).' ('.$pi['id'].').';
             }
         }
@@ -182,6 +202,14 @@ class StripeReconciliation
         }
 
         return $out;
+    }
+
+    /** " (credits $X + platform fees $Y)", or nothing while no Stripe-paid purchase has a fee. */
+    private static function feeSplit(array $local): string
+    {
+        return $local['fee_cents'] > 0
+            ? ' (credits '.Money::format($local['credit_cents']).' + platform fees '.Money::format($local['fee_cents']).')'
+            : '';
     }
 
     /** Made by this environment: tagged for it, or untagged (before tagging) but already known to this database. */

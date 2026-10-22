@@ -56,7 +56,13 @@
                     ] as [$label, $ours, $ourCount, $theirs, $theirCount])
                         <tr>
                             <th scope="row" class="px-5 py-3 font-semibold sm:px-6">{{ $label }}</th>
-                            <td class="px-5 py-3 text-right">{{ Money::format($ours) }} <span class="text-sm text-muted">({{ $ourCount }})</span></td>
+                            <td class="px-5 py-3 text-right">
+                                {{ Money::format($ours) }} <span class="text-sm text-muted">({{ $ourCount }})</span>
+                                @if ($loop->first && $report['ledger']['fee_cents'] > 0)
+                                    {{-- Only when the platform fee is on (ADR 0021). --}}
+                                    <span class="block text-sm text-muted" data-fee-split>credits {{ Money::format($report['ledger']['credit_cents']) }} + platform fees {{ Money::format($report['ledger']['fee_cents']) }}</span>
+                                @endif
+                            </td>
                             <td class="px-5 py-3 text-right">{{ Money::format($theirs) }} <span class="text-sm text-muted">({{ $theirCount }})</span></td>
                             <td class="px-5 py-3">
                                 @if ($ours === $theirs && $ourCount === $theirCount)

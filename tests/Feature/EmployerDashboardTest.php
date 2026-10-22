@@ -9,7 +9,9 @@ use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
 use App\Models\Employee;
 use App\Models\Employer;
+use App\Services\CreditLedger;
 use App\Services\DemoResetter;
+use App\Services\EmployerMetrics;
 use App\Services\EmployerProgram;
 use App\Support\Money;
 use Database\Seeders\DatabaseSeeder;
@@ -40,11 +42,10 @@ class EmployerDashboardTest extends TestCase
     /** Buys and pays for credits through the dashboard; returns the purchase. */
     private function fund(string $dollars): CreditPurchase
     {
+        // Simulated mode: one step, paid at once.
         $this->post('/employer/purchases', ['purchase_amount' => $dollars])->assertRedirect();
-        $purchase = CreditPurchase::latest('id')->firstOrFail();
-        $this->post("/employer/purchases/{$purchase->id}/pay")->assertRedirect();
 
-        return $purchase;
+        return CreditPurchase::latest('id')->firstOrFail();
     }
 
     public function test_the_dashboard_shows_metrics_credits_and_program(): void
@@ -55,40 +56,48 @@ class EmployerDashboardTest extends TestCase
             ->assertSee('How we count this')
             ->assertSee('Visits per week, last 8 weeks')
             ->assertSee('Buy credits')
-            ->assertSee("Stripe isn't connected on this server, so \"Pay now\" marks it paid with no real money", false)
+            ->assertSee("Stripe isn't connected on this server, so buying is simulated: the credits are added straight away with no real money.", false)
+            ->assertSee('Buy credits (simulated, no real money)')
+            ->assertDontSee('Request purchase')
             ->assertSee('Simulated')
             ->assertSee('Program setup')
             ->assertSee(Employee::orderBy('id')->firstOrFail()->publicLabel())
             ->assertDontSee('Coming in a later build');
     }
 
-    public function test_requesting_a_purchase_writes_only_a_pending_row_and_paying_writes_one_ledger_entry(): void
+    public function test_buying_in_simulated_mode_is_one_step_with_one_ledger_entry(): void
     {
         $balance = $this->employer->balanceCents();
-        $entries = CreditLedgerEntry::count();
 
         $this->post('/employer/purchases', ['purchase_amount' => '6000.50'])
-            ->assertRedirect(route('employer.dashboard').'#credits')->assertSessionHas('notice');
+            ->assertRedirect(route('employer.dashboard').'#credits')->assertSessionHas('status');
 
         $purchase = CreditPurchase::latest('id')->firstOrFail();
-        $this->assertSame([600050, CreditPurchase::STATUS_PENDING], [$purchase->amount_cents, $purchase->status]);
-        $this->assertSame(0, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
-        $this->assertSame($entries, CreditLedgerEntry::count());
-        $this->assertSame($balance, $this->employer->balanceCents());
-        $this->get('/employer')->assertSee('Pay now (simulated, no real money)')->assertSee('$6,000.50');
-
-        $this->post("/employer/purchases/{$purchase->id}/pay")->assertSessionHas('status');
+        $this->assertSame([600050, CreditPurchase::STATUS_SIMULATED], [$purchase->amount_cents, $purchase->status]);
         $this->assertSame(1, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
         $this->assertSame($balance + 600050, $this->employer->balanceCents());
+        $this->get('/employer')->assertSee('$6,000.50')->assertSee('Paid (simulated)');
 
         $this->post("/employer/purchases/{$purchase->id}/pay")->assertSessionHas('error', 'Nothing changed: That purchase is already paid.');
         $this->assertSame(1, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
         $this->assertSame($balance + 600050, $this->employer->balanceCents());
     }
 
+    public function test_an_older_pending_purchase_can_still_be_paid_simulated(): void
+    {
+        $purchase = app(CreditLedger::class)->requestPurchase($this->employer, 25000, 'MPG-OLD-1');
+        $balance = $this->employer->balanceCents();
+
+        $this->get('/employer')->assertSee('Pay now (simulated, no real money)');
+        $this->post("/employer/purchases/{$purchase->id}/pay")->assertSessionHas('status');
+
+        $this->assertSame(1, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
+        $this->assertSame($balance + 25000, $this->employer->balanceCents());
+    }
+
     public function test_pending_credits_cannot_be_given_out(): void
     {
-        $this->post('/employer/purchases', ['purchase_amount' => '10000'])->assertRedirect();
+        app(CreditLedger::class)->requestPurchase($this->employer, 1000000, 'MPG-PENDING-1');
         $employee = Employee::orderBy('id')->firstOrFail();
         $before = [$this->employer->balanceCents(), $employee->balanceCents(), CreditAllocation::count()];
 
@@ -250,7 +259,7 @@ class EmployerDashboardTest extends TestCase
 
     public function test_the_participation_tiles_lead_with_counts(): void
     {
-        $m = app(\App\Services\EmployerMetrics::class)->for($this->employer);
+        $m = app(EmployerMetrics::class)->for($this->employer);
 
         $this->get('/employer')
             ->assertSeeInOrder([$m['redeemers'], 'employees got out', $m['participation_pct'].'% of enrolled · '.$m['staff_pct'].'% of all 120 staff'])

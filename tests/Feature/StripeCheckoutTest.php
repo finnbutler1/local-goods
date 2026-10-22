@@ -6,15 +6,17 @@ use App\Enums\Role;
 use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
 use App\Models\Employer;
+use App\Services\CreditLedger;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\UsesFakeStripe;
 use Tests\TestCase;
 
 /**
- * Employer purchases in Stripe test mode (ADR 0015): "Pay with Stripe"
- * opens Stripe Checkout and the purchase stays pending, with no ledger
- * entry, until a verified webhook confirms payment (StripeWebhookTest).
+ * Employer purchases in Stripe test mode (ADR 0015): "Buy credits" opens
+ * Stripe's embedded Checkout on the same page and the purchase stays
+ * pending, with no ledger entry, until a verified webhook confirms payment
+ * (StripeWebhookTest). The whole flow end to end is in BuyCreditsFlowTest.
  */
 class StripeCheckoutTest extends TestCase
 {
@@ -34,23 +36,45 @@ class StripeCheckoutTest extends TestCase
         $this->purchase = CreditPurchase::latest('id')->firstOrFail();
     }
 
-    public function test_the_page_shows_stripe_test_mode_and_the_test_card(): void
+    private function openCheckout(): array
     {
+        $this->postJson("/employer/purchases/{$this->purchase->id}/checkout")->assertOk()->assertJson(['client_secret' => 'cs_test_0001_secret_fake']);
+
+        return $this->stripe->callsOf('checkout')[0];
+    }
+
+    public function test_buy_credits_goes_straight_to_the_card_form_for_that_purchase(): void
+    {
+        $this->post('/employer/purchases', ['purchase_amount' => '300'])
+            ->assertRedirect(route('employer.dashboard', ['pay' => CreditPurchase::latest('id')->value('reference')]).'#buy');
+
         $this->get('/employer')->assertOk()
             ->assertSee('Stripe test mode')
-            ->assertSee('Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.', false)
-            ->assertSee('Pay with Stripe (test mode)')
+            ->assertSee('>Buy credits<', false)
+            ->assertDontSee('Request purchase')
             ->assertDontSee('Pay now (simulated, no real money)');
     }
 
-    public function test_paying_opens_checkout_with_the_reference_as_transfer_group_and_stays_pending(): void
+    public function test_the_paying_state_shows_the_test_card_and_stripes_form(): void
+    {
+        $this->get('/employer?pay='.$this->purchase->reference)->assertOk()
+            ->assertSee('Paying for <span class="font-semibold">'.$this->purchase->reference.'</span>', false)
+            ->assertSee('Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.', false)
+            ->assertSee('data-embedded-checkout', false)
+            ->assertSee('data-secret-url="'.route('employer.purchases.checkout', $this->purchase).'"', false)
+            ->assertSee('https://js.stripe.com/endive/stripe.js', false)
+            ->assertSee('Cancel payment');
+
+        $this->assertSame([], $this->stripe->calls, 'Showing the page creates nothing at Stripe');
+    }
+
+    public function test_opening_the_form_makes_an_embedded_checkout_and_stays_pending(): void
     {
         $entries = CreditLedgerEntry::count();
 
-        $this->post("/employer/purchases/{$this->purchase->id}/pay")
-            ->assertRedirect('https://checkout.stripe.test/cs_test_0001');
+        $session = $this->openCheckout();
 
-        [$session] = $this->stripe->callsOf('checkout');
+        $this->assertSame('embedded_page', $session['ui_mode']);
         $this->assertSame($this->purchase->reference, $session['payment_intent_data']['transfer_group']);
         $this->assertSame(25000, $session['line_items'][0]['price_data']['unit_amount']);
         $this->assertSame('usd', $session['line_items'][0]['price_data']['currency']);
@@ -61,40 +85,29 @@ class StripeCheckoutTest extends TestCase
         $this->assertSame($entries, CreditLedgerEntry::count(), 'No ledger entry before the webhook');
     }
 
-    public function test_coming_back_from_checkout_writes_nothing_and_says_it_is_waiting(): void
-    {
-        $this->post("/employer/purchases/{$this->purchase->id}/pay");
-        $entries = CreditLedgerEntry::count();
-
-        $this->get('/employer?checkout=returned&purchase='.$this->purchase->reference)->assertOk()
-            ->assertSee('stays pending until Stripe confirms the payment');
-
-        $this->assertTrue($this->purchase->fresh()->isPending());
-        $this->assertSame($entries, CreditLedgerEntry::count());
-    }
-
     public function test_pending_stripe_credits_cannot_be_allocated(): void
     {
-        $this->post("/employer/purchases/{$this->purchase->id}/pay");
+        $this->openCheckout();
         $balance = Employer::firstOrFail()->balanceCents();
 
         $this->post('/employer/allocations', ['mode' => 'bulk', 'recipients' => 'all', 'occasion' => 'monthly', 'amount' => (string) ($balance / 100 + 1)])
             ->assertSessionHasErrors('amount');
     }
 
-    public function test_paying_twice_reuses_the_same_checkout_session(): void
+    public function test_opening_the_form_twice_reuses_the_same_checkout_session(): void
     {
-        $this->post("/employer/purchases/{$this->purchase->id}/pay");
-        $this->post("/employer/purchases/{$this->purchase->id}/pay")->assertRedirect('https://checkout.stripe.test/cs_test_0001');
+        $this->openCheckout();
+        $this->openCheckout();
 
         $this->assertCount(1, $this->stripe->callsOf('checkout'));
+        $this->assertSame(['lg-checkout-'.$this->purchase->fresh()->payment_token], array_values(array_unique($this->stripe->idempotencyKeys)));
     }
 
     public function test_judges_see_the_stripe_badge_and_payment_id_but_no_pay_button(): void
     {
-        $this->post("/employer/purchases/{$this->purchase->id}/pay");
-        app(\App\Services\CreditLedger::class)->markPurchasePaidByStripe($this->purchase->fresh(), 'pi_test_judge', 'ch_test_judge', 25000, 'usd');
-        app(\App\Services\CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 1000, 'MPG-PENDING');
+        $this->openCheckout();
+        app(CreditLedger::class)->markPurchasePaidByStripe($this->purchase->fresh(), 'pi_test_judge', 'ch_test_judge', 25000, 'usd');
+        $pending = app(CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 1000, 'MPG-PENDING');
 
         $this->signIn(Role::Judge);
         $this->get('/judge/view-as/employer_admin');
@@ -104,45 +117,48 @@ class StripeCheckoutTest extends TestCase
             ->assertSee('pi_test_judge')
             ->assertSee("Read-only: judges can't pay", false)
             ->assertDontSee('/pay"', false);
-        $this->assertSame([], array_slice($this->stripe->callsOf('checkout'), 1), 'A judge opened Checkout');
+        // Even with ?pay= in the address a judge gets no card form.
+        $this->get('/employer?pay='.$pending->reference)->assertOk()->assertDontSee('data-embedded-checkout', false);
+        $this->postJson("/employer/purchases/{$pending->id}/checkout")->assertForbidden();
+        $this->assertCount(1, $this->stripe->callsOf('checkout'), 'A judge opened Checkout');
     }
 
     /**
      * The live bug of 2026-10-16: Stripe's current API refuses
-     * payment_method_types on a Checkout Session (400), so "Pay with
-     * Stripe" bounced back to the dashboard. Every field we send must be
-     * one Stripe accepts, and the amount, currency, URLs and transfer
-     * group must be right.
+     * payment_method_types on a Checkout Session (400). Every field we send
+     * must be one Stripe accepts, and the amount, currency, return URL and
+     * transfer group must be right.
      */
     public function test_the_checkout_request_only_sends_fields_stripe_accepts(): void
     {
-        $this->post("/employer/purchases/{$this->purchase->id}/pay")->assertRedirect('https://checkout.stripe.test/cs_test_0001');
+        $session = $this->openCheckout();
 
-        [$session] = $this->stripe->callsOf('checkout');
         $this->assertArrayNotHasKey('payment_method_types', $session);
         $this->assertSame(
-            ['mode', 'client_reference_id', 'line_items', 'payment_intent_data', 'metadata', 'success_url', 'cancel_url'],
+            ['mode', 'ui_mode', 'client_reference_id', 'line_items', 'payment_intent_data', 'metadata', 'expires_at', 'return_url'],
             array_keys($session),
         );
         $this->assertSame('payment', $session['mode']);
+        $this->assertCount(1, $session['line_items'], 'With the fee off: credits only');
         $this->assertSame(['currency' => 'usd', 'unit_amount' => 25000], array_intersect_key($session['line_items'][0]['price_data'], array_flip(['currency', 'unit_amount'])));
         $this->assertSame($this->purchase->reference, $session['payment_intent_data']['transfer_group']);
-        $this->assertSame(route('employer.dashboard').'?checkout=returned&purchase='.$this->purchase->reference.'#credits', $session['success_url']);
-        $this->assertSame(route('employer.dashboard').'?checkout=cancelled&purchase='.$this->purchase->reference.'#credits', $session['cancel_url']);
+        $this->assertSame(route('employer.dashboard').'?checkout=returned&purchase='.$this->purchase->reference.'#buy', $session['return_url']);
+        $this->assertEqualsWithDelta(now()->addHour()->getTimestamp(), $session['expires_at'], 5);
+        $this->assertStringNotContainsStringIgnoringCase('fee', json_encode($session));
     }
 
-    public function test_when_stripe_refuses_checkout_the_reason_shows_in_an_error_toast(): void
+    public function test_when_stripe_refuses_checkout_the_reason_is_shown_with_try_again(): void
     {
-        $this->stripe->checkoutFailure = 'Stripe refused the request (InvalidRequestException, field success_url).';
+        $this->stripe->checkoutFailure = 'Stripe refused the request (InvalidRequestException, field return_url).';
 
-        $this->post("/employer/purchases/{$this->purchase->id}/pay")
-            ->assertRedirect(route('employer.dashboard').'#credits')
-            ->assertSessionHas('error');
+        $this->postJson("/employer/purchases/{$this->purchase->id}/checkout")->assertStatus(422)
+            ->assertJson(['message' => "Payment didn't start: Stripe refused the request (InvalidRequestException, field return_url). Nothing was charged."]);
 
-        $html = $this->get('/employer')->assertOk()->getContent();
-        $toast = substr($html, strpos($html, 'data-toast="error"'), 1500);
-        $this->assertStringContainsString(e("Payment didn't start: Stripe refused the request (InvalidRequestException, field success_url)."), $toast);
-        $this->assertStringContainsString('Nothing was charged; the purchase is still pending.', $toast);
+        // The page has the panel checkout.js fills in, with a Try again button.
+        $this->get('/employer?pay='.$this->purchase->reference)->assertOk()
+            ->assertSee('data-checkout-error', false)
+            ->assertSee('action="'.route('employer.purchases.pay', $this->purchase).'"', false)
+            ->assertSee('Try again');
         $this->assertTrue($this->purchase->fresh()->isPending());
     }
 }

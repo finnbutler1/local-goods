@@ -34,7 +34,8 @@ class StripeWebhookTest extends TestCase
         $this->signIn(Role::EmployerAdmin);
         $this->post('/employer/purchases', ['purchase_amount' => '250']);
         $this->purchase = CreditPurchase::latest('id')->firstOrFail();
-        $this->post("/employer/purchases/{$this->purchase->id}/pay");
+        // What Stripe.js asks for when the card form opens: makes the Checkout Session.
+        $this->postJson("/employer/purchases/{$this->purchase->id}/checkout")->assertOk();
         $this->purchase->refresh();
         auth()->logout();
     }

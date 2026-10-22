@@ -8,12 +8,13 @@ use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Services\Ai\ClaudeClient;
+use App\Services\Payments\StripeGateway;
 use App\Support\StripeMode;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\Fakes\FakeStripeGateway;
-use App\Services\Payments\StripeGateway;
 use Tests\TestCase;
 
 /**
@@ -46,21 +47,22 @@ class StripeFallbackTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('configs')]
+    #[DataProvider('configs')]
     public function test_it_falls_back_to_simulated_and_never_calls_stripe(array $config): void
     {
         config($config);
         $this->assertFalse(StripeMode::active());
         $this->assertNotNull(StripeMode::problem());
 
-        // Employer: the simulated button, labeled as such, works as before.
+        // Employer: buying is one step, simulated and labeled as such.
         $this->signIn(Role::EmployerAdmin);
-        $this->post('/employer/purchases', ['purchase_amount' => '100']);
+        $this->get('/employer')->assertOk()->assertSee('Buy credits (simulated, no real money)')->assertSee('Simulated')
+            ->assertDontSee('Continue paying')->assertDontSee('4000 0000 0000 0077')->assertDontSee('js.stripe.com');
+        $this->post('/employer/purchases', ['purchase_amount' => '100'])->assertRedirect();
         $purchase = CreditPurchase::latest('id')->firstOrFail();
-        $this->get('/employer')->assertOk()->assertSee('Pay now (simulated, no real money)')->assertSee('Simulated')
-            ->assertDontSee('Pay with Stripe')->assertDontSee('4000 0000 0000 0077');
-        $this->post("/employer/purchases/{$purchase->id}/pay")->assertRedirect();
         $this->assertSame(CreditPurchase::STATUS_SIMULATED, $purchase->fresh()->status);
+        // Even with ?pay= in the address, no Stripe form appears.
+        $this->get('/employer?pay='.$purchase->reference)->assertOk()->assertDontSee('data-embedded-checkout', false);
         $this->assertNull($purchase->fresh()->stripe_payment_intent_id);
 
         // A cleared redemption: owed, simulated, no Stripe row.
