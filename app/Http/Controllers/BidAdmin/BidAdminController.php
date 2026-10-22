@@ -11,7 +11,7 @@ class BidAdminController extends Controller
 {
     public function __invoke(): View
     {
-        $redemptions = Redemption::with(['merchant', 'employee.employer', 'decision', 'stripePayout'])
+        $redemptions = Redemption::with(['merchant', 'employee.employer', 'decision', 'stripePayout', 'items'])
             ->latest()
             ->latest('id')
             ->take(25)

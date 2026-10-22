@@ -58,6 +58,9 @@
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
                         <div class="min-w-0">
                             <p class="tabular font-semibold">{{ $redemption->employee->initials() }}</p>
+                            @if ($for = $redemption->itemsSummary())
+                                <p class="text-sm break-words" data-items>{{ $for }}</p>
+                            @endif
                             <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}</p>
                             @if ($redemption->scored_by !== 'seed')
                                 <p class="text-sm text-muted" data-audit-trail>{{ implode(' → ', $redemption->auditTrail()) }}</p>

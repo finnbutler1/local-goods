@@ -329,7 +329,7 @@
                                     <div class="min-w-0">
                                         <p class="tabular font-semibold">+{{ Money::format($entry->amount_cents) }}</p>
                                         <p class="text-sm text-muted">
-                                            Denied redemption #{{ $r?->id }} · suspected abuse · decided by {{ $r?->decision?->deciderLabel() ?? 'a BID admin' }}
+                                            Denied redemption #{{ $r?->id }}{{ ($for = $r?->itemsSummary()) ? ' ('.$for.')' : '' }} · suspected abuse · decided by {{ $r?->decision?->deciderLabel() ?? 'a BID admin' }}
                                             · {{ $r?->employee?->initials() }} · {{ $entry->created_at->setTimezone('America/New_York')->format('M j, Y') }}
                                         </p>
                                     </div>
