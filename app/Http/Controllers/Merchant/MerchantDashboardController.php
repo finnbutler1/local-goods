@@ -47,7 +47,7 @@ class MerchantDashboardController extends Controller
             'monthCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents'),
             'monthVisits' => (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->count(),
             'paidOutCents' => (int) $merchant->payouts()->paid()->sum('amount_cents'),
-            'received' => (clone $redemptions)->with(['employee', 'decision', 'stripePayout'])->latest()->latest('id')
+            'received' => (clone $redemptions)->with(['employee', 'decision', 'stripePayout', 'items'])->latest()->latest('id')
                 ->when(! $request->boolean('all'), fn ($q) => $q->take(self::RECENT))->get(),
             'receivedCount' => (clone $redemptions)->count(),
             'showAll' => $request->boolean('all'),

@@ -88,6 +88,9 @@
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <p class="tabular font-display text-xl font-semibold">{{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}</p>
+                            @if ($for = $redemption->itemsSummary())
+                                <p class="break-words" data-items>{{ $for }} <span class="text-sm text-muted">(items are display only: not sent to Redemption Fraud Detection)</span></p>
+                            @endif
                             <p class="text-sm text-muted">
                                 <span title="Employee initials and staff number: names are never shown outside an employee's own wallet">{{ $redemption->employee->publicLabel() }}</span>, {{ $redemption->employee->employer->name }} ·
                                 {{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}

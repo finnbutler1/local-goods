@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DenialReason;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
@@ -9,6 +10,7 @@ use App\Models\MerchantProduct;
 use App\Models\Redemption;
 use App\Models\RedemptionItem;
 use App\Services\Ai\ClaudeClient;
+use App\Services\RedemptionReviewService;
 use App\Services\RedemptionService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,6 +192,30 @@ class RedemptionItemsTest extends TestCase
         $this->post('/employee/redeem', ['merchant_id' => $this->grind()->id, 'items' => [$this->product('Latte')->id => 2]]);
 
         $this->get('/employee')->assertOk()->assertSeeInOrder(['Approved', '2× Latte', 'Recent redemptions', '2× Latte']);
+    }
+
+    public function test_items_show_on_the_merchant_dashboard_fraud_review_and_employer_view(): void
+    {
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(85, 'hold', 'Unusual.'));
+        $this->post('/employee/redeem', ['merchant_id' => $this->grind()->id, 'items' => [$this->product('Latte')->id => 2, $this->product('Croissant')->id => 1]]);
+        $held = Redemption::latest('id')->firstOrFail();
+        $this->assertTrue($held->isUnderReview());
+        $initials = $held->employee->initials();
+
+        $this->actingAs($this->signIn(Role::Merchant))->get('/merchant')->assertOk()
+            ->assertSeeInOrder([$initials, '2× Latte, 1× Croissant'])
+            ->assertDontSee('Jordan Rivera');
+
+        $admin = $this->signIn(Role::BidAdmin);
+        $this->actingAs($admin)->get('/bid-admin')->assertOk()
+            ->assertSee('2× Latte, 1× Croissant')
+            ->assertSee('not sent to Redemption Fraud Detection');
+
+        app(RedemptionReviewService::class)->deny($held, $admin, 'Test denial.', DenialReason::SuspectedAbuse);
+        $this->actingAs($this->signIn(Role::EmployerAdmin))->get('/employer')->assertOk()
+            ->assertSee("Denied redemption #{$held->id} (2× Latte, 1× Croissant)")
+            ->assertSee($initials)
+            ->assertDontSee('Jordan Rivera');
     }
 
     /** @return array{redemptions: int, ledger: int} */

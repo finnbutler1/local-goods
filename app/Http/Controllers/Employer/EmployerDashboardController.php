@@ -143,7 +143,7 @@ class EmployerDashboardController extends Controller
         return [
             'cents' => (int) $query()->sum('amount_cents'),
             'count' => $query()->count(),
-            'entries' => $query()->with(['redemption.employee', 'redemption.decision'])->latest('created_at')->latest('id')->take($recent)->get(),
+            'entries' => $query()->with(['redemption.employee', 'redemption.decision', 'redemption.items'])->latest('created_at')->latest('id')->take($recent)->get(),
         ];
     }
 
