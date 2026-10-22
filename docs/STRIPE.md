@@ -168,18 +168,36 @@ merchants to Stripe (test mode)** on `/admin/reconciliation`
   Goods in test mode"** (`merchants.stripe_set_up_by_platform`) on the
   merchant dashboard, the BID roster and this page. The merchant dashboard
   also says the platform set it up for the demo.
-- **Safe to press twice.** It skips merchants that already have an account,
-  and reuses the same idempotency keys (`lg-demo-account-v2-…`,
-  `lg-demo-bank-…`). It refuses unless Stripe test mode is on, so never
-  with live keys. Each account carries `lg_env`, `lg_instance` and
-  `lg_demo_setup=1`. If Stripe refuses one merchant, the rest still connect,
-  and the message names the one that failed.
+- **One merchant per request.** CloudFront waits only 30 seconds for the
+  server, and doing all seven in one request took about 49 (each takes
+  about 7 seconds in real test mode). It timed out on the first live press
+  (504) and locally (PHP's 30-second limit). Each press now does one
+  merchant: create its account and **save the id at once**, add the test
+  bank account, and read its status once. It never waits for Stripe (for
+  example, for payouts to turn on); `account.updated` brings that later.
+  The page then shows "3 of 7 demo merchants connected, continuing…" and
+  presses again by itself (`data-auto-submit`) until all are done. Without
+  JavaScript, the button reads **Continue connecting (3 of 7 done)**: press
+  again to continue. The automatic presses stop after twice the number of
+  merchants, so a merchant Stripe is slow to confirm can't make the page
+  loop forever.
+- **Safe to press twice, and safe to cut off.** It skips merchants that are
+  already set up, and every Stripe call reuses the merchant's idempotency
+  keys (`lg-demo-account-v2-…`, `lg-demo-bank-…`). A request cut off after
+  Stripe made the account gets that same account back on the next press,
+  and one cut off before the bank account just adds it. Stripe keeps
+  idempotency keys for 24 hours, so finish within a day. It refuses unless
+  Stripe test mode is on, so never with live keys. Each account carries
+  `lg_env`, `lg_instance` and `lg_demo_setup=1`. If Stripe refuses a
+  merchant, the message names it, and the next press tries that merchant
+  again.
 - **After Reset demo.** The accounts are kept (matched by name, like
   Farragut Grind's), so you only need to press it again if a demo merchant
   shows "Not connected to Stripe".
 
 Checked against real Stripe test mode on 2026-10-22, in a scratch database
-labelled `trial`: 7 accounts created, the second press created nothing,
+labelled `trial`: one step took 6.9 seconds and finished its merchant;
+7 accounts created, the second press created nothing,
 a cleared $12 redemption at Press Room Deli became a transfer to Press
 Room Deli's own account, and reconciliation matched.
 
