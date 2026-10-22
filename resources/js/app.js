@@ -31,10 +31,18 @@ document.querySelectorAll('dialog[data-open-on-load]').forEach((dialog) => dialo
 // first field with an error, or else the message saying what happened
 // ([data-flash], see the x-flash component). Screen readers announce it and
 // the next Tab continues from there instead of the top of the page.
-if (!document.querySelector('dialog[open]')) {
+// After a redirect to an #anchor, Chrome jumps there once the page has loaded
+// and clears focus on the way, so wait until then.
+const focusAnswer = () => {
+    if (document.querySelector('dialog[open]')) return;
     const firstError = document.querySelector('main [aria-invalid="true"]');
     const answer = firstError?.matches('fieldset') ? firstError.querySelector('input, select, textarea') : firstError;
     (answer ?? document.querySelector('[data-flash]'))?.focus();
+};
+if (window.location.hash && document.readyState !== 'complete') {
+    window.addEventListener('load', () => setTimeout(focusAnswer));
+} else {
+    focusAnswer();
 }
 
 // Toasts (x-flash): × or Escape dismisses one. Status and notice toasts fade
