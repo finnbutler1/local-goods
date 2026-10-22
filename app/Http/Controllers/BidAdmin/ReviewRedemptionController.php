@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Redemption;
 use App\Services\RedemptionReviewService;
 use App\Support\Money;
+use App\Support\PayoutOutcome;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -29,7 +30,7 @@ class ReviewRedemptionController extends Controller
         $data = $request->validateWithBag("review{$redemption->id}", $this->reasonRules());
 
         return $this->decide($redemption, fn () => $this->reviews->approve($redemption, $request->user(), $data['reason']),
-            fn ($r) => 'Approved '.Money::format($r->amount_cents)." at {$r->merchant->name}. The reserved credits are spent and the merchant is paid.");
+            fn ($r) => 'Approved '.Money::format($r->amount_cents)." at {$r->merchant->name} for {$r->employee->initials()} ".PayoutOutcome::sentence($r));
     }
 
     public function deny(Request $request, Redemption $redemption): RedirectResponse
@@ -41,7 +42,7 @@ class ReviewRedemptionController extends Controller
         $why = DenialReason::from($data['denial']);
 
         return $this->decide($redemption, fn () => $this->reviews->deny($redemption, $request->user(), $data['reason'], $why),
-            fn ($r) => 'Denied '.Money::format($r->amount_cents)." at {$r->merchant->name}. No transfer; the credit is back with the {$why->returnsTo()}.");
+            fn ($r) => 'Denied '.Money::format($r->amount_cents)." at {$r->merchant->name} for {$r->employee->initials()} No transfer; the credit is back with the {$why->returnsTo()}.");
     }
 
     /** @return array<string, list<string>> */
@@ -62,6 +63,6 @@ class ReviewRedemptionController extends Controller
             return $back->with('error', 'Nothing changed: this redemption is '.str_replace('_', ' ', $done).'.');
         }
 
-        return $back->with('status', $message($redemption->refresh()->load('merchant')));
+        return $back->with('status', $message($redemption->refresh()->load('merchant', 'employee')));
     }
 }

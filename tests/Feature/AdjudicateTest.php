@@ -79,7 +79,8 @@ class AdjudicateTest extends TestCase
 
         // Optional: more, or done.
         $this->assertFalse($this->set->hasSubmitted($user));
-        $this->get('/adjudicate')->assertOk()->assertSee('Thanks! Want to do 10 more?')->assertSee("No thanks, I'm done", false);
+        $this->get('/adjudicate')->assertOk()->assertSee('Thanks! Your 10 votes are in.')
+            ->assertSee('Thanks! Want to do 10 more?')->assertSee("No thanks, I'm done", false);
 
         $this->post('/adjudicate/finish')->assertRedirect('/adjudicate');
         $this->assertTrue($this->set->hasSubmitted($user));
