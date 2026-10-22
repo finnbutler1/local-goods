@@ -117,6 +117,44 @@
         </form>
     @endif
 
+    <x-card as="section" id="demo-merchants" aria-labelledby="demo-merchants-heading" class="scroll-mt-24">
+        <h2 id="demo-merchants-heading" class="text-xl font-semibold">Demo merchants on Stripe</h2>
+        <p class="mt-2 text-muted">
+            The fictional demo merchants with no login can't onboard themselves, so the platform can set up a Stripe test account for each:
+            no Stripe dashboard, filled in by Local Goods with Stripe's test values, labelled "{{ \App\Models\Merchant::PLATFORM_SETUP_LABEL }}".
+            Then a cleared Stripe-funded redemption at any of them sends a test transfer. Real merchants always onboard themselves through Stripe's Express pages,
+            and so does any merchant with a login. Real DC businesses never get a Stripe account.
+        </p>
+        <div class="scroll-region mt-4" role="region" tabindex="0" aria-label="Demo merchants and their Stripe status">
+            <table class="w-full text-left text-sm">
+                <caption class="sr-only">Each fictional demo merchant, whether it has a login, and its Stripe status</caption>
+                <thead>
+                    <tr class="border-b border-line">
+                        <th scope="col" class="py-2 pr-4 font-semibold">Merchant</th>
+                        <th scope="col" class="py-2 pr-4 font-semibold">Login</th>
+                        <th scope="col" class="py-2 font-semibold">Stripe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($demoMerchants as $merchant)
+                        <tr class="border-b border-line/60" data-demo-merchant="{{ $merchant->stripeOnboardingStatus() }}">
+                            <td class="py-2 pr-4">{{ $merchant->name }}</td>
+                            <td class="py-2 pr-4">{{ $merchant->user_id ? 'Yes, onboards itself' : 'No' }}</td>
+                            <td class="py-2">{{ $merchant->stripeOnboardingLabel() }}@if ($merchant->stripe_account_id)<code class="block break-all font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @if ($report['active'])
+            <form method="POST" action="{{ route('admin.stripe.demo-merchants') }}" data-busy="Connecting demo merchants…" class="mt-4">
+                @csrf
+                <x-button type="submit">Connect demo merchants to Stripe (test mode)</x-button>
+                <p class="mt-2 text-sm text-muted">Creates an account only for a demo merchant with no login that doesn't have one yet; pressing it again creates nothing new.</p>
+            </form>
+        @endif
+    </x-card>
+
     <x-card as="section" aria-labelledby="simulated-heading">
         <h2 id="simulated-heading" class="flex flex-wrap items-center gap-2 text-xl font-semibold">Not part of this check <x-money-mode mode="simulated" /></h2>
         <p class="mt-2 text-muted">

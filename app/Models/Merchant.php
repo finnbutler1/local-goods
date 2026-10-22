@@ -81,6 +81,12 @@ class Merchant extends Model
         return $this->stripe_account_id !== null && $this->stripe_transfers_active === true;
     }
 
+    /** Stripe requires a contact email on a v2 account that receives transfers. Fictional for the demo merchants. */
+    public function stripeContactEmail(): string
+    {
+        return $this->user?->email ?? 'merchant-'.$this->id.'@example.com';
+    }
+
     /** not_started | in_progress | complete, for badges. */
     public function stripeOnboardingStatus(): string
     {

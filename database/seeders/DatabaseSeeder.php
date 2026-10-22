@@ -12,6 +12,7 @@ use App\Models\Redemption;
 use App\Services\CreditLedger;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Seeds the single-BID demo. Everything here is synthetic. Merchant names are
@@ -36,6 +37,21 @@ class DatabaseSeeder extends Seeder
     /** Jordan plus DemoHistorySeeder's 39, out of Meridian's 120 staff. */
     public const ENROLLED = 40;
 
+    /**
+     * The fictional demo merchants: name, category, address. Only these can
+     * be given a Stripe test account by the platform (DemoMerchantStripeSetup).
+     */
+    public const DEMO_MERCHANTS = [
+        'cafe' => ['Farragut Grind', 'cafe', '1600 block of K St NW'],
+        'kitchen' => ['Seventeenth Street Kitchen', 'restaurant', '1100 block of 17th St NW'],
+        'noodle' => ['Connecticut Noodle Bar', 'restaurant', '1700 block of Connecticut Ave NW'],
+        'deli' => ['Press Room Deli', 'restaurant', '1900 block of I St NW'],
+        'salon' => ['K Street Cuts', 'salon', '1800 block of K St NW'],
+        'cycle' => ['Lafayette Cycle Studio', 'fitness', '1500 block of H St NW'],
+        'florist' => ['Triangle Stems', 'retail', '1200 block of 19th St NW'],
+        'books' => ['Page & Quill Books', 'retail', '2000 block of L St NW'],
+    ];
+
     public function run(): void
     {
         $bid = Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);
@@ -58,16 +74,7 @@ class DatabaseSeeder extends Seeder
             'display_name' => 'Jordan Rivera (demo)',
         ]);
 
-        $merchants = collect([
-            'cafe' => ['Farragut Grind', 'cafe', '1600 block of K St NW'],
-            'kitchen' => ['Seventeenth Street Kitchen', 'restaurant', '1100 block of 17th St NW'],
-            'noodle' => ['Connecticut Noodle Bar', 'restaurant', '1700 block of Connecticut Ave NW'],
-            'deli' => ['Press Room Deli', 'restaurant', '1900 block of I St NW'],
-            'salon' => ['K Street Cuts', 'salon', '1800 block of K St NW'],
-            'cycle' => ['Lafayette Cycle Studio', 'fitness', '1500 block of H St NW'],
-            'florist' => ['Triangle Stems', 'retail', '1200 block of 19th St NW'],
-            'books' => ['Page & Quill Books', 'retail', '2000 block of L St NW'],
-        ])->map(fn ($m) => Merchant::create([
+        $merchants = collect(self::DEMO_MERCHANTS)->map(fn ($m) => Merchant::create([
             'bid_id' => $bid->id, 'name' => $m[0], 'category' => $m[1], 'address' => $m[2],
         ]));
 
@@ -141,7 +148,7 @@ class DatabaseSeeder extends Seeder
      * Every Friday at 10 AM, each merchant is paid what it earned before that
      * day. Simulated: recorded in the ledger, no Stripe transfer.
      *
-     * @param  \Illuminate\Support\Collection<string, Merchant>  $merchants
+     * @param  Collection<string, Merchant>  $merchants
      */
     private function payMerchantsWeekly(CreditLedger $ledger, $merchants, Carbon $now): void
     {
