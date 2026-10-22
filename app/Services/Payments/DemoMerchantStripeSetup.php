@@ -24,48 +24,71 @@ use Illuminate\Support\Str;
  * Never for a merchant with a login (they onboard themselves through
  * Stripe's Express pages), never for a real business: only the names in
  * DatabaseSeeder::DEMO_MERCHANTS, and never a name that is also a real
- * candidate in data/merchant_candidates.csv. Running it again creates
- * nothing new. Test mode only: StripeMode refuses live keys.
+ * candidate in data/merchant_candidates.csv. One merchant per request
+ * (step()); running it again creates nothing new. Test mode only:
+ * StripeMode refuses live keys.
  */
 class DemoMerchantStripeSetup
 {
     public function __construct(
         private StripeGateway $stripe,
         private StripeOnboarding $onboarding,
-        private MerchantPayouts $payouts,
     ) {}
 
     /**
-     * One merchant's refusal doesn't stop the others; pressing again retries
-     * it with the same idempotency keys.
+     * Does the work for one merchant, so no request waits long on Stripe
+     * (CloudFront gives the origin 30 seconds): create its account and save
+     * the id at once, then add the test bank account. Status (payouts turning
+     * on) arrives later through account.updated. Every Stripe call reuses
+     * the merchant's idempotency keys, so a request cut off midway is
+     * finished by the next press with no duplicate account.
      *
-     * @return array{connected: list<string>, already: list<string>, self_onboarding: list<string>, failed: array<string, string>} merchant names (failed: name => reason)
+     * @return array{merchant: ?string, done: int, total: int} the merchant worked on (null if all were done)
      */
-    public function run(string $ip): array
+    public function step(string $ip): array
     {
         if (! StripeMode::active()) {
             throw new StripeGatewayException(StripeMode::problem().' Nothing was created.');
         }
 
-        $result = ['connected' => [], 'already' => [], 'self_onboarding' => [], 'failed' => []];
+        $merchant = $this->pending()->first();
 
-        foreach (self::demoMerchants() as $merchant) {
+        if ($merchant !== null) {
             try {
-                if ($merchant->user_id !== null) {
-                    $result['self_onboarding'][] = $merchant->name;
-                } elseif ($merchant->stripe_account_id !== null) {
-                    $this->finish($merchant);
-                    $result['already'][] = $merchant->name;
-                } else {
-                    $this->connect($merchant, $ip);
-                    $result['connected'][] = $merchant->name;
+                if ($merchant->stripe_account_id === null) {
+                    $this->create($merchant, $ip);
                 }
+                $this->addBankAccount($merchant);
             } catch (StripeGatewayException $e) {
-                $result['failed'][$merchant->name] = $e->getMessage();
+                throw new StripeGatewayException($merchant->name.': '.$e->getMessage(), $e->definite, $e->stripeCode);
             }
         }
 
-        return $result;
+        return ['merchant' => $merchant?->name] + $this->progress();
+    }
+
+    /** @return array{done: int, total: int} demo merchants with no login, and how many have a Stripe account set up */
+    public function progress(): array
+    {
+        $total = self::demoMerchants()->whereNull('user_id')->count();
+
+        return ['done' => $total - $this->pending()->count(), 'total' => $total];
+    }
+
+    /**
+     * Demo merchants with no login still to set up, in order: no account
+     * yet, or an account this action made that still needs its bank
+     * account (a request cut off midway). Payouts may still be turning on;
+     * that is Stripe's part and arrives through account.updated.
+     *
+     * @return Collection<int, Merchant>
+     */
+    public function pending(): Collection
+    {
+        return self::demoMerchants()->whereNull('user_id')
+            ->filter(fn (Merchant $m) => $m->stripe_account_id === null
+                || ($m->stripe_set_up_by_platform && ! $m->stripe_details_submitted && ! $m->stripe_payouts_enabled))
+            ->values();
     }
 
     /**
@@ -83,7 +106,7 @@ class DemoMerchantStripeSetup
             ->values();
     }
 
-    private function connect(Merchant $merchant, string $ip): void
+    private function create(Merchant $merchant, string $ip): void
     {
         // Marked before Stripe is asked, so an account made by the platform
         // can never be shown as one the merchant set up itself.
@@ -116,21 +139,14 @@ class DemoMerchantStripeSetup
             'metadata' => ['lg_merchant' => $merchant->name, 'lg_merchant_id' => (string) $merchant->id, 'lg_demo_setup' => '1'] + StripeEnvironment::tag(),
         ], 'lg-demo-account-v2-'.$merchant->stripe_onboarding_key);
 
+        // Saved straight away, so a cut-off request never loses the id.
         $this->onboarding->apply($merchant, $account);
-        $this->finish($merchant);
     }
 
-    /** Adds the test bank account if payouts aren't on yet, reads the status back, and sends anything owed. */
-    private function finish(Merchant $merchant): void
+    /** Stripe's test bank account (same key every time), then the status Stripe reports right now; no waiting. */
+    private function addBankAccount(Merchant $merchant): void
     {
-        if ($merchant->stripe_set_up_by_platform && ! $merchant->stripe_payouts_enabled) {
-            $this->stripe->addTestBankAccount($merchant->stripe_account_id, 'lg-demo-bank-'.$merchant->stripe_onboarding_key);
-        }
-
-        if (! $merchant->isStripeOnboarded() || ! $merchant->stripe_payouts_enabled) {
-            $this->onboarding->refresh($merchant);
-        }
-
-        $this->payouts->sendSafely($merchant);
+        $this->stripe->addTestBankAccount($merchant->stripe_account_id, 'lg-demo-bank-'.$merchant->stripe_onboarding_key);
+        $this->onboarding->refresh($merchant);
     }
 }

@@ -206,3 +206,12 @@ if (feedbackWidget) {
     new ResizeObserver(update).observe(document.body);
     update();
 }
+
+// Step-by-step jobs: <form data-auto-submit>. The server does one short step
+// per request and comes back to this page with the form marked, so it is
+// pressed again here until the job is done. Without JavaScript the person
+// presses the button themselves.
+document.querySelectorAll('form[data-auto-submit]').forEach((form) => {
+    const button = form.querySelector('[type="submit"]');
+    window.addEventListener('load', () => form.requestSubmit(button ?? undefined));
+});
