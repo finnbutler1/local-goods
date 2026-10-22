@@ -9,6 +9,7 @@ use App\Http\Middleware\KeepPersonalContactsToAdjudication;
 use App\Models\CreditPurchase;
 use App\Models\Employer;
 use App\Models\Merchant;
+use App\Models\MerchantProduct;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Policies\RedemptionPolicy;
@@ -191,6 +192,8 @@ class JudgeReadOnlyTest extends TestCase
             'purchase' => CreditPurchase::where('status', CreditPurchase::STATUS_PENDING)->value('id'),
             'user' => $this->judge->id,
             'candidate' => 'MC-001',
+            // Ids don't restart at 1 on MySQL, so a guess would 404 before the 403.
+            'product' => MerchantProduct::value('id'),
         ];
 
         return preg_replace_callback('/\{(\w+)\??\}/', function ($m) use ($ids) {
