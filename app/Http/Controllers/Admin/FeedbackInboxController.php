@@ -73,6 +73,6 @@ class FeedbackInboxController extends Controller
         ])->save();
 
         return redirect()->to(url()->previous(route('admin.feedback.index'))."#feedback-{$feedback->id}")
-            ->with('status', 'Saved.');
+            ->with('status', "Feedback #{$feedback->id} marked {$status->label()}.");
     }
 }

@@ -81,7 +81,7 @@ class EmployerDashboardTest extends TestCase
         $this->assertSame(1, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
         $this->assertSame($balance + 600050, $this->employer->balanceCents());
 
-        $this->post("/employer/purchases/{$purchase->id}/pay")->assertSessionHas('credits_error', 'That purchase is already paid.');
+        $this->post("/employer/purchases/{$purchase->id}/pay")->assertSessionHas('error', 'Nothing changed: That purchase is already paid.');
         $this->assertSame(1, CreditLedgerEntry::where('credit_purchase_id', $purchase->id)->count());
         $this->assertSame($balance + 600050, $this->employer->balanceCents());
     }

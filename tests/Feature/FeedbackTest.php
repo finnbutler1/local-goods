@@ -82,7 +82,7 @@ class FeedbackTest extends TestCase
 
         $this->from('/judge')->post('/feedback', $this->form())
             ->assertRedirect('/judge')
-            ->assertSessionHas('feedback_status', 'Thanks, your feedback was saved.');
+            ->assertSessionHas('status', 'Thanks, your feedback was sent.');
 
         $item = Feedback::sole();
         $this->assertSame($judge->id, $item->user_id);

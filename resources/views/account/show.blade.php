@@ -12,11 +12,6 @@
     @unless (auth()->user()->isReadOnly())
     <x-card as="section" aria-labelledby="password-heading" class="max-w-xl">
         <h2 id="password-heading" class="text-2xl font-semibold text-forest">Change your password</h2>
-        <div aria-live="polite">
-            @if (session('status') === 'password-updated')
-                <p role="status" tabindex="-1" data-flash class="mt-3 rounded-xl bg-ok-bg p-3 font-semibold text-ok">Your password was changed.</p>
-            @endif
-        </div>
         <form method="POST" action="{{ route('user-password.update') }}" data-busy="Saving…" class="mt-4 space-y-5">
             @csrf
             @method('PUT')
