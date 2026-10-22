@@ -68,7 +68,7 @@ class EmployerDashboardTest extends TestCase
         $entries = CreditLedgerEntry::count();
 
         $this->post('/employer/purchases', ['purchase_amount' => '6000.50'])
-            ->assertRedirect(route('employer.dashboard').'#credits')->assertSessionHas('status');
+            ->assertRedirect(route('employer.dashboard').'#credits')->assertSessionHas('notice');
 
         $purchase = CreditPurchase::latest('id')->firstOrFail();
         $this->assertSame([600050, CreditPurchase::STATUS_PENDING], [$purchase->amount_cents, $purchase->status]);
@@ -105,7 +105,7 @@ class EmployerDashboardTest extends TestCase
         [$employerBefore, $employeeBefore] = [$this->employer->balanceCents(), $employee->balanceCents()];
 
         $this->post('/employer/allocations', ['mode' => 'individual', 'occasion' => 'birthday', 'employee_id' => $employee->id, 'amount' => '25.05'])
-            ->assertSessionHas('status', '$25.05 birthday given to '.$employee->publicLabel().'.');
+            ->assertSessionHas('status', '$25.05 birthday credit sent to '.$employee->initials().' They can spend it now.');
 
         $this->assertSame($employerBefore - 2505, $this->employer->balanceCents());
         $this->assertSame($employeeBefore + 2505, $employee->balanceCents());
@@ -121,7 +121,7 @@ class EmployerDashboardTest extends TestCase
         $employerBefore = $this->employer->balanceCents();
 
         $this->post('/employer/allocations', ['mode' => 'bulk', 'recipients' => 'all', 'occasion' => 'recognition', 'amount' => '10'])
-            ->assertSessionHas('status', '$10.00 recognition award given to 40 employees ($400.00 in all).');
+            ->assertSessionHas('status', '$10.00 recognition credit sent to each of 40 employees ($400.00 in all). They can spend it now.');
         $this->assertSame($employerBefore - 40 * 1000, $this->employer->balanceCents());
 
         $ticked = $all->take(3)->pluck('id')->all();
@@ -179,7 +179,7 @@ class EmployerDashboardTest extends TestCase
                 'birthday' => ['enabled' => '0', 'amount' => '25'],
                 'recognition' => ['enabled' => '1', 'amount' => '100'],
             ],
-        ])->assertSessionHasNoErrors()->assertSessionHas('status', 'Program saved.');
+        ])->assertSessionHasNoErrors()->assertSessionHas('status', "Program saved. These amounts now fill in the Give credits form, and the monthly budget is checked on every gift from now on. Credits already given don't change.");
 
         $e = $this->employer->fresh();
         $this->assertSame([800025, 17500, 7550, null, 10000], [$e->monthly_budget_cents, $e->monthly_allowance_cents, $e->welcome_cents, $e->birthday_cents, $e->recognition_cents]);

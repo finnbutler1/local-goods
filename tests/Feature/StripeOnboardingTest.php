@@ -53,11 +53,14 @@ class StripeOnboardingTest extends TestCase
     public function test_coming_back_checks_stripe_and_shows_the_status_on_the_dashboard_and_roster(): void
     {
         $this->post('/merchant/stripe/onboard');
-        $this->get('/merchant/stripe/return')->assertRedirect(route('merchant.dashboard').'#stripe');
+        $this->get('/merchant/stripe/return')->assertRedirect(route('merchant.dashboard').'#stripe')
+            ->assertSessionHas('notice', fn ($m) => str_contains($m, 'Money owed through Stripe waits until it is complete.'));
         $this->assertFalse($this->merchant->fresh()->isStripeOnboarded());
 
         $this->stripe->completeOnboarding('acct_test_0001');
-        $this->get('/merchant/stripe/return');
+        $this->followingRedirects()->get('/merchant/stripe/return')
+            ->assertSee('data-toast="status"', false)->assertSee('Stripe onboarding complete.');
+        $this->followRedirects = false;
 
         $this->assertTrue($this->merchant->fresh()->isStripeOnboarded());
         $this->get('/merchant')->assertSee('Stripe onboarding complete')->assertSee('acct_test_0001')->assertDontSee('Start Stripe onboarding');

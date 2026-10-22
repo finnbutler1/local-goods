@@ -74,6 +74,8 @@ class MerchantReviewQueueTest extends TestCase
 
         $this->post('/bid-admin/merchants/MC-001/decisions', ['decision' => 'needs_research', 'note' => 'Check the parent company.'])
             ->assertRedirect()->assertSessionHas('status');
+        $this->get('/bid-admin/merchants')->assertSee('data-toast="status"', false)
+            ->assertSee("{$this->candidates['MC-001']['name']}: ", false)->assertSee('Recorded in the decision log.');
         $this->travel(1)->minutes();
         $this->post('/bid-admin/merchants/MC-001/decisions', ['decision' => 'reject'])->assertRedirect();
 

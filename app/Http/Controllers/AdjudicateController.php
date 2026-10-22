@@ -165,7 +165,7 @@ class AdjudicateController extends Controller
             $participant->forceFill(['submitted_at' => now()])->save();
         }
 
-        return redirect()->route('adjudication.show')->with('status', 'Thanks! Your votes are in.');
+        return redirect()->route('adjudication.show')->with('status', "Thanks! Your {$batch->count()} ".str('vote')->plural($batch->count()).' are in.');
     }
 
     /** "Want to do 10 more?" Yes. */

@@ -237,7 +237,7 @@ class RedemptionReviewTest extends TestCase
 
         $this->post(route('bid-admin.approve', $held), ['reason' => 'Regular customer.'])
             ->assertRedirect(route('bid-admin.dashboard')."#redemption-{$held->id}")
-            ->assertSessionHas('status', 'Approved $20.00 at Press Room Deli. The reserved credits are spent and the merchant is paid.');
+            ->assertSessionHas('status', 'Approved $20.00 at Press Room Deli for J.R. Now owed to the merchant (simulated, no money moved).');
 
         $this->assertSame(Redemption::STATUS_APPROVED, $held->fresh()->status);
         $this->assertSame('Sam Taylor', $held->fresh()->reviewed_by);
@@ -273,7 +273,7 @@ class RedemptionReviewTest extends TestCase
         $held = $this->heldRedemption();
 
         $this->post(route('bid-admin.deny', $held), ['reason' => 'Tapped by mistake.', 'denial' => 'no_purchase'])
-            ->assertSessionHas('status', 'Denied $20.00 at Press Room Deli. No transfer; the credit is back with the employee.');
+            ->assertSessionHas('status', 'Denied $20.00 at Press Room Deli for J.R. No transfer; the credit is back with the employee.');
 
         $this->assertSame(Redemption::STATUS_REJECTED, $held->fresh()->status);
         $this->assertSame($before, $employee->balanceCents());

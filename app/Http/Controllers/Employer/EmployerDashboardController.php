@@ -160,7 +160,8 @@ class EmployerDashboardController extends Controller
 
         $employer->update($update);
 
-        return redirect()->to(route('employer.dashboard').'#program')->with('status', 'Program saved.');
+        return redirect()->to(route('employer.dashboard').'#program')->with('status',
+            'Program saved. These amounts now fill in the Give credits form, and the monthly budget is checked on every gift from now on. Credits already given don\'t change.');
     }
 
     public function storePurchase(Request $request, CreditLedger $ledger): RedirectResponse
@@ -174,9 +175,9 @@ class EmployerDashboardController extends Controller
 
         $purchase = $ledger->requestPurchase($employer, Money::toCents($data['purchase_amount']), EmployerProgram::nextReference($employer));
 
-        return redirect()->to(route('employer.dashboard').'#credits')->with('status',
-            'Purchase '.$purchase->reference.' of '.Money::format($purchase->amount_cents).' is pending. '
-            .(StripeMode::active() ? 'Press "Pay with Stripe (test mode)" to unlock the credits.' : 'Press "Pay now" to unlock the credits.'));
+        return redirect()->to(route('employer.dashboard').'#credits')->with('notice',
+            'Purchase '.$purchase->reference.' for '.Money::format($purchase->amount_cents).' requested. '
+            .(StripeMode::active() ? 'Press "Pay with Stripe (test mode)" to add the credits.' : 'Press "Pay now" to add the credits.'));
     }
 
     /**
@@ -204,7 +205,7 @@ class EmployerDashboardController extends Controller
         }
 
         return redirect()->to(route('employer.dashboard').'#credits')->with('status',
-            Money::format($purchase->amount_cents).' paid (simulated, no real money). The credits are ready to give to your team.');
+            Money::format($purchase->amount_cents).' in credits added (simulated, no real money). Ready to give.');
     }
 
     public function allocate(Request $request, CreditLedger $ledger): RedirectResponse
@@ -244,13 +245,13 @@ class EmployerDashboardController extends Controller
             return redirect()->to(route('employer.dashboard').'#allocate')->withInput()->withErrors(['amount' => $e->getMessage()]);
         }
 
-        $who = $employees->count() === 1
-            ? $employees->first()->publicLabel()
-            : $employees->count().' employees';
+        // "$50.00 sent to J.R." / "$50.00 birthday credit sent to each of 12 employees ($600.00 in all)". Initials only.
+        $what = Money::format($cents).($occasion === Occasion::Monthly ? '' : ' '.strtolower($occasion->shortLabel()).' credit');
+        $sent = $employees->count() === 1
+            ? $what.' sent to '.$employees->first()->initials().' They can spend it now.'
+            : $what.' sent to each of '.$employees->count().' employees ('.Money::format($cents * $employees->count()).' in all). They can spend it now.';
 
-        return redirect()->to(route('employer.dashboard').'#allocate')->with('status',
-            Money::format($cents).' '.strtolower($occasion->label()).' given to '.$who
-            .($employees->count() > 1 ? ' ('.Money::format($cents * $employees->count()).' in all)' : '').'.');
+        return redirect()->to(route('employer.dashboard').'#allocate')->with('status', $sent);
     }
 
     /** @return array<string, string> */

@@ -7,6 +7,8 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Services\RedemptionService;
+use App\Support\Money;
+use App\Support\PayoutOutcome;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -111,6 +113,11 @@ class EmployeeWalletController extends Controller
             (int) round(((float) $data['amount']) * 100),
         );
 
-        return redirect()->route('employee.wallet')->with('redemption_id', $redemption->id);
+        $redemption->load('merchant');
+        $at = Money::format($redemption->amount_cents)." at {$redemption->merchant->name}";
+
+        return redirect()->route('employee.wallet')->with('redemption_id', $redemption->id)->with(...($redemption->isApproved()
+            ? ['status', "{$at} approved. ".PayoutOutcome::sentence($redemption)]
+            : ['notice', "{$at} held for a quick review: no money moves until a BID admin decides."]));
     }
 }
