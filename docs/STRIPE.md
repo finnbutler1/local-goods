@@ -16,7 +16,8 @@ MVP can't responsibly take that on ([ADR 0001](adr/0001-stripe-connect-instead-o
 
 With Stripe Connect the money never sits in a Local Goods account:
 
-- The employer pays **Stripe** by card (Stripe Checkout). The funds land in
+- The employer pays **Stripe** by card (Stripe's embedded Checkout, inside
+  the Local Goods page). The funds land in
   the Local Goods *platform* balance at Stripe, which Stripe holds.
 - Each merchant has its **own Stripe Express account** (created with Accounts v2). Stripe collects and
   checks the merchant's details on its own pages; we store only the account
@@ -33,13 +34,91 @@ before any payout, and a person deciding anything the AI holds.
 
 | Step | In Stripe | In the Local Goods ledger |
 |---|---|---|
-| HR requests a purchase | nothing | a **pending** purchase, no entry: the credits can't be given out |
-| HR presses **Pay with Stripe (test mode)** | a Checkout Session; the PaymentIntent's `transfer_group` is the purchase reference (e.g. `MPG-2026-10-003`) | still pending, still no entry |
-| Stripe sends `payment_intent.succeeded` (signed) | the charge (`ch_…`) is in the platform balance | purchase becomes **paid**, one purchase entry, once |
+| HR enters an amount and presses **Buy credits** | nothing yet | a **pending** purchase, no entry: the credits can't be given out |
+| Stripe's card form opens on the same page | an embedded Checkout Session; the PaymentIntent's `transfer_group` is the purchase reference (e.g. `MPG-20261021-1`) | still pending, still no entry |
+| HR pays; the page says **Confirming with Stripe…** | the payment succeeds | still pending until the webhook |
+| Stripe sends `payment_intent.succeeded` (signed) | the charge (`ch_…`) is in the platform balance | purchase becomes **paid**, one purchase entry (plus one platform fee entry if the fee is on), once |
 | HR gives credits; an employee redeems | nothing | allowance and redemption entries, as before |
 | Redemption Fraud Detection clears it, or a BID admin approves it | nothing yet | merchant earns it; if a Stripe-paid purchase can fund it, a Stripe payout row is **owed** |
 | Merchant has finished onboarding | a **Transfer** to the merchant's account, same `transfer_group`, `source_transaction` = the purchase's charge | payout row **sent** with its `tr_…` id, one payout entry |
 | A held or rejected redemption | nothing, ever | no payout row |
+
+### Buying credits, step by step
+
+One step for HR ([ADR 0021](adr/0021-one-step-buy-credits-and-a-platform-fee-account.md)):
+
+1. **Buy credits** (`employer.purchases.store`) writes the pending purchase
+   and comes back to `/employer?pay=<reference>#buy`. That page shows the
+   amount, the test card and Stripe's form; showing it creates nothing.
+2. Stripe.js (`https://js.stripe.com/endive/stripe.js`, matching the
+   `2026-09-30.endive` API version of stripe-php 22) calls
+   `createEmbeddedCheckoutPage`. In this version `initEmbeddedCheckout`
+   throws "has been removed". Its `fetchClientSecret` posts to
+   `employer.purchases.checkout`, which makes the Checkout Session
+   (`ui_mode: embedded_page`, open for one hour, idempotency key
+   `lg-checkout-<payment token>`, so asking twice gets the same one).
+3. Declined cards are handled inside Stripe's form. Once the payment
+   succeeds Stripe sends the browser to the `return_url`,
+   `/employer?checkout=returned&purchase=<reference>#buy`, built from
+   `APP_URL` in production (never the request's host, since Beanstalk
+   refuses direct visitors).
+4. If the webhook is already in, the page shows the green toast ("$400.00
+   in credits added (Stripe test mode, MPG-…). Ready to give."). If not, the
+   Buy credits card says **Confirming with Stripe…** and asks
+   `employer.purchases.status` every 2 seconds for up to 2 minutes, then
+   reloads into the green toast. After 2 minutes it says it is still
+   waiting.
+5. **Cancel payment** (`employer.purchases.cancel`) asks Stripe for the
+   Checkout's status first. Open: it is expired, then the purchase becomes
+   **cancelled** (never in the ledger, no longer counted as pending).
+   Already expired: cancelled. Complete: *not* cancelled ("Stripe already
+   has the payment"), and the page waits for the webhook. The form comes
+   back filled in with **Try again**.
+6. **Try again** (the error panel) and **Continue paying** (a pending row in
+   Purchases, for example after closing the tab) post to
+   `employer.purchases.pay`, which closes the old Checkout the same way and
+   only then gives the purchase a new token, so the next form is a fresh
+   Checkout. An old Checkout is never left payable against a token Local
+   Goods has forgotten.
+
+If a payment still arrives for a cancelled purchase (it shouldn't: we only
+cancel once Stripe says the Checkout can't take one), the webhook refuses
+it, writes nothing, and reconciliation lists it with "check before
+refunding".
+
+**Content-Security-Policy.** The app sends none today (checked: nothing in
+the app, `.platform`, `.ebextensions` or `public/`). If one is ever added,
+in the app or as a CloudFront response-headers policy, it must allow what
+embedded Checkout loads: start from Stripe's own list ("Content Security
+Policy" in Stripe's docs). In the local trial on 2026-10-21 the paying state
+loaded scripts and frames from `js.stripe.com`, frames from
+`m.stripe.network`, `b.stripecdn.com` and `newassets.hcaptcha.com` (frame
+addresses only; network calls weren't recorded, but Stripe.js talks to
+`api.stripe.com`). After adding one, check that the paying state still
+shows Stripe's form.
+
+### Platform fee (off)
+
+`PLATFORM_FEE_PERCENT` adds a fee on top of the credits
+([ADR 0021](adr/0021-one-step-buy-credits-and-a-platform-fee-account.md)).
+Unset, blank or 0 (the default) means no fee, and nothing about fees
+appears anywhere. A number from 0 to 20 with up to two decimals (e.g.
+`2.5`) turns it on; any other value stops a production deploy
+(`app:check-production-config`) and is treated as 0 elsewhere.
+
+With the fee on:
+
+- HR sees "Credits $400.00 + platform fee $10.00 = total $410.00" as they
+  type and again above Stripe's form; Checkout has a second line item.
+- The fee is fixed on the purchase (`platform_fee_cents`) when it is
+  requested. Stripe must receive credits + fee, or the webhook refuses the
+  payment.
+- The fee is its own ledger line (`platform_fee`) on the **platform
+  account** (`platform = true`), written with the purchase entry. The
+  employer's "Ready to give" is credits only, and fees never fund merchant
+  transfers.
+- The ledger check becomes: paid credits + fees − payouts − held = sum of
+  all entries.
 
 The test card **4000 0000 0000 0077** (any future date, any CVC) makes the
 money *available* in the test balance straight away, so transfers can run
@@ -54,7 +133,7 @@ matched oldest first (`App\Services\Payments\StripeFunding`): the total of
 Stripe transfers can never exceed what Stripe actually received.
 
 Everything else is **simulated**, and labeled so: the seeded demo history,
-anything paid with "Pay now (simulated)" while Stripe was off, and any
+anything bought (simulated) while Stripe was off, and any
 redemption beyond the Stripe-paid money. Simulated money owed stays on the
 simulated path and is never sent through Stripe. The merchant dashboard and
 the BID roster show the two separately: **Owed via Stripe test mode** and
@@ -174,7 +253,8 @@ sentence and any missing-field lines, keys removed; never for key errors).
 
 If the keys are missing (CI, tests, a server without them), incomplete, or
 not test keys, `App\Support\StripeMode` turns Stripe off and everything
-works exactly as before: "Pay now (simulated, no real money)", simulated
+works exactly as before: "Buy credits (simulated, no real money)" adds the
+credits at once, simulated
 payouts, nothing sent to Stripe. Every page where money moves shows a
 **Stripe test mode** or **Simulated** badge, and every purchase and payout
 row is labeled by how it was actually paid. A simulated payment is never
@@ -183,12 +263,15 @@ shown as a Stripe one.
 ## Reconciliation
 
 `/admin/reconciliation` (platform admin) puts the ledger next to Stripe for
-Stripe-funded activity since the last Reset demo: purchases against
-Stripe's successful payments, Stripe payouts against Stripe's transfers,
+Stripe-funded activity since the last Reset demo: purchases (credits plus
+any platform fee) against Stripe's successful payments, Stripe payouts against Stripe's transfers,
 one by one, and the platform balance for information (Stripe keeps card
 fees, so it never matches exactly). Each difference is a sentence, for
 example "Stripe has a $250.00 payment (pi_…) that Local Goods has no ledger
-record of". Simulated activity is counted but not checked.
+record of". Simulated activity is counted but not checked. With the platform fee on it
+also checks that the platform account's fee lines add up to the fees the
+Stripe-paid purchases charged, and the purchases row says "credits $X +
+platform fees $Y"; with the fee off none of this shows.
 
 ### One Stripe sandbox, several environments
 
@@ -237,6 +320,7 @@ reference and amount; transfers carry the redemption number and amount.
 | `STRIPE_WEBHOOK_SECRET` | Signing secret of the endpoint for your account's events, `whsec_…` | local `.env` (from `stripe listen`), Beanstalk (from the dashboard endpoint) |
 | `STRIPE_CONNECT_WEBHOOK_SECRET` | Signing secret of the destination for connected accounts' events (`account.updated`); recommended in production | Beanstalk only (locally `stripe listen` uses one secret for both) |
 | `STRIPE_SUPPRESS_NOTICES` | Optional, default `true`: hide Stripe's informational notices (logged instead) | not needed anywhere; the code guard works without it |
+| `PLATFORM_FEE_PERCENT` | Optional, default none (no fee). See "Platform fee (off)" | leave unset |
 
 Leave all of them blank for simulated mode.
 
@@ -245,14 +329,15 @@ Leave all of them blank for simulated mode.
 1. Install the Stripe CLI (`brew install stripe/stripe-cli/stripe`) and run
    `stripe login`.
 2. In one terminal:
-   `stripe listen --forward-to localhost:8000/stripe/webhook --forward-connect-to localhost:8000/stripe/webhook`
-   It prints a `whsec_…` secret: put it in `.env` as `STRIPE_WEBHOOK_SECRET`
+   `stripe listen --events payment_intent.succeeded,payment_intent.payment_failed,checkout.session.expired,transfer.created,transfer.reversed,account.updated --forward-to localhost:8000/stripe/webhook --forward-connect-to localhost:8000/stripe/webhook`
+   (newer versions of the Stripe CLI refuse to start without `--events`). It prints a `whsec_…` secret: put it in `.env` as `STRIPE_WEBHOOK_SECRET`
    (one secret covers both kinds of events locally).
 3. Put the test keys from Stripe → Developers → API keys in `.env` as
    `STRIPE_KEY` and `STRIPE_SECRET`, then restart the app.
-4. As HR, request and pay a purchase with 4000 0000 0000 0077. The terminal
-   running `stripe listen` shows `payment_intent.succeeded` and the purchase
-   turns paid.
+4. As HR, buy credits and pay in the form on the page with
+   4000 0000 0000 0077. The terminal running `stripe listen` shows
+   `payment_intent.succeeded`, and the page turns from "Confirming with
+   Stripe…" (if you see it at all) into the green confirmation.
 
 **Recommended: a separate sandbox for local development.** Tagging keeps
 the environments apart, but with one shared sandbox `stripe listen` still
@@ -336,6 +421,7 @@ Names only; never commit or share the values:
 | `STRIPE_WEBHOOK_SECRET` | yes | destination 1 ("Your account") signing secret |
 | `STRIPE_CONNECT_WEBHOOK_SECRET` | yes, for `account.updated` | destination 2 ("Connected accounts") signing secret |
 | `STRIPE_SUPPRESS_NOTICES` | no | leave unset; the code already handles Stripe's notices |
+| `PLATFORM_FEE_PERCENT` | no | leave unset (no fee); a bad value stops the deploy |
 
 Without the first three, production stays in simulated mode and says so.
 Saving environment properties restarts the app; the config hook re-runs

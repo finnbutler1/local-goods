@@ -3,6 +3,34 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-21: Buy credits in one step
+
+- **One step for HR.** Enter an amount and press **Buy credits**. In Stripe
+  test mode, Stripe's card form opens right there in the Buy credits card
+  (embedded Checkout); there is no separate "Request purchase", and no
+  hunting for the purchase in the list. Without Stripe keys, the same press
+  adds the credits at once (simulated, no real money).
+- **Clear states.** While paying: the amount, the test card and Stripe's
+  form. After paying: "Confirming with Stripe…", which updates by itself
+  and turns into the green "$400.00 in credits added (Stripe test mode,
+  MPG-…). Ready to give." **Cancel payment** says nothing was charged and
+  offers **Try again** with the amount filled in. If the form can't start,
+  it says why, also with Try again.
+- **Money rules unchanged.** The ledger is still written only by Stripe's
+  verified webhook, once; Stripe objects keep their environment labels;
+  credits stay locked until paid; reconciliation still matches (checked
+  against real Stripe test mode on 2026-10-21). A purchase is only
+  cancelled once Stripe confirms its Checkout can't take a payment any
+  more.
+- **Platform fee, ready but off.** A `PLATFORM_FEE_PERCENT` setting,
+  unset = no fee, and then nothing mentions fees. When it is set, HR sees
+  "Credits $X + platform fee $Y = total $Z" before paying, the fee gets its
+  own ledger line on a new platform account, and reconciliation includes
+  it ([ADR 0021](docs/adr/0021-one-step-buy-credits-and-a-platform-fee-account.md)).
+  It stays off.
+- One migration (adds a fee column, default 0, and an empty platform marker
+  on ledger lines; nothing existing changes).
+
 ## 2026-10-21: Clear confirmation after every action
 
 - **One message at the top of the screen after every action**, so nobody

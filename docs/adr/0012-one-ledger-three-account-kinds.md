@@ -1,6 +1,8 @@
 # 0012. One ledger with three kinds of account
 
-**Status:** Accepted, implemented (Stripe transfers not yet built).
+**Status:** Accepted, implemented (Stripe transfers not yet built). Extended by
+[ADR 0021](0021-one-step-buy-credits-and-a-platform-fee-account.md): a fourth,
+platform account holds the platform fee (off by default).
 
 ## Context
 

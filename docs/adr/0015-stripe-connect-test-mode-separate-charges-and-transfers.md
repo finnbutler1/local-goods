@@ -1,6 +1,8 @@
 # 0015. Stripe Connect in test mode: separate charges and transfers
 
 **Status:** Accepted, implemented. Builds on [0001](0001-stripe-connect-instead-of-self-built-escrow.md).
+The separate request and pay steps were replaced by one-step Buy credits in
+[ADR 0021](0021-one-step-buy-credits-and-a-platform-fee-account.md).
 
 ## Context
 
