@@ -17,7 +17,7 @@ trade-off in under a minute.
 | [0009](0009-https-through-cloudfront.md) | HTTPS through CloudFront in front of Beanstalk | Accepted, implemented |
 | [0010](0010-magic-links-for-reviewers.md) | Magic links for reviewers, and one public judge account | Accepted, implemented |
 | [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Accepted, implemented; batches in 0020 |
-| [0012](0012-one-ledger-three-account-kinds.md) | One ledger with three kinds of account: employee, employer, merchant | Accepted, implemented |
+| [0012](0012-one-ledger-three-account-kinds.md) | One ledger with three kinds of account: employee, employer, merchant | Accepted, implemented; platform account added in 0021 |
 | [0013](0013-merchant-eligibility-matching.md) | Merchant Eligibility Matching: an AI suggestion, a person's decision, measured against locked labels | Accepted, implemented |
 | [0014](0014-employer-program-pending-purchases-and-initials.md) | Employer program, purchases locked until paid, and initials only outside an employee's own wallet | Accepted, implemented |
 | [0015](0015-stripe-connect-test-mode-separate-charges-and-transfers.md) | Stripe Connect in test mode: separate charges and transfers, Stripe-funded payouts only | Accepted, implemented |
@@ -26,3 +26,4 @@ trade-off in under a minute.
 | [0018](0018-only-cloudfront-reaches-beanstalk.md) | Only CloudFront reaches Beanstalk (with a kill switch); unsafe production settings stop a deploy | Accepted, implemented |
 | [0019](0019-personal-contacts-vote-separately.md) | Personal contacts vote in the blind adjudication, reported separately and never in the headline | Accepted, implemented |
 | [0020](0020-adjudication-in-balanced-batches-of-10.md) | Blind adjudication in balanced batches of 10, with vote counts and "too few votes to call" | Accepted, implemented |
+| [0021](0021-one-step-buy-credits-and-a-platform-fee-account.md) | One-step Buy credits with embedded Checkout, and a platform fee (off) on its own platform account | Accepted, implemented |

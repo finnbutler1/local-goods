@@ -1,6 +1,8 @@
 # 0014. Employer program, purchases locked until paid, and initials only
 
 **Status:** Accepted, implemented (payment simulated until Stripe test mode).
+The separate request and pay steps were replaced by one-step Buy credits in
+[ADR 0021](0021-one-step-buy-credits-and-a-platform-fee-account.md).
 
 ## Context
 

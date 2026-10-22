@@ -5,6 +5,30 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Buy credits in one step, platform fee ready but off — done (2026-10-21,
+ADR 0021).** One migration (`platform_fee_cents` default 0, nullable
+`credit_ledger_entries.platform`). Money rules unchanged.
+
+- Flow: `employer.purchases.store` → `/employer?pay=<ref>#buy` (Stripe's
+  embedded Checkout, `ui_mode: embedded_page`, Stripe.js `endive`,
+  `createEmbeddedCheckoutPage`; `initEmbeddedCheckout` throws in that
+  version) → `employer.purchases.checkout` (JSON client secret) → return
+  `?checkout=returned` → "Confirming with Stripe…" polls
+  `employer.purchases.status`. Simulated: one press, paid at once. GETs
+  never create anything. `return_url` via `AppUrl::route` (APP_URL in
+  production).
+- Cancel/Try again: `StripeCheckout::close()` (expire if open; complete =
+  never cancel) before `cancelled` or a new token (`restart()`). Webhook
+  refuses payments for cancelled purchases.
+- Fee: `PLATFORM_FEE_PERCENT` (`App\Support\PlatformFee`), unset = 0 = no
+  fee text anywhere (tests check). Fixed on the purchase; own
+  `platform_fee` line on the platform account (4th account kind); Stripe
+  must receive credits + fee; reconciliation counts fees and checks the
+  fee lines. Invariant: paid credits + fees − payouts − held = sum of
+  entries. Leave it at 0 unless Finn says otherwise.
+- `BuyCreditsFlowTest` is the end-to-end check (fake Stripe, fee off and on,
+  reconciliation matching). Local trial: `stripe listen` needs `--events`.
+
 **Merchant data: public business information only — done (2026-10-21).**
 Professor Yoest's rule: "public business information only, with no owner
 names or personal details." No migration, no prompt, label or lock change;
@@ -259,7 +283,8 @@ Eligibility Matching (ADR 0013), the money loop screens (ADR 0014),
 Stripe Connect test mode (ADR 0015), the fraud gate on transfers
 (ADR 0016, Prompt 8), the BID impact dashboard (ADR 0017, Prompt 9A), the accessibility and UX
 pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
-contacts in adjudication (ADR 0019).
+contacts in adjudication (ADR 0019) and one-step Buy credits with the
+platform fee ready but off (ADR 0021).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

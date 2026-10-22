@@ -52,7 +52,8 @@ No accessibility test is skipped or marked as a known failure.
   375px.
   1. Log in (a wrong password, then the right one)
   2. Skip link (Enter on "Skip to content", then Tab)
-  3. Buy credits (a bad amount, then a good one), then Pay now
+  3. Buy credits (a bad amount, then a good one); then it was the two-step
+     request and Pay now, since replaced by one step (see "Buying credits")
   4. Give credits to one person
   5. Redeem credits
   6. Fraud review: Deny with no reason (stopped by the browser), Approve
@@ -147,10 +148,38 @@ scratch SQLite database, simulated payments, no AI key) at 1280px and
 Not checked: hovering to pause the fade, and how a screen reader actually
 reads it (see Not tested).
 
+## Buying credits
+
+One-step Buy credits with Stripe's embedded Checkout (ADR 0021). Checked in
+headless Chrome (a script, on a scratch SQLite database, Stripe test keys,
+`stripe listen` forwarding the webhook) on 2026-10-21:
+
+- **Paying state:** Stripe's form mounted inside the Buy credits card, and
+  the "didn't start" panel stayed hidden. At 375px the page didn't scroll
+  sideways (page width 375) and the form fit the card.
+- **Paying with the test card** returned to the page; the webhook had
+  already arrived, so the green toast showed straight away. "Confirming with
+  Stripe…" was **not seen in the browser** (the webhook was faster); its
+  markup is checked by the tests.
+- **Cancel payment:** the amber toast took focus, and the form came back
+  with the amount filled in and its button reading "Try again".
+- With `PLATFORM_FEE_PERCENT=2.5`, the "Credits … + platform fee … = total
+  …" line updated as the amount was typed and showed again above Stripe's
+  form.
+- The paying, confirming and cancelled states pass `AccessibilityAudit` in
+  `BuyCreditsFlowTest`. The status panel is `role="status"`, takes focus
+  after the return like a toast, and its spinner only turns with
+  `motion-safe:`.
+
+Not checked: moving through Stripe's own form with the keyboard or a
+screen reader (it is Stripe's, inside their frames), and the 2-minute
+"still waiting" text.
+
 ## Loading states
 
 Every page is rendered on the server, so nothing loads in pieces after the
-page appears. The only waits are after pressing a button that posts a
+page appears, except Stripe's card form while buying credits ("Loading
+Stripe's payment form…" until it appears). The only waits are after pressing a button that posts a
 form, and each of those now has a "working…" state (see above). There is
 no separate loading screen.
 
@@ -169,11 +198,11 @@ no separate loading screen.
   Safari, Firefox or Edge.**
 - **Touch target sizes were not measured.** Buttons were looked at in the
   screenshots only.
-- **Stripe mode was not audited.** The scratch server ran in simulated
-  mode, so the "Pay with Stripe" and onboarding buttons and the
-  reconciliation page with real Stripe data were not in the browser audit.
-  Stripe's own Checkout and Express onboarding pages are Stripe's and were
-  not checked.
+- **Stripe mode was only partly audited.** The 9B browser audit ran in
+  simulated mode. Buying credits in Stripe test mode was checked later (see
+  "Buying credits"), but the onboarding buttons and the reconciliation page
+  with real Stripe data were not. Stripe's own Checkout form and Express
+  onboarding pages are Stripe's and were not checked.
 - **The pulsing dots on an approved redemption** were not seen in the
   browser (without the AI key every new redemption is held). They use
   `motion-safe:`, and a test checks that every animation in the views
