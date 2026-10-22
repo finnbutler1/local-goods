@@ -1,3 +1,5 @@
+import './checkout.js';
+
 // Copy buttons: <button data-copy="#input-id"> copies that input's value.
 document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-copy]');

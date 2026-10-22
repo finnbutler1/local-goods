@@ -18,6 +18,18 @@ class AppUrl
         URL::forceScheme('https');
     }
 
+    /**
+     * A named route as a full URL for somebody outside to come back to (for
+     * example Stripe's return_url). In production always APP_URL, never the
+     * host this request arrived on: Beanstalk refuses direct visitors.
+     */
+    public static function route(string $name, array $parameters = []): string
+    {
+        return app()->isProduction()
+            ? rtrim((string) config('app.url'), '/').route($name, $parameters, false)
+            : route($name, $parameters);
+    }
+
     /** Makes the request see itself as https://<APP_URL host>, whatever host and scheme it arrived with. */
     public static function rewrite(Request $request): void
     {

@@ -10,8 +10,14 @@ namespace App\Services\Payments;
  */
 interface StripeGateway
 {
-    /** @return array{id: string, url: string} */
+    /** @return array{id: string, client_secret?: string, url?: string} a Checkout Session (client_secret for ui_mode embedded_page) */
     public function createCheckoutSession(array $params, string $idempotencyKey): array;
+
+    /** @return array{id: string, status: string} a Checkout Session; status is open, complete or expired */
+    public function retrieveCheckoutSession(string $sessionId): array;
+
+    /** Expires an open Checkout Session, so it can never take a payment. Stripe refuses one that isn't open. */
+    public function expireCheckoutSession(string $sessionId): array;
 
     /** @return array<string, mixed> an Account */
     public function createExpressAccount(array $params, string $idempotencyKey): array;

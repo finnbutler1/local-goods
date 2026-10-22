@@ -52,9 +52,56 @@ class FakeStripeGateway implements StripeGateway
                 throw new StripeGatewayException($message);
             }
             $id = 'cs_test_'.$this->next();
+            $this->sessions[$id] = ['id' => $id, 'object' => 'checkout.session', 'status' => 'open', 'ui_mode' => $params['ui_mode'] ?? 'hosted_page'];
 
-            return ['id' => $id, 'url' => 'https://checkout.stripe.test/'.$id];
+            return ($params['ui_mode'] ?? null) === 'embedded_page'
+                ? $this->sessions[$id] + ['client_secret' => $id.'_secret_fake']
+                : $this->sessions[$id] + ['url' => 'https://checkout.stripe.test/'.$id];
         });
+    }
+
+    /** @var array<string, array> Checkout Sessions made, by id, with their status. */
+    public array $sessions = [];
+
+    /** Next retrieve or expire fails with this (plain English), once. */
+    public ?string $sessionFailure = null;
+
+    /** The employer paid in this session (as when Stripe completes it). */
+    public function completeSession(string $id): void
+    {
+        $this->sessions[$id]['status'] = 'complete';
+    }
+
+    public function retrieveCheckoutSession(string $sessionId): array
+    {
+        $this->calls[] = ['checkout.retrieve', ['id' => $sessionId]];
+        $this->failSessionCallIfTold();
+
+        return $this->sessions[$sessionId] ?? throw new StripeGatewayException('Stripe refused the request (InvalidRequestException, No such checkout.session).');
+    }
+
+    public function expireCheckoutSession(string $sessionId): array
+    {
+        $this->calls[] = ['checkout.expire', ['id' => $sessionId]];
+        $this->failSessionCallIfTold();
+
+        // Like the real API: only an open session can be expired.
+        if (($this->sessions[$sessionId]['status'] ?? null) !== 'open') {
+            throw new StripeGatewayException('Stripe refused the request (InvalidRequestException, session is not open).');
+        }
+
+        $this->sessions[$sessionId]['status'] = 'expired';
+
+        return $this->sessions[$sessionId];
+    }
+
+    private function failSessionCallIfTold(): void
+    {
+        if ($this->sessionFailure !== null) {
+            [$message, $this->sessionFailure] = [$this->sessionFailure, null];
+
+            throw new StripeGatewayException($message);
+        }
     }
 
     /**

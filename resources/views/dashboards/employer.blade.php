@@ -1,6 +1,7 @@
 @php
     use App\Enums\Occasion;
     use App\Support\Money;
+    use App\Support\PlatformFee;
 
     $input = 'block w-full rounded-xl border-2 bg-paper px-3 py-3 focus-visible:border-forest';
     $readOnly = Gate::denies('manage-employer-program');
@@ -204,39 +205,109 @@
         </dl>
 
         <div class="grid gap-3 lg:grid-cols-2">
-            <x-card as="section" aria-labelledby="buy-heading">
+            @php
+                $buying = $buy['purchase'];
+                // Only when the platform fee is on (ADR 0021); at 0 nothing here mentions fees.
+                $feeLine = fn ($p) => $p->platform_fee_cents > 0
+                    ? 'Credits '.Money::format($p->amount_cents).' + platform fee '.Money::format($p->platform_fee_cents).' = total '.Money::format($p->totalCents())
+                    : null;
+            @endphp
+            <x-card as="section" id="buy" aria-labelledby="buy-heading" @class(['scroll-mt-24 min-w-0', 'lg:col-span-2' => $buy['state'] === 'paying'])>
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <h3 id="buy-heading" class="text-xl font-semibold">Buy credits</h3>
                     <x-money-mode />
                 </div>
-                @if ($stripe)
-                    <p class="mt-1 text-sm text-muted">
-                        A purchase starts as pending. "Pay with Stripe (test mode)" opens Stripe Checkout; the credits unlock only once Stripe
-                        confirms the payment to Local Goods. Stripe holds the money, not Local Goods.
+
+                @if ($buy['state'] === 'paying')
+                    {{-- Stripe's embedded Checkout (resources/js/checkout.js). The credits unlock only when Stripe's webhook confirms. --}}
+                    <p class="mt-2">
+                        Paying for <span class="font-semibold">{{ $buying->reference }}</span>:
+                        <span class="tabular font-semibold">{{ Money::format($buying->amount_cents) }}</span> in credits.
                     </p>
+                    @if ($line = $feeLine($buying))
+                        <p class="tabular mt-1 font-semibold" data-fee-breakdown>{{ $line }}</p>
+                    @endif
                     <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-amber bg-cream-deep p-3 text-sm">
                         <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
-                        No real money moves.
+                        No real money moves. Stripe holds the money, not Local Goods.
                     </p>
+                    <div class="mt-4 w-full min-w-0 overflow-hidden rounded-xl" data-embedded-checkout aria-label="Stripe payment form, test mode"
+                         role="region" aria-describedby="test-card-hint"
+                         data-stripe-key="{{ config('services.stripe.key') }}"
+                         data-secret-url="{{ route('employer.purchases.checkout', $buying) }}"
+                         data-csrf="{{ csrf_token() }}">
+                        <p class="p-4 text-muted" data-checkout-loading>Loading Stripe's payment form…</p>
+                    </div>
+                    <noscript>
+                        <p class="mt-3 rounded-xl bg-cream-deep p-3 text-sm">Paying by card needs JavaScript, because the card form is Stripe's. Turn it on and reload this page.</p>
+                    </noscript>
+                    <div hidden tabindex="-1" role="alert" data-checkout-error class="mt-4 rounded-xl border-2 border-hold bg-hold-bg p-4 text-hold">
+                        <p class="font-semibold" data-checkout-error-text>Payment didn't start. Nothing was charged.</p>
+                        <form method="POST" action="{{ route('employer.purchases.pay', $buying) }}" data-busy="Starting again…" class="mt-3">
+                            @csrf
+                            <x-button type="submit" size="sm">Try again</x-button>
+                        </form>
+                    </div>
+                    <form method="POST" action="{{ route('employer.purchases.cancel', $buying) }}" data-busy="Cancelling…" class="mt-4">
+                        @csrf
+                        <x-button type="submit" variant="secondary" size="sm">Cancel payment</x-button>
+                    </form>
+                    <script src="https://js.stripe.com/endive/stripe.js"></script>
+                @elseif ($buy['state'] === 'confirming')
+                    {{-- Paid at Stripe; waiting for the signed webhook, which is the only thing that adds the credits. --}}
+                    <div class="mt-4 rounded-xl border-2 border-amber bg-cream-deep p-4" role="status" tabindex="-1" data-flash
+                         data-purchase-status-url="{{ route('employer.purchases.status', $buying) }}">
+                        <p class="flex items-center gap-2 font-semibold" data-confirming-text>
+                            <svg viewBox="0 0 24 24" fill="none" class="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true" data-confirming-spinner>
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="3"/>
+                                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                            Confirming with Stripe…
+                        </p>
+                        <p class="mt-1 text-sm" data-confirming-detail>
+                            {{ Money::format($buying->amount_cents) }} in credits for {{ $buying->reference }}. They unlock as soon as Stripe confirms the payment to Local Goods, usually within a few seconds. This updates by itself.
+                        </p>
+                        <noscript><p class="mt-1 text-sm">Refresh this page to check.</p></noscript>
+                        <p hidden class="mt-1 text-sm" data-confirming-timeout>
+                            Still waiting for Stripe. {{ $buying->reference }} will show as paid in Purchases once Stripe confirms; refresh this page later to check.
+                        </p>
+                    </div>
                 @else
+                    @if ($buy['state'] === 'cancelled')
+                        <div class="mt-3 rounded-xl border-2 border-amber bg-cream-deep p-3 text-sm" data-buy-cancelled>
+                            <p><span class="font-semibold">Payment cancelled.</span> Nothing was charged for {{ $buying->reference }}. Press Try again to buy the same amount.</p>
+                        </div>
+                    @endif
                     <p class="mt-1 text-sm text-muted">
-                        A purchase starts as pending. Stripe isn't connected on this server, so "Pay now" marks it paid with no real money
-                        (simulated), and only then can the credits be given out.
+                        @if ($stripe)
+                            Enter an amount and pay by card right here (Stripe test mode). The credits are ready to give once Stripe confirms the payment.
+                        @else
+                            Stripe isn't connected on this server, so buying is simulated: the credits are added straight away with no real money.
+                        @endif
                     </p>
+                    @php
+                        $feeHint = PlatformFee::enabled() ? ' A '.PlatformFee::label().' platform fee is added on top.' : '';
+                        $prefill = old('purchase_amount', $buy['state'] === 'cancelled' ? Money::toDollars($buying->amount_cents) : null);
+                    @endphp
+                    <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="{{ $stripe ? 'Opening the payment form…' : 'Buying…' }}" class="mt-4">
+                        @csrf
+                        <fieldset @disabled($readOnly) class="space-y-4">
+                            <legend class="sr-only">Buy credits</legend>
+                            <x-field name="purchase_amount" label="Amount in dollars" :hint="'For example 6000 covers a $150 allowance for 40 people.'.$feeHint">
+                                <input id="purchase_amount" name="purchase_amount" type="text" inputmode="decimal" autocomplete="off" required placeholder="6000"
+                                       value="{{ $prefill }}"
+                                       class="{{ $input }} tabular @error('purchase_amount') border-hold @else border-muted @enderror"
+                                       aria-describedby="purchase_amount-hint @error('purchase_amount') purchase_amount-error @enderror" @error('purchase_amount') aria-invalid="true" @enderror>
+                            </x-field>
+                            @if (PlatformFee::enabled())
+                                <p class="tabular text-sm font-semibold" aria-live="polite" data-fee-preview data-fee-basis-points="{{ PlatformFee::basisPoints() }}"></p>
+                            @endif
+                            <x-button type="submit" variant="accent" :aria-describedby="$readOnly ? 'read-only-note' : null">
+                                {{ $buy['state'] === 'cancelled' ? 'Try again' : ($stripe ? 'Buy credits' : 'Buy credits (simulated, no real money)') }}
+                            </x-button>
+                        </fieldset>
+                    </form>
                 @endif
-                <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="Saving…" class="mt-4">
-                    @csrf
-                    <fieldset @disabled($readOnly) class="space-y-4">
-                        <legend class="sr-only">Buy credits</legend>
-                        <x-field name="purchase_amount" label="Amount in dollars" hint="For example 6000 covers a $150 allowance for 40 people.">
-                            <input id="purchase_amount" name="purchase_amount" type="text" inputmode="decimal" autocomplete="off" required placeholder="6000"
-                                   value="{{ old('purchase_amount') }}"
-                                   class="{{ $input }} tabular @error('purchase_amount') border-hold @else border-muted @enderror"
-                                   aria-describedby="purchase_amount-hint @error('purchase_amount') purchase_amount-error @enderror" @error('purchase_amount') aria-invalid="true" @enderror>
-                        </x-field>
-                        <x-button type="submit" variant="accent" :aria-describedby="$readOnly ? 'read-only-note' : null">Request purchase</x-button>
-                    </fieldset>
-                </form>
             </x-card>
 
             <x-card as="section" aria-labelledby="purchases-heading" padding="p-0">
@@ -248,7 +319,7 @@
                         ->sortByDesc('at')->values();
                 @endphp
                 @if ($activity->isEmpty())
-                    <p class="px-5 pt-2 pb-5 text-muted sm:px-6">No purchases yet. Request one to fund your team's credits.</p>
+                    <p class="px-5 pt-2 pb-5 text-muted sm:px-6">No purchases yet. Buy credits to fund your team's credits.</p>
                 @else
                     <ul id="credit-activity" class="mt-2 scroll-mt-24 divide-y divide-line/70">
                         @foreach ($activity as $item)
@@ -271,17 +342,22 @@
                                 <div class="min-w-0">
                                     <p class="tabular font-semibold">{{ Money::format($purchase->amount_cents) }}</p>
                                     <p class="text-sm text-muted">{{ $purchase->reference }} · {{ $purchase->purchased_at->setTimezone('America/New_York')->format('M j, Y') }}</p>
+                                    @if ($purchase->platform_fee_cents > 0)
+                                        <p class="tabular text-sm text-muted">+ {{ Money::format($purchase->platform_fee_cents) }} platform fee</p>
+                                    @endif
                                 </div>
-                                @if ($purchase->isPending())
+                                @if ($purchase->isCancelled())
+                                    <x-badge tone="neutral">Cancelled</x-badge>
+                                @elseif ($purchase->isPending())
                                     <div class="flex flex-wrap items-center gap-2">
                                         <x-badge tone="hold">Pending</x-badge>
                                         @if ($readOnly)
                                             <span class="text-sm text-muted">Read-only: judges can't pay</span>
                                         @else
-                                            <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}" data-busy="Paying…">
+                                            <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}" data-busy="{{ $stripe ? 'Opening the payment form…' : 'Paying…' }}">
                                                 @csrf
                                                 @if ($stripe)
-                                                    <x-button type="submit" size="sm" aria-describedby="test-card-hint" aria-label="Pay with Stripe, test mode, for {{ $purchase->reference }}">Pay with Stripe (test mode)</x-button>
+                                                    <x-button type="submit" size="sm" aria-label="Continue paying for {{ $purchase->reference }}, Stripe test mode">Continue paying</x-button>
                                                 @else
                                                     <x-button type="submit" size="sm" aria-label="Pay now for {{ $purchase->reference }}, simulated, no real money">Pay now (simulated, no real money)</x-button>
                                                 @endif
