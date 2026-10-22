@@ -24,6 +24,20 @@ only" (keep it true).
   with Finn's own tracking IDs, on purpose (lock intact).
 - History was not rewritten; never rewrite it (both locks name commits).
 
+**Confirmation toast after every action — done (2026-10-21).** Display
+only; no migration, money, ledger, prompt or eval change.
+
+- `<x-flash />` is a toast rendered once by `app-shell` and `layouts/app`
+  (not per page). Keys: `status` (✓), `notice` (still waiting) and `error`
+  only; never add new flash keys. Wording says the amount, the place and the
+  employee by `initials()`. `ActionConfirmationsTest` covers each action.
+- Approvals end with `App\Support\PayoutOutcome::sentence()` (by payout
+  channel; "paid" only for a sent Stripe transfer). Display only, never
+  sends.
+- `app.js` focuses the toast after an `#anchor` jump (Chrome clears focus
+  then); field errors still win. Checks that ran: `docs/accessibility.md`
+  "Confirmation toasts".
+
 **Blind adjudication in batches of 10 — done (ADR 0020).** One migration
 (`adjudication_assignments`, additive). Case set, blind view, opening
 question and existing votes unchanged.

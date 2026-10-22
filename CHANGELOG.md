@@ -3,6 +3,28 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-21: Clear confirmation after every action
+
+- **One message at the top of the screen after every action**, so nobody
+  has to open a history list to see whether it worked. Green with a ✓ when
+  it worked, amber when something is still waiting (held for review,
+  purchase still pending), and the warning color when nothing happened. It
+  can be dismissed with × or Escape. Green and amber ones fade out after 8
+  seconds, unless the device asks for reduced motion; errors stay.
+- **Specific wording.** "$50.00 sent to J.R. They can spend it now.",
+  "$500.00 in credits added (simulated, no real money). Ready to give.",
+  "$8.00 at Farragut Grind held for a quick review: no money moves until a
+  BID admin decides." Employees appear by initials only.
+- **Approvals say where the money went.** "Stripe test transfer sent.", or
+  that it's owed through Stripe because the merchant hasn't finished
+  onboarding or the transfer couldn't be made yet, or "Now owed to the
+  merchant (simulated, no money moved)." It never says "paid" unless a
+  Stripe test transfer was sent.
+- **Fixed:** after a redirect to a section further down a page (buying
+  credits, giving credits), the message didn't get keyboard and screen
+  reader focus in Chrome. Now it does.
+- Display only: no change to money, the ledger, AI prompts or eval data.
+
 ## 2026-10-21: Merchant data is public business information only
 
 - **No real people in the AI's reasoning.** Merchant Eligibility Matching had
