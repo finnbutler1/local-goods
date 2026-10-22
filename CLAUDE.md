@@ -5,6 +5,29 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Product menus at the demo merchants — done (2026-10-22, ADR 0023).** One
+migration (`merchant_products`, `redemption_items`, additive). Money rules,
+fraud prompt (`8d5e1e70`), signals, model and eval data unchanged.
+
+- Menus: `DatabaseSeeder::DEMO_MENUS` (keyed like `DEMO_MERCHANTS`, 4–8
+  each). `Merchant::mayHaveProducts()` (demo names, never a candidate) is
+  enforced on save. Reset demo restores them (both tables in DEMO_TABLES;
+  `redemption_items` in EMPTY_AFTER_SEED); `demo:seed-if-empty` adds only
+  the menus to a demo seeded before them.
+- Redeem: GET `?merchant=` shows the menu (no auto-submit), POST
+  `items[product_id]=qty` (0–20) plus `amount` = Other amount.
+  `RedemptionBasket::build` computes the total from the menu prices;
+  `RedemptionService::redeem(..., $items)` scores the amount as before,
+  then stores items (name and price copied). Items always add up to the
+  amount; a bare amount has no items. **Never pass items into signals or
+  the AI** (`RedemptionItemsTest` checks the input is identical).
+- Shown via `Redemption::itemsSummary()` (load `items`): wallet, merchant
+  dashboard, Fraud review ("not sent to Redemption Fraud Detection"),
+  employer returned-credit rows.
+- `/merchant/menu` (`Merchant\MenuController`): edit name, price,
+  description, on/off, add (max 12); own products only, throttled, judges
+  read-only.
+
 **Every demo merchant can receive Stripe test transfers — done
 (2026-10-22, ADR 0022).** One migration
 (`merchants.stripe_set_up_by_platform`, additive, kept by Reset demo).
@@ -309,7 +332,8 @@ Stripe Connect test mode (ADR 0015), the fraud gate on transfers
 pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
 contacts in adjudication (ADR 0019), one-step Buy credits with the
 platform fee ready but off (ADR 0021) and platform-set-up Stripe test
-accounts for the demo merchants (ADR 0022).
+accounts for the demo merchants (ADR 0022) and display-only product menus
+(ADR 0023).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

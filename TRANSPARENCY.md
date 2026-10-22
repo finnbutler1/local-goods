@@ -33,6 +33,19 @@ employee, the employer and the merchant.** Claude sees:
 The full instructions Claude receives are in
 [`resources/prompts/redemption-fraud-detection.md`](resources/prompts/redemption-fraud-detection.md).
 
+### Product menus: display only
+
+Employees can pick items from a demo merchant's menu when they redeem
+([ADR 0023](docs/adr/0023-product-menus-are-display-only.md)). **Products
+don't affect fraud detection yet.** The redemption is scored on its total
+amount and the signals above, exactly as before menus; what was bought is
+stored afterwards and only shown to people (the employee, the merchant,
+the BID admin in Fraud review, the employer by initials). Fraud review
+says so next to the items. A test checks that the AI's input is identical
+with and without items. Using products to catch abuse would be a new
+signal, so a new prompt version and a fresh unseen holdout. Only the
+fictional demo merchants have menus; real DC businesses never do.
+
 ### What Claude decides
 
 Claude replies in a fixed JSON format with three things:

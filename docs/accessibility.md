@@ -183,6 +183,28 @@ Stripe's payment form…" until it appears). The only waits are after pressing a
 form, and each of those now has a "working…" state (see above). There is
 no separate loading screen.
 
+## Redeeming from a menu
+
+The two-step redeem (choose a merchant, then pick from its menu) and
+Priya's `/merchant/menu`. Checked in headless Chrome (a script, on a
+scratch SQLite database, simulated payments, no AI key) at 375px:
+
+- No sideways scroll on the wallet (both steps and the confirmation),
+  `/merchant`, `/merchant/menu` and `/bid-admin`.
+- Tab from "Change merchant" went − , quantity, + for each product in
+  menu order. Enter on "One more Latte" twice set it to 2, and the total
+  read $15.75 with one croissant. The total is an `aria-live="polite"`
+  region.
+- The confirmation card, the toast, the merchant dashboard and Fraud
+  review all listed "2× Latte, 1× Croissant".
+
+Each quantity field has its own label ("Latte") and the − / + buttons say
+which product ("One more Latte"). They are hidden without JavaScript,
+where the quantity fields still work and the server adds up the total.
+The static checks (`AccessibilityTest`) cover the menu step, the
+suspicious example, and both forms' error states. Not checked: 320px, axe,
+and how a screen reader reads the running total (see Not tested).
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session

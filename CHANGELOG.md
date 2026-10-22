@@ -3,6 +3,27 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-22: Product menus at the demo merchants
+
+- **Pick from a menu.** Each of the 8 fictional demo merchants has a short
+  menu (4 to 8 products, downtown DC prices). On the wallet, an employee
+  chooses a merchant, presses **Show menu**, picks quantities with − and +
+  and sees the running total, then confirms. **Other amount** is still
+  there for anything not listed, and works alone exactly as before.
+- **Shown wherever the redemption appears**: the wallet, the merchant
+  dashboard ("2× Latte, 1× Croissant"), Fraud review and the employer's
+  returned-credit rows, employees by initials as before.
+- **Priya can change her menu** at `/merchant/menu`: name, price,
+  description, take a product off the menu or put it back, add one (up to
+  12). Past redemptions keep the name and price they had. Judges see it
+  read-only. Reset demo puts the original menus back.
+- **Display only.** The amount is the total, and the money logic is
+  unchanged. Redemption Fraud Detection sees exactly what it saw before;
+  products are never sent to it (a test checks the AI's input is
+  identical) ([ADR 0023](docs/adr/0023-product-menus-are-display-only.md)).
+- **One migration** (two new tables, additive). Real DC businesses never
+  get products.
+
 ## 2026-10-22: Every demo merchant can receive Stripe test transfers
 
 - **Connect demo merchants to Stripe (test mode).** A new platform-admin
