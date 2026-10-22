@@ -48,7 +48,8 @@ class PlatformFeeTest extends TestCase
 
     public function test_the_fee_is_off_by_default(): void
     {
-        $this->assertNull(config('payments.platform_fee_percent'));
+        // Unset (no line in .env) or blank (.env.example's empty line, as in CI): both mean no fee.
+        $this->assertSame('', trim((string) config('payments.platform_fee_percent')));
         $this->assertFalse(PlatformFee::enabled());
         $this->assertSame(0, PlatformFee::centsFor(1000000));
     }
