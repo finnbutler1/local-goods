@@ -38,48 +38,47 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <x-theme-head />
+    <x-brand-head />
     <title>{{ $title }} · Local Goods</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-cream font-sans text-ink antialiased">
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 rounded-full bg-amber px-4 py-2 font-semibold text-ink">Skip to content</a>
+<body class="min-h-screen bg-page font-sans text-ink antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 rounded-full bg-accent px-4 py-2 font-semibold text-on-accent">Skip to content</a>
     <x-flash />
 
     {{-- Desktop sidebar --}}
-    <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-forest text-cream lg:flex">
-        <div class="awning h-2" aria-hidden="true"></div>
+    <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-night text-on-night lg:flex">
         <div class="px-6 pt-6 pb-8">
-            <a href="{{ route('home') }}" class="inline-block font-display text-2xl font-semibold tracking-tight">
-                Local Goods
+            <a href="{{ route('home') }}" class="inline-block rounded-lg" aria-label="Local Goods home">
+                <x-logo :on-dark="true" class="h-8 w-auto" />
             </a>
-            <p class="mt-1 text-sm text-sage">Spend local. Prove it.</p>
+            <p class="mt-2 text-sm font-semibold text-night-muted">Reroute your lunch.</p>
         </div>
         <nav aria-label="App" class="flex-1 px-3">
             <ul class="space-y-1">
                 @foreach ($nav as $key => $item)
                     <li>
                         <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
-                           class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-sage hover:bg-forest-soft hover:text-cream aria-[current=page]:bg-cream aria-[current=page]:text-forest">
+                           class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:text-on-night aria-[current=page]:before:absolute aria-[current=page]:before:inset-y-2 aria-[current=page]:before:-left-3 aria-[current=page]:before:w-1 aria-[current=page]:before:rounded-full aria-[current=page]:before:bg-night-primary">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
                             {{ $item['label'] }}
                             @if ($key === 'feedback' && $unreadFeedback > 0)
-                                <span class="tabular ml-auto rounded-full bg-amber px-2 py-0.5 text-xs font-semibold text-ink">{{ $unreadFeedback }}<span class="sr-only"> unread</span></span>
+                                <span class="tabular ml-auto rounded-full bg-night-accent px-2 py-0.5 text-xs font-semibold text-night">{{ $unreadFeedback }}<span class="sr-only"> unread</span></span>
                             @endif
                         </a>
                     </li>
                 @endforeach
             </ul>
         </nav>
-        <div class="m-3 rounded-xl border border-forest-soft p-4 text-sm text-sage">
-            <p class="font-semibold text-cream">Demo mode</p>
+        <div class="m-3 rounded-xl border border-night-line p-4 text-sm text-night-muted">
+            <p class="font-semibold text-on-night">Demo mode</p>
             <p class="mt-1">All people and transactions are fictional.</p>
             @unless ($votingOnly)
-                <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-cream underline underline-offset-4 hover:no-underline">Back to the public site</a>
+                <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-on-night underline underline-offset-4 hover:no-underline">Back to the public site</a>
             @endunless
         </div>
         <a href="{{ route('account') }}" @if ($active === 'account') aria-current="page" @endif
-           class="mx-3 mb-2 rounded-xl px-3 py-2 text-sm font-semibold text-sage hover:bg-forest-soft hover:text-cream aria-[current=page]:bg-cream aria-[current=page]:text-forest">Your account</a>
+           class="mx-3 mb-2 rounded-xl px-3 py-2 text-sm font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:text-on-night">Your account</a>
         <form method="POST" action="{{ route('logout') }}" class="mx-3 mb-4">
             @csrf
             <x-button type="submit" variant="inverse-outline" class="w-full">Log out</x-button>
@@ -88,10 +87,10 @@
 
     <div class="lg:pl-64">
         {{-- Top bar --}}
-        <header class="sticky top-0 z-20 border-b border-line bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/85">
+        <header class="sticky top-0 z-20 border-b border-line bg-page/95 backdrop-blur supports-[backdrop-filter]:bg-page/85">
             <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
                 <div class="min-w-0">
-                    <a href="{{ route('home') }}" class="font-display text-lg font-semibold text-forest lg:hidden">Local Goods</a>
+                    <a href="{{ route('home') }}" class="inline-block rounded-lg lg:hidden" aria-label="Local Goods home"><x-logo class="h-7 w-auto" /></a>
                     <p class="hidden truncate text-sm font-semibold text-muted lg:block">{{ $context }}</p>
                 </div>
                 <div class="flex min-w-0 items-center gap-3">
@@ -142,16 +141,16 @@
     @endif
 
     {{-- Mobile bottom tab bar --}}
-    <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-forest-soft bg-forest pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-night-line bg-night pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul class="grid {{ $tabColumns }}">
             @foreach ($nav as $key => $item)
                 <li>
                     <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
-                       class="flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-sage hover:text-cream aria-[current=page]:text-amber">
+                       class="flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-[current=page]:text-night-primary aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4">
                         <span class="relative">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-6" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
                             @if ($key === 'feedback' && $unreadFeedback > 0)
-                                <span class="tabular absolute -top-1.5 -right-2.5 rounded-full bg-amber px-1.5 text-[0.65rem] font-semibold text-ink">{{ $unreadFeedback }}<span class="sr-only"> unread</span></span>
+                                <span class="tabular absolute -top-1.5 -right-2.5 rounded-full bg-night-accent px-1.5 text-[0.65rem] font-semibold text-night">{{ $unreadFeedback }}<span class="sr-only"> unread</span></span>
                             @endif
                         </span>
                         {{ $item['short'] }}

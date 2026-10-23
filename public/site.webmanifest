@@ -1,0 +1,14 @@
+{
+    "name": "Local Goods",
+    "short_name": "Local Goods",
+    "description": "Employer credits that only work at independent businesses in the Golden Triangle, Washington, DC.",
+    "start_url": "/",
+    "display": "browser",
+    "background_color": "#f4f6f5",
+    "theme_color": "#0a6b67",
+    "icons": [
+        { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}
