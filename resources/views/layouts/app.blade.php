@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#1f3d2b">
+    <x-theme-head />
     <meta name="description" content="Local Goods lets employers in Washington, DC's Golden Triangle give staff credits that only work at independent local businesses, so the neighborhood they work in benefits from their daily presence.">
     <title>@yield('title', 'Local Goods')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -24,6 +24,7 @@
                     <li><a href="{{ route('home') }}#who-its-for" class="underline-offset-4 hover:underline">Who it's for</a></li>
                     <li><a href="{{ route('home') }}#trust" class="underline-offset-4 hover:underline">Trust &amp; AI</a></li>
                 </ul>
+                <x-theme-toggle />
                 @auth
                     <x-button variant="secondary" size="sm" :href="route('dashboard')">My dashboard</x-button>
                 @else

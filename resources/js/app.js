@@ -1,5 +1,28 @@
 import './checkout.js';
 
+// Light/dark toggle: [data-theme-toggle], pressed = dark. With no saved
+// choice the page follows the system setting (CSS media query); pressing the
+// button saves a choice. Storage may be blocked: then it lasts for this page.
+const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+const isDark = () => {
+    const chosen = document.documentElement.dataset.theme;
+    return chosen ? chosen === 'dark' : systemDark.matches;
+};
+const showTheme = () => themeToggles.forEach((toggle) => toggle.setAttribute('aria-pressed', String(isDark())));
+themeToggles.forEach((toggle) => toggle.addEventListener('click', () => {
+    const theme = isDark() ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+    try {
+        localStorage.setItem('lg-theme', theme);
+    } catch {
+        // Private mode or blocked storage: the choice lasts until the next page.
+    }
+    showTheme();
+}));
+systemDark.addEventListener('change', showTheme);
+showTheme();
+
 // Copy buttons: <button data-copy="#input-id"> copies that input's value.
 document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-copy]');

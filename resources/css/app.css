@@ -1,36 +1,155 @@
 @import 'tailwindcss';
 
 /* Self-hosted fonts: Vite copies the .woff2 files from these npm packages into
-   public/build, so browsers never contact Google or any other font server. */
-@import '@fontsource-variable/fraunces/opsz.css';
-@import '@fontsource-variable/public-sans/wght.css';
+   public/build, so browsers never contact Google or any other font server.
+   Transit lines brand (ADR 0025): Overpass for headings, Atkinson Hyperlegible
+   Next for text. */
+@import '@fontsource-variable/overpass/wght.css';
+@import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
+
+/* Plain zeros: Atkinson Hyperlegible Next only has a slashed zero, so its
+   digits 0-9 come from Overpass (plain zero, tabular figures). Declared after
+   the imports with the same descriptors as Atkinson's own face (weight
+   200 800), so browsers treat both as one family and this face wins for
+   digits. */
+@font-face {
+    font-family: 'Atkinson Hyperlegible Next Variable';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 200 800;
+    src: url('../../node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2') format('woff2-variations');
+    unicode-range: U+0030-0039;
+}
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Fraunces Variable', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+    --font-sans: 'Atkinson Hyperlegible Next Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
 
-    /* Brand palette. Approved text/background pairs are checked against WCAG AA
-       in tests/Unit/ColorContrastTest.php; change a color there too. */
-    --color-forest: #1f3d2b;       /* primary: dark panels, primary actions */
-    --color-forest-soft: #2c5440;  /* hover on forest */
-    --color-forest-tint: #e4ede6;  /* light green surface */
-    --color-sage: #c9d6cc;         /* secondary text on forest */
-    --color-cream: #fbf6ea;        /* page background */
-    --color-cream-deep: #f1e8d3;   /* section bands */
-    --color-paper: #fffdf8;        /* card surface */
-    --color-line: #d9cdb2;         /* decorative rules only, never a UI boundary */
-    --color-ink: #17201b;          /* near-black body text */
-    --color-muted: #4a5a50;        /* secondary text, form borders */
-    --color-amber: #e0a43a;        /* money and highlights; pair with ink or forest text */
-    --color-amber-ink: #8a5a0b;    /* amber-toned text on light backgrounds */
-    --color-ok: #1f5e3a;
-    --color-ok-bg: #e3f0e6;
-    --color-hold: #8a3b12;
-    --color-hold-bg: #fbebd9;
+    /* Transit lines palette, light mode. Dark mode redefines the same names
+       below, so every class switches with the theme. Approved text/background
+       pairs are checked against WCAG AA in both modes by
+       tests/Unit/ColorContrastTest.php (App\Support\ColorContrast::PAIRS). */
+    --color-page: #f4f6f5;            /* page background */
+    --color-surface: #ffffff;         /* cards */
+    --color-band: #e6ecea;            /* section bands */
+    --color-ink: #121820;             /* body text */
+    --color-muted: #4d5666;           /* secondary text */
+    --color-line: #d3dad8;            /* decorative rules only, never a UI boundary */
+    --color-edge: #7a8494;            /* control borders (3:1) */
+    --color-primary: #0a6b67;         /* teal route line: primary actions, links */
+    --color-primary-hover: #085754;
+    --color-primary-pressed: #064441;
+    --color-on-primary: #ffffff;
+    --color-primary-tint: #e0f0ee;
+    --color-accent: #e2603a;          /* coral local stop: highlights; ink text on it */
+    --color-on-accent: #121820;
+    --color-accent-ink: #a83c1b;      /* coral-toned text */
+    --color-route-2: #7a3f9a;         /* plum second line, decoration only */
+    --color-ok: #196a3e;
+    --color-ok-bg: #e0f1e6;
+    --color-hold: #8a4b00;
+    --color-hold-bg: #fcefd9;
+    --color-danger: #b3261e;
+    --color-danger-bg: #fbe5e3;
+    --color-focus: #5a2d86;
+    --color-disabled-ink: #4d5462;
+    --color-disabled-bg: #dde1e6;
+    /* Night panels (sidebar, footer, tab bar): dark in both modes. */
+    --color-night: #121820;
+    --color-night-soft: #1f2832;
+    --color-night-line: #2f3a45;
+    --color-on-night: #edf1f4;
+    --color-night-muted: #a9b2bf;
+    --color-night-primary: #42c4b9;
+    --color-night-accent: #ff8a63;
+    --color-night-focus: #d7b4ff;
+
+    /* Old names, kept only while the pages move to the new ones. */
+    --color-forest: var(--color-primary);
+    --color-forest-soft: var(--color-primary-hover);
+    --color-forest-tint: var(--color-primary-tint);
+    --color-sage: var(--color-primary-tint);
+    --color-cream: var(--color-page);
+    --color-cream-deep: var(--color-band);
+    --color-paper: var(--color-surface);
+    --color-amber: var(--color-accent);
+    --color-amber-ink: var(--color-accent-ink);
+}
+
+/* Dark mode: the system setting, unless the header toggle chose light; or
+   the toggle chose dark. Keep both blocks identical. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        color-scheme: dark;
+        --color-page: #0d1216;
+        --color-surface: #161d23;
+        --color-band: #1b242b;
+        --color-ink: #edf1f4;
+        --color-muted: #a4adba;
+        --color-line: #2a333c;
+        --color-edge: #68737f;
+        --color-primary: #42c4b9;
+        --color-primary-hover: #6ad4cb;
+        --color-primary-pressed: #2ea89e;
+        --color-on-primary: #0d1216;
+        --color-primary-tint: #10302d;
+        --color-accent: #ff8a63;
+        --color-on-accent: #0d1216;
+        --color-accent-ink: #ff9c7a;
+        --color-route-2: #c08ae0;
+        --color-ok: #6fd49a;
+        --color-ok-bg: #0f2f1d;
+        --color-hold: #f4b45a;
+        --color-hold-bg: #352406;
+        --color-danger: #ff958b;
+        --color-danger-bg: #3a1512;
+        --color-focus: #d7b4ff;
+        --color-disabled-ink: #b6bec9;
+        --color-disabled-bg: #2a333c;
+        --color-night: #080b0e;
+        --color-night-soft: #161d23;
+        --color-night-line: #252e36;
+    }
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --color-page: #0d1216;
+    --color-surface: #161d23;
+    --color-band: #1b242b;
+    --color-ink: #edf1f4;
+    --color-muted: #a4adba;
+    --color-line: #2a333c;
+    --color-edge: #68737f;
+    --color-primary: #42c4b9;
+    --color-primary-hover: #6ad4cb;
+    --color-primary-pressed: #2ea89e;
+    --color-on-primary: #0d1216;
+    --color-primary-tint: #10302d;
+    --color-accent: #ff8a63;
+    --color-on-accent: #0d1216;
+    --color-accent-ink: #ff9c7a;
+    --color-route-2: #c08ae0;
+    --color-ok: #6fd49a;
+    --color-ok-bg: #0f2f1d;
+    --color-hold: #f4b45a;
+    --color-hold-bg: #352406;
+    --color-danger: #ff958b;
+    --color-danger-bg: #3a1512;
+    --color-focus: #d7b4ff;
+    --color-disabled-ink: #b6bec9;
+    --color-disabled-bg: #2a333c;
+    --color-night: #080b0e;
+    --color-night-soft: #161d23;
+    --color-night-line: #252e36;
+}
+
+:root {
+    color-scheme: light;
 }
 
 @layer base {
@@ -54,9 +173,13 @@
 
     h1, h2, h3, h4, .font-display {
         font-family: var(--font-display);
-        font-optical-sizing: auto;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.015em;
         text-wrap: balance;
+    }
+
+    /* Every enabled button looks pressable. */
+    button:not(:disabled):not([aria-disabled='true']), [role='button'], summary {
+        cursor: pointer;
     }
 
     code {
@@ -64,8 +187,14 @@
     }
 
     :focus-visible {
-        outline: 3px solid var(--color-amber);
+        outline: 3px solid var(--color-focus);
         outline-offset: 2px;
+    }
+
+    /* Night panels are dark in both modes: a light ring there. */
+    .bg-night :focus-visible,
+    .bg-night:focus-visible {
+        outline-color: var(--color-night-focus);
     }
 
     /* People who ask their system for less motion get none: no fades,
@@ -77,12 +206,6 @@
             transition-duration: 0.01ms !important;
             scroll-behavior: auto !important;
         }
-    }
-
-    /* Amber outline would vanish on amber or light amber surfaces. */
-    .focus-forest:focus-visible,
-    .bg-amber:focus-visible {
-        outline-color: var(--color-forest);
     }
 }
 
@@ -109,6 +232,29 @@
     }
 }
 
+/* Theme toggle icon: a moon offers dark mode, a sun offers light mode. */
+.theme-icon-sun {
+    display: none;
+}
+
+:root[data-theme='dark'] .theme-icon-sun {
+    display: block;
+}
+
+:root[data-theme='dark'] .theme-icon-moon {
+    display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .theme-icon-sun {
+        display: block;
+    }
+
+    :root:not([data-theme='light']) .theme-icon-moon {
+        display: none;
+    }
+}
+
 @utility tabular {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums lining-nums;
 }

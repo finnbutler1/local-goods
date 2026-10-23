@@ -3,28 +3,45 @@
 namespace App\Support;
 
 /**
- * Reads the brand color tokens from resources/css/app.css and measures WCAG
- * contrast between them. Used by the styleguide and ColorContrastTest.
+ * Reads the brand color tokens (light and dark) from resources/css/app.css and
+ * measures WCAG contrast between them. Used by the styleguide and ColorContrastTest.
  */
 class ColorContrast
 {
-    /** [text token, background token] pairs the views are allowed to use. */
+    /**
+     * [text token, background token, minimum ratio] pairs the views may use,
+     * checked in light and dark. 4.5:1 for text; 3:1 for focus rings and
+     * control edges (WCAG 1.4.11).
+     */
     public const PAIRS = [
-        ['ink', 'cream'], ['ink', 'paper'], ['ink', 'cream-deep'], ['ink', 'forest-tint'], ['ink', 'amber'],
-        ['forest', 'cream'], ['forest', 'paper'], ['forest', 'cream-deep'], ['forest', 'amber'], ['forest', 'forest-tint'],
-        ['muted', 'cream'], ['muted', 'paper'], ['muted', 'cream-deep'], ['muted', 'forest-tint'],
-        ['cream', 'forest'], ['paper', 'forest'], ['cream', 'forest-soft'],
-        ['sage', 'forest'], ['sage', 'forest-soft'], ['amber', 'forest'],
-        ['amber-ink', 'cream'], ['amber-ink', 'paper'],
-        ['ok', 'ok-bg'], ['hold', 'hold-bg'], ['hold', 'paper'], ['ok', 'paper'],
+        ['ink', 'page'], ['ink', 'surface'], ['ink', 'band'], ['ink', 'primary-tint'],
+        ['muted', 'page'], ['muted', 'surface'], ['muted', 'band'], ['muted', 'primary-tint'],
+        ['primary', 'page'], ['primary', 'surface'], ['primary', 'band'], ['primary', 'primary-tint'],
+        ['on-primary', 'primary'], ['on-primary', 'primary-hover'], ['on-primary', 'primary-pressed'],
+        ['on-accent', 'accent'], ['accent-ink', 'page'], ['accent-ink', 'surface'], ['accent-ink', 'band'],
+        ['ok', 'ok-bg'], ['ok', 'surface'], ['ok', 'page'],
+        ['hold', 'hold-bg'], ['hold', 'surface'], ['hold', 'page'],
+        ['danger', 'danger-bg'], ['danger', 'surface'], ['danger', 'page'],
+        ['disabled-ink', 'disabled-bg'],
+        ['on-night', 'night'], ['on-night', 'night-soft'], ['night-muted', 'night'], ['night-muted', 'night-soft'],
+        ['night-primary', 'night'], ['night-primary', 'night-soft'], ['night-accent', 'night'],
+        ['focus', 'page', 3.0], ['focus', 'surface', 3.0], ['night-focus', 'night', 3.0],
+        ['edge', 'surface', 3.0], ['edge', 'page', 3.0], ['primary', 'page', 3.0],
     ];
 
-    /** @return array<string, string> token name => lowercase hex */
-    public static function tokens(): array
+    /**
+     * @return array<string, string> token name => lowercase hex, for 'light'
+     *                               (the @theme block) or 'dark' (light with the
+     *                               :root[data-theme='dark'] block on top)
+     */
+    public static function tokens(string $mode = 'light'): array
     {
-        preg_match_all('/--color-([a-z-]+):\s*(#[0-9a-f]{6});/i', file_get_contents(resource_path('css/app.css')), $m);
+        $css = file_get_contents(resource_path('css/app.css'));
+        $light = self::hexes(self::block($css, '@theme {'));
 
-        return array_combine($m[1], array_map('strtolower', $m[2]));
+        return $mode === 'dark'
+            ? array_merge($light, self::hexes(self::block($css, ":root[data-theme='dark'] {")))
+            : $light;
     }
 
     /** WCAG 2 contrast ratio between two #rrggbb colors, from 1 to 21. */
@@ -33,6 +50,21 @@ class ColorContrast
         [$hi, $lo] = [max(self::luminance($a), self::luminance($b)), min(self::luminance($a), self::luminance($b))];
 
         return ($hi + 0.05) / ($lo + 0.05);
+    }
+
+    private static function block(string $css, string $opening): string
+    {
+        $start = strpos($css, $opening);
+
+        return $start === false ? '' : substr($css, $start, strpos($css, '}', $start) - $start);
+    }
+
+    /** @return array<string, string> */
+    private static function hexes(string $block): array
+    {
+        preg_match_all('/--color-([a-z0-9-]+):\s*(#[0-9a-f]{6});/i', $block, $m);
+
+        return array_combine($m[1], array_map('strtolower', $m[2]));
     }
 
     private static function luminance(string $hex): float

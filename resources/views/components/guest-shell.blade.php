@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#1f3d2b">
+    <x-theme-head />
     <title>{{ $title }} · Local Goods</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -15,7 +15,8 @@
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 rounded-full bg-amber px-4 py-2 font-semibold text-ink">Skip to content</a>
 
     <div class="awning h-2" aria-hidden="true"></div>
-    <header class="mx-auto w-full max-w-md px-4 pt-10 pb-6 text-center">
+    <div class="mx-auto flex w-full max-w-md justify-end px-4 pt-4"><x-theme-toggle /></div>
+    <header class="mx-auto w-full max-w-md px-4 pt-4 pb-6 text-center">
         <a href="{{ route('home') }}" class="font-display text-3xl font-semibold tracking-tight text-forest">Local Goods</a>
         <p class="mt-1 text-sm text-muted">Spend local. Prove it.</p>
     </header>

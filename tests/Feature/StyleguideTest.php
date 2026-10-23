@@ -22,8 +22,8 @@ class StyleguideTest extends TestCase
 
         $this->get('/styleguide')
             ->assertOk()
-            ->assertSee('--color-forest')
-            ->assertSee('--color-amber-ink')
+            ->assertSee('--color-primary')
+            ->assertSee('--color-accent-ink')
             ->assertSeeInOrder(['Heading 1', 'Heading 2', 'Heading 3', 'Heading 4'])
             ->assertSee('Buttons')
             ->assertSee('Cards')
