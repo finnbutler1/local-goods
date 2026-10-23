@@ -21,6 +21,11 @@
     unicode-range: U+0030-0039;
 }
 
+/* A control that can't be used right now: disabled, or aria-disabled (kept
+   focusable so its explanation can be read). A button that is loading is
+   also disabled, but keeps its own look and a spinner instead. */
+@custom-variant unavailable (&:is(:disabled, [aria-disabled='true']):not([aria-busy='true']));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -329,6 +334,26 @@
 
     .bg-night .route-stop::after {
         background: var(--color-night-accent);
+    }
+}
+
+/* Loading spinner inside a busy button (resources/js/app.js). It only turns
+   when motion is allowed; otherwise it is hidden and the button's static
+   busy text ("Paying…", "Saving…") says what is happening. */
+.spinner {
+    display: none;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .spinner {
+        display: inline-block;
+        animation: spin 0.8s linear infinite;
     }
 }
 

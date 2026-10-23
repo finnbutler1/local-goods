@@ -236,7 +236,7 @@
                          data-stripe-key="{{ config('services.stripe.key') }}"
                          data-secret-url="{{ route('employer.purchases.checkout', $buying) }}"
                          data-csrf="{{ csrf_token() }}">
-                        <p class="p-4 text-muted" data-checkout-loading>Loading Stripe's payment form…</p>
+                        <p class="flex items-center gap-2 p-4 text-muted" data-checkout-loading><span class="spinner" aria-hidden="true"></span>Loading Stripe's payment form…</p>
                     </div>
                     <noscript>
                         <p class="mt-3 rounded-xl bg-band p-3 text-sm">Paying by card needs JavaScript, because the card form is Stripe's. Turn it on and reload this page.</p>
