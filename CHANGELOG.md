@@ -3,6 +3,35 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-23: Leading with the buy-local mission
+
+- **New landing page story.** "You work here. Spend here." At 6 p.m.,
+  downtown's workers head home and their spending goes with them; Local
+  Goods gives employees credits that only work at independent local
+  businesses. A short "commute-desk-commute loop" block names the problem
+  without blaming anyone, and "Why it matters" puts the district first,
+  then employers, merchants, employees and the BID.
+- **The 3x line is back, labelled.** "Money spent at independent local
+  businesses tends to recirculate roughly 3x more in the local economy than
+  money spent at chains, an effect often called the local multiplier."
+  It appears only in a dashed box with "Estimate from an outside study, not
+  measured by Local Goods", the study's 52.3% and 15.8%, "Real results will
+  be measured in a pilot" and the Civic Economics source: below the
+  landing page cards, on the BID impact page and in the README. It is
+  never in the hero and never says Local Goods creates it
+  ([ADR 0024](docs/adr/0024-mission-framing-and-the-labelled-3x-line.md),
+  replacing ADR 0017's no-3x rule).
+- **Judge home** says "Why Local Goods exists" instead of "What Local Goods
+  is", and the README opens with the same mission. Both say the AI
+  functions assist human decisions and don't make them. Prototype, Stripe
+  test mode and demo-data labels are unchanged.
+- **Tests** now fail if "3x", "three times" or "multiplier" appears on a
+  public page (signed out or as the public judge) or in a README or
+  TRANSPARENCY section without the label and source; on "Local Goods
+  delivers/creates 3x" or "guaranteed"; on fee, revenue or interchange
+  figures; and if the old "What Local Goods is" heading comes back.
+- No migration; no change to money, Stripe, the fraud prompt or eval data.
+
 ## 2026-10-22: Product menus at the demo merchants
 
 - **Pick from a menu.** Each of the 8 fictional demo merchants has a short
