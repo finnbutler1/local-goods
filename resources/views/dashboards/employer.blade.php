@@ -3,23 +3,23 @@
     use App\Support\Money;
     use App\Support\PlatformFee;
 
-    $input = 'block w-full rounded-xl border-2 bg-paper px-3 py-3 focus-visible:border-forest';
+    $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary';
     $readOnly = Gate::denies('manage-employer-program');
-    $link = 'font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest';
+    $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
 @endphp
 
 <x-app-shell title="Employer dashboard" active="dashboard"
              :context="($employer?->name ?? 'Employer').' · Golden Triangle BID'">
 @if ($employer === null)
     <x-card as="section" aria-labelledby="empty-heading" class="border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-12">
-        <h1 id="empty-heading" class="text-2xl font-semibold text-forest">No employer program is set up yet</h1>
+        <h1 id="empty-heading" class="text-2xl font-semibold text-primary">No employer program is set up yet</h1>
         <p class="mx-auto mt-2 max-w-md text-muted">Once your company joins Local Goods, your budget, credits and your team's neighborhood visits appear here.</p>
     </x-card>
 @else
 <div class="space-y-10">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Employer dashboard · {{ $employer->name }}</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Your team got out into the neighborhood.</h1>
+        <x-eyebrow class="text-accent-ink">Employer dashboard · {{ $employer->name }}</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Your team got out into the neighborhood.</h1>
         <p class="mt-3 text-lg text-muted">
             {{ $metrics['month']->format('F') }} so far: who used their perk, where they went, and how much stayed with independent Golden Triangle businesses.
             Every number is worked out from the credit ledger, and each one says how.
@@ -27,14 +27,14 @@
     </header>
 
     @if ($readOnly)
-        <p id="read-only-note" class="rounded-2xl bg-cream-deep p-4 text-sm">
+        <p id="read-only-note" class="rounded-2xl bg-band p-4 text-sm">
             <span class="font-semibold">Read-only view.</span> Judges can look at every form here but can't buy, pay or give credits.
         </p>
     @endif
 
     {{-- Engagement --}}
     <section aria-labelledby="engagement-heading" class="space-y-4">
-        <h2 id="engagement-heading" class="text-2xl font-semibold text-forest">This month in the neighborhood</h2>
+        <h2 id="engagement-heading" class="text-2xl font-semibold text-primary">This month in the neighborhood</h2>
 
         @php
             $tiles = [
@@ -70,14 +70,14 @@
             @foreach ($tiles as $tile)
                 <x-card class="flex flex-col">
                     <dt class="text-sm font-semibold text-muted">{{ $tile['label'] }}</dt>
-                    <dd class="mt-2 text-forest">
+                    <dd class="mt-2 text-primary">
                         <span class="tabular font-display text-4xl font-semibold">{{ $tile['value'] }}</span>
                         @isset($tile['unit'])<span class="font-semibold"> {{ $tile['unit'] }}</span>@endisset
                     </dd>
                     <dd class="mt-1 text-sm text-muted">{{ $tile['detail'] }}</dd>
                     <dd class="mt-3 border-t border-line/70 pt-2 text-sm">
                         <details>
-                            <summary class="cursor-pointer font-semibold text-forest">How we count this</summary>
+                            <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
                             <p class="mt-1 text-muted">{{ $tile['how'] }}</p>
                         </details>
                     </dd>
@@ -95,16 +95,16 @@
                 <p class="mt-1 text-sm text-muted">Monday to Sunday. The last bar is this week so far.</p>
 
                 @if (array_sum(array_column($weeks, 'visits')) === 0)
-                    <p class="mt-6 rounded-xl bg-cream-deep p-4 text-muted">No visits yet. Once your team redeems credits, each week's visits show here.</p>
+                    <p class="mt-6 rounded-xl bg-band p-4 text-muted">No visits yet. Once your team redeems credits, each week's visits show here.</p>
                 @else
                     {{-- Bars are hidden from screen readers: the sentence under them sums them up and
                          "Show as a table" has every week's numbers. Hover a bar for its week. --}}
                     <div class="mt-6 flex h-44 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
                         @foreach ($weeks as $week)
                             <div class="group relative flex h-full flex-1 items-end justify-center">
-                                <div class="w-full max-w-12 rounded-t-[4px] bg-forest transition-colors group-hover:bg-forest-soft"
+                                <div class="w-full max-w-12 rounded-t-[4px] bg-primary transition-colors group-hover:bg-primary-hover"
                                      style="height: {{ max(2, round(100 * $week['visits'] / $max)) }}%"></div>
-                                <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-max -translate-x-1/2 rounded-lg bg-ink px-2.5 py-1.5 text-xs text-cream shadow group-hover:block">
+                                <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-max -translate-x-1/2 rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night shadow group-hover:block">
                                     <span class="font-semibold">Week of {{ $week['start']->format('M j') }}</span><br>
                                     {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }} · {{ Money::format($week['cents']) }}
                                 </div>
@@ -123,7 +123,7 @@
                 @endif
 
                 <details class="mt-3 text-sm">
-                    <summary class="cursor-pointer font-semibold text-forest">Show as a table</summary>
+                    <summary class="cursor-pointer font-semibold text-primary">Show as a table</summary>
                     <table class="mt-2 w-full text-left">
                         <caption class="sr-only">Cleared visits and dollars spent locally per week</caption>
                         <thead class="text-muted"><tr><th scope="col" class="py-1 font-semibold">Week of</th><th scope="col" class="py-1 text-right font-semibold">Visits</th><th scope="col" class="py-1 text-right font-semibold">Spent locally</th></tr></thead>
@@ -141,7 +141,7 @@
                 <h3 id="categories-heading" class="text-xl font-semibold">Top categories</h3>
                 <p class="mt-1 text-sm text-muted">By dollars spent locally this month.</p>
                 @if ($metrics['categories'] === [])
-                    <p class="mt-4 rounded-xl bg-cream-deep p-4 text-muted">Nothing spent yet this month.</p>
+                    <p class="mt-4 rounded-xl bg-band p-4 text-muted">Nothing spent yet this month.</p>
                 @else
                     @php $top = max(1, $metrics['categories'][0]['cents']); @endphp
                     <ol class="mt-4 space-y-3">
@@ -151,15 +151,15 @@
                                     <span class="font-semibold capitalize">{{ $category['category'] }}</span>
                                     <span class="tabular text-sm">{{ Money::format($category['cents']) }} · {{ $category['visits'] }} {{ Str::plural('visit', $category['visits']) }}</span>
                                 </div>
-                                <div class="mt-1 h-2 rounded-full bg-cream-deep" aria-hidden="true">
-                                    <div class="h-2 rounded-full bg-forest" style="width: {{ max(2, round(100 * $category['cents'] / $top)) }}%"></div>
+                                <div class="mt-1 h-2 rounded-full bg-band" aria-hidden="true">
+                                    <div class="h-2 rounded-full bg-primary" style="width: {{ max(2, round(100 * $category['cents'] / $top)) }}%"></div>
                                 </div>
                             </li>
                         @endforeach
                     </ol>
                 @endif
                 <details class="mt-4 text-sm">
-                    <summary class="cursor-pointer font-semibold text-forest">How we count this</summary>
+                    <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
                     <p class="mt-1 text-muted">Cleared redemptions this month, grouped by the merchant's category and added up.</p>
                 </details>
             </x-card>
@@ -168,15 +168,15 @@
 
     {{-- Credits --}}
     <section id="credits" aria-labelledby="credits-heading" class="scroll-mt-24 space-y-4">
-        <h2 id="credits-heading" class="text-2xl font-semibold text-forest">Credits</h2>
+        <h2 id="credits-heading" class="text-2xl font-semibold text-primary">Credits</h2>
 
         <dl class="grid gap-3 sm:grid-cols-3">
             <x-card tone="night">
-                <dt class="text-sm font-semibold text-sage">Ready to give</dt>
-                <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($balance) }}</dd>
-                <dd class="mt-1 text-sm text-sage">Paid credits not yet given to employees</dd>
+                <dt class="text-sm font-semibold text-night-muted">Ready to give</dt>
+                <dd class="tabular mt-2 font-display text-4xl font-semibold text-night-accent">{{ Money::format($balance) }}</dd>
+                <dd class="mt-1 text-sm text-night-muted">Paid credits not yet given to employees</dd>
                 @if ($returned['count'] > 0)
-                    <dd class="mt-2 border-t border-sage/40 pt-2 text-sm text-cream" data-returned-credit="{{ $returned['cents'] }}">
+                    <dd class="mt-2 border-t border-night-line/40 pt-2 text-sm text-on-night" data-returned-credit="{{ $returned['cents'] }}">
                         @if ($returned['cents'] <= $balance)
                             Includes {{ Money::format($returned['cents']) }} returned from {{ $returned['count'] }} denied {{ Str::plural('redemption', $returned['count']) }}.
                         @else
@@ -188,12 +188,12 @@
             </x-card>
             <x-card>
                 <dt class="text-sm font-semibold text-muted">Pending payment</dt>
-                <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ Money::format($pendingCents) }}</dd>
+                <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ Money::format($pendingCents) }}</dd>
                 <dd class="mt-1 text-sm text-muted">Can't be given out until paid</dd>
             </x-card>
             <x-card>
                 <dt class="text-sm font-semibold text-muted">Given out this month</dt>
-                <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ Money::format($allocatedThisMonth) }}</dd>
+                <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ Money::format($allocatedThisMonth) }}</dd>
                 <dd class="mt-1 text-sm text-muted">
                     @if ($remainingBudget === null)
                         No monthly budget set
@@ -227,7 +227,7 @@
                     @if ($line = $feeLine($buying))
                         <p class="tabular mt-1 font-semibold" data-fee-breakdown>{{ $line }}</p>
                     @endif
-                    <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-amber bg-cream-deep p-3 text-sm">
+                    <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm">
                         <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
                         No real money moves. Stripe holds the money, not Local Goods.
                     </p>
@@ -239,7 +239,7 @@
                         <p class="p-4 text-muted" data-checkout-loading>Loading Stripe's payment form…</p>
                     </div>
                     <noscript>
-                        <p class="mt-3 rounded-xl bg-cream-deep p-3 text-sm">Paying by card needs JavaScript, because the card form is Stripe's. Turn it on and reload this page.</p>
+                        <p class="mt-3 rounded-xl bg-band p-3 text-sm">Paying by card needs JavaScript, because the card form is Stripe's. Turn it on and reload this page.</p>
                     </noscript>
                     <div hidden tabindex="-1" role="alert" data-checkout-error class="mt-4 rounded-xl border-2 border-hold bg-hold-bg p-4 text-hold">
                         <p class="font-semibold" data-checkout-error-text>Payment didn't start. Nothing was charged.</p>
@@ -255,7 +255,7 @@
                     <script src="https://js.stripe.com/endive/stripe.js"></script>
                 @elseif ($buy['state'] === 'confirming')
                     {{-- Paid at Stripe; waiting for the signed webhook, which is the only thing that adds the credits. --}}
-                    <div class="mt-4 rounded-xl border-2 border-amber bg-cream-deep p-4" role="status" tabindex="-1" data-flash
+                    <div class="mt-4 rounded-xl border-2 border-accent bg-band p-4" role="status" tabindex="-1" data-flash
                          data-purchase-status-url="{{ route('employer.purchases.status', $buying) }}">
                         <p class="flex items-center gap-2 font-semibold" data-confirming-text>
                             <svg viewBox="0 0 24 24" fill="none" class="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true" data-confirming-spinner>
@@ -274,7 +274,7 @@
                     </div>
                 @else
                     @if ($buy['state'] === 'cancelled')
-                        <div class="mt-3 rounded-xl border-2 border-amber bg-cream-deep p-3 text-sm" data-buy-cancelled>
+                        <div class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm" data-buy-cancelled>
                             <p><span class="font-semibold">Payment cancelled.</span> Nothing was charged for {{ $buying->reference }}. Press Try again to buy the same amount.</p>
                         </div>
                     @endif
@@ -389,7 +389,7 @@
     {{-- Allocate --}}
     <section id="allocate" aria-labelledby="allocate-heading" class="scroll-mt-24 space-y-4">
         <div>
-            <h2 id="allocate-heading" class="text-2xl font-semibold text-forest">Give credits to your team</h2>
+            <h2 id="allocate-heading" class="text-2xl font-semibold text-primary">Give credits to your team</h2>
             <p class="mt-1 text-muted">Employees are shown by initials and staff number: names stay in your HR system, not here.</p>
         </div>
 
@@ -442,21 +442,21 @@
                                 <fieldset class="space-y-2" @if ($invalid('recipients', 'employee_ids', 'employee_id')) role="radiogroup" @endif {!! $invalid('recipients', 'employee_ids', 'employee_id') !!}>
                                     <legend class="font-semibold">Who</legend>
                                     <label class="flex items-center gap-2">
-                                        <input type="radio" name="recipients" value="all" class="size-5 accent-forest" @checked(old('recipients', 'all') === 'all')>
+                                        <input type="radio" name="recipients" value="all" class="size-5 accent-primary" @checked(old('recipients', 'all') === 'all')>
                                         Everyone enrolled ({{ $employees->count() }} people)
                                     </label>
                                     <label class="flex items-center gap-2">
-                                        <input type="radio" name="recipients" value="selected" class="size-5 accent-forest" @checked(old('recipients') === 'selected')>
+                                        <input type="radio" name="recipients" value="selected" class="size-5 accent-primary" @checked(old('recipients') === 'selected')>
                                         Only the people I tick
                                     </label>
                                     <details class="rounded-xl border-2 border-muted/40" @if (old('recipients') === 'selected') open @endif>
-                                        <summary class="cursor-pointer px-3 py-2 font-semibold text-forest">Choose people</summary>
+                                        <summary class="cursor-pointer px-3 py-2 font-semibold text-primary">Choose people</summary>
                                         {{-- Read-only, the checkboxes can't take focus, so the list itself does, to scroll it by keyboard. --}}
                                         <ul class="grid max-h-56 grid-cols-1 gap-1 overflow-y-auto px-3 pb-3 sm:grid-cols-2" aria-label="Employees" @if ($readOnly) tabindex="0" @endif>
                                             @foreach ($employees as $employee)
                                                 <li>
                                                     <label class="flex items-center gap-2 text-sm">
-                                                        <input type="checkbox" name="employee_ids[]" value="{{ $employee->id }}" class="size-4 accent-forest"
+                                                        <input type="checkbox" name="employee_ids[]" value="{{ $employee->id }}" class="size-4 accent-primary"
                                                                @checked(in_array((string) $employee->id, array_map('strval', old('employee_ids', [])), true))>
                                                         <span class="tabular">{{ $employee->publicLabel() }}</span>
                                                     </label>
@@ -501,17 +501,17 @@
                         @else
                             <li>
                                 <details class="group">
-                                    <summary class="flex cursor-pointer list-none items-start justify-between gap-3 px-5 py-3 hover:bg-cream-deep/50 sm:px-6 [&::-webkit-details-marker]:hidden">
+                                    <summary class="flex cursor-pointer list-none items-start justify-between gap-3 px-5 py-3 hover:bg-band/50 sm:px-6 [&::-webkit-details-marker]:hidden">
                                         <span class="min-w-0">
                                             <span class="flex items-center gap-1.5 font-semibold">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-forest transition-transform group-open:rotate-90" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-primary transition-transform group-open:rotate-90" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
                                                 {{ $group['occasion']->shortLabel() }} · {{ $count }} employees
                                             </span>
                                             <span class="block pl-5.5 text-sm text-muted">{{ Money::format($group['amount_cents']) }} each · {{ $date }}</span>
                                         </span>
                                         <span class="tabular shrink-0 font-semibold">{{ Money::format($group['amount_cents'] * $count) }}</span>
                                     </summary>
-                                    <ul class="grid grid-cols-2 gap-x-4 gap-y-1 bg-cream-deep/40 px-5 py-3 text-sm sm:grid-cols-3 sm:px-6" aria-label="{{ $count }} employees in this allocation">
+                                    <ul class="grid grid-cols-2 gap-x-4 gap-y-1 bg-band/40 px-5 py-3 text-sm sm:grid-cols-3 sm:px-6" aria-label="{{ $count }} employees in this allocation">
                                         @foreach ($group['allocations'] as $allocation)
                                             <li class="tabular">{{ $allocation->employee->publicLabel() }}</li>
                                         @endforeach
@@ -529,7 +529,7 @@
     {{-- Program setup --}}
     <section id="program" aria-labelledby="program-heading" class="scroll-mt-24">
         <x-card>
-            <h2 id="program-heading" class="text-2xl font-semibold text-forest">Program setup</h2>
+            <h2 id="program-heading" class="text-2xl font-semibold text-primary">Program setup</h2>
             <p class="mt-1 text-muted">Your monthly budget caps how much can be given out each calendar month, across allowances and occasions.</p>
             <form method="POST" action="{{ route('employer.program.update') }}" data-busy="Saving…" class="mt-5">
                 @csrf
@@ -563,7 +563,7 @@
                                 <div class="rounded-xl border-2 border-muted/40 p-3">
                                     <label class="flex items-center gap-2 font-semibold">
                                         <input type="hidden" name="occasions[{{ $occasion->value }}][enabled]" value="0">
-                                        <input type="checkbox" name="occasions[{{ $occasion->value }}][enabled]" value="1" class="size-5 accent-forest"
+                                        <input type="checkbox" name="occasions[{{ $occasion->value }}][enabled]" value="1" class="size-5 accent-primary"
                                                @checked(old("{$key}.enabled", $cents !== null ? '1' : '0') === '1')>
                                         {{ $occasion->label() }}
                                     </label>
