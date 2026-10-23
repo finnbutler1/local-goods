@@ -47,7 +47,7 @@
     {{-- Type --}}
     <section id="type" aria-labelledby="type-heading" class="scroll-mt-24">
         <h2 id="type-heading" class="text-3xl font-semibold text-primary">Type</h2>
-        <p class="mt-1 text-muted">Headings: Fraunces (variable, optical size). Body: Public Sans. Both self-hosted from npm.</p>
+        <p class="mt-1 text-muted">Headings: Overpass. Body: Atkinson Hyperlegible Next, with digits from Overpass for a plain zero. Both self-hosted from npm (ADR 0025).</p>
         <x-card class="mt-6 space-y-6">
             @foreach ([
                 ['Heading 1', 'h1', 'text-5xl sm:text-6xl', 'Spend local. Prove it.'],
