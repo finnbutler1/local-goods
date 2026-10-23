@@ -29,8 +29,27 @@
         ? \App\Models\Feedback::where('status', \App\Enums\FeedbackStatus::New)->count() : 0;
     $initials = collect(explode(' ', $userName))
         ->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+    // Fewer things at once (ADR 0025): the sidebar shows up to 5 items and the
+    // phone tab bar up to 4. Past that, the first in this list stay, in this
+    // order, and the rest go into a More menu. Feedback stays visible for the platform admin;
+    // Merchants (Merchant Eligibility Matching, a named AI function) for the
+    // BID admin. Role::navigation() itself is unchanged.
+    $priority = ['dashboard', 'wallet', 'judge-home', 'bid-admin', 'merchants', 'feedback', 'impact', 'eval', 'participation', 'menu', 'reviewers', 'adjudication'];
+    $split = function (array $items, int $max) use ($priority): array {
+        if (count($items) <= $max) {
+            return [$items, []];
+        }
+        $rank = fn ($key) => ($i = array_search($key, $priority, true)) === false ? PHP_INT_MAX : $i;
+        $keep = collect(array_keys($items))->sortBy($rank)->take($max - 1)->values()->all();
+
+        // Kept items in priority order; the rest keep the role's own order.
+        return [array_merge(array_flip($keep), array_intersect_key($items, array_flip($keep))), array_diff_key($items, array_flip($keep))];
+    };
+    [$sideNav, $sideMore] = $split($nav, 5);
+    [$tabNav, $tabMore] = $split($nav, 4);
     // Literal class names so Tailwind includes them in the build.
-    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4', 5 => 'grid-cols-5', 6 => 'grid-cols-6'][count($nav)];
+    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4'][count($tabNav) + ($tabMore ? 1 : 0)];
+    $moreIcon = 'M5 12h.01M12 12h.01M19 12h.01';
 @endphp
 
 <!DOCTYPE html>
@@ -56,7 +75,7 @@
         </div>
         <nav aria-label="App" class="flex-1 px-3">
             <ul class="space-y-1">
-                @foreach ($nav as $key => $item)
+                @foreach ($sideNav as $key => $item)
                     <li>
                         <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
                            class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:text-on-night aria-[current=page]:before:absolute aria-[current=page]:before:inset-y-2 aria-[current=page]:before:-left-3 aria-[current=page]:before:w-1 aria-[current=page]:before:rounded-full aria-[current=page]:before:bg-night-primary">
@@ -68,21 +87,28 @@
                         </a>
                     </li>
                 @endforeach
+                @if ($sideMore)
+                    <li>
+                        <x-menu id="nav-more" align="left" button-class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-expanded:bg-night-soft aria-expanded:text-on-night">
+                            <x-slot:trigger>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="size-5 shrink-0" aria-hidden="true"><path d="{{ $moreIcon }}"/></svg>
+                                More
+                                @if (($active !== null && array_key_exists($active, $sideMore)))<span class="ml-auto size-2 rounded-full bg-night-accent" aria-hidden="true"></span><span class="sr-only">, includes this page</span>@endif
+                            </x-slot:trigger>
+                            <ul>
+                                @foreach ($sideMore as $key => $item)
+                                    <li><a href="{{ route($item['route']) }}" class="menu-item" @if ($active === $key) aria-current="page" @endif>{{ $item['label'] }}</a></li>
+                                @endforeach
+                            </ul>
+                        </x-menu>
+                    </li>
+                @endif
             </ul>
         </nav>
         <div class="m-3 rounded-xl border border-night-line p-4 text-sm text-night-muted">
             <p class="font-semibold text-on-night">Demo mode</p>
             <p class="mt-1">All people and transactions are fictional.</p>
-            @unless ($votingOnly)
-                <a href="{{ route('home') }}" class="mt-2 inline-block font-semibold text-on-night underline underline-offset-4 hover:no-underline">Back to the public site</a>
-            @endunless
         </div>
-        <a href="{{ route('account') }}" @if ($active === 'account') aria-current="page" @endif
-           class="mx-3 mb-2 rounded-xl px-3 py-2 text-sm font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:text-on-night">Your account</a>
-        <form method="POST" action="{{ route('logout') }}" class="mx-3 mb-4">
-            @csrf
-            <x-button type="submit" variant="inverse-outline" class="w-full">Log out</x-button>
-        </form>
     </aside>
 
     <div class="lg:pl-64">
@@ -90,33 +116,56 @@
         <header class="sticky top-0 z-20 border-b border-line bg-page/95 backdrop-blur supports-[backdrop-filter]:bg-page/85">
             <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
                 <div class="min-w-0">
-                    <a href="{{ route('home') }}" class="inline-block rounded-lg lg:hidden" aria-label="Local Goods home"><x-logo class="h-7 w-auto" /></a>
+                    <a href="{{ route('home') }}" class="inline-block rounded-lg lg:hidden" aria-label="Local Goods home">
+                        <x-logo :mark-only="true" class="h-8 w-auto sm:hidden" />
+                        <x-logo class="hidden h-7 w-auto sm:block" />
+                    </a>
                     <p class="hidden truncate text-sm font-semibold text-muted lg:block">{{ $context }}</p>
                 </div>
-                <div class="flex min-w-0 items-center gap-3">
-                    <div @class(['min-w-0 text-right', 'hidden sm:block' => $role === \App\Enums\Role::Judge])>
-                        <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>@if ($user)<a href="{{ route('account') }}" class="hover:underline underline-offset-4" title="Your account">{{ $userName }}</a>@else{{ $userName }}@endif</p>
-                        <x-badge tone="primary" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs)<span class="hidden sm:inline"> · viewing as {{ $viewAs->label() }}</span>@endif</x-badge>
-                    </div>
+                <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                     @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
-                        <details class="relative">
-                            <summary class="cursor-pointer list-none rounded-full border-2 border-primary px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary hover:text-on-primary">View as<span aria-hidden="true"> ▾</span></summary>
-                            <ul class="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-line bg-surface p-2 shadow-lg">
+                        <x-menu id="view-as-menu" button-class="flex items-center gap-1 rounded-full border-2 border-primary px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary-tint aria-expanded:bg-primary-tint active:translate-y-px">
+                            <x-slot:trigger>View as<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></x-slot:trigger>
+                            <ul>
                                 @foreach (\App\Support\ViewAs::ROLES as $option)
-                                    <li><a href="{{ route('judge.view-as', $option->value) }}" @if ($viewAs === $option) aria-current="true" @endif
-                                           class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-page aria-[current=true]:bg-band">{{ $option->label() }}</a></li>
+                                    <li><a href="{{ route('judge.view-as', $option->value) }}" class="menu-item" @if ($viewAs === $option) aria-current="true" @endif>{{ $option->label() }}</a></li>
                                 @endforeach
-                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-page">Back to judge home</a></li>
-                                <li class="lg:hidden"><a href="{{ route('account') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-page">Your account</a></li>
+                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="menu-item">Back to judge home</a></li>
                             </ul>
-                        </details>
+                        </x-menu>
                     @endif
                     <x-theme-toggle />
-                    <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-accent font-display font-semibold text-on-accent sm:grid" aria-hidden="true">{{ $initials }}</span>
-                    <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
-                        @csrf
-                        <x-button type="submit" variant="ghost" size="sm">Log out</x-button>
-                    </form>
+                    @if ($user)
+                        <x-menu id="account-menu" button-class="flex items-center gap-2 rounded-full border border-edge bg-surface py-1 pr-2 pl-1 text-sm font-semibold hover:border-primary aria-expanded:border-primary active:translate-y-px sm:pr-3">
+                            <x-slot:trigger>
+                                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-accent font-display text-on-accent" aria-hidden="true">{{ $initials }}</span>
+                                <span class="sr-only">Account: </span><span class="max-w-40 truncate max-sm:sr-only">{{ $userName }}</span>
+                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4 shrink-0" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+                            </x-slot:trigger>
+                            <div class="border-b border-line px-3 pt-2 pb-3">
+                                <p class="text-xs text-muted">Signed in as</p>
+                                <p class="font-semibold break-words">{{ $userName }}</p>
+                                <x-badge tone="primary" :wrap="true" class="mt-1"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs) · viewing as {{ $viewAs->label() }}@endif</x-badge>
+                            </div>
+                            <ul class="mt-1">
+                                <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your account</a></li>
+                                @unless ($votingOnly)
+                                    <li><a href="{{ route('home') }}" class="menu-item">Back to the public site</a></li>
+                                @endunless
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="menu-item">Log out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </x-menu>
+                    @else
+                        <div class="min-w-0 text-right">
+                            <p class="truncate text-sm font-semibold">{{ $userName }}</p>
+                            <x-badge tone="primary" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}</x-badge>
+                        </div>
+                    @endif
                 </div>
             </div>
         </header>
@@ -143,7 +192,7 @@
     {{-- Mobile bottom tab bar --}}
     <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-night-line bg-night pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul class="grid {{ $tabColumns }}">
-            @foreach ($nav as $key => $item)
+            @foreach ($tabNav as $key => $item)
                 <li>
                     <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
                        class="flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-[current=page]:text-night-primary aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4">
@@ -157,6 +206,27 @@
                     </a>
                 </li>
             @endforeach
+            @if ($tabMore)
+                <li>
+                    <x-menu id="tab-more" direction="up" button-class="flex w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-expanded:text-on-night">
+                        <x-slot:trigger>
+                            <span class="relative">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="size-6" aria-hidden="true"><path d="{{ $moreIcon }}"/></svg>
+                                @if (array_key_exists('feedback', $tabMore) && $unreadFeedback > 0)
+                                    <span class="tabular absolute -top-1.5 -right-2.5 rounded-full bg-night-accent px-1.5 text-[0.65rem] font-semibold text-night">{{ $unreadFeedback }}<span class="sr-only"> unread feedback</span></span>
+                                @endif
+                            </span>
+                            <span @class(['underline decoration-2 underline-offset-4 text-night-primary' => ($active !== null && array_key_exists($active, $tabMore))])>More</span>
+                            @if (($active !== null && array_key_exists($active, $tabMore)))<span class="sr-only">, includes this page</span>@endif
+                        </x-slot:trigger>
+                        <ul>
+                            @foreach ($tabMore as $key => $item)
+                                <li><a href="{{ route($item['route']) }}" class="menu-item" @if ($active === $key) aria-current="page" @endif>{{ $item['label'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    </x-menu>
+                </li>
+            @endif
         </ul>
     </nav>
 </body>

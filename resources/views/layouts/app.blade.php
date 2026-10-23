@@ -23,6 +23,18 @@
                     <li><a href="{{ route('home') }}#who-its-for" class="underline-offset-4 hover:underline">Who it's for</a></li>
                     <li><a href="{{ route('home') }}#trust" class="underline-offset-4 hover:underline">Trust &amp; AI</a></li>
                 </ul>
+                {{-- On phones the three section links live in a menu (ADR 0025). --}}
+                <x-menu id="site-menu" class="md:hidden" button-class="grid size-10 place-items-center rounded-full border border-edge bg-surface text-ink hover:border-primary hover:text-primary aria-expanded:border-primary active:translate-y-px">
+                    <x-slot:trigger>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                        <span class="sr-only">Site menu</span>
+                    </x-slot:trigger>
+                    <ul>
+                        <li><a href="{{ route('home') }}#how-it-works" class="menu-item">How it works</a></li>
+                        <li><a href="{{ route('home') }}#who-its-for" class="menu-item">Who it's for</a></li>
+                        <li><a href="{{ route('home') }}#trust" class="menu-item">Trust &amp; AI</a></li>
+                    </ul>
+                </x-menu>
                 <x-theme-toggle />
                 @auth
                     <x-button variant="secondary" size="sm" :href="route('dashboard')">My dashboard</x-button>
