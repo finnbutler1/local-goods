@@ -23,6 +23,70 @@ themeToggles.forEach((toggle) => toggle.addEventListener('click', () => {
 systemDark.addEventListener('change', showTheme);
 showTheme();
 
+// Disclosure menus: <x-menu> (data-menu). The button toggles the list;
+// ArrowDown/ArrowUp open it on the first/last item and move between items,
+// Home/End jump, Escape closes it and puts focus back on the button.
+// Clicking elsewhere or tabbing out closes it.
+document.querySelectorAll('[data-menu]').forEach((menu) => {
+    const button = menu.querySelector('[data-menu-button]');
+    const panel = menu.querySelector('[data-menu-panel]');
+    const items = () => [...panel.querySelectorAll('a[href], button:not([disabled])')];
+    const isOpen = () => button.getAttribute('aria-expanded') === 'true';
+    const open = (focus) => {
+        button.setAttribute('aria-expanded', 'true');
+        panel.dataset.open = '';
+        if (focus === 'first') items()[0]?.focus();
+        if (focus === 'last') items().at(-1)?.focus();
+    };
+    const close = (returnFocus) => {
+        if (!isOpen()) return;
+        button.setAttribute('aria-expanded', 'false');
+        delete panel.dataset.open;
+        if (returnFocus) button.focus();
+    };
+    button.addEventListener('click', () => (isOpen() ? close(false) : open()));
+    button.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            open('first');
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            open('last');
+        } else if (event.key === 'Escape') {
+            close(true);
+        }
+    });
+    panel.addEventListener('keydown', (event) => {
+        const list = items();
+        const at = list.indexOf(document.activeElement);
+        const move = {
+            ArrowDown: list[(at + 1) % list.length],
+            ArrowUp: list[(at - 1 + list.length) % list.length],
+            Home: list[0],
+            End: list.at(-1),
+        }[event.key];
+        if (move) {
+            event.preventDefault();
+            move.focus();
+        } else if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            close(true);
+        }
+    });
+    // Safari doesn't focus a clicked link, so focus leaves on mouse-down:
+    // ignore that while the pointer is pressed inside the menu.
+    let pressing = false;
+    menu.addEventListener('pointerdown', () => (pressing = true));
+    document.addEventListener('pointerup', () => setTimeout(() => (pressing = false)));
+    menu.addEventListener('focusout', (event) => {
+        if (!pressing && !menu.contains(event.relatedTarget)) close(false);
+    });
+    document.addEventListener('click', (event) => {
+        if (!menu.contains(event.target)) close(false);
+    });
+});
+
 // Copy buttons: <button data-copy="#input-id"> copies that input's value.
 document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-copy]');
