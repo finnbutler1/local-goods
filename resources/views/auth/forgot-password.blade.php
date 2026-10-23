@@ -1,7 +1,7 @@
 @php use App\Support\PasswordResets; @endphp
 
 <x-guest-shell title="Forgot password">
-    <h1 class="text-3xl font-semibold text-forest">Forgot password</h1>
+    <h1 class="text-3xl font-semibold text-primary">Forgot password</h1>
 
     @if (PasswordResets::byEmail())
         <p class="mt-1 text-muted">Enter the email you log in with and we'll send you a link to choose a new password.</p>
@@ -15,7 +15,7 @@
             <x-field name="email" label="Email">
                 <input id="email" name="email" type="email" autocomplete="username" required autofocus
                        value="{{ old('email') }}"
-                       class="block w-full rounded-xl border-2 bg-paper px-3 py-3 focus-visible:border-forest @error('email') border-hold @else border-muted @enderror"
+                       class="block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary @error('email') border-hold @else border-muted @enderror"
                        @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
             </x-field>
             <x-button type="submit" size="lg" class="w-full">Email me a reset link</x-button>
@@ -25,6 +25,6 @@
     @endif
 
     <p class="mt-6 text-sm">
-        <a href="{{ route('login') }}" class="font-semibold text-forest underline decoration-line decoration-2 underline-offset-4 hover:decoration-forest">Back to log in</a>
+        <a href="{{ route('login') }}" class="font-semibold text-primary underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">Back to log in</a>
     </p>
 </x-guest-shell>
