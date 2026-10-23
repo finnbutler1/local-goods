@@ -1,7 +1,6 @@
 @php
     use App\Support\Money;
 
-    $link = 'font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest';
     $month = $impact['this_month'];
     $all = $impact['all_time'];
     $monthName = $impact['month']->format('F');
@@ -192,22 +191,15 @@
 
         @if ($impact['recirculation_cents'] !== null)
             <aside aria-labelledby="estimate-heading" class="rounded-3xl border-2 border-dashed border-muted bg-cream-deep p-6 sm:p-8" data-recirculation-estimate>
-                <p class="text-sm font-semibold uppercase tracking-widest text-muted">Estimate from an outside study, not measured by Local Goods</p>
-                <h2 id="estimate-heading" class="mt-2 text-2xl font-semibold text-forest">How much of this spending might stay local</h2>
+                <h2 id="estimate-heading" class="text-2xl font-semibold text-forest">How much of this spending might stay local</h2>
+                <div class="mt-3">
+                    @include('partials.recirculation-evidence')
+                </div>
                 <p class="mt-3 max-w-3xl text-lg">
                     If the national study's rate held here, about
                     <strong class="tabular font-semibold">{{ Money::format($impact['recirculation_cents']) }}</strong>
-                    of this spending would recirculate locally.
-                </p>
-                <p class="mt-3 max-w-3xl text-sm text-muted">
-                    The study found independent retailers and restaurants recirculated {{ round(100 * $source['independent_rate'], 1) }}% of their revenue locally,
-                    against {{ round(100 * $source['chain_rate'], 1) }}% for chains. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch by
-                    {{ round(100 * $source['independent_rate'], 1) }}%. Local Goods has not measured this in the Golden Triangle; the real share here could be higher or lower.
-                </p>
-                <p class="mt-3 max-w-3xl text-sm">
-                    Source: {{ $source['publisher'] }}, “{{ $source['title'] }}” (with {{ $source['partner'] }}), data from {{ $source['data_years'] }},
-                    {{ $source['sample'] }}.
-                    <a href="{{ $source['url'] }}" class="{{ $link }}" rel="noopener">Read the Publishers Weekly report on the study</a>.
+                    of this spending would recirculate locally. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch by
+                    {{ round(100 * $source['independent_rate'], 1) }}%; the real share here could be higher or lower.
                 </p>
             </aside>
         @endif
