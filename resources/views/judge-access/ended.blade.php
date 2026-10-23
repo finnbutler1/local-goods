@@ -1,5 +1,5 @@
 <x-guest-shell title="Link ended">
-    <h1 class="text-3xl font-semibold text-forest">This link has ended</h1>
+    <h1 class="text-3xl font-semibold text-primary">This link has ended</h1>
     <p class="mt-2 text-muted">
         Thanks for reviewing Local Goods. Reviewer links stop working when judging closes
         ({{ app(\App\Services\ReviewerLinks::class)->endsAt()->format('F j, Y \a\t g:i A') }} Eastern),

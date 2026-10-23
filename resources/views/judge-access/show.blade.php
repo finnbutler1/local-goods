@@ -2,7 +2,7 @@
      reaches the server; resources/js/app.js moves it into this form, clears
      it from the address bar and submits. No password, no account setup. --}}
 <x-guest-shell title="Signing you in">
-    <h1 class="text-3xl font-semibold text-forest">Signing you in…</h1>
+    <h1 class="text-3xl font-semibold text-primary">Signing you in…</h1>
     <p class="mt-2 text-muted" id="magic-link-status" aria-live="polite">
         Opening your read-only reviewer view of Local Goods. This takes a second.
     </p>
