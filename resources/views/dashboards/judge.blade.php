@@ -80,13 +80,18 @@
         </section>
 
         <section aria-labelledby="about-heading" class="max-w-3xl">
-            <h2 id="about-heading" class="text-2xl font-semibold text-forest">What Local Goods is</h2>
+            <h2 id="about-heading" class="text-2xl font-semibold text-forest">Why Local Goods exists</h2>
             <div class="mt-3 space-y-3 text-lg">
                 <p>
-                    Local Goods is a workplace perk: employers inside a Business Improvement District buy credits for their staff.
-                    Employees can spend those credits only at independent merchants in that district, using their phone as the card.
+                    People who work downtown follow the same loop: commute in, sit at a desk, commute out, and their spending goes home with them.
+                    Local Goods lets an employer give staff credits that can only be spent at independent businesses in the district around the office,
+                    so the neighborhood gains from the people who are there every day.
+                </p>
+                <p>
+                    Employers inside a Business Improvement District buy the credits, and employees spend them using their phone as the card.
                     Payments and merchant payouts run on Stripe Connect in test mode (real Stripe transactions, no real money), and Local Goods tracks every credit in its own append-only ledger and enforces the rules.
                     Every redemption is checked by an AI, Redemption Fraud Detection, and anything suspicious is held until a person at the BID decides.
+                    Both AI functions, Redemption Fraud Detection and Merchant Eligibility Matching, assist human decisions; neither makes them.
                     This demo covers one district, the Golden Triangle in Washington, DC, and every business, person and transaction in it is fictional.
                 </p>
             </div>
