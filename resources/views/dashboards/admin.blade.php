@@ -1,28 +1,28 @@
 <x-app-shell title="Platform admin" active="dashboard" context="Local Goods platform">
     <div class="space-y-8">
         <header>
-            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin</p>
-            <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Welcome back, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+            <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
+            <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Welcome back, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             <p class="mt-3 max-w-2xl text-lg text-muted">
                 Every login is created by an admin; there is no public sign-up.
                 You can also open fraud review to approve or deny held redemptions.
             </p>
             <p class="mt-3 flex flex-wrap gap-x-6 gap-y-2 font-semibold">
-                <a href="{{ route('admin.reviewers.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Invite reviewers</a>
-                <a href="{{ route('admin.feedback.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Feedback inbox</a>
-                <a href="{{ route('admin.changelog.index') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Changelog for reviewers</a>
-                <a href="{{ route('admin.reconciliation') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Stripe reconciliation</a>
-                <a href="{{ route('bid-admin.impact') }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">BID impact</a>
+                <a href="{{ route('admin.reviewers.index') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Invite reviewers</a>
+                <a href="{{ route('admin.feedback.index') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Feedback inbox</a>
+                <a href="{{ route('admin.changelog.index') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Changelog for reviewers</a>
+                <a href="{{ route('admin.reconciliation') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Stripe reconciliation</a>
+                <a href="{{ route('bid-admin.impact') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
             </p>
         </header>
 
         <section aria-labelledby="accounts-heading">
             <div class="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 id="accounts-heading" class="text-2xl font-semibold text-forest">Accounts</h2>
+                <h2 id="accounts-heading" class="text-2xl font-semibold text-primary">Accounts</h2>
                 @if ($showRevoked)
-                    <a href="{{ route('admin.dashboard') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Hide revoked</a>
+                    <a href="{{ route('admin.dashboard') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Hide revoked</a>
                 @elseif ($revokedCount > 0)
-                    <a href="{{ route('admin.dashboard', ['revoked' => 1]) }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show revoked ({{ $revokedCount }})</a>
+                    <a href="{{ route('admin.dashboard', ['revoked' => 1]) }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show revoked ({{ $revokedCount }})</a>
                 @endif
             </div>
             <p class="mt-1 text-sm text-muted">

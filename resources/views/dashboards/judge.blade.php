@@ -1,8 +1,8 @@
 <x-app-shell title="Dashboard" active="dashboard" context="CUA Busch School AI Vibe Coding Contest">
     <div class="space-y-10">
         <header class="max-w-3xl">
-            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Reviewer home</p>
-            <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+            <x-eyebrow class="text-accent-ink">Reviewer home</x-eyebrow>
+            <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             <p class="mt-3 text-lg text-muted">
                 Thank you for reviewing Local Goods. Your login is read-only: look at anything, change nothing.
                 Use the Feedback button on any page to tell me what works and what doesn't.
@@ -11,10 +11,10 @@
 
         @if ($adjudication && $adjudication['can_vote'])
             <x-card as="section" tone="night" aria-labelledby="adjudicate-heading" class="max-w-3xl">
-                <h2 id="adjudicate-heading" class="text-2xl font-semibold text-cream">
-                    <a href="{{ route('adjudication.show') }}" class="underline decoration-amber decoration-2 underline-offset-4 hover:decoration-cream">Help check the AI, about 5 minutes</a>
+                <h2 id="adjudicate-heading" class="text-2xl font-semibold text-on-night">
+                    <a href="{{ route('adjudication.show') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-on-night">Help check the AI, about 5 minutes</a>
                 </h2>
-                <p class="mt-2 text-sage">
+                <p class="mt-2 text-night-muted">
                     @if ($adjudication['submitted'])
                         Thank you: your votes are submitted.
                     @elseif ($adjudication['answered'] > 0)
@@ -27,8 +27,8 @@
                 </p>
             </x-card>
         @elseif ($adjudication)
-            <x-card as="section" aria-labelledby="independent-check-heading" class="max-w-3xl border-l-4 border-l-forest">
-                <h2 id="independent-check-heading" class="text-2xl font-semibold text-forest">Independent check of the AI</h2>
+            <x-card as="section" aria-labelledby="independent-check-heading" class="max-w-3xl border-l-4 border-l-primary">
+                <h2 id="independent-check-heading" class="text-2xl font-semibold text-primary">Independent check of the AI</h2>
                 <p class="mt-2">
                     Where my hand labels and the AI disagree, invited BID staff and contest judges rate each disputed case blind: they see the redemption's facts, never my label or the AI's call.
                     Cases where we agreed are mixed in as hidden controls, to check how reliable the raters themselves are.
@@ -43,13 +43,13 @@
                 </p>
                 <p class="mt-2 text-muted">Voting is limited to invited reviewers, so you can't vote from this login.</p>
                 <p class="mt-3">
-                    <a href="{{ route('eval') }}#adjudication" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">See the adjudication results on the eval page</a>
+                    <a href="{{ route('eval') }}#adjudication" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">See the adjudication results on the eval page</a>
                 </p>
             </x-card>
         @endif
 
         <section aria-labelledby="new-heading" class="max-w-3xl">
-            <h2 id="new-heading" class="text-2xl font-semibold text-forest">
+            <h2 id="new-heading" class="text-2xl font-semibold text-primary">
                 What's new {{ $since ? 'since your last visit' : 'lately' }}
             </h2>
             @if ($since)
@@ -80,7 +80,7 @@
         </section>
 
         <section aria-labelledby="about-heading" class="max-w-3xl">
-            <h2 id="about-heading" class="text-2xl font-semibold text-forest">Why Local Goods exists</h2>
+            <h2 id="about-heading" class="text-2xl font-semibold text-primary">Why Local Goods exists</h2>
             <div class="mt-3 space-y-3 text-lg">
                 <p>
                     People who work downtown follow the same loop: commute in, sit at a desk, commute out, and their spending goes home with them.
@@ -98,15 +98,15 @@
         </section>
 
         <section aria-labelledby="tour-heading">
-            <h2 id="tour-heading" class="text-2xl font-semibold text-forest">Guided tour</h2>
+            <h2 id="tour-heading" class="text-2xl font-semibold text-primary">Guided tour</h2>
             <p class="mt-1 text-muted">Each step opens the screen as that role would see it, read-only.</p>
             <ol class="mt-4 grid gap-3 md:grid-cols-2">
                 @foreach ($tour as $i => $step)
                     <x-card as="li" class="flex gap-4">
-                        <span class="grid size-10 shrink-0 place-items-center rounded-full bg-forest font-display text-lg font-semibold text-cream" aria-hidden="true">{{ $i + 1 }}</span>
+                        <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-display text-lg font-semibold text-on-primary" aria-hidden="true">{{ $i + 1 }}</span>
                         <div class="min-w-0">
                             <h3 class="flex flex-wrap items-center gap-2 text-xl font-semibold">
-                                <a href="{{ $step['url'] }}" class="text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
+                                <a href="{{ $step['url'] }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                                     <span class="sr-only">Step {{ $i + 1 }}: </span>{{ $step['title'] }}
                                 </a>
                                 @unless ($step['available'])

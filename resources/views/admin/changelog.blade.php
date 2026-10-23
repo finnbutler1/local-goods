@@ -1,10 +1,10 @@
-@php $input = 'block w-full rounded-xl border-2 bg-paper px-3 py-3 focus-visible:border-forest'; @endphp
+@php $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary'; @endphp
 
 <x-app-shell title="Changelog" active="feedback" context="Local Goods platform">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Changelog for reviewers</h1>
+        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Changelog for reviewers</h1>
         <p class="mt-3 text-lg text-muted">
             Short notes on what changed. Reviewers see entries published since their last visit on their home page,
             next to their own feedback you marked fixed. Keep it to synthetic, demo-safe details.
@@ -12,7 +12,7 @@
     </header>
 
     <x-card as="section" aria-labelledby="new-heading" class="max-w-2xl">
-        <h2 id="new-heading" class="text-2xl font-semibold text-forest">New entry</h2>
+        <h2 id="new-heading" class="text-2xl font-semibold text-primary">New entry</h2>
         <form method="POST" action="{{ route('admin.changelog.store') }}" data-busy="Saving…" class="mt-4 space-y-4">
             @csrf
             <x-field name="title" label="Title">
@@ -28,7 +28,7 @@
     </x-card>
 
     <section aria-labelledby="published-heading">
-        <h2 id="published-heading" class="text-2xl font-semibold text-forest">Published</h2>
+        <h2 id="published-heading" class="text-2xl font-semibold text-primary">Published</h2>
         @if ($entries->isEmpty())
             <p class="mt-2 text-muted">Nothing yet.</p>
         @else

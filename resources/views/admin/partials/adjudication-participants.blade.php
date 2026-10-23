@@ -12,10 +12,10 @@
     [$personal, 'Personal contacts (know Finn), not counted in the headline', 'No personal contacts have started yet. Their magic link opens the voting page directly.'],
 ] as [$participants, $title, $empty])
     <div class="scroll-region" role="region" tabindex="0" aria-label="{{ $title }} table">
-        <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
+        <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
             <caption class="px-4 pt-4 pb-1 text-left font-semibold">{{ $title }} ({{ $participants->count() }})</caption>
             <thead>
-                <tr class="bg-cream-deep/60 text-sm text-muted">
+                <tr class="bg-band/60 text-sm text-muted">
                     <th scope="col" class="px-4 py-2">Reviewer</th>
                     <th scope="col" class="px-4 py-2">Type</th>
                     <th scope="col" class="px-4 py-2">Saw eval before</th>

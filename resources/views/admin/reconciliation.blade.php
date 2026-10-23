@@ -3,8 +3,8 @@
 <x-app-shell title="Reconciliation" active="dashboard" context="Local Goods platform">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin · Money check</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Does the ledger agree with Stripe?</h1>
+        <x-eyebrow class="text-accent-ink">Platform admin · Money check</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Does the ledger agree with Stripe?</h1>
         <p class="mt-3 text-lg text-muted">
             Stripe holds and moves the money; Local Goods keeps the ledger of who is owed what. This puts the two side by side for
             Stripe-funded activity only, since the last Reset demo ({{ $report['since']->setTimezone('America/New_York')->format('M j, Y g:i A') }}).

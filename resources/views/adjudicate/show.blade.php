@@ -4,7 +4,7 @@
     $money = fn ($v) => $v === '' || $v === null ? 'None yet' : '$'.number_format((float) $v, 2);
     $total = isset($cases) ? $cases->count() : 0;
     $vote = isset($case, $votes) && $case ? $votes->get($case->id) : null;
-    $radio = 'size-5 accent-forest';
+    $radio = 'size-5 accent-primary';
     // Personal contacts can't open the eval page (ADR 0019), so no links to it.
     $votingOnly = auth()->user()->isPersonalContact();
 @endphp
@@ -12,8 +12,8 @@
 <x-app-shell title="Help check the AI" active="dashboard" context="CUA Busch School AI Vibe Coding Contest">
 <div class="max-w-3xl space-y-8">
     <header>
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Blind adjudication</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Help check the AI</h1>
+        <x-eyebrow class="text-accent-ink">Blind adjudication</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Help check the AI</h1>
         <p class="mt-3 text-lg text-muted">
             Our fraud check was tested against cases a person labeled by hand. Where the person and the AI disagree,
             the person may be the one who got it wrong. You'll see synthetic redemptions one at a time, with only the facts,
@@ -32,20 +32,20 @@
     @switch ($state)
         @case('none')
             <x-card>
-                <h2 class="text-2xl font-semibold text-forest">Nothing to check right now</h2>
+                <h2 class="text-2xl font-semibold text-primary">Nothing to check right now</h2>
                 <p class="mt-2 text-muted">There is no set of cases open for voting. Thank you for looking.</p>
             </x-card>
             @break
 
         @case('closed')
             <x-card>
-                <h2 class="text-2xl font-semibold text-forest">Voting has closed</h2>
+                <h2 class="text-2xl font-semibold text-primary">Voting has closed</h2>
                 <p class="mt-2 text-muted">
                     Votes you saved but didn't submit are not counted.
                     @if ($votingOnly)
                         Finn reports the results, with personal contacts' votes kept separate from the judges'.
                     @else
-                        The results are on the <a href="{{ route('eval') }}" class="font-semibold text-forest underline underline-offset-4">AI eval page</a>.
+                        The results are on the <a href="{{ route('eval') }}" class="font-semibold text-primary underline underline-offset-4">AI eval page</a>.
                     @endif
                 </p>
             </x-card>
@@ -53,7 +53,7 @@
 
         @case('submitted')
             <x-card class="border-2 border-ok">
-                <h2 class="text-2xl font-semibold text-forest">Thank you, your votes are in</h2>
+                <h2 class="text-2xl font-semibold text-primary">Thank you, your votes are in</h2>
                 <p class="mt-2">
                     @if ($had === 0)
                         You voted on all {{ $totalCases }} cases.
@@ -66,7 +66,7 @@
                     @if ($votingOnly)
                         Finn reports the results, with personal contacts' votes counted separately from BID staff and contest judges.
                     @else
-                        You can open the <a href="{{ route('eval') }}" class="font-semibold text-forest underline underline-offset-4">AI eval page</a>
+                        You can open the <a href="{{ route('eval') }}" class="font-semibold text-primary underline underline-offset-4">AI eval page</a>
                         to see the person's labels and the AI's calls. Results from adjudicators appear there as people submit.
                     @endif
                 </p>
@@ -75,7 +75,7 @@
 
         @case('more')
             <x-card as="section" aria-labelledby="more-heading" class="border-2 border-ok">
-                <h2 id="more-heading" tabindex="-1" data-flash class="text-2xl font-semibold text-forest">Thanks! Want to do {{ $nextBatchSize }} more?</h2>
+                <h2 id="more-heading" tabindex="-1" data-flash class="text-2xl font-semibold text-primary">Thanks! Want to do {{ $nextBatchSize }} more?</h2>
                 <p class="mt-2">
                     Your {{ $counted }} {{ Str::plural('vote', $counted) }} already count. More is optional: another {{ $nextBatchSize }} takes about 5 minutes,
                     and you'll never see a case twice ({{ $had }} of {{ $totalCases }} seen so far).
@@ -95,7 +95,7 @@
 
         @case('question')
             <x-card as="section" aria-labelledby="question-heading">
-                <h2 id="question-heading" class="text-2xl font-semibold text-forest">Before you start</h2>
+                <h2 id="question-heading" class="text-2xl font-semibold text-primary">Before you start</h2>
                 <p class="mt-2 text-muted">
                     Please don't open the AI eval page until you've submitted: it shows the answers.
                     This question helps us report results fairly; any answer is fine.
@@ -122,7 +122,7 @@
         @default
             {{-- voting, or view-only for reviewers who can look but not vote --}}
             @if ($state === 'view-only')
-                <p class="rounded-2xl border-2 border-line bg-cream-deep p-4">
+                <p class="rounded-2xl border-2 border-line bg-band p-4">
                     <strong>You can look, but not vote.</strong> Votes come only from named BID staff and contest judges who
                     signed in with their own link, so every vote can be attributed. The form below is switched off.
                 </p>
@@ -133,9 +133,9 @@
             <nav aria-label="Cases" class="space-y-2">
                 <p class="font-semibold">
                     @if ($case)
-                        <span class="tabular text-2xl text-forest">{{ $n }} of {{ $total }}</span>
+                        <span class="tabular text-2xl text-primary">{{ $n }} of {{ $total }}</span>
                     @else
-                        <span class="text-2xl text-forest">Review and submit</span>
+                        <span class="text-2xl text-primary">Review and submit</span>
                     @endif
                     @if ($state === 'voting')
                         <span class="ml-2 text-muted">· {{ $answered }} answered</span>
@@ -145,21 +145,21 @@
                     @foreach ($cases as $i => $c)
                         <li>
                             <a href="{{ route('adjudication.show', ['n' => $i + 1]) }}" @if ($case && $c->id === $case->id) aria-current="step" @endif
-                               @class(['tabular grid size-9 place-items-center rounded-full text-sm font-semibold ring-1 ring-line aria-[current=step]:ring-2 aria-[current=step]:ring-forest',
-                                       'bg-forest text-cream' => $votes->has($c->id), 'bg-paper text-ink' => ! $votes->has($c->id)])>
+                               @class(['tabular grid size-9 place-items-center rounded-full text-sm font-semibold ring-1 ring-line aria-[current=step]:ring-2 aria-[current=step]:ring-primary',
+                                       'bg-primary text-on-night' => $votes->has($c->id), 'bg-surface text-ink' => ! $votes->has($c->id)])>
                                 {{ $i + 1 }}<span class="sr-only">{{ $votes->has($c->id) ? ', answered' : ', not answered' }}</span>
                             </a>
                         </li>
                     @endforeach
                     @if ($state === 'voting')
-                        <li><a href="{{ route('adjudication.show', ['n' => $total + 1]) }}" class="grid h-9 place-items-center rounded-full px-3 text-sm font-semibold text-forest ring-1 ring-line">Submit</a></li>
+                        <li><a href="{{ route('adjudication.show', ['n' => $total + 1]) }}" class="grid h-9 place-items-center rounded-full px-3 text-sm font-semibold text-primary ring-1 ring-line">Submit</a></li>
                     @endif
                 </ol>
             </nav>
 
             @if ($case)
                 <x-card as="section" aria-labelledby="case-heading">
-                    <h2 id="case-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-forest">Redemption {{ $n }}</h2>
+                    <h2 id="case-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-primary">Redemption {{ $n }}</h2>
                     <dl class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
                         @foreach (AdjudicationCase::FACTS as $key => $label)
                             @php $value = $case->facts[$key] ?? ''; @endphp
@@ -194,7 +194,7 @@
                             <x-field name="reason" label="Why? (a sentence is enough)">
                                 <textarea id="reason" name="reason" rows="3" required maxlength="{{ AdjudicateController::REASON_MAX }}"
                                           @if ($errors->has('reason')) aria-invalid="true" aria-describedby="reason-error" @endif
-                                          class="block w-full rounded-xl border-2 border-muted bg-paper px-3 py-2.5 focus-visible:border-forest">{{ old('reason', $vote?->reason) }}</textarea>
+                                          class="block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary">{{ old('reason', $vote?->reason) }}</textarea>
                             </x-field>
                             <div class="flex flex-wrap items-center gap-3">
                                 <x-button type="submit">{{ $n < $total ? 'Save and next' : 'Save' }}</x-button>
@@ -211,7 +211,7 @@
             @else
                 @php $missing = $cases->keys()->filter(fn ($i) => ! $votes->has($cases[$i]->id))->map(fn ($i) => $i + 1); @endphp
                 <x-card as="section" aria-labelledby="submit-heading">
-                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-forest">Submit these {{ $total }}</h2>
+                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-primary">Submit these {{ $total }}</h2>
                     @if ($missing->isNotEmpty())
                         <p class="mt-2">Still to answer: {{ $missing->implode(', ') }}. You can submit once every case has an answer.</p>
                     @else
@@ -223,7 +223,7 @@
                     </form>
                     <p class="mt-4 text-sm text-muted">
                         You said you {{ $participant->seen_eval_before ? 'had' : 'had not' }} looked at the eval results page before today.
-                        <a href="{{ route('adjudication.show', ['start' => 1]) }}" class="font-semibold text-forest underline underline-offset-4">Change</a>
+                        <a href="{{ route('adjudication.show', ['start' => 1]) }}" class="font-semibold text-primary underline underline-offset-4">Change</a>
                     </p>
                 </x-card>
             @endif
