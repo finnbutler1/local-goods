@@ -112,7 +112,7 @@
                         </details>
                     @endif
                     <x-theme-toggle />
-                    <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink sm:grid" aria-hidden="true">{{ $initials }}</span>
+                    <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-accent font-display font-semibold text-on-accent sm:grid" aria-hidden="true">{{ $initials }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
                         @csrf
                         <x-button type="submit" variant="ghost" size="sm">Log out</x-button>
@@ -123,7 +123,7 @@
 
         <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-40 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
             @if ($viewAs)
-                <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-amber bg-amber/20 px-4 py-3">
+                <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-band px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
                     <a href="{{ route('judge.view-as') }}" class="text-sm font-semibold text-forest underline underline-offset-4 hover:no-underline">Back to judge home</a>
                 </div>
