@@ -95,6 +95,8 @@ class PublicClaimsTest extends TestCase
                 $this->assertStringContainsString('Civic Economics', $section, $where);
             }
         }
+
+        $this->assertMatchesRegularExpression(self::MULTIPLIER, $this->docSections()['README.md › ## Why it matters'], 'The README carries the labelled line, so this check is not empty.');
     }
 
     public function test_nothing_says_local_goods_creates_the_effect_or_guarantees_it(): void
@@ -130,12 +132,15 @@ class PublicClaimsTest extends TestCase
         }
     }
 
-    public function test_the_readme_labels_the_study_as_an_outside_estimate(): void
+    public function test_the_readme_leads_with_the_mission_and_labels_the_study_as_an_outside_estimate(): void
     {
         $readme = file_get_contents(base_path('README.md'));
 
         $this->assertDoesNotMatchRegularExpression('/later build/i', $readme);
         $this->assertStringContainsString('An estimate from an outside study, not measured by Local Goods', $readme);
+        $this->assertStringContainsString('## You work here. Spend here.', $readme);
+        $this->assertStringContainsString('Real results here will be measured in a pilot.', $readme);
+        $this->assertStringContainsString('assist human decisions and do not make them', $readme);
         foreach (['52.3%', '15.8%', '2011–2012', '134 businesses in 10 U.S. communities, none in DC', 'Civic Economics', 'American Booksellers Association'] as $fact) {
             $this->assertStringContainsString($fact, $readme);
         }
