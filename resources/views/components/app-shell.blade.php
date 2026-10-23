@@ -100,14 +100,14 @@
                     </div>
                     @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
                         <details class="relative">
-                            <summary class="cursor-pointer list-none rounded-full border-2 border-forest px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-forest hover:bg-forest hover:text-cream">View as<span aria-hidden="true"> ▾</span></summary>
-                            <ul class="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-line bg-paper p-2 shadow-lg">
+                            <summary class="cursor-pointer list-none rounded-full border-2 border-primary px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary hover:text-on-primary">View as<span aria-hidden="true"> ▾</span></summary>
+                            <ul class="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-line bg-surface p-2 shadow-lg">
                                 @foreach (\App\Support\ViewAs::ROLES as $option)
                                     <li><a href="{{ route('judge.view-as', $option->value) }}" @if ($viewAs === $option) aria-current="true" @endif
-                                           class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream aria-[current=true]:bg-cream-deep">{{ $option->label() }}</a></li>
+                                           class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-page aria-[current=true]:bg-band">{{ $option->label() }}</a></li>
                                 @endforeach
-                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream">Back to judge home</a></li>
-                                <li class="lg:hidden"><a href="{{ route('account') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-cream">Your account</a></li>
+                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-page">Back to judge home</a></li>
+                                <li class="lg:hidden"><a href="{{ route('account') }}" class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-page">Your account</a></li>
                             </ul>
                         </details>
                     @endif
@@ -125,7 +125,7 @@
             @if ($viewAs)
                 <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-band px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
-                    <a href="{{ route('judge.view-as') }}" class="text-sm font-semibold text-forest underline underline-offset-4 hover:no-underline">Back to judge home</a>
+                    <a href="{{ route('judge.view-as') }}" class="text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline">Back to judge home</a>
                 </div>
             @endif
             {{ $slot }}

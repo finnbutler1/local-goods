@@ -3,19 +3,19 @@
     use App\Enums\FeedbackSeverity;
     use App\Enums\FeedbackStatus;
     use App\Enums\ReviewerType;
-    $select = 'block w-full rounded-xl border-2 border-muted bg-paper px-3 py-2.5 focus-visible:border-forest';
+    $select = 'block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary';
     $severityTone = ['blocker' => 'hold', 'should_fix' => 'accent', 'nice_to_have' => 'neutral'];
 @endphp
 
 <x-app-shell title="Feedback" active="feedback" context="Local Goods platform">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Feedback inbox</h1>
+        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Feedback inbox</h1>
         <p class="mt-3 text-lg text-muted">
             Everything reviewers sent from the Feedback button. Mark items fixed with the commit that fixed them:
             reviewers see their fixed items under "What's new" on their next visit.
-            <a href="{{ route('admin.changelog.index') }}" class="font-semibold text-forest underline underline-offset-4 hover:no-underline">Add a changelog entry</a>.
+            <a href="{{ route('admin.changelog.index') }}" class="font-semibold text-primary underline underline-offset-4 hover:no-underline">Add a changelog entry</a>.
         </p>
     </header>
 
@@ -26,13 +26,13 @@
     </div>
 
     <section aria-labelledby="averages-heading">
-        <h2 id="averages-heading" class="text-2xl font-semibold text-forest">Average rating by rubric category</h2>
+        <h2 id="averages-heading" class="text-2xl font-semibold text-primary">Average rating by rubric category</h2>
         <dl class="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
             @foreach (FeedbackCategory::cases() as $category)
                 @php $row = $averages[$category->value] ?? null; @endphp
                 <x-card padding="p-4" data-category="{{ $category->value }}">
                     <dt class="text-sm font-semibold text-muted">{{ $category->label() }}</dt>
-                    <dd class="tabular mt-1 font-display text-3xl font-semibold text-forest">{{ $row ? number_format($row->average, 1) : '—' }}<span class="text-base text-muted">{{ $row ? ' / 5' : '' }}</span></dd>
+                    <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $row ? number_format($row->average, 1) : '—' }}<span class="text-base text-muted">{{ $row ? ' / 5' : '' }}</span></dd>
                     <dd class="text-sm text-muted">{{ $row ? $row->reviews.' '.Str::plural('review', $row->reviews) : 'No reviews yet' }}</dd>
                 </x-card>
             @endforeach
@@ -40,7 +40,7 @@
     </section>
 
     <section aria-labelledby="items-heading" class="space-y-4">
-        <h2 id="items-heading" class="text-2xl font-semibold text-forest">Items <span class="text-muted">({{ $items->count() }})</span></h2>
+        <h2 id="items-heading" class="text-2xl font-semibold text-primary">Items <span class="text-muted">({{ $items->count() }})</span></h2>
 
         <form method="GET" action="{{ route('admin.feedback.index') }}" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6 lg:items-end" aria-label="Filter feedback">
             <x-field name="category" label="Category">
@@ -84,7 +84,7 @@
         @else
             <ul class="space-y-3">
                 @foreach ($items as $item)
-                    <x-card as="li" id="feedback-{{ $item->id }}" @class(['scroll-mt-24 border-l-4', 'border-l-amber' => $item->status === FeedbackStatus::New, 'border-l-line' => $item->status !== FeedbackStatus::New])>
+                    <x-card as="li" id="feedback-{{ $item->id }}" @class(['scroll-mt-24 border-l-4', 'border-l-accent' => $item->status === FeedbackStatus::New, 'border-l-line' => $item->status !== FeedbackStatus::New])>
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <p class="flex flex-wrap items-center gap-2 font-semibold">
@@ -98,7 +98,7 @@
                                 </p>
                                 <p class="mt-1 text-sm break-all">
                                     @if ($item->safePageUrl())
-                                        <a href="{{ $item->safePageUrl() }}" class="text-forest underline underline-offset-4">{{ $item->page_url }}</a>
+                                        <a href="{{ $item->safePageUrl() }}" class="text-primary underline underline-offset-4">{{ $item->page_url }}</a>
                                     @else
                                         {{ $item->page_url }}
                                     @endif

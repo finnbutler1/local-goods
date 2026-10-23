@@ -1,13 +1,13 @@
 @php
     $when = fn ($t) => $t ? $t->setTimezone('America/New_York')->format('M j, g:i A') : '—';
-    $select = 'block w-full rounded-xl border-2 border-muted bg-paper px-3 py-2.5 focus-visible:border-forest';
+    $select = 'block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary';
 @endphp
 
 <x-app-shell title="Adjudication" active="adjudication" context="Local Goods platform">
 <div class="space-y-10">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Blind adjudication</h1>
+        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Blind adjudication</h1>
         <p class="mt-3 text-lg text-muted">
             Named BID and contest-judge reviewers vote, blind, on the eval cases where your label and the AI disagree.
             The same number of cases where you agreed are mixed in as controls, so nobody can tell which cases are disputed.
@@ -26,7 +26,7 @@
         <section aria-labelledby="draft-heading" class="space-y-5">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <div class="max-w-2xl">
-                    <h2 id="draft-heading" class="text-2xl font-semibold text-forest">Draft: version {{ $draft->version }}</h2>
+                    <h2 id="draft-heading" class="text-2xl font-semibold text-primary">Draft: version {{ $draft->version }}</h2>
                     <p class="mt-1 text-muted">
                         {{ $draftCases->where('kind', 'disputed')->count() }} disputed and {{ $draftCases->where('kind', 'control')->count() }} control cases.
                         Facts and labels come from the eval run of {{ $draft->source_run ? \Illuminate\Support\Carbon::parse($draft->source_run)->format('M j, Y g:i A') : 'the latest run' }}
@@ -49,10 +49,10 @@
                             <h4 class="mt-3 font-sans text-sm font-semibold uppercase tracking-widest text-muted">{{ $splits[$split] ?? $split }}</h4>
                         @endif
                         <div class="mt-2 scroll-region" role="region" tabindex="0" aria-label="{{ $title }} table">
-                            <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
+                            <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                                 <caption class="sr-only">{{ $title }} {{ $split !== '' ? '('.($splits[$split] ?? $split).')' : '' }}</caption>
                                 <thead>
-                                    <tr class="bg-cream-deep/60 text-sm text-muted">
+                                    <tr class="bg-band/60 text-sm text-muted">
                                         <th scope="col" class="px-4 py-2">Case</th>
                                         <th scope="col" class="px-4 py-2">Split</th>
                                         <th scope="col" class="px-4 py-2">Redemption</th>
@@ -102,7 +102,7 @@
         </section>
     @elseif (! $current)
         <x-card as="section" aria-labelledby="start-heading">
-            <h2 id="start-heading" class="text-2xl font-semibold text-forest">Build the adjudication set</h2>
+            <h2 id="start-heading" class="text-2xl font-semibold text-primary">Build the adjudication set</h2>
             <p class="mt-2 max-w-2xl text-muted">
                 Starts a draft with every eval case where your label and the AI disagree, in every split,
                 plus the same number of agreed cases picked at random as blind controls. You can change it before publishing.
@@ -118,7 +118,7 @@
         <section aria-labelledby="current-heading" class="space-y-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <div class="max-w-2xl">
-                    <h2 id="current-heading" class="text-2xl font-semibold text-forest">
+                    <h2 id="current-heading" class="text-2xl font-semibold text-primary">
                         Version {{ $current->version }}
                         <x-badge :tone="$current->isOpen() ? 'ok' : 'neutral'" class="ml-2 align-middle font-sans">{{ $current->isOpen() ? 'Voting open' : 'Closed' }}</x-badge>
                     </h2>

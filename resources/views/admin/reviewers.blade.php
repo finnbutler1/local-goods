@@ -1,5 +1,5 @@
 @php
-    $input = 'block w-full rounded-xl border-2 bg-paper px-3 py-3 focus-visible:border-forest';
+    $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary';
     $when = fn ($t) => $t ? $t->setTimezone('America/New_York')->format('M j, g:i A') : '—';
     $status = fn ($reviewer) => match (true) {
         $reviewer->isRevoked() => ['neutral', 'Revoked'],
@@ -13,8 +13,8 @@
 <x-app-shell title="Reviewers" active="reviewers" context="Local Goods platform">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Platform admin</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Reviewers</h1>
+        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Reviewers</h1>
         <p class="mt-3 text-lg text-muted">
             Invite contest judges, HR managers, merchants, BID staff and friends. Each gets a personal magic link
             that signs them straight into a read-only reviewer view: no password, no account to set up.
@@ -47,7 +47,7 @@
     <x-card as="section" aria-labelledby="public-heading">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div class="max-w-2xl">
-                <h2 id="public-heading" class="text-2xl font-semibold text-forest">Public judge access</h2>
+                <h2 id="public-heading" class="text-2xl font-semibold text-primary">Public judge access</h2>
                 <p class="mt-2 text-muted">
                     One shared, generic read-only reviewer for the README's "For judges" link. Anyone with the link uses it,
                     so its feedback is anonymous, it is rate-limited more tightly, and it can't approve or deny anything.
@@ -83,7 +83,7 @@
     </x-card>
 
     <x-card as="section" aria-labelledby="invite-heading">
-        <h2 id="invite-heading" class="text-2xl font-semibold text-forest">Invite a reviewer</h2>
+        <h2 id="invite-heading" class="text-2xl font-semibold text-primary">Invite a reviewer</h2>
         <form method="POST" action="{{ route('admin.reviewers.store') }}" data-busy="Creating…" class="mt-4 grid gap-4 md:grid-cols-3">
             @csrf
             <x-field name="name" label="Name">
@@ -109,7 +109,7 @@
     </x-card>
 
     <section aria-labelledby="list-heading">
-        <h2 id="list-heading" class="text-2xl font-semibold text-forest">Named reviewers</h2>
+        <h2 id="list-heading" class="text-2xl font-semibold text-primary">Named reviewers</h2>
         @if ($reviewers->isEmpty())
             <p class="mt-3 text-muted">No reviewers yet.</p>
         @else

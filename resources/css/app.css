@@ -68,16 +68,6 @@
     --color-night-accent: #ff8a63;
     --color-night-focus: #d7b4ff;
 
-    /* Old names, kept only while the pages move to the new ones. */
-    --color-forest: var(--color-primary);
-    --color-forest-soft: var(--color-primary-hover);
-    --color-forest-tint: var(--color-primary-tint);
-    --color-sage: var(--color-primary-tint);
-    --color-cream: var(--color-page);
-    --color-cream-deep: var(--color-band);
-    --color-paper: var(--color-surface);
-    --color-amber: var(--color-accent);
-    --color-amber-ink: var(--color-accent-ink);
 }
 
 /* Dark mode: the system setting, unless the header toggle chose light; or
@@ -224,11 +214,6 @@
     .scroll-region {
         position: relative;
         overflow-x: auto;
-    }
-
-    /* Storefront awning stripe: the old brand mark, until the last pages move. */
-    .awning {
-        background-image: repeating-linear-gradient(90deg, var(--color-forest) 0 14px, var(--color-cream) 14px 28px);
     }
 
     /* Transit motif, used in three places only (ADR 0025): section eyebrows
