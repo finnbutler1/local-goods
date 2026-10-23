@@ -3,6 +3,15 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-23: Brand directions to choose from (options only)
+
+- **Three brand directions, nothing applied yet.** `docs/brand/directions.html`
+  shows "Golden Triangle", "Transit lines" and "Storefront" side by side, each
+  with two logo concepts (logo, favicon, app icon), light and dark palettes
+  with every contrast ratio checked by `php docs/brand/check-contrast.php`,
+  open-license fonts, and sample hero, buttons, merchant card, wallet,
+  dropdown and demo label. The app's pages and styles are unchanged.
+
 ## 2026-10-23: Leading with the buy-local mission
 
 - **New landing page story.** "You work here. Spend here." At 6 p.m.,
