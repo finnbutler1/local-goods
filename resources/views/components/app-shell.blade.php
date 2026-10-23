@@ -38,7 +38,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#1f3d2b">
+    <x-theme-head />
     <title>{{ $title }} · Local Goods</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -112,6 +112,7 @@
                             </ul>
                         </details>
                     @endif
+                    <x-theme-toggle />
                     <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-amber font-display font-semibold text-ink sm:grid" aria-hidden="true">{{ $initials }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="lg:hidden">
                         @csrf

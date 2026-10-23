@@ -1,30 +1,34 @@
 {
-  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-opsz-normal.woff2": {
-    "file": "assets/fraunces-latin-ext-opsz-normal-CJcjJNj7.woff2",
-    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-opsz-normal.woff2"
+  "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2": {
+    "file": "assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2",
+    "src": "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2": {
-    "file": "assets/fraunces-latin-opsz-normal-DihXLNYH.woff2",
-    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2"
+  "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2": {
+    "file": "assets/atkinson-hyperlegible-next-latin-wght-normal-BcXVPD7q.woff2",
+    "src": "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-opsz-normal.woff2": {
-    "file": "assets/fraunces-vietnamese-opsz-normal-Czevyj-6.woff2",
-    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-opsz-normal.woff2"
+  "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/overpass-cyrillic-ext-wght-normal-B1PfurAb.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-ext-wght-normal.woff2": {
-    "file": "assets/public-sans-latin-ext-wght-normal-MQgHevqp.woff2",
-    "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-ext-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-wght-normal.woff2": {
+    "file": "assets/overpass-cyrillic-wght-normal-Bb0oHPsy.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2": {
-    "file": "assets/public-sans-latin-wght-normal-DdeTHZLK.woff2",
-    "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2": {
+    "file": "assets/overpass-latin-ext-wght-normal-DvafStyF.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/public-sans/files/public-sans-vietnamese-wght-normal.woff2": {
-    "file": "assets/public-sans-vietnamese-wght-normal-CtlIRbEm.woff2",
-    "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-vietnamese-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2": {
+    "file": "assets/overpass-latin-wght-normal-qAR8M_co.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/overpass/files/overpass-vietnamese-wght-normal.woff2": {
+    "file": "assets/overpass-vietnamese-wght-normal-BfgOsjc9.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DAKQoQtk.css",
+    "file": "assets/app-DIQjsD72.css",
     "name": "app",
     "names": [
       "app.css"
@@ -32,16 +36,17 @@
     "src": "resources/css/app.css",
     "isEntry": true,
     "assets": [
-      "assets/fraunces-vietnamese-opsz-normal-Czevyj-6.woff2",
-      "assets/fraunces-latin-ext-opsz-normal-CJcjJNj7.woff2",
-      "assets/fraunces-latin-opsz-normal-DihXLNYH.woff2",
-      "assets/public-sans-vietnamese-wght-normal-CtlIRbEm.woff2",
-      "assets/public-sans-latin-ext-wght-normal-MQgHevqp.woff2",
-      "assets/public-sans-latin-wght-normal-DdeTHZLK.woff2"
+      "assets/overpass-cyrillic-ext-wght-normal-B1PfurAb.woff2",
+      "assets/overpass-cyrillic-wght-normal-Bb0oHPsy.woff2",
+      "assets/overpass-vietnamese-wght-normal-BfgOsjc9.woff2",
+      "assets/overpass-latin-ext-wght-normal-DvafStyF.woff2",
+      "assets/overpass-latin-wght-normal-qAR8M_co.woff2",
+      "assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2",
+      "assets/atkinson-hyperlegible-next-latin-wght-normal-BcXVPD7q.woff2"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DfK-ViLJ.js",
+    "file": "assets/app-CFjmtERI.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
