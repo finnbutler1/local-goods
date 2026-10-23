@@ -76,6 +76,7 @@ class PublicClaimsTest extends TestCase
         $pages = $this->publicPages();
         $this->assertArrayHasKey('/ signed out', $pages);
         $this->assertArrayHasKey('/bid-admin/impact as judge', $pages);
+        $this->assertMatchesRegularExpression(self::MULTIPLIER, $pages['/ signed out'], 'The landing page carries the labelled line, so this check is not empty.');
 
         foreach ($pages as $where => $text) {
             if (preg_match(self::MULTIPLIER, $this->withoutFraudSignals($text))) {

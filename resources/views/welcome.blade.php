@@ -1,28 +1,28 @@
 @extends('layouts.app')
 
-@section('title', 'Local Goods: Spend local. Prove it.')
+@section('title', 'Local Goods: You work here. Spend here.')
 
 @section('content')
     {{-- Hero --}}
     <section aria-labelledby="hero-heading" class="mx-auto grid overflow-x-clip max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
         <div>
-            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">An employee perk for the Golden Triangle · Washington, DC</p>
+            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">For employers in the Golden Triangle · Washington, DC</p>
             <h1 id="hero-heading" class="mt-4 text-6xl leading-[0.95] font-semibold text-forest sm:text-7xl lg:text-8xl">
-                Spend local.<br>
+                You work here.<br>
                 <span class="relative inline-block">
-                    Prove it.
+                    Spend here.
                     <span class="absolute inset-x-0 -bottom-1 h-3 rounded-full bg-amber/70 sm:h-4" aria-hidden="true"></span>
                 </span>
             </h1>
             <p class="mt-8 max-w-xl text-lg leading-relaxed text-ink sm:text-xl">
-                Give your team a monthly perk they can only spend at the independent cafés, shops and studios around
-                your office, so people get out of the building and into the neighborhood.
+                At 6 p.m., downtown's workers head home, and their spending goes with them. Local Goods gives employees
+                credits that only work at independent local businesses, so the district your company calls home gets livelier.
             </p>
             <div class="mt-10 flex flex-col gap-3 sm:flex-row">
                 <x-button variant="accent" size="lg" href="#request-demo">Request a demo</x-button>
                 <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
             </div>
-            <p class="mt-4 text-sm text-muted">For HR and people teams at employers in the Golden Triangle BID.</p>
+            <p class="mt-4 text-sm text-muted">A working prototype: payments run on Stripe in test mode, and every person and business in the demo is fictional.</p>
         </div>
 
         {{-- Illustration of the wallet, built in HTML so it stays sharp and needs no image file. --}}
@@ -64,6 +64,19 @@
         </div>
     </section>
 
+    {{-- The problem: the commute-desk-commute loop, named without blaming anyone --}}
+    <section id="the-problem" aria-labelledby="problem-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 pb-20 sm:px-6">
+        <div class="max-w-3xl border-l-4 border-amber pl-6">
+            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">The problem</p>
+            <h2 id="problem-heading" class="mt-2 text-4xl font-semibold text-forest sm:text-5xl">The commute-desk-commute loop</h2>
+            <p class="mt-5 text-lg leading-relaxed text-ink">
+                Thousands of people work in the Golden Triangle every weekday. Most follow the same loop: commute in, sit at a desk,
+                commute out. That isn't a failing of the people doing it; it's how office work is set up. But it means their spending,
+                and the life they could bring to the streets around them, goes home with them.
+            </p>
+        </div>
+    </section>
+
     {{-- How it works --}}
     <section id="how-it-works" aria-labelledby="how-heading" class="scroll-mt-6 border-y border-line bg-paper">
         <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
@@ -90,22 +103,31 @@
         </div>
     </section>
 
-    {{-- Audiences: employers first and strongest --}}
-    <section id="who-its-for" aria-labelledby="who-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Who it's for</p>
-        <h2 id="who-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-forest sm:text-5xl">Good for the office. Good for the block.</h2>
+    {{-- Why it matters: the district first, then everyone else who gains (ADR 0024) --}}
+    <section id="why-it-matters" aria-labelledby="why-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
+        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Why it matters</p>
+        <h2 id="why-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-forest sm:text-5xl">Everyone gains. The district gains most.</h2>
 
         <div class="mt-12 grid gap-4 lg:grid-cols-4">
-            <article aria-labelledby="aud-employers" class="relative flex flex-col overflow-hidden rounded-3xl bg-forest p-8 text-cream lg:col-span-2 lg:row-span-2 lg:p-10">
+            <x-card as="article" aria-labelledby="gain-district" tone="tint" class="lg:col-span-4" padding="p-8 lg:p-10">
+                <p class="text-sm font-semibold uppercase tracking-widest text-muted">Most of all</p>
+                <h3 id="gain-district" class="mt-2 text-4xl font-semibold text-forest">The district</h3>
+                <p class="mt-3 max-w-3xl text-lg text-ink">
+                    More foot traffic and more spending at the independent shops, restaurants and services that give the Golden Triangle
+                    its character. A livelier district is good for everyone who works, lives or does business in it.
+                </p>
+            </x-card>
+
+            <article aria-labelledby="gain-employers" class="relative flex flex-col overflow-hidden rounded-3xl bg-forest p-8 text-cream lg:col-span-2 lg:row-span-2 lg:p-10">
                 <div class="awning absolute inset-x-0 top-0 h-2 opacity-60" aria-hidden="true"></div>
                 <x-badge tone="amber" class="self-start">For HR teams</x-badge>
-                <h3 id="aud-employers" class="mt-5 text-4xl font-semibold">Employers</h3>
-                <p class="mt-3 text-lg text-sage">A perk people actually use, and a reason to leave the desk at lunch.</p>
+                <h3 id="gain-employers" class="mt-5 text-4xl font-semibold">Employers</h3>
+                <p class="mt-3 text-lg text-sage">A benefit your staff actually use, because it shows up at lunch, not in a portal.</p>
                 <ul class="mt-8 space-y-4">
                     @foreach ([
-                        'A visible monthly benefit that shows up in people\'s day, not in a portal they forget.',
-                        'Gets teams out of the office and into the neighborhood together.',
-                        'Participation and spend reports you can bring to leadership.',
+                        'A practical way to improve the streets around your own office.',
+                        'A livelier neighborhood can make an office easier to recruit to, easier to stay at and more worth coming in to; a pilot would measure how much.',
+                        'Participation and spending reports you can bring to leadership.',
                         'No cards to issue: the employee\'s phone is the card.',
                     ] as $point)
                         <li class="flex gap-3">
@@ -119,18 +141,23 @@
                 </div>
             </article>
 
-            <x-card as="article" aria-labelledby="aud-bid" class="lg:col-span-2" padding="p-8">
-                <p class="text-sm font-semibold uppercase tracking-widest text-muted">For the district</p>
-                <h3 id="aud-bid" class="mt-2 text-3xl font-semibold text-forest">The BID</h3>
-                <p class="mt-3 text-muted">More district spending you can measure. Every credit is spent inside the Golden Triangle, at businesses that keep the streets lively, and every redemption is on the record.</p>
-            </x-card>
-
-            <x-card as="article" aria-labelledby="aud-merchants" class="lg:col-span-2" padding="p-8">
-                <p class="text-sm font-semibold uppercase tracking-widest text-muted">For independents</p>
-                <h3 id="aud-merchants" class="mt-2 text-3xl font-semibold text-forest">Merchants</h3>
-                <p class="mt-3 text-muted">New customers from the office towers next door, with no setup cost and no new hardware. Customers show the app at the counter. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.</p>
-            </x-card>
+            @foreach ([
+                ['gain-merchants', 'For independents', 'Merchants', 'A large, steady workforce audience on your doorstep, and a reason for them to come back. No new hardware: customers show the app at the counter. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.'],
+                ['gain-employees', 'For staff', 'Employees', 'A perk that makes the workday better: lunch, coffee, errands. And a reason to discover the neighborhood you already spend most of your week in.'],
+                ['gain-bid', 'For the Golden Triangle', 'The BID', 'A measurable, privacy-respecting way to support the district\'s independent businesses. Spending and participation are counted from the ledger; employees are never named.'],
+            ] as [$id, $eyebrow, $title, $body])
+                <x-card as="article" aria-labelledby="{{ $id }}" class="lg:col-span-2" padding="p-8">
+                    <p class="text-sm font-semibold uppercase tracking-widest text-muted">{{ $eyebrow }}</p>
+                    <h3 id="{{ $id }}" class="mt-2 text-3xl font-semibold text-forest">{{ $title }}</h3>
+                    <p class="mt-3 text-muted">{{ $body }}</p>
+                </x-card>
+            @endforeach
         </div>
+
+        {{-- Supporting evidence, below the mission, never the hero. Always with its label and source. --}}
+        <aside aria-label="Outside estimate of local recirculation" class="mt-8 rounded-3xl border-2 border-dashed border-muted bg-cream-deep p-6 sm:p-8">
+            @include('partials.recirculation-evidence')
+        </aside>
     </section>
 
     {{-- Trust and AI --}}
@@ -143,7 +170,7 @@
                     @foreach ([
                         ['Redemption Fraud Detection', 'scores every redemption for abuse, such as turning credits into cash, and explains its reasoning in plain language.'],
                         ['It fails closed.', 'If the AI check errors or gives an unusable answer, the redemption is held. It is never waved through.'],
-                        ['A person makes the final call.', 'A held redemption is never approved automatically; it waits for review by the BID.'],
+                        ['The AI assists; people decide.', 'Redemption Fraud Detection and Merchant Eligibility Matching flag and explain. A held redemption is never approved automatically; it waits for review by the BID, and a person approves every new merchant.'],
                         ['No names go to the AI.', 'It sees only anonymous signals, like amount, time of day and visit history.'],
                     ] as [$lead, $rest])
                         <li class="flex gap-3">
