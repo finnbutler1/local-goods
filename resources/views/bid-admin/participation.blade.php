@@ -4,8 +4,8 @@
              :context="($bid?->name ?? 'Golden Triangle').' BID · '.($bid?->city ?? 'Washington, DC')">
 <div class="space-y-10">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">{{ $bid?->name ?? 'Golden Triangle' }} BID · Participation</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Dollars kept in the district</h1>
+        <x-eyebrow class="text-accent-ink">{{ $bid?->name ?? 'Golden Triangle' }} BID · Participation</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Dollars kept in the district</h1>
         <p class="mt-3 text-lg text-muted">
             Who takes part in Local Goods and how much employer money was spent at independent businesses in the BID.
             Only cleared redemptions count; anything held by Redemption Fraud Detection waits for your decision first.
@@ -15,23 +15,23 @@
     <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <x-card>
             <dt class="text-sm font-semibold text-muted">Employers</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ $employers }}</dd>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ $employers }}</dd>
             <dd class="mt-1 text-sm text-muted">{{ $staff }} staff in all</dd>
         </x-card>
         <x-card>
             <dt class="text-sm font-semibold text-muted">Employees active this month</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ $activeEmployees }} <span class="text-xl text-muted">of {{ $enrolled }}</span></dd>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ $activeEmployees }} <span class="text-xl text-muted">of {{ $enrolled }}</span></dd>
             <dd class="mt-1 text-sm text-muted">Enrolled employees with a cleared redemption since {{ $month->format('M') }} 1</dd>
         </x-card>
         <x-card>
             <dt class="text-sm font-semibold text-muted">Participating merchants</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ $merchants }}</dd>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ $merchants }}</dd>
             <dd class="mt-1 text-sm text-muted">Fictional demo businesses</dd>
         </x-card>
         <x-card tone="night">
-            <dt class="text-sm font-semibold text-sage">Spent at independent merchants</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($monthCents) }}</dd>
-            <dd class="mt-1 text-sm text-sage">this month · {{ Money::format($allTimeCents) }} since launch</dd>
+            <dt class="text-sm font-semibold text-night-muted">Spent at independent merchants</dt>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-night-accent">{{ Money::format($monthCents) }}</dd>
+            <dd class="mt-1 text-sm text-night-muted">this month · {{ Money::format($allTimeCents) }} since launch</dd>
         </x-card>
     </dl>
     <p class="-mt-6 text-sm text-muted">
@@ -42,10 +42,10 @@
     </p>
 
     <section aria-labelledby="roster-heading">
-        <h2 id="roster-heading" class="text-2xl font-semibold text-forest">Merchant roster</h2>
+        <h2 id="roster-heading" class="text-2xl font-semibold text-primary">Merchant roster</h2>
         <p class="mt-1 text-sm text-muted">
             The businesses that accept Local Goods credits. All are fictional in this demo; real businesses under review are on
-            <a href="{{ route('bid-admin.merchants') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Merchant eligibility</a>.
+            <a href="{{ route('bid-admin.merchants') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Merchant eligibility</a>.
         </p>
 
         @if ($roster->isEmpty())

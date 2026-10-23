@@ -4,8 +4,8 @@
              :context="$bid->name.' BID · '.$bid->city">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">{{ $bid->name }} BID · {{ $bid->city }}</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Redemption Fraud Detection</h1>
+        <x-eyebrow class="text-accent-ink">{{ $bid->name }} BID · {{ $bid->city }}</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Redemption Fraud Detection</h1>
         <p class="mt-3 text-lg text-muted">
             Every new redemption is scored by AI from anonymous signals (no names) before any merchant is paid.
             The AI can be wrong, so a held redemption is never approved or denied automatically: a person at the BID decides.
@@ -18,7 +18,7 @@
                 : 'Stripe isn\'t connected on this server: approving a redemption records what the merchant is owed, and payouts are simulated.' }}
         </p>
         <p class="mt-3">
-            <a href="{{ route('bid-admin.eval') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
+            <a href="{{ route('bid-admin.eval') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                 How often does the AI agree with a person? See the eval results <span aria-hidden="true">→</span>
             </a>
         </p>
@@ -47,7 +47,7 @@
         <dl class="grid w-full grid-cols-2 gap-3 sm:w-md">
             <x-card padding="p-4 sm:p-5">
                 <dt class="text-sm font-semibold text-muted">AI-scored redemptions</dt>
-                <dd class="tabular mt-1 font-display text-4xl font-semibold text-forest">{{ $scoredCount }}</dd>
+                <dd class="tabular mt-1 font-display text-4xl font-semibold text-primary">{{ $scoredCount }}</dd>
             </x-card>
             <div class="rounded-2xl bg-hold-bg p-4 sm:p-5">
                 <dt class="text-sm font-semibold text-hold">Under review</dt>
@@ -75,7 +75,7 @@
     </div>
 
     <section aria-labelledby="recent-heading">
-        <h2 id="recent-heading" class="text-2xl font-semibold text-forest">Recent redemptions</h2>
+        <h2 id="recent-heading" class="text-2xl font-semibold text-primary">Recent redemptions</h2>
         @if ($redemptions->isEmpty())
             <x-card class="mt-3 border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-10">
                 <p class="font-semibold">No redemptions yet.</p>
@@ -148,14 +148,14 @@
                         </div>
                         @can('review', $redemption)
                             @php $bag = $errors->getBag("review{$redemption->id}"); @endphp
-                            <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}" data-busy="Saving your decision…" class="mt-3 space-y-3 rounded-xl border border-hold/30 bg-paper p-4">
+                            <form method="POST" action="{{ route('bid-admin.approve', $redemption) }}" data-busy="Saving your decision…" class="mt-3 space-y-3 rounded-xl border border-hold/30 bg-surface p-4">
                                 @csrf
                                 <div class="space-y-1.5">
                                     <label for="reason-{{ $redemption->id }}" class="block font-semibold">Reason for your decision <span class="font-normal text-muted">(required, kept with the decision)</span></label>
                                     <textarea id="reason-{{ $redemption->id }}" name="reason" rows="2" required minlength="5" maxlength="500"
                                               aria-describedby="reason-{{ $redemption->id }}-hint{{ $bag->has('reason') ? ' reason-'.$redemption->id.'-error' : '' }}"
                                               @if ($bag->has('reason')) aria-invalid="true" @endif
-                                              class="block w-full rounded-xl border-2 {{ $bag->has('reason') ? 'border-hold' : 'border-muted' }} bg-paper px-3 py-2 focus-visible:border-forest">{{ $bag->any() ? old('reason') : '' }}</textarea>
+                                              class="block w-full rounded-xl border-2 {{ $bag->has('reason') ? 'border-hold' : 'border-muted' }} bg-surface px-3 py-2 focus-visible:border-primary">{{ $bag->any() ? old('reason') : '' }}</textarea>
                                     <p id="reason-{{ $redemption->id }}-hint" class="text-sm text-muted">For example: "Regular customer, receipt checked with the merchant." 5 to 500 characters.</p>
                                     @if ($bag->has('reason'))
                                         <p id="reason-{{ $redemption->id }}-error" class="text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $bag->first('reason') }}</p>
@@ -165,7 +165,7 @@
                                     <legend class="font-semibold">If you deny it, where does the credit go?</legend>
                                     @foreach (\App\Enums\DenialReason::cases() as $why)
                                         <label class="flex items-start gap-2 text-sm">
-                                            <input type="radio" name="denial" value="{{ $why->value }}" class="mt-0.5 size-5 shrink-0 accent-forest" @checked($bag->any() && old('denial') === $why->value)>
+                                            <input type="radio" name="denial" value="{{ $why->value }}" class="mt-0.5 size-5 shrink-0 accent-primary" @checked($bag->any() && old('denial') === $why->value)>
                                             <span>{{ $why->label() }}</span>
                                         </label>
                                     @endforeach
@@ -175,7 +175,7 @@
                                 </fieldset>
                                 <div class="flex flex-wrap gap-2">
                                     <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
-                                    <x-button type="submit" size="sm" variant="danger" class="bg-paper" formaction="{{ route('bid-admin.deny', $redemption) }}" aria-label="Deny {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Deny</x-button>
+                                    <x-button type="submit" size="sm" variant="danger" class="bg-surface" formaction="{{ route('bid-admin.deny', $redemption) }}" aria-label="Deny {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Deny</x-button>
                                 </div>
                                 <p class="text-sm text-muted">Approve pays the merchant (one transfer, never two). Deny means no transfer, ever.</p>
                             </form>

@@ -16,16 +16,16 @@
              :context="$bid->name.' BID · '.$bid->city">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">{{ $bid->name }} BID · {{ $bid->city }}</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Merchant Eligibility Matching</h1>
+        <x-eyebrow class="text-accent-ink">{{ $bid->name }} BID · {{ $bid->city }}</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Merchant Eligibility Matching</h1>
         <p class="mt-3 text-lg text-muted">
             Real businesses inside the BID, taken from DC's public business licenses. For each one the AI says whether it
             looks independent under the rule, how sure it is, and why. A person at the BID makes the decision.
         </p>
-        <p class="mt-4 rounded-2xl border-2 border-amber bg-paper p-4 font-semibold">
+        <p class="mt-4 rounded-2xl border-2 border-accent bg-surface p-4 font-semibold">
             {{ $candidateLabel }} Every business on this page is a candidate only. Approving records a decision; it does not sign the business up or move any money.
         </p>
-        <p class="mt-3 rounded-2xl bg-forest-tint p-4">
+        <p class="mt-3 rounded-2xl bg-primary-tint p-4">
             <span class="font-semibold">{{ config('eligibility.policy') }}</span>
             Nothing here is approved until a BID admin presses Approve, and every decision is logged with who and when.
         </p>
@@ -34,7 +34,7 @@
             It saw only each business's name, address, category and license activity.
         </p>
         <p class="mt-3">
-            <a href="{{ route('eval.merchants') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
+            <a href="{{ route('eval.merchants') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                 How often does the AI agree with hand labels? See the merchant eval <span aria-hidden="true">→</span>
             </a>
         </p>
@@ -43,27 +43,27 @@
     <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <x-card padding="p-4 sm:p-5">
             <dt class="text-sm font-semibold text-muted">Assessed by the AI</dt>
-            <dd class="tabular mt-1 font-display text-4xl font-semibold text-forest">{{ $totals['assessed'] }}</dd>
+            <dd class="tabular mt-1 font-display text-4xl font-semibold text-primary">{{ $totals['assessed'] }}</dd>
             <dd class="text-sm text-muted">of {{ $totals['candidates'] }} candidates</dd>
         </x-card>
         <x-card padding="p-4 sm:p-5">
             <dt class="text-sm font-semibold text-muted">AI flagged for a person</dt>
-            <dd class="tabular mt-1 font-display text-4xl font-semibold text-forest">{{ $totals['needs_review'] }}</dd>
+            <dd class="tabular mt-1 font-display text-4xl font-semibold text-primary">{{ $totals['needs_review'] }}</dd>
         </x-card>
         <x-card padding="p-4 sm:p-5">
             <dt class="text-sm font-semibold text-muted">Waiting for a decision</dt>
-            <dd class="tabular mt-1 font-display text-4xl font-semibold text-forest">{{ $totals['by_status']['waiting'] }}</dd>
+            <dd class="tabular mt-1 font-display text-4xl font-semibold text-primary">{{ $totals['by_status']['waiting'] }}</dd>
         </x-card>
         <x-card padding="p-4 sm:p-5">
             <dt class="text-sm font-semibold text-muted">Approved · rejected · needs research</dt>
-            <dd class="tabular mt-1 font-display text-2xl font-semibold text-forest">
+            <dd class="tabular mt-1 font-display text-2xl font-semibold text-primary">
                 {{ $totals['by_status']['approve'] }} · {{ $totals['by_status']['reject'] }} · {{ $totals['by_status']['needs_research'] }}
             </dd>
         </x-card>
     </dl>
 
     <section aria-labelledby="by-class-heading">
-        <h2 id="by-class-heading" class="text-2xl font-semibold text-forest">The AI's answers</h2>
+        <h2 id="by-class-heading" class="text-2xl font-semibold text-primary">The AI's answers</h2>
         <ul class="mt-3 flex flex-wrap gap-2">
             @foreach ($totals['by_classification'] as $class => $count)
                 <li><x-badge :tone="$classTone($class)">{{ MerchantEvalReport::CLASS_NAMES[$class] }}: {{ $count }}</x-badge></li>
@@ -73,7 +73,7 @@
 
     @if (! $showNames)
         <x-card tone="band">
-            <h2 class="text-xl font-semibold text-forest">Business names are hidden on this account</h2>
+            <h2 class="text-xl font-semibold text-primary">Business names are hidden on this account</h2>
             <p class="mt-2">
                 These are real businesses that have not joined Local Goods, and this shared access link is public, so it shows totals only.
                 Named reviewers see each business with the AI's reasoning. Ask the project owner for your own link to see them.
@@ -85,7 +85,7 @@
         </x-card>
     @else
         <section aria-labelledby="queue-heading">
-            <h2 id="queue-heading" class="text-2xl font-semibold text-forest">Candidates</h2>
+            <h2 id="queue-heading" class="text-2xl font-semibold text-primary">Candidates</h2>
             <p class="mt-1 text-sm text-muted">Waiting first, with the ones the AI flagged for a person at the top.</p>
             <ul class="mt-3 space-y-3">
                 @foreach ($items as $item)
@@ -94,12 +94,12 @@
                         $a = $item['assessment'];
                         $latest = $item['latest'];
                     @endphp
-                    <x-card as="li" id="candidate-{{ $item['id'] }}" @class(['scroll-mt-24 border-l-4', 'border-l-amber' => ! $latest, 'border-l-ok' => $latest?->decision === 'approve', 'border-l-hold' => $latest?->decision === 'reject', 'border-l-muted' => $latest?->decision === 'needs_research'])>
+                    <x-card as="li" id="candidate-{{ $item['id'] }}" @class(['scroll-mt-24 border-l-4', 'border-l-accent' => ! $latest, 'border-l-ok' => $latest?->decision === 'approve', 'border-l-hold' => $latest?->decision === 'reject', 'border-l-muted' => $latest?->decision === 'needs_research'])>
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div>
                                 <p class="font-display text-xl font-semibold">{{ $c['name'] }}</p>
                                 <p class="text-sm text-muted">{{ $c['address'] }} · {{ ucfirst($c['category']) }}@if ($c['business_activity']) · license: {{ $c['business_activity'] }}@endif</p>
-                                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-amber-ink">{{ $candidateLabel }}</p>
+                                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-accent-ink">{{ $candidateLabel }}</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 @if ($a['eligible'])
@@ -128,19 +128,19 @@
                         </div>
 
                         @can('decide-merchant-eligibility')
-                            <form method="POST" action="{{ route('bid-admin.merchants.decide', $item['id']) }}" data-busy="Saving your decision…" class="mt-5 rounded-xl bg-cream-deep p-4">
+                            <form method="POST" action="{{ route('bid-admin.merchants.decide', $item['id']) }}" data-busy="Saving your decision…" class="mt-5 rounded-xl bg-band p-4">
                                 @csrf
                                 <label for="note-{{ $item['id'] }}" class="text-sm font-semibold">Note (optional, saved with your decision)</label>
                                 <textarea id="note-{{ $item['id'] }}" name="note" rows="2" maxlength="1000"
-                                          class="mt-1 block w-full rounded-lg border border-line bg-paper p-2"></textarea>
+                                          class="mt-1 block w-full rounded-lg border border-line bg-surface p-2"></textarea>
                                 <div class="mt-3 flex flex-wrap gap-2">
                                     <x-button type="submit" size="sm" name="decision" value="approve" aria-label="Approve {{ $c['name'] }} as eligible">Approve</x-button>
-                                    <x-button type="submit" size="sm" variant="danger" class="bg-paper" name="decision" value="reject" aria-label="Reject {{ $c['name'] }}">Reject</x-button>
+                                    <x-button type="submit" size="sm" variant="danger" class="bg-surface" name="decision" value="reject" aria-label="Reject {{ $c['name'] }}">Reject</x-button>
                                     <x-button type="submit" size="sm" variant="secondary" name="decision" value="needs_research" aria-label="Needs research: {{ $c['name'] }}">Needs research</x-button>
                                 </div>
                             </form>
                         @else
-                            <p class="mt-5 rounded-xl bg-cream-deep p-4 text-sm">Read-only: a BID admin approves, rejects or asks for more research here.</p>
+                            <p class="mt-5 rounded-xl bg-band p-4 text-sm">Read-only: a BID admin approves, rejects or asks for more research here.</p>
                         @endcan
 
                         @if ($item['decisions']->isNotEmpty())
