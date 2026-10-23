@@ -17,7 +17,9 @@ class JudgeLandingTest extends TestCase
         $this->signIn(Role::Judge);
 
         $page = $this->get('/judge')->assertOk()
-            ->assertSee('What Local Goods is')
+            ->assertSee('Why Local Goods exists')
+            ->assertDontSee('What Local Goods is')
+            ->assertSee('commute in, sit at a desk, commute out')
             ->assertSee('Redemption Fraud Detection')
             ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Merchant eligibility check', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
             ->assertDontSee('Coming in a later build')

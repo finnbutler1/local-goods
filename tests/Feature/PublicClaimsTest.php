@@ -115,6 +115,14 @@ class PublicClaimsTest extends TestCase
         $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, file_get_contents(base_path('README.md')));
     }
 
+    public function test_the_old_what_local_goods_is_heading_is_gone(): void
+    {
+        foreach ($this->publicPages() as $where => $text) {
+            $this->assertStringNotContainsStringIgnoringCase('What Local Goods is', $text, $where);
+        }
+        $this->assertStringNotContainsStringIgnoringCase('What Local Goods is', file_get_contents(base_path('README.md')));
+    }
+
     public function test_no_public_page_says_stripe_is_missing_or_live(): void
     {
         foreach ($this->publicPages() as $where => $text) {
