@@ -221,9 +221,11 @@
         <x-card class="space-y-3">
             <h3 class="text-xl font-semibold">Working</h3>
             <p class="text-sm text-muted">Every form that posts has <code>data-busy="…"</code>. When it is sent, the pressed button shows that text, can't be pressed again, and a screen reader hears it. Say what is happening: "Checking with Redemption Fraud Detection…", not "Loading".</p>
+            <p class="text-sm text-muted">Every button: pointer, a hover color, pressed (darker and 1px down), loading (spinner, only when motion is allowed, plus the busy text) and unavailable (grey, never see-through). A second press is cancelled and the form's submit buttons are disabled a moment later.</p>
             <div class="flex flex-wrap gap-3">
                 <x-button variant="accent">Confirm redemption</x-button>
-                <x-button variant="accent" aria-disabled="true">Checking with Redemption Fraud Detection…</x-button>
+                <x-button variant="accent" aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Checking with Redemption Fraud Detection…</x-button>
+                <x-button disabled>Unavailable</x-button>
             </div>
         </x-card>
 

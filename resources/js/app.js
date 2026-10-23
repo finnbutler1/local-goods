@@ -114,12 +114,16 @@ document.querySelectorAll('[data-toast]').forEach((toast) => {
 });
 
 // Slow submits: <form data-busy="Checking…">. While the next page loads, the
-// pressed button says what is happening and can't be pressed again, and a
-// screen reader hears the same words. Nothing about what is sent changes.
+// pressed button shows a spinner and says what is happening, and a screen
+// reader hears the same words. A second submit is cancelled straight away;
+// one tick later every submit button in the form is disabled for real. Not
+// during the submit event itself: a disabled button's name and value would
+// be left out of what is sent. Nothing about what is sent changes.
 const busyStatus = document.createElement('p');
 busyStatus.setAttribute('role', 'status');
 busyStatus.className = 'sr-only';
 document.body.append(busyStatus);
+const submitButtons = (form) => [...form.elements].filter((el) => el.type === 'submit');
 document.addEventListener('submit', (event) => {
     const form = event.target.closest('form[data-busy]');
     if (!form || event.defaultPrevented) return;
@@ -132,9 +136,18 @@ document.addEventListener('submit', (event) => {
     if (button) {
         button.dataset.idleLabel = button.innerHTML;
         button.setAttribute('aria-disabled', 'true');
-        button.textContent = form.dataset.busy;
+        button.setAttribute('aria-busy', 'true');
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner';
+        spinner.setAttribute('aria-hidden', 'true');
+        button.replaceChildren(spinner, form.dataset.busy);
     }
     busyStatus.textContent = form.dataset.busy;
+    setTimeout(() => submitButtons(form).forEach((other) => {
+        if (other.disabled) return;
+        other.disabled = true;
+        other.dataset.disabledWhileBusy = '';
+    }));
 });
 // Back button: the browser may restore this page as it was left, mid-submit.
 window.addEventListener('pageshow', (event) => {
@@ -143,7 +156,12 @@ window.addEventListener('pageshow', (event) => {
     document.querySelectorAll('[data-idle-label]').forEach((button) => {
         button.innerHTML = button.dataset.idleLabel;
         button.removeAttribute('aria-disabled');
+        button.removeAttribute('aria-busy');
         delete button.dataset.idleLabel;
+    });
+    document.querySelectorAll('[data-disabled-while-busy]').forEach((button) => {
+        button.disabled = false;
+        delete button.dataset.disabledWhileBusy;
     });
     busyStatus.textContent = '';
 });
