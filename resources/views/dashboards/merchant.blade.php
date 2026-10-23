@@ -4,14 +4,14 @@
              :context="($merchant?->name ?? 'Merchant').' · Golden Triangle BID'">
 @if ($merchant === null)
     <x-card as="section" aria-labelledby="empty-heading" class="border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-12">
-        <h1 id="empty-heading" class="text-2xl font-semibold text-forest">No business is linked to this login yet</h1>
+        <h1 id="empty-heading" class="text-2xl font-semibold text-primary">No business is linked to this login yet</h1>
         <p class="mx-auto mt-2 max-w-md text-muted">Once the BID adds your business to Local Goods, your sales and payouts appear here. Ask the BID team if you expected to see them.</p>
     </x-card>
 @else
 <div class="space-y-10">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Merchant dashboard · {{ $merchant->name }}</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">Your Local Goods sales</h1>
+        <x-eyebrow class="text-accent-ink">Merchant dashboard · {{ $merchant->name }}</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Your Local Goods sales</h1>
         <p class="mt-3 text-lg text-muted">
             Customers from employers in the BID pay with Local Goods credits. You're owed a redemption once it clears.
             @if ($stripe)
@@ -20,16 +20,16 @@
                 Stripe isn't connected on this server, so payouts are simulated: recorded in the ledger, no money moves.
             @endif
         </p>
-        <p class="mt-3"><a href="{{ route('merchant.menu') }}" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">See and change your menu</a> ({{ $merchant->products()->count() }} {{ Str::plural('product', $merchant->products()->count()) }})</p>
+        <p class="mt-3"><a href="{{ route('merchant.menu') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">See and change your menu</a> ({{ $merchant->products()->count() }} {{ Str::plural('product', $merchant->products()->count()) }})</p>
         <x-money-mode class="mt-3" />
     </header>
 
     <dl class="grid gap-3 sm:grid-cols-3">
         <x-card tone="night">
-            <dt class="text-sm font-semibold text-sage">Owed to you now</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($owedCents) }}</dd>
-            <dd class="mt-1 text-sm text-sage">Cleared redemptions not yet paid out</dd>
-            <dd class="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 border-t border-sage/40 pt-3 text-sm text-cream">
+            <dt class="text-sm font-semibold text-night-muted">Owed to you now</dt>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-night-accent">{{ Money::format($owedCents) }}</dd>
+            <dd class="mt-1 text-sm text-night-muted">Cleared redemptions not yet paid out</dd>
+            <dd class="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 border-t border-night-line/40 pt-3 text-sm text-on-night">
                 <span>Owed via Stripe test mode</span><span class="tabular text-right font-semibold" data-owed="stripe">{{ Money::format($owedStripeCents) }}</span>
                 <span>Owed, simulated</span><span class="tabular text-right font-semibold" data-owed="simulated">{{ Money::format($owedSimulatedCents) }}</span>
             </dd>
@@ -43,14 +43,14 @@
         </div>
         <x-card>
             <dt class="text-sm font-semibold text-muted">Cleared sales this month</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-forest">{{ Money::format($monthCents) }}</dd>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ Money::format($monthCents) }}</dd>
             <dd class="mt-1 text-sm text-muted">{{ $monthVisits }} cleared {{ Str::plural('visit', $monthVisits) }} · {{ Money::format($paidOutCents) }} paid out in all</dd>
         </x-card>
     </dl>
 
     <div class="grid gap-6 lg:grid-cols-5">
         <section id="received" aria-labelledby="received-heading" class="scroll-mt-24 lg:col-span-3">
-            <h2 id="received-heading" class="text-2xl font-semibold text-forest">Redemptions received</h2>
+            <h2 id="received-heading" class="text-2xl font-semibold text-primary">Redemptions received</h2>
             <p class="mt-1 text-sm text-muted">
                 {{ $showAll ? 'All '.$receivedCount : 'The newest '.min($receivedCount, \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT).' of '.$receivedCount }}, newest first. Customers are shown by initials only.
             </p>
@@ -83,15 +83,15 @@
                 @endforelse
             </x-card>
             @if (! $showAll && $receivedCount > $received->count())
-                <p class="mt-3"><a href="{{ route('merchant.dashboard', ['all' => 1]) }}#received" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show all {{ $receivedCount }} redemptions</a></p>
+                <p class="mt-3"><a href="{{ route('merchant.dashboard', ['all' => 1]) }}#received" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $receivedCount }} redemptions</a></p>
             @elseif ($showAll && $receivedCount > \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT)
-                <p class="mt-3"><a href="{{ route('merchant.dashboard') }}#received" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show the newest {{ \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT }} only</a></p>
+                <p class="mt-3"><a href="{{ route('merchant.dashboard') }}#received" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show the newest {{ \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT }} only</a></p>
             @endif
         </section>
 
         <section aria-labelledby="payouts-heading" class="space-y-8 lg:col-span-2">
             <div id="stripe" class="scroll-mt-24">
-                <h2 class="text-2xl font-semibold text-forest">Stripe account</h2>
+                <h2 class="text-2xl font-semibold text-primary">Stripe account</h2>
                 <x-card class="mt-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <p class="font-semibold" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">{{ $merchant->stripeOnboardingLabel() }}</p>
@@ -133,7 +133,7 @@
             </div>
 
             <div>
-            <h2 id="payouts-heading" class="text-2xl font-semibold text-forest">Payout history</h2>
+            <h2 id="payouts-heading" class="text-2xl font-semibold text-primary">Payout history</h2>
             <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer (with its id), or simulated (recorded in the ledger, no money moved).</p>
             <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
                 @forelse ($payouts as $payout)

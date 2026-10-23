@@ -1,17 +1,17 @@
-@php $input = 'block w-full rounded-xl border-2 bg-paper px-3 py-3 focus-visible:border-forest'; @endphp
+@php $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary'; @endphp
 
 <x-app-shell title="Account" active="account">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Your account</p>
-        <h1 class="mt-1 text-4xl font-semibold text-forest sm:text-5xl">{{ auth()->user()->name }}</h1>
+        <x-eyebrow class="text-accent-ink">Your account</x-eyebrow>
+        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">{{ auth()->user()->name }}</h1>
         <p class="mt-3 text-lg text-muted break-all">{{ auth()->user()->email }}</p>
     </header>
 
     {{-- Reviewers have no password: they sign in with their magic link. --}}
     @unless (auth()->user()->isReadOnly())
     <x-card as="section" aria-labelledby="password-heading" class="max-w-xl">
-        <h2 id="password-heading" class="text-2xl font-semibold text-forest">Change your password</h2>
+        <h2 id="password-heading" class="text-2xl font-semibold text-primary">Change your password</h2>
         <form method="POST" action="{{ route('user-password.update') }}" data-busy="Saving…" class="mt-4 space-y-5">
             @csrf
             @method('PUT')
@@ -37,7 +37,7 @@
     @endunless
 
     <section aria-labelledby="my-feedback-heading">
-        <h2 id="my-feedback-heading" class="text-2xl font-semibold text-forest">Your feedback</h2>
+        <h2 id="my-feedback-heading" class="text-2xl font-semibold text-primary">Your feedback</h2>
         @if ($feedback->isEmpty())
             <p class="mt-2 text-muted">Nothing yet. Use the Feedback button on any page.</p>
         @else
@@ -54,7 +54,7 @@
                             <p class="mt-2 text-sm text-muted">Fixed in commit <code class="font-mono">{{ $item->fixed_commit_sha }}</code></p>
                         @endif
                         <details class="mt-3" @if ($errors->getBag('feedback-'.$item->id)->any()) open @endif>
-                            <summary class="cursor-pointer text-sm font-semibold text-forest">Edit</summary>
+                            <summary class="cursor-pointer text-sm font-semibold text-primary">Edit</summary>
                             <form method="POST" action="{{ route('feedback.update', $item) }}" data-busy="Saving…" class="mt-3 space-y-4">
                                 @csrf
                                 @method('PATCH')

@@ -20,7 +20,7 @@
                     @if ($approved)
                         <span class="absolute inset-0 rounded-full bg-ok opacity-30 motion-safe:animate-ping" aria-hidden="true"></span>
                     @endif
-                    <span @class(['relative grid size-16 place-items-center rounded-full text-cream', 'bg-ok' => $approved, 'bg-hold' => ! $approved]) aria-hidden="true">
+                    <span @class(['relative grid size-16 place-items-center rounded-full text-on-night', 'bg-ok' => $approved, 'bg-hold' => ! $approved]) aria-hidden="true">
                         @if ($approved)
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-9"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
                         @else
@@ -30,7 +30,7 @@
                 </span>
                 <h2 id="confirmation-heading" class="mt-3 font-display text-4xl font-semibold">{{ $approved ? 'Approved' : 'Under review' }}</h2>
                 @if ($approved)
-                    <p class="mt-2 inline-flex items-center gap-2 rounded-full bg-paper px-3 py-1 text-sm font-semibold text-ink">
+                    <p class="mt-2 inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
                         <span class="relative flex size-2.5" aria-hidden="true">
                             <span class="absolute inline-flex size-full rounded-full bg-ok opacity-60 motion-safe:animate-ping"></span>
                             <span class="relative inline-flex size-2.5 rounded-full bg-ok"></span>
@@ -56,24 +56,23 @@
                         Your credits are reserved meanwhile, and come back to you if it isn't approved.
                     @endif
                 </p>
-                <x-button :href="route('employee.wallet')" variant="secondary" class="mt-5 bg-paper">Done</x-button>
+                <x-button :href="route('employee.wallet')" variant="secondary" class="mt-5 bg-surface">Done</x-button>
             </section>
         @endif
     </div>
 
-    <section aria-labelledby="balance-heading" class="relative overflow-hidden rounded-3xl bg-forest p-6 text-cream shadow-[0_12px_30px_-12px_rgb(31_61_43/0.6)] sm:p-8">
-        <div class="awning absolute inset-x-0 top-0 h-1.5 opacity-60" aria-hidden="true"></div>
+    <section aria-labelledby="balance-heading" class="relative overflow-hidden rounded-3xl bg-night p-6 text-on-night shadow-[0_12px_30px_-12px_rgb(18_24_32/0.6)] sm:p-8">
         <div class="flex items-start justify-between gap-4">
-            <h1 id="balance-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-sage">Available balance</h1>
-            <span class="font-display text-sm font-semibold text-cream">Local Goods</span>
+            <h1 id="balance-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-night-muted">Available balance</h1>
+            <span class="font-display text-sm font-semibold text-on-night">Local Goods</span>
         </div>
-        <p class="tabular mt-3 font-display text-6xl font-semibold tracking-tight text-amber" data-testid="balance">{{ Money::format($balance) }}</p>
-        <p class="mt-4 text-sm text-sage">{{ Money::format($employee->employer->monthly_allowance_cents) }} added each month by {{ $employee->employer->name }}</p>
-        <p class="mt-1 text-sm text-sage">Demo account</p>
+        <p class="tabular mt-3 font-display text-6xl font-semibold tracking-tight text-night-accent" data-testid="balance">{{ Money::format($balance) }}</p>
+        <p class="mt-4 text-sm text-night-muted">{{ Money::format($employee->employer->monthly_allowance_cents) }} added each month by {{ $employee->employer->name }}</p>
+        <p class="mt-1 text-sm text-night-muted">Demo account</p>
     </section>
 
     <x-card as="section" id="redeem" aria-labelledby="redeem-heading" class="scroll-mt-24">
-        <h2 id="redeem-heading" class="text-2xl font-semibold text-forest">Redeem credits</h2>
+        <h2 id="redeem-heading" class="text-2xl font-semibold text-primary">Redeem credits</h2>
         <p class="mt-1 text-sm text-muted">Every redemption is checked by Redemption Fraud Detection before the merchant is paid.</p>
         <p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
             <x-money-mode />
@@ -94,7 +93,7 @@
                 <div>
                     <label for="merchant_id" class="block font-semibold">Merchant</label>
                     <select id="merchant_id" name="merchant" required
-                            class="mt-1.5 block w-full rounded-xl border-2 border-muted bg-paper px-3 py-3 text-ink focus-visible:border-forest"
+                            class="mt-1.5 block w-full rounded-xl border-2 border-muted bg-surface px-3 py-3 text-ink focus-visible:border-primary"
                             @error('merchant_id') aria-invalid="true" aria-describedby="merchant-error" @enderror>
                         <option value="">Choose a merchant</option>
                         @foreach ($merchants as $merchant)
@@ -119,7 +118,7 @@
                 <input type="hidden" name="merchant_id" value="{{ $menuMerchant->id }}">
                 <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <p class="text-lg font-semibold">At {{ $menuMerchant->name }}</p>
-                    <a href="{{ route('employee.wallet') }}#redeem" class="text-sm font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Change merchant</a>
+                    <a href="{{ route('employee.wallet') }}#redeem" class="text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Change merchant</a>
                 </div>
 
                 @if ($menu->isNotEmpty())
@@ -138,14 +137,14 @@
                                     </div>
                                     <div class="flex items-center gap-1">
                                         <button type="button" hidden data-step="-1" aria-controls="qty-{{ $product->id }}" aria-label="One fewer {{ $product->name }}"
-                                                class="grid size-11 place-items-center rounded-full border-2 border-forest text-xl font-semibold text-forest hover:bg-forest-tint">−</button>
+                                                class="grid size-11 place-items-center rounded-full border-2 border-primary text-xl font-semibold text-primary hover:bg-primary-tint">−</button>
                                         <input id="qty-{{ $product->id }}" name="items[{{ $product->id }}]" type="number" inputmode="numeric"
                                                min="0" max="{{ \App\Services\RedemptionBasket::MAX_QUANTITY }}" step="1"
                                                value="{{ (int) ($quantities[$product->id] ?? 0) }}" data-price="{{ $product->price_cents }}"
                                                @if ($product->description) aria-describedby="qty-{{ $product->id }}-hint" @endif
-                                               class="tabular w-16 rounded-xl border-2 border-muted bg-paper px-2 py-2 text-center text-lg text-ink focus-visible:border-forest">
+                                               class="tabular w-16 rounded-xl border-2 border-muted bg-surface px-2 py-2 text-center text-lg text-ink focus-visible:border-primary">
                                         <button type="button" hidden data-step="1" aria-controls="qty-{{ $product->id }}" aria-label="One more {{ $product->name }}"
-                                                class="grid size-11 place-items-center rounded-full border-2 border-forest text-xl font-semibold text-forest hover:bg-forest-tint">+</button>
+                                                class="grid size-11 place-items-center rounded-full border-2 border-primary text-xl font-semibold text-primary hover:bg-primary-tint">+</button>
                                     </div>
                                 </li>
                             @endforeach
@@ -156,7 +155,7 @@
 
                 <div>
                     <label for="amount" class="block font-semibold">{{ $menu->isNotEmpty() ? 'Other amount (optional)' : 'Amount' }}</label>
-                    <div class="mt-1.5 flex items-center rounded-xl border-2 border-muted bg-paper focus-within:border-forest focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-amber">
+                    <div class="mt-1.5 flex items-center rounded-xl border-2 border-muted bg-surface focus-within:border-primary focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent">
                         <span class="pl-3 font-display text-lg text-muted" aria-hidden="true">$</span>
                         <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" @if ($menu->isEmpty()) required @endif
                                value="{{ old('amount', $prefill['amount']) }}" placeholder="0.00" data-basket-other
@@ -168,7 +167,7 @@
                     @error('amount') <p id="amount-error" class="mt-1.5 text-sm font-semibold text-hold">{{ $message }}</p> @enderror
                 </div>
 
-                <p hidden data-basket-summary class="flex items-baseline justify-between rounded-xl bg-forest-tint px-4 py-3 text-forest" aria-live="polite">
+                <p hidden data-basket-summary class="flex items-baseline justify-between rounded-xl bg-primary-tint px-4 py-3 text-primary" aria-live="polite">
                     <span class="font-semibold">Total</span>
                     <span class="tabular font-display text-2xl font-semibold" data-basket-total>$0.00</span>
                 </p>
@@ -189,14 +188,14 @@
     </x-card>
 
     <section id="browse" aria-labelledby="browse-heading" class="scroll-mt-24">
-        <h2 id="browse-heading" class="text-2xl font-semibold text-forest">Where you can spend</h2>
+        <h2 id="browse-heading" class="text-2xl font-semibold text-primary">Where you can spend</h2>
         <p class="mt-1 text-sm text-muted">Independent businesses in the Golden Triangle BID. All are fictional in this demo.</p>
 
         <form method="GET" action="{{ route('employee.wallet') }}#browse" role="search" class="mt-3 flex gap-2">
             @if ($category !== '')<input type="hidden" name="category" value="{{ $category }}">@endif
             <label for="merchant-search" class="sr-only">Search merchants</label>
             <input id="merchant-search" name="q" type="search" value="{{ $search }}" placeholder="Search by name or street"
-                   class="min-w-0 flex-1 rounded-xl border-2 border-muted bg-paper px-3 py-2.5 focus-visible:border-forest">
+                   class="min-w-0 flex-1 rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary">
             <x-button type="submit" size="sm">Search</x-button>
         </form>
 
@@ -205,7 +204,7 @@
                 <li>
                     <a href="{{ route('employee.wallet', array_filter(['category' => $value, 'q' => $search])) }}#browse"
                        @if ($category === (string) $value) aria-current="true" @endif
-                       class="inline-block rounded-full border-2 border-forest px-3.5 py-1.5 text-sm font-semibold text-forest hover:bg-forest-tint aria-[current=true]:bg-forest aria-[current=true]:text-cream">{{ $label }}</a>
+                       class="inline-block rounded-full border-2 border-primary px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-tint aria-[current=true]:bg-primary aria-[current=true]:text-on-primary">{{ $label }}</a>
                 </li>
             @endforeach
         </ul>
@@ -213,16 +212,16 @@
         @if ($browse->isEmpty())
             <x-card class="mt-3 text-muted">
                 No merchants match{{ $search !== '' ? ' "'.$search.'"' : '' }}{{ $category !== '' ? ' in '.$category : '' }}.
-                <a href="{{ route('employee.wallet') }}#browse" class="font-semibold text-forest underline underline-offset-4">Show all merchants</a>
+                <a href="{{ route('employee.wallet') }}#browse" class="font-semibold text-primary underline underline-offset-4">Show all merchants</a>
             </x-card>
         @else
             <ul class="mt-3 grid gap-3 sm:grid-cols-2">
                 @foreach ($browse as $merchant)
-                    <x-card as="li" padding="p-4" class="flex flex-col">
+                    <x-card as="li" padding="p-4 pl-6" class="merchant-rail flex flex-col">
                         <p class="font-semibold">{{ $merchant->name }}</p>
                         <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
                         <a href="{{ route('employee.wallet', ['merchant' => $merchant->id]) }}#redeem"
-                           class="mt-2 self-start text-sm font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">
+                           class="mt-2 self-start text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                             Redeem here<span class="sr-only"> at {{ $merchant->name }}</span>
                         </a>
                     </x-card>
@@ -232,7 +231,7 @@
     </section>
 
     <section aria-labelledby="recent-heading">
-        <h2 id="recent-heading" class="text-2xl font-semibold text-forest">Recent redemptions</h2>
+        <h2 id="recent-heading" class="text-2xl font-semibold text-primary">Recent redemptions</h2>
         <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
             @forelse ($recent as $redemption)
                 <li class="flex items-center justify-between gap-3 px-5 py-4">
@@ -258,7 +257,7 @@
     </section>
 
     <section id="history" aria-labelledby="history-heading" class="scroll-mt-24">
-        <h2 id="history-heading" class="text-2xl font-semibold text-forest">Transaction history</h2>
+        <h2 id="history-heading" class="text-2xl font-semibold text-primary">Transaction history</h2>
         <p class="mt-1 text-sm text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
         <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
             @forelse ($history as $row)
@@ -279,7 +278,7 @@
             @endforelse
         </x-card>
         @if (! $showAllHistory && $historyCount > $history->count())
-            <p class="mt-3"><a href="{{ route('employee.wallet', ['history' => 1]) }}#history" class="font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest">Show all {{ $historyCount }} transactions</a></p>
+            <p class="mt-3"><a href="{{ route('employee.wallet', ['history' => 1]) }}#history" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $historyCount }} transactions</a></p>
         @endif
     </section>
 </div>
