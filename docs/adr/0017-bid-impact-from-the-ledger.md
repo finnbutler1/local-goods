@@ -1,6 +1,7 @@
 # 0017. BID impact numbers come from the ledger and roll up the HR dashboards
 
 **Status:** Accepted, implemented. Builds on [0012](0012-one-ledger-three-account-kinds.md) and [0014](0014-employer-program-pending-purchases-and-initials.md).
+Its "No multiplier claim" bullet is replaced by [0024](0024-mission-framing-and-the-labelled-3x-line.md).
 
 ## Context
 

@@ -510,11 +510,20 @@ candidates above are kept out of all of it.
 The BID impact page and the landing page strip count only cleared
 redemptions in the credit ledger, using the same definitions as the employer
 dashboard ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)). They
-are demo numbers, labelled as fictional. There is no "3x multiplier" claim. The one
-recirculation figure is an estimate from an outside study, labelled as such:
-Civic Economics, "Indie Impact Study Series: National Summary Report" (with
-the American Booksellers Association), data from 2011–2012, 134 businesses in
-10 U.S. communities, none in DC. Local Goods has not measured it here.
+are demo numbers, labelled as fictional.
+
+The landing page, the BID impact page and the README say that money spent at
+independent local businesses tends to recirculate roughly 3x more in the
+local economy than money spent at chains (the local multiplier). That is an
+estimate from an outside study, not measured by Local Goods, and it is always
+shown with that label and its source: Civic Economics, "Indie Impact Study
+Series: National Summary Report" (with the American Booksellers
+Association), data from 2011–2012, 134 businesses in 10 U.S. communities,
+none in DC. Independents recirculated 52.3% of their revenue locally, chains
+15.8%: about 3.3 times as much. Local Goods has not measured it here; real
+results would be measured in a pilot. Nothing says Local Goods creates the
+effect, and a test fails if the line appears without its label and source
+([ADR 0024](docs/adr/0024-mission-framing-and-the-labelled-3x-line.md)).
 
 ### Accessibility
 
