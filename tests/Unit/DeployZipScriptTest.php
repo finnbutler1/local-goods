@@ -31,9 +31,23 @@ class DeployZipScriptTest extends TestCase
 
         $this->assertMatchesRegularExpression('/rm -rf public\/build\s+npm run build/', $script);
         $this->assertStringContainsString('public/build/manifest.json is missing', $script);
-        $this->assertStringContainsString('fraunces-latin-opsz-normal', $script);
-        $this->assertStringContainsString('public-sans-latin-wght-normal', $script);
+        $this->assertStringContainsString('self-hosted font $font.woff2 is not in the build', $script);
         $this->assertStringContainsString('deploy.zip is missing', $script);
         $this->assertStringNotContainsString('-x "public/build', $script, 'public/build must ship.');
+    }
+
+    public function test_script_requires_the_latin_file_of_every_font_the_site_imports(): void
+    {
+        $script = $this->script();
+        preg_match_all("#@import '@fontsource-variable/([a-z0-9-]+)/wght\.css';#", file_get_contents(__DIR__.'/../../resources/css/app.css'), $m);
+
+        $this->assertSame(['overpass', 'atkinson-hyperlegible-next'], $m[1], 'The fonts in app.css changed: update the deploy check too.');
+        preg_match('/foreach \(\[([^\]]*)\] as \$font\)/', $script, $list);
+        foreach ($m[1] as $font) {
+            $this->assertStringContainsString("\"{$font}-latin-wght-normal\"", $list[1] ?? '', "The deploy check must require {$font}'s latin file.");
+        }
+        foreach (['fraunces', 'public-sans'] as $retired) {
+            $this->assertStringNotContainsString($retired, $script, "{$retired} was replaced in ADR 0025.");
+        }
     }
 }
