@@ -226,9 +226,124 @@
         overflow-x: auto;
     }
 
-    /* Storefront awning stripe: the brand mark. */
+    /* Storefront awning stripe: the old brand mark, until the last pages move. */
     .awning {
         background-image: repeating-linear-gradient(90deg, var(--color-forest) 0 14px, var(--color-cream) 14px 28px);
+    }
+
+    /* Transit motif, used in three places only (ADR 0025): section eyebrows
+       (<x-eyebrow>), the landing hero's route line and merchant cards. */
+    .route-stop {
+        position: relative;
+        display: inline-block;
+        flex: none;
+        width: 1.5rem;
+        height: 0.75rem;
+    }
+
+    .route-stop::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0.375rem;
+        height: 3px;
+        margin-top: -1.5px;
+        border-radius: 2px;
+        background: var(--color-primary);
+    }
+
+    .route-stop::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 0;
+        width: 0.625rem;
+        height: 0.625rem;
+        margin-top: -0.3125rem;
+        border-radius: 50%;
+        background: var(--color-accent);
+    }
+
+    /* The day as a route: <ol class="route-line"> with one li.route-line-local.
+       The local stop is bigger and says "local stop", not only a color. */
+    .route-line {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr);
+        font-size: 0.8125rem;
+        color: var(--color-muted);
+    }
+
+    .route-line li {
+        position: relative;
+        padding-top: 1.6rem;
+        padding-right: 0.25rem;
+        line-height: 1.25;
+    }
+
+    .route-line li::before {
+        content: '';
+        position: absolute;
+        top: 0.5rem;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: var(--color-primary);
+    }
+
+    .route-line li:last-child::before {
+        right: auto;
+        width: 0.75rem;
+    }
+
+    .route-line li::after {
+        content: '';
+        position: absolute;
+        top: 0.3rem;
+        left: 0;
+        width: 0.8rem;
+        height: 0.8rem;
+        border-radius: 50%;
+        background: var(--color-ink);
+    }
+
+    .route-line .route-line-local {
+        color: var(--color-ink);
+    }
+
+    .route-line .route-line-local::after {
+        top: 0;
+        left: -0.25rem;
+        width: 1.4rem;
+        height: 1.4rem;
+        background: var(--color-accent);
+        box-shadow: 0 0 0 3px var(--color-page);
+    }
+
+    /* Merchant card: a teal rail on the left with a stop on it. */
+    .merchant-rail {
+        position: relative;
+        border-left: 5px solid var(--color-primary);
+    }
+
+    .merchant-rail::before {
+        content: '';
+        position: absolute;
+        top: 1.4rem;
+        left: -0.7rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: var(--color-accent);
+        box-shadow: 0 0 0 3px var(--color-surface);
+    }
+
+    .bg-night .route-stop::before {
+        background: var(--color-night-primary);
+    }
+
+    .bg-night .route-stop::after {
+        background: var(--color-night-accent);
     }
 }
 

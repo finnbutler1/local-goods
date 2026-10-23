@@ -2,11 +2,12 @@
 
 @php
     $tones = [
-        'neutral' => 'bg-cream-deep text-ink',
-        'forest' => 'bg-forest text-cream',
+        'neutral' => 'bg-band text-ink',
+        'primary' => 'bg-primary text-on-primary',
         'ok' => 'bg-ok-bg text-ok',
         'hold' => 'bg-hold-bg text-hold',
-        'amber' => 'bg-amber text-ink',
+        'danger' => 'bg-danger-bg text-danger',
+        'accent' => 'bg-accent text-on-accent',
     ];
 @endphp
 

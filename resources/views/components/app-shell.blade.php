@@ -96,7 +96,7 @@
                 <div class="flex min-w-0 items-center gap-3">
                     <div @class(['min-w-0 text-right', 'hidden sm:block' => $role === \App\Enums\Role::Judge])>
                         <p class="truncate text-sm font-semibold"><span class="sr-only">Signed in as </span>@if ($user)<a href="{{ route('account') }}" class="hover:underline underline-offset-4" title="Your account">{{ $userName }}</a>@else{{ $userName }}@endif</p>
-                        <x-badge tone="forest" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs)<span class="hidden sm:inline"> · viewing as {{ $viewAs->label() }}</span>@endif</x-badge>
+                        <x-badge tone="primary" class="mt-0.5"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs)<span class="hidden sm:inline"> · viewing as {{ $viewAs->label() }}</span>@endif</x-badge>
                     </div>
                     @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
                         <details class="relative">

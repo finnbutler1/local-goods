@@ -171,7 +171,7 @@
         <h2 id="credits-heading" class="text-2xl font-semibold text-forest">Credits</h2>
 
         <dl class="grid gap-3 sm:grid-cols-3">
-            <x-card tone="forest">
+            <x-card tone="night">
                 <dt class="text-sm font-semibold text-sage">Ready to give</dt>
                 <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($balance) }}</dd>
                 <dd class="mt-1 text-sm text-sage">Paid credits not yet given to employees</dd>

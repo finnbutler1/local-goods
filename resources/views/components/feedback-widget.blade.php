@@ -16,12 +16,12 @@
 </div>
 
 <dialog id="feedback-dialog" aria-labelledby="feedback-heading" @if ($hasErrors) data-open-on-load @endif
-        class="m-auto w-[min(100%-2rem,32rem)] rounded-2xl bg-paper p-0 text-ink shadow-xl backdrop:bg-ink/50">
+        class="m-auto w-[min(100%-2rem,32rem)] rounded-2xl bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/50">
     <form method="POST" action="{{ route('feedback.store') }}" data-busy="Sending…" class="space-y-4 p-6">
         @csrf
         <div class="flex items-start justify-between gap-4">
             <div>
-                <h2 id="feedback-heading" class="text-2xl font-semibold text-forest">Leave feedback</h2>
+                <h2 id="feedback-heading" class="text-2xl font-semibold text-primary">Leave feedback</h2>
                 <p class="mt-1 text-sm text-muted break-all">About this page: {{ request()->path() === '/' ? '/' : '/'.request()->path() }}</p>
             </div>
             <button type="button" data-dialog-close class="rounded-full p-1 text-muted hover:text-ink" aria-label="Close feedback form">

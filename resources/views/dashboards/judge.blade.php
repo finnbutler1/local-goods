@@ -10,7 +10,7 @@
         </header>
 
         @if ($adjudication && $adjudication['can_vote'])
-            <x-card as="section" tone="forest" aria-labelledby="adjudicate-heading" class="max-w-3xl">
+            <x-card as="section" tone="night" aria-labelledby="adjudicate-heading" class="max-w-3xl">
                 <h2 id="adjudicate-heading" class="text-2xl font-semibold text-cream">
                     <a href="{{ route('adjudication.show') }}" class="underline decoration-amber decoration-2 underline-offset-4 hover:decoration-cream">Help check the AI, about 5 minutes</a>
                 </h2>

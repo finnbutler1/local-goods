@@ -4,9 +4,9 @@
     $status = fn ($reviewer) => match (true) {
         $reviewer->isRevoked() => ['neutral', 'Revoked'],
         $ended => ['neutral', 'Ended'],
-        $reviewer->invite_token_hash === null => ['amber', 'No link yet'],
+        $reviewer->invite_token_hash === null => ['accent', 'No link yet'],
         $reviewer->first_login_at !== null => ['ok', 'Active'],
-        default => ['amber', 'Link ready'],
+        default => ['accent', 'Link ready'],
     };
 @endphp
 

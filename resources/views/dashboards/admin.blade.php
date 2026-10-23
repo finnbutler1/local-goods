@@ -44,7 +44,7 @@
                             <tr>
                                 <td class="px-5 py-3 font-semibold">{{ $user->adminLabel() }}</td>
                                 <td class="px-5 py-3 break-all">{{ $user->adminEmail() ?? '—' }}</td>
-                                <td class="px-5 py-3"><x-badge tone="forest">{{ $user->role->label() }}</x-badge></td>
+                                <td class="px-5 py-3"><x-badge tone="primary">{{ $user->role->label() }}</x-badge></td>
                                 <td class="px-5 py-3">
                                     @if ($user->isRevoked())
                                         <x-badge tone="neutral">Revoked</x-badge>

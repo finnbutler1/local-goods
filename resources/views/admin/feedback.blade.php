@@ -4,7 +4,7 @@
     use App\Enums\FeedbackStatus;
     use App\Enums\ReviewerType;
     $select = 'block w-full rounded-xl border-2 border-muted bg-paper px-3 py-2.5 focus-visible:border-forest';
-    $severityTone = ['blocker' => 'hold', 'should_fix' => 'amber', 'nice_to_have' => 'neutral'];
+    $severityTone = ['blocker' => 'hold', 'should_fix' => 'accent', 'nice_to_have' => 'neutral'];
 @endphp
 
 <x-app-shell title="Feedback" active="feedback" context="Local Goods platform">
@@ -90,7 +90,7 @@
                                 <p class="flex flex-wrap items-center gap-2 font-semibold">
                                     {{ $item->category->label() }} · <span class="tabular">{{ $item->rating }}/5</span>
                                     <x-badge :tone="$severityTone[$item->severity->value]">{{ $item->severity->label() }}</x-badge>
-                                    @if ($item->status === FeedbackStatus::New)<x-badge tone="amber">New</x-badge>@endif
+                                    @if ($item->status === FeedbackStatus::New)<x-badge tone="accent">New</x-badge>@endif
                                 </p>
                                 <p class="text-sm text-muted">
                                     {{ $item->user->adminLabel() }}{{ $item->user->reviewer_type ? ' · '.$item->user->reviewer_type->label() : ' · '.$item->user->role->label() }}

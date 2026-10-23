@@ -25,7 +25,7 @@
     </header>
 
     <dl class="grid gap-3 sm:grid-cols-3">
-        <x-card tone="forest">
+        <x-card tone="night">
             <dt class="text-sm font-semibold text-sage">Owed to you now</dt>
             <dd class="tabular mt-2 font-display text-4xl font-semibold text-amber">{{ Money::format($owedCents) }}</dd>
             <dd class="mt-1 text-sm text-sage">Cleared redemptions not yet paid out</dd>
