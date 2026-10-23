@@ -16,9 +16,13 @@ instead, so their feedback carries their name
 
 ---
 
-**An employee perk program designed to keep employer spending in the neighborhood: credits meant to be spent only at independent local merchants.**
+## You work here. Spend here.
 
-> **Status:** working demo. Redemptions, AI fraud scoring and human approve/deny of held redemptions (with a reason, gating every Stripe transfer) are live. Employer, employee, merchant and BID dashboards cover the whole money loop in the ledger: buying credits, giving them out, spending, merchants owed and paid. Merchant Eligibility Matching is built as a triage tool: the AI screens real BID businesses, a BID admin decides, and approved businesses don't join the demo yet. Payments and payouts run on **Stripe Connect in test mode** (Checkout for employer purchases, Express accounts for the demo merchants, a Transfer per Stripe-funded cleared redemption); no real money moves, and every money page says whether it's Stripe test mode or simulated. Seeded history stays simulated, and without Stripe keys the whole demo falls back to simulated mode. The demo merchants are seeded by hand.
+At 6 p.m., downtown's workers head home, and their spending goes with them.
+Local Goods gives employees credits that only work at independent local
+businesses, so the district your company calls home gets livelier.
+
+> **Status:** working demo. Redemptions, AI fraud scoring and human approve/deny of held redemptions (with a reason, gating every Stripe transfer) are live. Employer, employee, merchant and BID dashboards cover the whole money loop in the ledger: buying credits, giving them out, spending, merchants owed and paid. Merchant Eligibility Matching is built as a triage tool: the AI screens real BID businesses, a BID admin decides, and approved businesses don't join the demo yet. Payments and payouts run on **Stripe Connect in test mode** (Checkout for employer purchases, Express accounts for the demo merchants, a Transfer per Stripe-funded cleared redemption); no real money moves, and every money page says whether it's Stripe test mode or simulated. Seeded history stays simulated, and without Stripe keys the whole demo falls back to simulated mode. The demo merchants are seeded by hand. Both AI functions, Redemption Fraud Detection and Merchant Eligibility Matching, assist human decisions and do not make them.
 
 **Live app:** https://d4ghrpm72uczx.cloudfront.net
 
@@ -30,12 +34,37 @@ instead, so their feedback carries their name
 
 ## The problem
 
-Employers in downtown business districts spend heavily on employee perks, but
-very little of that money stays in the surrounding neighborhood. It goes to
-national chains and online platforms. Yet independent merchants return far
-more to the local economy. An estimate from an outside study, not measured by Local Goods: the Civic Economics / American Booksellers Association [Indie Impact study](https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html) found independent retailers and restaurants recirculated 52.3% of their revenue locally, against 15.8% for chains (data from 2011–2012, 134 businesses in 10 U.S. communities, none in DC). Business
-Improvement Districts (BIDs) want to support their independent merchants, and
-employers want a perk their staff will actually use.
+Thousands of people work in the Golden Triangle, a business district in
+downtown Washington, DC, every weekday. Most follow the same loop: commute
+in, sit at a desk, commute out. That isn't a failing of the people doing it;
+it's how office work is set up. But it means their spending, and the life
+they could bring to the streets around them, goes home with them.
+
+## Why it matters
+
+Everyone gains, and the district gains most.
+
+- **The district.** More foot traffic and more spending at the independent
+  shops, restaurants and services that give the Golden Triangle its
+  character. A livelier district is good for everyone who works, lives or
+  does business in it.
+- **Employers.** A benefit staff actually use, because it shows up at lunch,
+  not in a portal. And a practical way to improve the streets around their
+  own office: a livelier neighborhood can make an office easier to recruit
+  to, easier to stay at and more worth coming in to; a pilot would measure
+  how much.
+- **Merchants.** A large, steady workforce audience on their doorstep, and a
+  reason for those customers to come back.
+- **Employees.** A perk that makes the workday better (lunch, coffee,
+  errands) and a reason to discover the neighborhood they already spend most
+  of their week in.
+- **The BID.** A measurable, privacy-respecting way to support the
+  district's independent businesses: spending and participation are counted,
+  employees are never named.
+
+Money spent at independent local businesses tends to recirculate roughly 3x
+more in the local economy than money spent at chains, an effect often called
+the local multiplier. An estimate from an outside study, not measured by Local Goods: the Civic Economics / American Booksellers Association [Indie Impact study](https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html) found independent retailers and restaurants recirculated 52.3% of their revenue locally, against 15.8% for chains, about 3.3 times as much (data from 2011–2012, 134 businesses in 10 U.S. communities, none in DC). Real results here will be measured in a pilot.
 
 ## How it works
 
@@ -107,7 +136,7 @@ Only what exists today is claimed. Everything else is marked **planned**.
 | Category | Points | Evidence |
 |---|---|---|
 | **Functionality** | 25 | **Live:** after [logging in](https://d4ghrpm72uczx.cloudfront.net/login), the employee wallet shows a balance, a redeem form and recent redemptions; the BID admin view shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; logins with six roles, each with its own dashboard ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)); read-only reviewer access from magic links (no passwords, valid until judging ends, revocable), with a guided tour, "view as" for each role and in-app feedback scored against this rubric ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)); an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)); a BID review queue for Merchant Eligibility Matching with Approve, Reject and Needs research, logged append-only with who and when ([`MerchantReviewDecision`](app/Models/MerchantReviewDecision.php)). **Money loop ([ADR 0014](docs/adr/0014-employer-program-pending-purchases-and-initials.md)):** an employer/HR dashboard with program setup (monthly budget, allowance, optional new-hire, birthday and recognition occasions), buying credits (pending until Stripe confirms payment by a signed webhook, which alone writes the ledger entry) and giving them to one person or many, all or nothing, within the budget ([`CreditLedger`](app/Services/CreditLedger.php)); a wallet with merchant search and category filters, a confirmation screen and full ledger history; a merchant dashboard (owed split into "via Stripe test mode" and "simulated", held ones "not owed yet", Stripe onboarding); a BID participation overview and merchant roster with onboarding status; a BID impact page read from the ledger that rolls up the HR numbers with the same definitions ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)). **Stripe Connect, test mode ([ADR 0015](docs/adr/0015-stripe-connect-test-mode-separate-charges-and-transfers.md), [docs/STRIPE.md](docs/STRIPE.md)):** Checkout with `transfer_group`, Express onboarding, a Transfer per Stripe-funded cleared redemption with `source_transaction`, a verified idempotent webhook, and a platform-admin reconciliation page that explains every mismatch in plain English. Feature tests cover each flow with Stripe faked, and the cent-exact ledger math. **Planned:** turning an approved candidate into a participant. |
-| **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
+| **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem), [Why it matters](#why-it-matters) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
 | **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Measured:** [caught 17 of 26 suspicious; 17 of 19 holds were suspicious](docs/evals/fraud-eval-results.md), on 50 unseen cases (26 labeled suspicious) that were labeled by hand and locked with a SHA-256 per row before the AI saw them. 95% confidence intervals: catch rate 46–81%, hold precision 69–97%. Misses are the weak spot: the 9 missed cases mostly had one strong signal at normal hours, and the results break them down by pattern. Earlier, smaller runs are kept below the headline. 90 synthetic cases in all; method in [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it). **Built:** Merchant Eligibility Matching, with a [versioned prompt](resources/prompts/merchant-eligibility.md) that holds the independence rule word for word, four public facts as input, validated JSON, a fail-closed fallback to "undetermined", and a plain statement that the AI has no web access. **Eval:** [`merchant:eval`](app/Console/Commands/MerchantEval.php) runs against 60 hand labels locked before the AI saw them (40 dev, 20 holdout, scored separately; holdout once per prompt version). **Measured on the 20-case holdout, run once with the frozen prompt `458e8c2d`:** it wrongly called 0 of 17 chains and franchises eligible (95% CI 0–18%), called 15 of 17 not eligible, and routed 14 of 20 cases to a person. Agreement (17 of 20) only equals the always-"not eligible" baseline, and it found 0 of 3 independents. **Honest limit:** without web access it recognized only 2 of 11 independents on dev; the rest came back undetermined for a person. So it is a triage tool, not a decider: *The AI is a triage tool: it screens out obvious chains and franchises, routes anything it can't verify to a person, and never approves a merchant on its own.* Web search is future work. [Results](docs/evals/merchant-eval-results.md). |
 | **Code quality / GitHub** | 15 | A [test that sends every write route as a judge](tests/Feature/JudgeReadOnlyTest.php) and checks nothing changes. Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php) and a [fake Stripe gateway](tests/Fakes/FakeStripeGateway.php) (webhooks are signed exactly as Stripe signs them), so they need no secrets and never touch the network. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
 | **UX** | 10 | A custom brand system (Fraunces + Public Sans, self-hosted; forest/cream/amber tokens with every text pair tested for WCAG AA in [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)), an employer-first landing page, a shared app shell (sidebar on desktop, bottom tabs on mobile), one-click demo flow, plain-English AI explanations, all businesses labeled fictional. A local-only `/styleguide` shows every token and component. The employer/HR dashboard frames results as "your team got out into the neighborhood", and every number has a "How we count this" note; the eight-week trend has a table view. Every page has an empty state, a "working…" state on slow buttons and plain-English error pages, and fits a 320px phone screen ([accessibility and UX check](docs/accessibility.md)). |
