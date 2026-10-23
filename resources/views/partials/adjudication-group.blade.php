@@ -10,7 +10,7 @@
     // Everyone in the personal-contact group has the same type, so it isn't repeated there.
     $who = fn ($v) => ($showNames ? $v['name'] : "{$noun} {$v['number']}")
         .($v['type'] && $noun === 'Adjudicator' ? " ({$v['type']})" : '');
-    $sided = ['ai' => ['ok', 'Sided with the AI'], 'finn' => ['amber', 'Sided with Finn'], 'split' => ['neutral', 'Split'], 'too_few' => ['neutral', 'Too few votes to call']];
+    $sided = ['ai' => ['ok', 'Sided with the AI'], 'finn' => ['accent', 'Sided with Finn'], 'split' => ['neutral', 'Split'], 'too_few' => ['neutral', 'Too few votes to call']];
     $withVotes = fn ($row, $side) => $row[$side].' ('.$row["{$side}_votes"].' '.Str::plural('vote', $row["{$side}_votes"]).')';
     $minVotes = \App\Services\Adjudication\AdjudicationResults::MIN_VOTES;
     $th = 'px-4 py-2';
@@ -21,7 +21,7 @@
         @foreach ([[$all, "All {$plural}"], [$unseen, "Only {$plural} who hadn't looked at the eval page before"]] as [$group, $title])
             <x-card>
                 <h3 class="text-lg font-semibold">{{ $title }} <span class="text-muted">({{ count($group['adjudicators']) }})</span></h3>
-                <p class="mt-2 font-display text-xl font-semibold text-forest">{{ $group['sentence'] }}</p>
+                <p class="mt-2 font-display text-xl font-semibold text-primary">{{ $group['sentence'] }}</p>
                 @if (! $showCases && count($group['cases']) > 0)
                     @php $counts = array_column($group['cases'], 'vote_count'); @endphp
                     <p class="mt-2 text-sm text-muted">
@@ -41,10 +41,10 @@
 
     @foreach (['by_split' => ['Split', FraudEvalRunner::SPLITS], 'by_tag' => ['Pattern', FraudEvalPatterns::TAGS]] as $key => [$heading, $names])
         <div class="scroll-region" role="region" tabindex="0" aria-label="{{ $label }}: disputed cases by {{ strtolower($heading) }} table">
-            <table class="tabular w-full min-w-2xl rounded-2xl bg-paper text-left ring-1 ring-line/70">
+            <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                 <caption class="px-4 pt-4 pb-1 text-left font-semibold">{{ $label }}: disputed cases by {{ strtolower($heading) }}</caption>
                 <thead>
-                    <tr class="bg-cream-deep/60 text-sm text-muted">
+                    <tr class="bg-band/60 text-sm text-muted">
                         <th scope="col" class="{{ $th }}">{{ $heading }}</th>
                         <th scope="col" class="{{ $th }}">Disputed cases (votes)</th>
                         <th scope="col" class="{{ $th }}">All: with the AI</th>
@@ -78,7 +78,7 @@
             <ul class="mt-3 space-y-3">
                 @foreach ($all['cases'] as $c)
                     @php [$tone, $badge] = $sided[$c['sided_with']]; @endphp
-                    <li class="rounded-2xl bg-paper p-5 ring-1 ring-line/70">
+                    <li class="rounded-2xl bg-surface p-5 ring-1 ring-line/70">
                         <p class="flex flex-wrap items-center gap-2 font-semibold">
                             {{ $c['case_id'] }} · ${{ $c['facts']['amount'] }} at {{ $c['facts']['merchant'] }}, {{ $c['facts']['local_time'] }}
                             <x-badge>{{ $c['split'] }}</x-badge>

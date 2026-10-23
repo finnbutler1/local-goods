@@ -24,7 +24,7 @@
     $messages = array_filter(['error' => $error, 'notice' => $notice, 'status' => $status], 'filled');
     $tones = [
         'status' => ['role' => 'status', 'class' => 'border-ok bg-ok-bg text-ok', 'icon' => 'm5 12.5 4.5 4.5L19 7.5'],
-        'notice' => ['role' => 'status', 'class' => 'border-amber bg-cream-deep text-ink', 'icon' => 'M12 7.5V12l3 2M20.25 12a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z'],
+        'notice' => ['role' => 'status', 'class' => 'border-accent bg-band text-ink', 'icon' => 'M12 7.5V12l3 2M20.25 12a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z'],
         'error' => ['role' => 'alert', 'class' => 'border-hold bg-hold-bg text-hold', 'icon' => 'M4.5 20.25V4.5m0 0h12l-2.25 4.5 2.25 4.5h-12'],
     ];
 @endphp
@@ -45,7 +45,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0" aria-hidden="true"><path d="{{ $tones[$tone]['icon'] }}"/></svg>
                 <p class="min-w-0 flex-1 py-px break-words">{{ $text }}</p>
                 <button type="button" data-toast-dismiss aria-label="Dismiss message"
-                        class="-my-2 grid size-11 shrink-0 place-items-center rounded-full hover:bg-paper/70">
+                        class="-my-2 grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/70">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                 </button>
             </div>

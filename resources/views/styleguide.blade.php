@@ -103,7 +103,7 @@
                 <x-button size="lg">Large</x-button>
             </div>
         </x-card>
-        <x-card tone="forest" class="mt-4 flex flex-wrap items-center gap-3">
+        <x-card tone="night" class="mt-4 flex flex-wrap items-center gap-3">
             <x-button variant="accent">Accent on forest</x-button>
             <x-button variant="inverse">Inverse</x-button>
             <x-button variant="inverse-outline">Inverse outline</x-button>
@@ -113,12 +113,12 @@
     {{-- Cards --}}
     <section id="cards" aria-labelledby="cards-heading" class="scroll-mt-24">
         <h2 id="cards-heading" class="text-3xl font-semibold text-forest">Cards</h2>
-        <p class="mt-1 text-muted"><code>&lt;x-card tone="paper|forest|tint|cream" as="section"&gt;</code></p>
+        <p class="mt-1 text-muted"><code>&lt;x-card tone="surface|night|tint|band" as="section"&gt;</code></p>
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            @foreach (['paper' => 'Default surface for content.', 'forest' => 'The one thing that matters most on a page.', 'tint' => 'Gentle positive emphasis.', 'cream' => 'Quiet grouping or a band.'] as $tone => $body)
+            @foreach (['surface' => 'Default surface for content.', 'night' => 'The one thing that matters most on a page. Dark in both modes.', 'tint' => 'Gentle positive emphasis.', 'band' => 'Quiet grouping or a band.'] as $tone => $body)
                 <x-card :tone="$tone">
                     <p class="font-display text-xl font-semibold">{{ ucfirst($tone) }}</p>
-                    <p @class(['mt-1', 'text-sage' => $tone === 'forest', 'text-muted' => $tone !== 'forest'])>{{ $body }}</p>
+                    <p @class(['mt-1', 'text-night-muted' => $tone === 'night', 'text-muted' => $tone !== 'night'])>{{ $body }}</p>
                 </x-card>
             @endforeach
         </div>
@@ -165,10 +165,10 @@
         <p class="mt-1 text-muted wrap-anywhere"><code>&lt;x-badge tone="neutral|forest|ok|hold|amber"&gt;</code> (add <code>:wrap="true"</code> for long text). Status badges pair color with a word, never color alone.</p>
         <x-card class="mt-6 flex flex-wrap items-center gap-3">
             <x-badge>Neutral</x-badge>
-            <x-badge tone="forest">Employee</x-badge>
+            <x-badge tone="primary">Employee</x-badge>
             <x-badge tone="ok"><span class="size-1.5 rounded-full bg-ok" aria-hidden="true"></span>Approved</x-badge>
             <x-badge tone="hold"><span class="size-1.5 rounded-full bg-hold" aria-hidden="true"></span>Under review</x-badge>
-            <x-badge tone="amber">For HR teams</x-badge>
+            <x-badge tone="accent">For HR teams</x-badge>
         </x-card>
     </section>
 

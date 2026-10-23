@@ -7,7 +7,7 @@
     $confidenceWords = fn (float $c) => $c >= 0.9 ? 'high' : ($c >= 0.7 ? 'medium' : 'low');
     $classTone = fn (string $class) => match ($class) {
         'independent' => 'ok',
-        'undetermined' => 'amber',
+        'undetermined' => 'accent',
         default => 'hold',
     };
 @endphp
@@ -72,7 +72,7 @@
     </section>
 
     @if (! $showNames)
-        <x-card tone="cream">
+        <x-card tone="band">
             <h2 class="text-xl font-semibold text-forest">Business names are hidden on this account</h2>
             <p class="mt-2">
                 These are real businesses that have not joined Local Goods, and this shared access link is public, so it shows totals only.
@@ -80,7 +80,7 @@
             </p>
         </x-card>
     @elseif ($totals['assessed'] === 0)
-        <x-card tone="cream">
+        <x-card tone="band">
             <p>The AI has not assessed any candidates yet. They appear here after <code>php artisan merchant:eval</code> runs.</p>
         </x-card>
     @else
@@ -103,12 +103,12 @@
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 @if ($a['eligible'])
-                                    <x-badge tone="amber" :wrap="true">AI recommends eligible — confirm before approving</x-badge>
+                                    <x-badge tone="accent" :wrap="true">AI recommends eligible — confirm before approving</x-badge>
                                 @else
                                     <x-badge :tone="$classTone($a['classification'])">AI: {{ MerchantEvalReport::CLASS_NAMES[$a['classification']] }}</x-badge>
                                 @endif
                                 @if ($a['needs_human_review'])<x-badge tone="neutral">Flagged for a person</x-badge>@endif
-                                <x-badge :tone="$latest ? 'forest' : 'neutral'">{{ $latest ? $latest->label() : 'Waiting' }}</x-badge>
+                                <x-badge :tone="$latest ? 'primary' : 'neutral'">{{ $latest ? $latest->label() : 'Waiting' }}</x-badge>
                             </div>
                         </div>
 

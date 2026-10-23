@@ -10,7 +10,7 @@
 
 <section id="adjudication" aria-labelledby="adjudication-heading" class="scroll-mt-24 space-y-5">
     <div class="max-w-3xl">
-        <h2 id="adjudication-heading" class="text-2xl font-semibold text-forest">Blind adjudication of the disagreements</h2>
+        <h2 id="adjudication-heading" class="text-2xl font-semibold text-primary">Blind adjudication of the disagreements</h2>
         <p class="mt-1 text-muted">
             Finn labeled every case, so where Finn and the AI disagree Finn may be the one who is wrong.
             Named BID staff and contest judges voted on those cases without seeing Finn's label, the AI's call or each other's votes.
@@ -35,7 +35,7 @@
 @if ($personal)
     <section id="adjudication-personal" aria-labelledby="adjudication-personal-heading" class="scroll-mt-24 space-y-5 border-t-2 border-line pt-8">
         <div class="max-w-3xl">
-            <h2 id="adjudication-personal-heading" class="text-2xl font-semibold text-forest">Personal contacts (know Finn): not counted in the result above</h2>
+            <h2 id="adjudication-personal-heading" class="text-2xl font-semibold text-primary">Personal contacts (know Finn): not counted in the result above</h2>
             <p class="mt-1 text-muted">
                 Friends, family and classmates voted on the same cases, just as blind: they saw only the facts, never Finn's label, Finn's note or the AI's call.
                 Because they know Finn, their votes are reported here on their own and are never added to the BID and contest-judge result.

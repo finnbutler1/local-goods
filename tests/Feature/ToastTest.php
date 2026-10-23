@@ -33,7 +33,7 @@ class ToastTest extends TestCase
         $this->blade('<x-flash :status="null" notice="Held for a quick review." :error="null" />')
             ->assertSee('role="status" data-toast="notice"', false)
             ->assertSee('data-toast-autohide', false)
-            ->assertSee('border-amber bg-cream-deep', false);
+            ->assertSee('border-accent bg-band', false);
     }
 
     public function test_an_error_is_an_alert_in_the_warning_colour_and_stays(): void

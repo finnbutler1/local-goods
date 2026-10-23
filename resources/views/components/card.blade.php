@@ -1,11 +1,12 @@
-@props(['as' => 'div', 'tone' => 'paper', 'padding' => 'p-5 sm:p-6'])
+@props(['as' => 'div', 'tone' => 'surface', 'padding' => 'p-5 sm:p-6'])
 
 @php
     $tones = [
-        'paper' => 'bg-paper text-ink ring-1 ring-line/70 shadow-[0_1px_0_0_var(--color-line)]',
-        'forest' => 'bg-forest text-cream',
-        'tint' => 'bg-forest-tint text-ink',
-        'cream' => 'bg-cream-deep text-ink',
+        'surface' => 'bg-surface text-ink ring-1 ring-line shadow-[0_1px_0_0_var(--color-line)]',
+        // Dark in both modes, like the sidebar: headline numbers.
+        'night' => 'bg-night text-on-night',
+        'tint' => 'bg-primary-tint text-ink',
+        'band' => 'bg-band text-ink',
     ];
 @endphp
 

@@ -5,7 +5,7 @@
     $independent = round(100 * $source['independent_rate'], 1);
     $chain = round(100 * $source['chain_rate'], 1);
     $ratio = round($source['independent_rate'] / $source['chain_rate'], 1);
-    $link = 'font-semibold text-forest underline decoration-amber decoration-2 underline-offset-4 hover:decoration-forest';
+    $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
 @endphp
 <div data-recirculation-evidence>
     <p class="text-sm font-semibold uppercase tracking-widest text-muted">Estimate from an outside study, not measured by Local Goods</p>

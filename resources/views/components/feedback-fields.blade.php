@@ -5,7 +5,7 @@
 @php
     $errs = $errors->getBag($bag);
     $value = fn (string $field) => $errs->any() ? old($field) : ($feedback?->{$field} instanceof \BackedEnum ? $feedback->{$field}->value : $feedback?->{$field});
-    $input = 'block w-full rounded-xl border-2 bg-paper px-3 py-2.5 focus-visible:border-forest';
+    $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-2.5 focus-visible:border-primary';
 @endphp
 
 <input type="hidden" name="page_url" value="{{ $feedback?->page_url ?? $pageUrl }}">
@@ -25,7 +25,7 @@
         @foreach (range(1, 5) as $n)
             <label class="cursor-pointer">
                 <input type="radio" name="rating" value="{{ $n }}" required class="peer sr-only" @checked((string) $value('rating') === (string) $n)>
-                <span class="grid size-10 place-items-center rounded-full border-2 border-muted font-semibold peer-checked:border-forest peer-checked:bg-forest peer-checked:text-cream peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber">{{ $n }}</span>
+                <span class="grid size-10 place-items-center rounded-full border-2 border-muted font-semibold peer-checked:border-primary peer-checked:bg-primary peer-checked:text-on-primary peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">{{ $n }}</span>
             </label>
         @endforeach
     </div>

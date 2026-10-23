@@ -6,18 +6,25 @@
     {{-- Hero --}}
     <section aria-labelledby="hero-heading" class="mx-auto grid overflow-x-clip max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
         <div>
-            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">For employers in the Golden Triangle · Washington, DC</p>
-            <h1 id="hero-heading" class="mt-4 text-6xl leading-[0.95] font-semibold text-forest sm:text-7xl lg:text-8xl">
+            <x-eyebrow class="text-accent-ink">For employers in the Golden Triangle · Washington, DC</x-eyebrow>
+            <h1 id="hero-heading" class="mt-4 text-6xl leading-[0.95] font-semibold text-primary sm:text-7xl lg:text-8xl">
                 You work here.<br>
                 <span class="relative inline-block">
                     Spend here.
-                    <span class="absolute inset-x-0 -bottom-1 h-3 rounded-full bg-amber/70 sm:h-4" aria-hidden="true"></span>
+                    <span class="absolute inset-x-0 -bottom-1 h-3 rounded-full bg-accent/70 sm:h-4" aria-hidden="true"></span>
                 </span>
             </h1>
             <p class="mt-8 max-w-xl text-lg leading-relaxed text-ink sm:text-xl">
                 At 6 p.m., downtown's workers head home, and their spending goes with them. Local Goods gives employees
                 credits that only work at independent local businesses, so the district your company calls home gets livelier.
             </p>
+            {{-- The commute-desk-commute loop, rerouted through one local stop. --}}
+            <ol class="route-line mt-8 max-w-md" aria-label="A workday, rerouted">
+                <li>Home</li>
+                <li>Desk</li>
+                <li class="route-line-local"><strong class="block font-semibold">Farragut Grind</strong> <span class="font-semibold text-accent-ink">local stop</span></li>
+                <li>Home</li>
+            </ol>
             <div class="mt-10 flex flex-col gap-3 sm:flex-row">
                 <x-button variant="accent" size="lg" href="#request-demo">Request a demo</x-button>
                 <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
@@ -28,16 +35,15 @@
         {{-- Illustration of the wallet, built in HTML so it stays sharp and needs no image file. --}}
         <div class="relative mx-auto w-full max-w-sm" role="img"
              aria-label="Example employee wallet: $120.00 available, with a $12.90 lunch at Press Room Deli approved after an AI fraud check.">
-            <div class="absolute -inset-4 -z-10 rotate-3 rounded-[2.5rem] bg-cream-deep" aria-hidden="true"></div>
-            <div aria-hidden="true" class="overflow-hidden rounded-[2rem] bg-paper shadow-[0_30px_60px_-30px_rgb(31_61_43/0.55)] ring-1 ring-line">
-                <div class="relative bg-forest px-6 pt-7 pb-8 text-cream">
-                    <div class="awning absolute inset-x-0 top-0 h-1.5 opacity-60"></div>
+            <div class="absolute -inset-4 -z-10 rotate-3 rounded-[2.5rem] bg-band" aria-hidden="true"></div>
+            <div aria-hidden="true" class="overflow-hidden rounded-[2rem] bg-surface shadow-[0_30px_60px_-30px_rgb(18_24_32/0.55)] ring-1 ring-line">
+                <div class="relative bg-night px-6 pt-7 pb-8 text-on-night">
                     <div class="flex items-center justify-between text-sm">
-                        <span class="font-semibold uppercase tracking-widest text-sage">Available</span>
+                        <span class="font-semibold uppercase tracking-widest text-night-muted">Available</span>
                         <span class="font-display font-semibold">Local Goods</span>
                     </div>
-                    <p class="tabular mt-3 font-display text-6xl font-semibold text-amber">$120.00</p>
-                    <p class="mt-2 text-sm text-sage">$150.00 added monthly by your employer</p>
+                    <p class="tabular mt-3 font-display text-6xl font-semibold text-night-accent">$120.00</p>
+                    <p class="mt-2 text-sm text-night-muted">$150.00 added monthly by your employer</p>
                 </div>
                 <ul class="divide-y divide-line/70 px-6 py-2 text-sm">
                     @foreach ([['Press Room Deli', 'Lunch · 12:15 PM', '$12.90'], ['Farragut Grind', 'Coffee · 8:55 AM', '$7.25'], ['Page & Quill Books', 'Books · 1:05 PM', '$13.00']] as [$name, $when, $amount])
@@ -54,21 +60,21 @@
                     @endforeach
                 </ul>
             </div>
-            <div aria-hidden="true" class="absolute -bottom-5 -left-1 flex items-center gap-2 rounded-full bg-forest py-2 pr-4 pl-2 text-sm font-semibold text-cream shadow-lg sm:-left-10">
-                <span class="grid size-7 place-items-center rounded-full bg-amber text-ink">
+            <div aria-hidden="true" class="absolute -bottom-5 -left-1 flex items-center gap-2 rounded-full bg-primary py-2 pr-4 pl-2 text-sm font-semibold text-on-primary shadow-lg sm:-left-10">
+                <span class="grid size-7 place-items-center rounded-full bg-accent text-on-accent">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
                 </span>
                 AI fraud check passed
             </div>
-            <p aria-hidden="true" class="absolute -top-3 right-4 rounded-full bg-amber px-3 py-1 text-xs font-semibold text-ink">Demo</p>
+            <p aria-hidden="true" class="absolute -top-3 right-4 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">Demo</p>
         </div>
     </section>
 
     {{-- The problem: the commute-desk-commute loop, named without blaming anyone --}}
     <section id="the-problem" aria-labelledby="problem-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 pb-20 sm:px-6">
-        <div class="max-w-3xl border-l-4 border-amber pl-6">
-            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">The problem</p>
-            <h2 id="problem-heading" class="mt-2 text-4xl font-semibold text-forest sm:text-5xl">The commute-desk-commute loop</h2>
+        <div class="max-w-3xl border-l-4 border-accent pl-6">
+            <x-eyebrow class="text-accent-ink">The problem</x-eyebrow>
+            <h2 id="problem-heading" class="mt-2 text-4xl font-semibold text-primary sm:text-5xl">The commute-desk-commute loop</h2>
             <p class="mt-5 text-lg leading-relaxed text-ink">
                 Thousands of people work in the Golden Triangle every weekday. Most follow the same loop: commute in, sit at a desk,
                 commute out. That isn't a failing of the people doing it; it's how office work is set up. But it means their spending,
@@ -78,10 +84,10 @@
     </section>
 
     {{-- How it works --}}
-    <section id="how-it-works" aria-labelledby="how-heading" class="scroll-mt-6 border-y border-line bg-paper">
+    <section id="how-it-works" aria-labelledby="how-heading" class="scroll-mt-6 border-y border-line bg-surface">
         <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-            <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">How it works</p>
-            <h2 id="how-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-forest sm:text-5xl">Three steps from payroll perk to a busier block.</h2>
+            <x-eyebrow class="text-accent-ink">How it works</x-eyebrow>
+            <h2 id="how-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-primary sm:text-5xl">Three steps from payroll perk to a busier block.</h2>
             <div class="relative mt-14">
             {{-- Runs from the centre of circle 1 to the centre of circle 3 (circles are 3.5rem, column gap 2rem),
                  so the circles cover both ends exactly. Keep in sync with size-14 and md:gap-8 below. --}}
@@ -93,8 +99,8 @@
                     ['The money stays in the neighborhood', 'Every redemption is checked for abuse before a merchant is paid. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.'],
                 ] as $i => [$title, $body])
                     <li class="relative">
-                        <span class="relative grid size-14 place-items-center rounded-full bg-forest font-display text-2xl font-semibold text-amber" aria-hidden="true">{{ $i + 1 }}</span>
-                        <h3 class="mt-5 text-2xl font-semibold text-forest"><span class="sr-only">Step {{ $i + 1 }}: </span>{{ $title }}</h3>
+                        <span class="relative grid size-14 place-items-center rounded-full bg-primary font-display text-2xl font-semibold text-on-primary" aria-hidden="true">{{ $i + 1 }}</span>
+                        <h3 class="mt-5 text-2xl font-semibold text-primary"><span class="sr-only">Step {{ $i + 1 }}: </span>{{ $title }}</h3>
                         <p class="mt-2 text-muted">{{ $body }}</p>
                     </li>
                 @endforeach
@@ -105,24 +111,23 @@
 
     {{-- Why it matters: the district first, then everyone else who gains (ADR 0024) --}}
     <section id="why-it-matters" aria-labelledby="why-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
-        <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Why it matters</p>
-        <h2 id="why-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-forest sm:text-5xl">Everyone gains. The district gains most.</h2>
+        <x-eyebrow class="text-accent-ink">Why it matters</x-eyebrow>
+        <h2 id="why-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-primary sm:text-5xl">Everyone gains. The district gains most.</h2>
 
         <div class="mt-12 grid gap-4 lg:grid-cols-4">
             <x-card as="article" aria-labelledby="gain-district" tone="tint" class="lg:col-span-4" padding="p-8 lg:p-10">
                 <p class="text-sm font-semibold uppercase tracking-widest text-muted">Most of all</p>
-                <h3 id="gain-district" class="mt-2 text-4xl font-semibold text-forest">The district</h3>
+                <h3 id="gain-district" class="mt-2 text-4xl font-semibold text-primary">The district</h3>
                 <p class="mt-3 max-w-3xl text-lg text-ink">
                     More foot traffic and more spending at the independent shops, restaurants and services that give the Golden Triangle
                     its character. A livelier district is good for everyone who works, lives or does business in it.
                 </p>
             </x-card>
 
-            <article aria-labelledby="gain-employers" class="relative flex flex-col overflow-hidden rounded-3xl bg-forest p-8 text-cream lg:col-span-2 lg:row-span-2 lg:p-10">
-                <div class="awning absolute inset-x-0 top-0 h-2 opacity-60" aria-hidden="true"></div>
-                <x-badge tone="amber" class="self-start">For HR teams</x-badge>
+            <article aria-labelledby="gain-employers" class="relative flex flex-col overflow-hidden rounded-3xl bg-night p-8 text-on-night lg:col-span-2 lg:row-span-2 lg:p-10">
+                <x-badge tone="accent" class="self-start">For HR teams</x-badge>
                 <h3 id="gain-employers" class="mt-5 text-4xl font-semibold">Employers</h3>
-                <p class="mt-3 text-lg text-sage">A benefit your staff actually use, because it shows up at lunch, not in a portal.</p>
+                <p class="mt-3 text-lg text-night-muted">A benefit your staff actually use, because it shows up at lunch, not in a portal.</p>
                 <ul class="mt-8 space-y-4">
                     @foreach ([
                         'A practical way to improve the streets around your own office.',
@@ -131,7 +136,7 @@
                         'No cards to issue: the employee\'s phone is the card.',
                     ] as $point)
                         <li class="flex gap-3">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0 text-amber" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0 text-night-accent" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
                             <span>{{ $point }}</span>
                         </li>
                     @endforeach
@@ -148,23 +153,23 @@
             ] as [$id, $eyebrow, $title, $body])
                 <x-card as="article" aria-labelledby="{{ $id }}" class="lg:col-span-2" padding="p-8">
                     <p class="text-sm font-semibold uppercase tracking-widest text-muted">{{ $eyebrow }}</p>
-                    <h3 id="{{ $id }}" class="mt-2 text-3xl font-semibold text-forest">{{ $title }}</h3>
+                    <h3 id="{{ $id }}" class="mt-2 text-3xl font-semibold text-primary">{{ $title }}</h3>
                     <p class="mt-3 text-muted">{{ $body }}</p>
                 </x-card>
             @endforeach
         </div>
 
         {{-- Supporting evidence, below the mission, never the hero. Always with its label and source. --}}
-        <aside aria-label="Outside estimate of local recirculation" class="mt-8 rounded-3xl border-2 border-dashed border-muted bg-cream-deep p-6 sm:p-8">
+        <aside aria-label="Outside estimate of local recirculation" class="mt-8 rounded-3xl border-2 border-dashed border-muted bg-band p-6 sm:p-8">
             @include('partials.recirculation-evidence')
         </aside>
     </section>
 
     {{-- Trust and AI --}}
-    <section id="trust" aria-labelledby="trust-heading" class="scroll-mt-6 bg-forest text-cream">
+    <section id="trust" aria-labelledby="trust-heading" class="scroll-mt-6 bg-night text-on-night">
         <div class="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:gap-16">
             <div>
-                <p class="text-sm font-semibold uppercase tracking-widest text-amber">Trust and AI</p>
+                <x-eyebrow class="text-night-accent">Trust and AI</x-eyebrow>
                 <h2 id="trust-heading" class="mt-2 text-4xl font-semibold sm:text-5xl">Every redemption is checked before anyone is paid.</h2>
                 <ul class="mt-8 space-y-5">
                     @foreach ([
@@ -174,25 +179,25 @@
                         ['No names go to the AI.', 'It sees only anonymous signals, like amount, time of day and visit history.'],
                     ] as [$lead, $rest])
                         <li class="flex gap-3">
-                            <span class="mt-2 size-2 shrink-0 rounded-full bg-amber" aria-hidden="true"></span>
-                            <p class="text-sage"><strong class="font-semibold text-cream">{{ $lead }}</strong> {{ $rest }}</p>
+                            <span class="mt-2 size-2 shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
+                            <p class="text-night-muted"><strong class="font-semibold text-on-night">{{ $lead }}</strong> {{ $rest }}</p>
                         </li>
                     @endforeach
                 </ul>
             </div>
 
-            <figure class="self-center rounded-3xl bg-cream p-8 text-ink sm:p-10">
-                <p class="text-sm font-semibold uppercase tracking-widest text-amber-ink">Measured, not promised</p>
+            <figure class="self-center rounded-3xl bg-page p-8 text-ink sm:p-10">
+                <x-eyebrow class="text-accent-ink">Measured, not promised</x-eyebrow>
                 @if ($evalHeadline)
                     <blockquote class="mt-4">
-                        <p class="font-display text-3xl leading-tight font-semibold text-forest sm:text-4xl">{{ $evalHeadline['text'] }}</p>
+                        <p class="font-display text-3xl leading-tight font-semibold text-primary sm:text-4xl">{{ $evalHeadline['text'] }}</p>
                     </blockquote>
                     <figcaption class="mt-5 space-y-2 text-muted">
                         <p>Compared with a person's labels on hand-labeled test redemptions the AI had never seen.</p>
                         <p class="text-sm">{{ $evalHeadline['sample'] }}</p>
                     </figcaption>
                 @else
-                    <p class="mt-4 font-display text-3xl font-semibold text-forest">Eval results not yet published.</p>
+                    <p class="mt-4 font-display text-3xl font-semibold text-primary">Eval results not yet published.</p>
                     <figcaption class="mt-5 text-muted">We publish how often the AI agrees with a person once the eval has been run.</figcaption>
                 @endif
                 <div class="mt-8">
@@ -203,10 +208,10 @@
     </section>
 
     {{-- Impact strip: the demo's real ledger totals since launch. Totals only, never a name (ADR 0017). --}}
-    <section aria-labelledby="demo-totals-heading" class="border-b border-line bg-paper" data-demo-totals>
+    <section aria-labelledby="demo-totals-heading" class="border-b border-line bg-surface" data-demo-totals>
         <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
             <div class="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 id="demo-totals-heading" class="text-3xl font-semibold text-forest">The demo program so far</h2>
+                <h2 id="demo-totals-heading" class="text-3xl font-semibold text-primary">The demo program so far</h2>
                 <p class="rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">Demo data: all people and transactions are fictional.</p>
             </div>
             @if ($demoTotals['visits'] === 0)
@@ -222,7 +227,7 @@
                     ] as [$label, $figure])
                         <div class="flex flex-col-reverse">
                             <dt class="mt-1 text-sm font-semibold text-muted">{{ $label }}</dt>
-                            <dd class="tabular font-display text-4xl font-semibold text-forest">{{ $figure }}</dd>
+                            <dd class="tabular font-display text-4xl font-semibold text-primary">{{ $figure }}</dd>
                         </div>
                     @endforeach
                 </dl>
@@ -231,17 +236,17 @@
     </section>
 
     {{-- Impact: one worked, illustrative scenario (not real data) --}}
-    <section aria-labelledby="impact-heading" class="border-b border-line bg-cream-deep">
+    <section aria-labelledby="impact-heading" class="border-b border-line bg-band">
         <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div class="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 id="impact-heading" class="text-3xl font-semibold text-forest">What one district program could add up to</h2>
+                <h2 id="impact-heading" class="text-3xl font-semibold text-primary">What one district program could add up to</h2>
                 <p class="rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">Illustrative scenario</p>
             </div>
             <p class="mt-3 max-w-2xl text-muted">
                 A worked example, not a result: suppose employers in the district enroll 2,000 employees at $50 a month.
             </p>
 
-            <div class="mt-10 flex flex-wrap items-end gap-x-5 gap-y-6 font-display text-forest" role="group"
+            <div class="mt-10 flex flex-wrap items-end gap-x-5 gap-y-6 font-display text-primary" role="group"
                  aria-label="2,000 employees times $50 a month times 12 months equals $1.2 million a year">
                 @foreach ([['2,000', 'employees'], ['$50', 'per month'], ['12', 'months']] as $i => [$figure, $unit])
                     @if ($i > 0)
@@ -254,7 +259,7 @@
                 @endforeach
                 <span class="pb-7 text-3xl text-muted sm:text-4xl" aria-hidden="true">=</span>
                 <div aria-hidden="true">
-                    <p class="tabular rounded-xl bg-amber px-3 text-4xl font-semibold text-ink sm:text-5xl">$1.2M</p>
+                    <p class="tabular rounded-xl bg-accent px-3 text-4xl font-semibold text-on-accent sm:text-5xl">$1.2M</p>
                     <p class="mt-1 font-sans text-sm text-muted">a year</p>
                 </div>
             </div>
@@ -270,7 +275,7 @@
     <section id="request-demo" aria-labelledby="request-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
         <x-card padding="p-8 sm:p-12" class="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             <div>
-                <h2 id="request-heading" class="text-4xl font-semibold text-forest">Request a demo</h2>
+                <h2 id="request-heading" class="text-4xl font-semibold text-primary">Request a demo</h2>
                 <p class="mt-3 max-w-xl text-lg text-muted">
                     Online demo booking is coming soon. The working product is live: demo logins for an employee
                     and a BID admin are available on request, and contest judges get a personal sign-in link with

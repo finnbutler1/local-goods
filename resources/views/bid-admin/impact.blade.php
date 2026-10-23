@@ -75,7 +75,7 @@
             <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ($tiles as $tile)
                     @php $forest = $tile['forest'] ?? false; @endphp
-                    <x-card :tone="$forest ? 'forest' : 'paper'" class="flex flex-col">
+                    <x-card :tone="$forest ? 'night' : 'surface'" class="flex flex-col">
                         <dt class="text-sm font-semibold {{ $forest ? 'text-sage' : 'text-muted' }}">{{ $tile['label'] }}</dt>
                         <dd class="mt-2 {{ $forest ? 'text-amber' : 'text-forest' }}">
                             <span class="tabular font-display text-4xl font-semibold">{{ $tile['value'] }}</span>
