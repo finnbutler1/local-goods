@@ -229,6 +229,42 @@ Not checked this time: keyboard-only walk-through (no new controls were
 added) and `/judge` in the browser (judges sign in by magic link; the page
 is covered by `AccessibilityTest`).
 
+## Transit lines brand (2026-10-23)
+
+The new brand (ADR 0025): light and dark tokens, the theme toggle, button
+states and the new menus. Checked in headless Chrome 155 over the DevTools
+protocol (a script, axe-core 4.10.2 with WCAG 2.0/2.1 A and AA plus best
+practice) on a scratch SQLite database with simulated payments and no AI
+key, with dark mode set through the system setting:
+
+- **No sideways scroll and no axe violations** at 375px and 1280px, light
+  and dark, on `/`, `/employee`, `/merchant`, `/bid-admin`,
+  `/bid-admin/impact` and `/judge` (24 page checks), and on every other
+  role page at one width and theme each. The one note left is axe's
+  best-practice `landmark-complementary-is-top-level` on the landing page's
+  labelled 3x box, an `<aside>` inside a section. It is not a WCAG failure,
+  and the claims tests find the box by that tag, so it stays.
+- **Contrast:** every approved pair passes in both modes
+  (`ColorContrastTest`, 84 checks).
+- **Menus by keyboard** (script pressing keys): on the BID admin's phone
+  tab bar, ArrowDown opened More on its first item, arrows moved and
+  wrapped, Escape closed it and put focus back on More, Enter opened it,
+  Tab out closed it. On the platform admin's Account menu: Enter opened it,
+  Escape closed it, ArrowUp opened it on "Log out". Clicking elsewhere and
+  opening another menu closed it. axe found nothing with menus open.
+- **No double submit:** three clicks on "Save program" sent one request.
+  30ms after the click the button showed the spinner and "Saving…", with
+  `aria-busy` and `disabled`.
+- **Theme toggle:** pressing it gave dark with `aria-pressed="true"`, and a
+  reload kept it.
+- **Digits:** the 375px light and dark screenshots of the wallet were
+  looked at; Overpass digits in Atkinson text read as one font, with plain
+  zeros and aligned amounts.
+
+Not checked this time: the menus in Safari (it does not focus clicked
+links; app.js has a guard for that, untested), 320px, and the adjudication
+voting page in the browser (covered by `AccessibilityTest`).
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session
@@ -272,7 +308,8 @@ is covered by `AccessibilityTest`).
   readers and show their week's numbers on hover only. Everyone gets a
   one-line summary under each chart and every number in "Show as a table".
 - **The "working…" state needs JavaScript.** Without it, forms still work
-  but the button doesn't change while the next page loads.
+  but the button doesn't change while the next page loads, and the menus
+  show their lists open in the page.
 - **The Feedback button steps aside** (fades out) while it would cover a
   field or while someone is typing. That is on purpose, but on a phone it
   can be out of sight while a form is in use.
