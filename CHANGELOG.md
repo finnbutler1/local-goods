@@ -3,6 +3,32 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-23: The Transit lines brand, everywhere
+
+- **New look, light and dark.** Teal route lines, coral local stops and
+  dark "night" panels replace the forest-and-cream Storefront look on every
+  page. Pages follow the device's light/dark setting, and a small toggle
+  in the header remembers a choice
+  ([ADR 0025](docs/adr/0025-transit-lines-brand.md)).
+- **Logo A, "The daily loop"** in every header and footer, plus a new
+  favicon (simplified for 16px), app icons and a web app manifest. Footer
+  tagline: "Reroute your lunch."
+- **Fonts:** Overpass for headings, Atkinson Hyperlegible Next for text,
+  with plain zeros in every number.
+- **The route motif, sparingly:** a "Home, Desk, local stop, Home" line in
+  the landing hero, a small route stop before section labels and a teal
+  rail on the wallet's merchant cards.
+- **Buttons show what they're doing:** pressed, loading (a spinner, still
+  for anyone who asks for less motion, plus "Paying…" or "Saving…") and
+  unavailable (grey, not see-through). Pressing twice sends once.
+- **Less clutter:** an Account menu replaces the scattered account and
+  log-out buttons; pages past five in the sidebar (four on the phone tab
+  bar) go into More; judges get a real View as menu; phones get a Menu for
+  the public site's section links.
+- All honesty labels (demo data, Stripe test mode, not affiliated, the
+  labelled 3x estimate, read-only notices, initials only) keep their exact
+  wording.
+
 ## 2026-10-23: Brand directions to choose from (options only)
 
 - **Three brand directions, nothing applied yet.** `docs/brand/directions.html`

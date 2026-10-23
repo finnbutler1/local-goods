@@ -5,6 +5,32 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Transit lines brand, button states and menus — done (2026-10-23, ADR
+0025).** Front end only: no route, controller logic, money, Stripe, prompt,
+eval or migration change. Source of truth: `docs/brand/` (Transit, Logo A).
+
+- Tokens by role in `resources/css/app.css` (`page`, `surface`, `band`,
+  `ink`, `muted`, `line`, `edge`, `primary*`, `accent*`, `ok`, `hold`,
+  `danger`, `focus`, `disabled-*`, `night*`). Light in `@theme`, dark in
+  the two dark blocks (keep them identical). Never reintroduce forest,
+  cream, paper, amber, sage or the awning. New pairs go in
+  `ColorContrast::PAIRS` (checked light and dark).
+- Fonts Overpass + Atkinson Hyperlegible Next (`@fontsource-variable`);
+  digits come from Overpass via a `unicode-range` face (plain zero).
+- `<x-brand-head>` (icons, manifest, theme script) in all three layouts;
+  `<x-theme-toggle>`; `<x-logo>` (`on-dark`, `mark-only`). Footer tagline
+  "Reroute your lunch."; hero "You work here. Spend here.".
+- Motif only in: landing route line, `<x-eyebrow>`, `.merchant-rail` on
+  participating merchants (never on candidates).
+- Buttons: `unavailable:` variant (disabled/aria-disabled, not busy);
+  `form[data-busy]` adds a spinner + `aria-busy`, cancels a second submit,
+  disables submit buttons one tick later. Spinner only when motion allowed.
+- `<x-menu>` disclosure (Account, More, View as, public Menu); sidebar max
+  5, tab bar max 4, rest in More by the priority list in `app-shell`
+  (Feedback visible for platform admin, Merchants for BID admin).
+  `Role::navigation()` unchanged. Tests: `BrandLayoutTest`,
+  `ThemeToggleTest`, `ButtonFeedbackTest`, `DropdownMenuTest`.
+
 **Mission-first messaging — done (2026-10-23, ADR 0024).** No migration,
 no money, Stripe, prompt or eval change.
 
@@ -347,7 +373,8 @@ pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
 contacts in adjudication (ADR 0019), one-step Buy credits with the
 platform fee ready but off (ADR 0021) and platform-set-up Stripe test
 accounts for the demo merchants (ADR 0022), display-only product menus
-(ADR 0023) and mission-first messaging (ADR 0024).
+(ADR 0023), mission-first messaging (ADR 0024) and the Transit lines
+brand with button states and menus (ADR 0025).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -438,7 +465,8 @@ accounts for the demo merchants (ADR 0022), display-only product menus
   Prompt frozen at `8d5e1e70`. Never edit locked holdout_3 rows (CI fails and
   `fraud:eval` refuses); a prompt change needs a fresh unseen split.
 - Brand redesign: theme tokens, self-hosted fonts, employer-first landing
-  page, app shell, local-only `/styleguide`.
+  page, app shell, local-only `/styleguide`. Replaced by the Transit lines
+  brand (ADR 0025).
 
 Update this section whenever the milestone changes.
 
