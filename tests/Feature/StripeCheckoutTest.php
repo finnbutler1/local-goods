@@ -9,6 +9,8 @@ use App\Models\Employer;
 use App\Services\CreditLedger;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 use Tests\Concerns\UsesFakeStripe;
 use Tests\TestCase;
 
@@ -22,6 +24,12 @@ class StripeCheckoutTest extends TestCase
 {
     use RefreshDatabase;
     use UsesFakeStripe;
+
+    /**
+     * "fee" or "fees" not touching another letter or digit: catches "platform
+     * fee" and "platform_fee_cents", never the hex inside an ID like 3fee0b1c-….
+     */
+    private const FEE_WORD = '/(?<![a-z0-9])fees?(?![a-z0-9])/i';
 
     private CreditPurchase $purchase;
 
@@ -144,7 +152,31 @@ class StripeCheckoutTest extends TestCase
         $this->assertSame($this->purchase->reference, $session['payment_intent_data']['transfer_group']);
         $this->assertSame(route('employer.dashboard').'?checkout=returned&purchase='.$this->purchase->reference.'#buy', $session['return_url']);
         $this->assertEqualsWithDelta(now()->addHour()->getTimestamp(), $session['expires_at'], 5);
-        $this->assertStringNotContainsStringIgnoringCase('fee', json_encode($session));
+        // Whole words only: the metadata carries a random UUID token, and hex can spell "fee".
+        $this->assertDoesNotMatchRegularExpression(self::FEE_WORD, json_encode($session));
+        $this->assertDoesNotMatchRegularExpression(self::FEE_WORD, $session['line_items'][0]['price_data']['product_data']['name']);
+    }
+
+    public function test_a_payment_token_that_happens_to_contain_fee_does_not_fail_the_fee_check(): void
+    {
+        // payment_token is a random UUID (hex), so about 1 run in 140 it contains "fee".
+        // Forcing one here keeps the "no fee text" check from ever failing by chance.
+        Str::createUuidsUsing(fn () => Uuid::fromString('3fee0b1c-0fee-4a2b-8c3d-9e8f7a6b5fee'));
+
+        try {
+            $this->test_the_checkout_request_only_sends_fields_stripe_accepts();
+            $this->assertStringContainsString('fee', $this->purchase->fresh()->payment_token);
+        } finally {
+            Str::createUuidsNormally();
+        }
+    }
+
+    public function test_the_fee_word_check_still_catches_a_fee(): void
+    {
+        $this->assertMatchesRegularExpression(self::FEE_WORD, '{"name":"Local Goods platform fee (MPG-20261023-1)"}');
+        $this->assertMatchesRegularExpression(self::FEE_WORD, 'Fees: $5.00');
+        $this->assertMatchesRegularExpression(self::FEE_WORD, '{"platform_fee_cents":500}');
+        $this->assertDoesNotMatchRegularExpression(self::FEE_WORD, '{"lg_purchase_token":"3fee0b1c-0fee-4a2b-8c3d-9e8f7a6b5fee"}');
     }
 
     public function test_when_stripe_refuses_checkout_the_reason_is_shown_with_try_again(): void

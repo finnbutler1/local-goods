@@ -26,7 +26,12 @@ class PublicClaimsTest extends TestCase
 
     private const OVERCLAIM = '/local goods\W+(?:\w+\W+){0,3}?(delivers|creates|produces|generates|achieves|causes)\b[^.]{0,40}(\b3\s?x\b|3×|three times|multiplier)|guarantee/i';
 
-    private const BUSINESS_MODEL_NUMBER = '/(platform fee|merchant fee|employer fee|service fee|transaction fee|interchange|margin|take rate|our revenue|Local Goods(?:\'s|’s)? revenue)[^.]{0,40}(\$\s?\d|\d+(\.\d+)?\s?%)|(\$\s?\d|\d+(\.\d+)?\s?%)[^.]{0,20}(platform fee|interchange|take rate|margin)/i';
+    /**
+     * A fee, revenue, interchange, margin or take-rate word within a sentence
+     * of a dollar amount or a percentage. Words must stand alone (not inside
+     * an ID like 3fee0b1c or a word like "marginal"), and so must the number.
+     */
+    private const BUSINESS_MODEL_NUMBER = '/(?<![a-z0-9])(fees?|platform fees?|merchant fees?|employer fees?|service fees?|transaction fees?|interchange|margins?|take rates?|our revenue|Local Goods(?:\'s|’s)? revenue)(?![a-z0-9])[^.]{0,40}(\$\s?\d|(?<![a-z0-9.])\d+(\.\d+)?\s?%)|(\$\s?\d|(?<![a-z0-9.])\d+(\.\d+)?\s?%)[^.]{0,20}(?<![a-z0-9])(fees?|interchange|take rates?|margins?)(?![a-z0-9])/i';
 
     private const STRIPE_MISSING_OR_LIVE = '/later build|not built yet|isn\'t built|coming soon[^.]*stripe|stripe[^.]*coming soon|live mode|live payments|real money moves/i';
 
@@ -168,5 +173,11 @@ class PublicClaimsTest extends TestCase
         $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'A platform fee of 3% on each purchase.');
         $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Interchange earns about 1.5%.');
         $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Independent retailers recirculated 52.3% of their revenue locally.');
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Fees: $5 per employee.');
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'We keep 2% as margin.');
+        // A random-looking ID that happens to contain "fee", next to a real amount, is not a fee claim.
+        $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Purchase 3fee0b1c-0fee-4a2b-8c3d-9e8f7a6b5fee paid $250.00.');
+        $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Token cs_test_a1fee9 for 15% of the balance.');
+        $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'A marginal note about $5 lunches.');
     }
 }
