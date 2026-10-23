@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#1f3d2b">
-    <meta name="description" content="Local Goods is an employee perk that can only be spent at independent businesses near the office, with every redemption checked by AI fraud detection.">
+    <meta name="description" content="Local Goods lets employers in Washington, DC's Golden Triangle give staff credits that only work at independent local businesses, so the neighborhood they work in benefits from their daily presence.">
     <title>@yield('title', 'Local Goods')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

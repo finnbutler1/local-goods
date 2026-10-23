@@ -18,7 +18,8 @@ class LandingPageTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Spend local. Prove it.')
+            ->assertSee('You work here.')
+            ->assertSee('Spend here.')
             ->assertSee('See the AI eval results')
             ->assertDontSee('/demo/')
             ->assertSee('All businesses, people, and transactions are fictional.')
@@ -36,9 +37,51 @@ class LandingPageTest extends TestCase
         $this->assertMatchesRegularExpression('#<a href="'.preg_quote(route('login'), '#').'"[^>]*>\s*Log in\s*</a>#', $html);
     }
 
-    public function test_audience_cards_are_employers_then_bid_then_merchants(): void
+    public function test_the_mission_leads_the_page(): void
     {
-        $this->get('/')->assertSeeInOrder(['id="aud-employers"', 'id="aud-bid"', 'id="aud-merchants"'], false);
+        $html = $this->get('/')->assertOk()
+            ->assertSee('<title>Local Goods: You work here. Spend here.</title>', false)
+            ->assertSeeInOrder(['id="hero-heading"', 'id="problem-heading"', 'id="how-heading"', 'id="why-heading"'], false)
+            ->assertSeeInOrder(['id="gain-district"', 'id="gain-employers"', 'id="gain-merchants"', 'id="gain-employees"', 'id="gain-bid"'], false)
+            ->getContent();
+        $text = preg_replace('/\\s+/', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES));
+
+        foreach ([
+            'You work here. Spend here.',
+            "At 6 p.m., downtown's workers head home, and their spending goes with them. Local Goods gives employees credits that only work at independent local businesses, so the district your company calls home gets livelier.",
+            'A working prototype: payments run on Stripe in test mode, and every person and business in the demo is fictional.',
+            'The commute-desk-commute loop',
+            "That isn't a failing of the people doing it; it's how office work is set up.",
+            'Everyone gains. The district gains most.',
+            'A livelier neighborhood can make an office easier to recruit to, easier to stay at and more worth coming in to; a pilot would measure how much.',
+            'The AI assists; people decide.',
+        ] as $line) {
+            $this->assertStringContainsString($line, $text);
+        }
+        $this->assertStringNotContainsString('What Local Goods is', $text);
+
+        $hero = str($html)->after('aria-labelledby="hero-heading"')->before('</section>')->toString();
+        $this->assertDoesNotMatchRegularExpression('/\\b3\\s?x\\b|3×|multiplier/i', strip_tags($hero));
+    }
+
+    public function test_the_3x_line_sits_in_its_labelled_box_after_the_mission(): void
+    {
+        $html = $this->get('/')->getContent();
+        $box = str($html)->after('data-recirculation-evidence')->before('</aside>')->toString();
+        $text = preg_replace('/\\s+/', ' ', html_entity_decode(strip_tags($box)));
+
+        foreach ([
+            'Estimate from an outside study, not measured by Local Goods',
+            'Money spent at independent local businesses tends to recirculate roughly 3x more in the local economy than money spent at chains, an effect often called the local multiplier.',
+            'recirculated 52.3% of their revenue locally, against 15.8% for chains: about 3.3 times as much.',
+            'Local Goods has not measured this in the Golden Triangle. Real results will be measured in a pilot.',
+            'Source: Civic Economics, “Indie Impact Study Series: National Summary Report” (with the American Booksellers Association), data from 2011–2012, 134 businesses in 10 U.S. communities, none in DC.',
+        ] as $line) {
+            $this->assertStringContainsString($line, $text);
+        }
+        $this->assertSame(1, substr_count(strip_tags($html), 'roughly 3x'));
+        $this->assertSame(1, substr_count(strip_tags($html), 'local multiplier'));
+        $this->assertGreaterThan(strpos($html, 'id="gain-bid"'), strpos($html, 'data-recirculation-evidence'));
     }
 
     public function test_trust_section_quotes_the_saved_eval_headline(): void
@@ -56,7 +99,7 @@ class LandingPageTest extends TestCase
                 ->assertSee('12 of them labeled suspicious by a person')
                 ->assertSee('href="'.route('eval').'"', false)
                 ->assertSee('fails closed')
-                ->assertSee('A held redemption is never approved automatically; it waits for review by the BID.');
+                ->assertSee('A held redemption is never approved automatically; it waits for review by the BID');
         } finally {
             unlink($path);
         }
@@ -113,7 +156,9 @@ class LandingPageTest extends TestCase
             ])
             ->getContent();
 
-        $this->assertDoesNotMatchRegularExpression('/\\b3\\s?x\\b|3×|multiplier/i', strip_tags($html));
+        // The strip is measured demo data; the outside estimate stays in its own labelled box.
+        $strip = str($html)->after('data-demo-totals')->before('</section>')->toString();
+        $this->assertDoesNotMatchRegularExpression('/\\b3\\s?x\\b|3×|multiplier/i', strip_tags($strip));
     }
 
     public function test_impact_strip_names_no_merchant_or_real_candidate_to_logged_out_visitors(): void
