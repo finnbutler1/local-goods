@@ -205,6 +205,30 @@ The static checks (`AccessibilityTest`) cover the menu step, the
 suspicious example, and both forms' error states. Not checked: 320px, axe,
 and how a screen reader reads the running total (see Not tested).
 
+## Mission rewrite (2026-10-23)
+
+The new landing page (hero, "The commute-desk-commute loop", "Why it
+matters" and the labelled 3x box) and the 3x line in the estimate box on
+`/bid-admin/impact`. Checked in headless Chrome (puppeteer-core 24.43,
+axe-core 4.14, WCAG 2.0/2.1/2.2 A and AA plus best practice, every
+`<details>` opened) on a scratch SQLite database with simulated payments
+and no AI key, at 320px, 375px and 1280px:
+
+- axe: no violations on `/` signed out or on `/bid-admin/impact` as the
+  BID admin, at any of the three widths.
+- No sideways scroll on either page at any width.
+- Heading order: one `h1` per page and no skipped levels (landing: h1, then
+  h2 for each section and h3 for each card; impact: h1 then h2s).
+- New text uses only token pairs already checked by `ColorContrastTest`
+  (ink, muted and forest on forest-tint and cream-deep; amber-ink on cream).
+- The 375px full-page screenshot of the landing page was looked at: the
+  cards stack in order (district, employers, merchants, employees, BID)
+  with the dashed estimate box after them.
+
+Not checked this time: keyboard-only walk-through (no new controls were
+added) and `/judge` in the browser (judges sign in by magic link; the page
+is covered by `AccessibilityTest`).
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session

@@ -5,6 +5,19 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Mission-first messaging — done (2026-10-23, ADR 0024).** No migration,
+no money, Stripe, prompt or eval change.
+
+- Landing: "You work here. Spend here.", "The commute-desk-commute loop",
+  "Why it matters" (district first). Judge home: "Why Local Goods exists"
+  (the old "What Local Goods is" heading fails `PublicClaimsTest`). README
+  opens with the same mission.
+- The 3x line only via `partials/recirculation-evidence` (label, rates and
+  ratio from `config/impact.php`, pilot line, source); README carries the
+  same label and source in its section. Never "Local Goods creates/delivers
+  3x", never "guaranteed", never a measured result. No fee, revenue or
+  interchange figures on public pages or the README (tests check).
+
 **Product menus at the demo merchants — done (2026-10-22, ADR 0023).** One
 migration (`merchant_products`, `redemption_items`, additive). Money rules,
 fraud prompt (`8d5e1e70`), signals, model and eval data unchanged.
@@ -196,8 +209,9 @@ No migration, no money/AI/eval changes.
   history, so it shows only with an empty ledger).
 - Recirculation: only as the boxed "Estimate from an outside study, not
   measured by Local Goods", Civic Economics Indie Impact national summary,
-  52.3% (config `impact.recirculation`). Never "3x", never "multiplier",
-  never a measured result (tests check).
+  52.3% (config `impact.recirculation`). "Roughly 3x" / "local multiplier"
+  only with that label and source (ADR 0024); never a measured result
+  (tests check).
 - Landing strip: `BidImpactMetrics::totals()`, labelled "Demo data: all
   people and transactions are fictional.", no names.
 - Fraud review label "Round amount (a multiple of $10, and at least $20)"
@@ -332,8 +346,8 @@ Stripe Connect test mode (ADR 0015), the fraud gate on transfers
 pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
 contacts in adjudication (ADR 0019), one-step Buy credits with the
 platform fee ready but off (ADR 0021) and platform-set-up Stripe test
-accounts for the demo merchants (ADR 0022) and display-only product menus
-(ADR 0023).
+accounts for the demo merchants (ADR 0022), display-only product menus
+(ADR 0023) and mission-first messaging (ADR 0024).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
