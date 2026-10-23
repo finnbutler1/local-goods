@@ -70,7 +70,7 @@ class BidImpactPageTest extends TestCase
         $this->assertSame(6, substr_count($response->getContent(), 'How we count this'));
     }
 
-    public function test_the_recirculation_estimate_is_labelled_as_an_outside_study_and_never_as_a_multiplier(): void
+    public function test_the_recirculation_estimate_and_the_3x_line_are_labelled_as_an_outside_study(): void
     {
         $this->signIn(Role::BidAdmin);
         $estimate = BidImpactMetrics::recirculationCents(app(BidImpactMetrics::class)->totals()['spent_cents']);
@@ -91,7 +91,19 @@ class BidImpactPageTest extends TestCase
             ->assertDontSee('bookweb.org', false)
             ->getContent();
 
-        $this->assertDoesNotMatchRegularExpression('/\b3\s?x\b|3×|multiplier/i', strip_tags($html));
+        // The 3x line appears once, inside the labelled box with its source and the pilot line (ADR 0024).
+        $box = str($html)->after('data-recirculation-estimate')->before('</aside>')->toString();
+        $text = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($box)));
+        foreach ([
+            'Estimate from an outside study, not measured by Local Goods',
+            'Money spent at independent local businesses tends to recirculate roughly 3x more in the local economy than money spent at chains, an effect often called the local multiplier.',
+            'Real results will be measured in a pilot.',
+            'Source: Civic Economics',
+        ] as $line) {
+            $this->assertStringContainsString($line, $text);
+        }
+        $this->assertSame(1, substr_count(strip_tags($html), 'roughly 3x'));
+        $this->assertSame(1, substr_count(strip_tags($html), 'Estimate from an outside study, not measured by Local Goods'));
     }
 
     public function test_no_employee_is_named(): void
