@@ -189,10 +189,10 @@ FAVICONS = {
                            f'<path d="M6 3H8L13 8.5V10Z" fill="{GOLD}"/>',
     ("triangle", "b", 32): f'<rect width="32" height="32" rx="6" fill="{NAVY}"/><path d="M6 5H11V21H27V27H6Z" fill="{CREAM}"/>'
                            f'<path d="M11 5H15L27 17.5V21Z" fill="{GOLD}"/>',
+    # Simplified for 16px (step 3): thicker loop, bigger local stop, no end stops.
     ("transit", "a", 16): f'<rect width="16" height="16" rx="3" fill="{NIGHT}"/>'
-                          f'<rect x="2.5" y="5" width="11" height="7" rx="3.5" fill="none" stroke="{TEAL}" stroke-width="1.8"/>'
-                          f'<circle cx="2.5" cy="8.5" r="1.3" fill="{MIST}"/><circle cx="13.5" cy="8.5" r="1.3" fill="{MIST}"/>'
-                          f'<circle cx="8" cy="5" r="2.4" fill="{CORAL}"/>',
+                          f'<rect x="2.25" y="5.25" width="11.5" height="8" rx="4" fill="none" stroke="{TEAL}" stroke-width="2.5"/>'
+                          f'<circle cx="8" cy="5.25" r="2.75" fill="{CORAL}"/>',
     ("transit", "a", 32): f'<rect width="32" height="32" rx="6" fill="{NIGHT}"/>'
                           f'<rect x="5" y="10" width="22" height="14" rx="7" fill="none" stroke="{TEAL}" stroke-width="3.4"/>'
                           f'<circle cx="5" cy="17" r="2.6" fill="{MIST}"/><circle cx="27" cy="17" r="2.6" fill="{MIST}"/>'
