@@ -189,7 +189,7 @@
                             <p class="font-semibold">{{ $merchant->name }}</p>
                             <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
                             <a href="{{ route('employee.wallet', ['merchant' => $merchant->id]) }}#redeem"
-                               class="tap-target mt-2 self-start text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                               class="tap-target mt-2 min-h-6 self-start text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                                 Redeem here<span class="sr-only"> at {{ $merchant->name }}</span>
                             </a>
                         </x-card>

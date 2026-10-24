@@ -190,7 +190,7 @@
         </section>
 
         @if ($impact['recirculation_cents'] !== null)
-            <aside aria-labelledby="estimate-heading" class="rounded-3xl border-2 border-dashed border-muted bg-band p-6 sm:p-8" data-recirculation-estimate>
+            <section aria-labelledby="estimate-heading" class="rounded-3xl border-2 border-dashed border-muted bg-band p-6 sm:p-8" data-recirculation-estimate>
                 <h2 id="estimate-heading" class="text-2xl font-semibold text-primary">How much of this spending might stay local</h2>
                 <div class="mt-3">
                     @include('partials.recirculation-evidence')
@@ -201,7 +201,7 @@
                     of this spending would recirculate locally. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch by
                     {{ round(100 * $source['independent_rate'], 1) }}%; the real share here could be higher or lower.
                 </p>
-            </aside>
+            </section>
         @endif
     @endif
 </div>
