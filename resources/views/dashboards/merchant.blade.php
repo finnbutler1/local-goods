@@ -1,4 +1,4 @@
-@php use App\Support\Money; @endphp
+@php use App\Support\Money; use App\Support\SalesTax; @endphp
 
 <x-app-shell title="Merchant dashboard" active="dashboard"
              :context="($merchant?->name ?? 'Merchant').' · Golden Triangle BID'">
@@ -119,11 +119,13 @@
                 {{-- Judges: what the cashier sees after checking a code. A sample, not a real payment. --}}
                 <div class="mt-5 rounded-2xl border-2 border-dashed border-line p-4">
                     <p class="text-sm font-semibold uppercase tracking-widest text-muted">Sample, after a code is checked</p>
+                    @php $sampleTax = SalesTax::forItems([['name' => 'Latte', 'unit_price_cents' => 575, 'quantity' => 2, 'tax_category' => 'prepared_food']]); @endphp
                     <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-                        <dt class="text-muted">Amount</dt><dd class="tabular font-display text-2xl font-semibold text-ink">$8.50</dd>
+                        <dt class="text-muted">Amount</dt><dd class="tabular font-display text-2xl font-semibold text-ink">{{ Money::format($sampleTax->totalCents) }}</dd>
                         <dt class="text-muted">Items</dt><dd class="text-ink">2× Latte</dd>
                         <dt class="text-muted">Customer</dt><dd class="font-semibold text-ink">A.B.</dd>
                     </dl>
+                    @include('partials.tax-breakdown', ['tax' => $sampleTax, 'class' => 'mt-3 max-w-xs rounded-xl bg-band p-3 text-sm text-ink'])
                     <p class="mt-2 text-sm text-muted">Then Confirm payment (checked by Redemption Fraud Detection, like every redemption) or Decline.</p>
                 </div>
             @endcannot
@@ -202,7 +204,7 @@
                         <div class="text-right">
                             <p @class(['tabular font-semibold', 'text-muted line-through' => $redemption->isRejected()])>{{ Money::format($redemption->amount_cents) }}</p>
                             @if ($redemption->isUnderReview())
-                                <x-badge tone="hold" class="mt-1">Waiting for review, not owed yet</x-badge>
+                                <x-badge tone="hold" :wrap="true" class="mt-1 max-w-36">Waiting for review, not owed yet</x-badge>
                             @elseif ($redemption->isCancelled())
                                 <x-badge tone="neutral" class="mt-1">{{ $redemption->cancelledLabel() }}, not owed</x-badge>
                             @elseif ($redemption->isRejected())
