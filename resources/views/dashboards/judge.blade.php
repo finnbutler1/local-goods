@@ -102,9 +102,10 @@
             <p class="mt-1 text-muted">Each step opens the screen as that role would see it, read-only.</p>
             <ol class="mt-4 grid gap-3 md:grid-cols-2">
                 @foreach ($tour as $i => $step)
-                    <x-card as="li" class="flex gap-4">
+                    {{-- Phones: the number sits beside the title and the text uses the card's full width. --}}
+                    <x-card as="li" class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:items-start">
                         <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-display text-lg font-semibold text-on-primary" aria-hidden="true">{{ $i + 1 }}</span>
-                        <div class="min-w-0">
+                        <div class="contents sm:block sm:min-w-0">
                             <h3 class="flex flex-wrap items-center gap-2 text-xl font-semibold">
                                 <a href="{{ $step['url'] }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                                     <span class="sr-only">Step {{ $i + 1 }}: </span>{{ $step['title'] }}
@@ -113,7 +114,7 @@
                                     <x-badge tone="neutral" class="font-sans">Coming in a later build</x-badge>
                                 @endunless
                             </h3>
-                            <p class="mt-1 text-muted">{{ $step['look_for'] }}</p>
+                            <p class="col-span-2 text-muted sm:col-span-1 sm:mt-1">{{ $step['look_for'] }}</p>
                         </div>
                     </x-card>
                 @endforeach

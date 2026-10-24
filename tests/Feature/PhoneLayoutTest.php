@@ -59,8 +59,8 @@ class PhoneLayoutTest extends TestCase
 
         // env() is only non-zero with viewport-fit=cover.
         $this->assertStringContainsString('viewport-fit=cover', $html);
-        // The last content clears the tab bar plus the home indicator.
-        $this->assertMatchesRegularExpression('~<main id="main"[^>]*pb-\[calc\(10rem\+env\(safe-area-inset-bottom\)\)\]~', $html);
+        // The footer (the last content, shown on phones too) clears the tab bar plus the home indicator.
+        $this->assertMatchesRegularExpression('~<footer class="[^"]*pb-\[calc\(10rem\+env\(safe-area-inset-bottom\)\)\][^"]*lg:pb-8">\s*Demonstration project~', $html);
         // The tab bar itself grows by the inset, and keeps clear of a landscape notch.
         $this->assertMatchesRegularExpression('~<nav aria-label="App" class="fixed inset-x-0 bottom-0[^"]*pb-\[env\(safe-area-inset-bottom\)\][^"]*"~', $html);
         $this->assertMatchesRegularExpression('~<nav aria-label="App" class="fixed inset-x-0 bottom-0[^"]*pl-\[env\(safe-area-inset-left\)\]~', $html);
