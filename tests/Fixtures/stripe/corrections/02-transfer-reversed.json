@@ -1,0 +1,71 @@
+{
+    "id": "fake_evt_8",
+    "object": "event",
+    "api_version": "2026-09-30.endive",
+    "created": 1792860740,
+    "data": {
+        "object": {
+            "id": "fake_tr_2",
+            "object": "transfer",
+            "amount": 1500,
+            "amount_reversed": 500,
+            "balance_transaction": "fake_txn_3",
+            "created": 1792860739,
+            "currency": "usd",
+            "description": "Local Goods scratch trial transfer",
+            "destination": "fake_acct_4",
+            "destination_payment": "fake_py_5",
+            "livemode": false,
+            "metadata": {
+                "lg_env": "scratch",
+                "lg_instance": "step7-trial",
+                "lg_trial": "1",
+                "lg_trial_run": "fake-run"
+            },
+            "reversals": {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "fake_trr_9",
+                        "object": "transfer_reversal",
+                        "amount": 500,
+                        "balance_transaction": "fake_txn_10",
+                        "created": 1792860740,
+                        "currency": "usd",
+                        "destination_payment_refund": "fake_pyr_11",
+                        "metadata": {
+                            "lg_env": "scratch",
+                            "lg_instance": "step7-trial",
+                            "lg_trial": "1",
+                            "lg_trial_run": "fake-run",
+                            "lg_trial_step": "partial"
+                        },
+                        "source_refund": null,
+                        "transfer": "fake_tr_2"
+                    }
+                ],
+                "has_more": false,
+                "total_count": 1,
+                "url": "/v1/transfers/fake_tr_2/reversals"
+            },
+            "reversed": false,
+            "source_transaction": "fake_ch_6",
+            "source_type": "card",
+            "transfer_group": "LG-TRIAL-fake-run"
+        },
+        "previous_attributes": {
+            "amount_reversed": 0,
+            "reversals": {
+                "data": [],
+                "total_count": 0
+            }
+        }
+    },
+    "livemode": false,
+    "pending_webhooks": 0,
+    "request": {
+        "id": "fake_req_12",
+        "idempotency_key": "fake-removed"
+    },
+    "type": "transfer.reversed"
+}
