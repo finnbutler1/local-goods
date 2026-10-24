@@ -15,6 +15,7 @@ use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
+use App\Http\Controllers\Employee\PayCodeController;
 use App\Http\Controllers\Employer\EmployerDashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
@@ -74,6 +75,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/employee', [EmployeeWalletController::class, 'show'])->name('employee.wallet');
         // One Redemption Fraud Detection call to Claude each, so rate-limited (AppServiceProvider).
         Route::post('/employee/redeem', [EmployeeWalletController::class, 'redeem'])->middleware('throttle:redeem')->name('employee.redeem');
+        // Pay in person (ADR 0026): a one-time code for the merchant to confirm. Getting one moves nothing.
+        Route::post('/employee/pay-code', [PayCodeController::class, 'store'])->middleware('throttle:10,1,employee.pay-code.store')->name('employee.pay-code.store');
+        Route::post('/employee/pay-code/{payCode}/cancel', [PayCodeController::class, 'cancel'])->middleware('throttle:20,1,employee.pay-code.cancel')->name('employee.pay-code.cancel');
+        Route::get('/employee/pay-code/{payCode}/status', [PayCodeController::class, 'status'])->middleware('throttle:90,1,employee.pay-code.status')->name('employee.pay-code.status');
     });
 
     Route::middleware('role:bid_admin,platform_admin')->prefix('bid-admin')->name('bid-admin.')->group(function () {

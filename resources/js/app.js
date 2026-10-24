@@ -353,3 +353,79 @@ document.querySelectorAll('form[data-basket]').forEach((form) => {
     summary.hidden = false;
     update();
 });
+
+// Tabs: [data-tabs] around a role="tablist" of <a role="tab" aria-controls>.
+// Without JavaScript each tab is a plain link to its ?tab= page. With it,
+// clicking shows that panel in place; ArrowLeft/ArrowRight move to the
+// previous/next tab and Home/End to the first/last, selecting it as they go.
+document.querySelectorAll('[data-tabs]').forEach((tabs) => {
+    const list = [...tabs.querySelectorAll('[role="tab"]')];
+    const select = (tab, focus) => {
+        list.forEach((each) => {
+            const on = each === tab;
+            each.setAttribute('aria-selected', String(on));
+            each.tabIndex = on ? 0 : -1;
+            document.getElementById(each.getAttribute('aria-controls')).hidden = !on;
+        });
+        if (focus) tab.focus();
+        history.replaceState(history.state, '', tab.href);
+    };
+    list.forEach((tab, index) => {
+        tab.addEventListener('click', (event) => {
+            event.preventDefault();
+            select(tab, false);
+        });
+        tab.addEventListener('keydown', (event) => {
+            const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: list.length - 1 }[event.key];
+            if (next === undefined) return;
+            event.preventDefault();
+            select(list[(next + list.length) % list.length], true);
+        });
+    });
+});
+
+// Pay code screen: [data-pay-code] (ADR 0026). Counts down to data-expires-at
+// (hidden from screen readers; the live region speaks only at one minute
+// left and at expiry) and asks every 3 seconds whether the merchant has
+// confirmed. Once the code is used, declined, cancelled or expired, goes to
+// the result page. Without JavaScript the person refreshes the page.
+const payCode = document.querySelector('[data-pay-code]');
+if (payCode) {
+    const expires = Date.parse(payCode.dataset.expiresAt);
+    const countdown = payCode.querySelector('[data-countdown]');
+    const announce = payCode.querySelector('[data-countdown-announce]');
+    const waiting = payCode.querySelector('[data-pay-code-waiting]');
+    const showResult = () => window.location.assign(payCode.dataset.payCodeResultUrl);
+    let warned = false;
+    const tick = () => {
+        const left = Math.max(0, Math.round((expires - Date.now()) / 1000));
+        countdown.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+        if (left <= 60 && !warned) {
+            warned = true;
+            announce.textContent = 'One minute left on your pay code.';
+        }
+        if (left === 0) {
+            clearInterval(timer);
+            announce.textContent = 'Your pay code expired. Nothing was charged.';
+            setTimeout(showResult, 1500);
+        }
+    };
+    const timer = setInterval(tick, 1000);
+    tick();
+
+    const check = async () => {
+        try {
+            const response = await fetch(payCode.dataset.payCodeStatusUrl, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+            const { status } = await response.json();
+            if (status && status !== 'active' && status !== 'confirming') {
+                showResult();
+                return;
+            }
+            if (status === 'confirming') waiting.textContent = 'The cashier pressed Confirm. Checking…';
+        } catch {
+            // A dropped request is just another try.
+        }
+        if (Date.now() < expires + 5000) setTimeout(check, 3000);
+    };
+    setTimeout(check, 3000);
+}

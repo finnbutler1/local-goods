@@ -7,15 +7,18 @@ use App\Enums\Role;
 use App\Http\Middleware\BlockJudgeWrites;
 use App\Http\Middleware\KeepPersonalContactsToAdjudication;
 use App\Models\CreditPurchase;
+use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantProduct;
+use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Policies\RedemptionPolicy;
 use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
+use App\Services\PayCodes;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RoutingRoute;
@@ -43,6 +46,8 @@ class JudgeReadOnlyTest extends TestCase
 
     private User $judge;
 
+    private PayCode $payCode;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -52,6 +57,9 @@ class JudgeReadOnlyTest extends TestCase
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(90, 'hold'));
         $this->signIn(Role::Employee);
         $this->post('/employee/redeem', ['merchant_id' => Merchant::firstOrFail()->id, 'amount' => '5']);
+        // A live pay code at the demo merchant, so Confirm, Decline and Cancel would have something to change (ADR 0026).
+        $this->payCode = app(PayCodes::class)->issue(Employee::orderBy('id')->firstOrFail(),
+            Merchant::where('name', config('demo.accounts.merchant.business'))->firstOrFail(), 500);
         $admin = $this->signIn(Role::PlatformAdmin);
 
         // A feedback item from someone else, for the inbox's update route.
@@ -194,6 +202,7 @@ class JudgeReadOnlyTest extends TestCase
             'candidate' => 'MC-001',
             // Ids don't restart at 1 on MySQL, so a guess would 404 before the 403.
             'product' => MerchantProduct::value('id'),
+            'payCode' => $this->payCode->id,
         ];
 
         return preg_replace_callback('/\{(\w+)\??\}/', function ($m) use ($ids) {
@@ -208,6 +217,8 @@ class JudgeReadOnlyTest extends TestCase
     {
         return [
             'merchant_id' => Merchant::firstOrFail()->id,
+            'pay_merchant_id' => Merchant::firstOrFail()->id,
+            'pay_code' => $this->payCode->code,
             'amount' => '5',
             'name' => 'Synthetic Reviewer',
             'email' => 'synthetic.reviewer@example.test',
