@@ -90,4 +90,68 @@ class PhoneLayoutTest extends TestCase
         $wallet = $this->actingAs($this->signIn(Role::Employee))->get('/employee')->assertOk()->getContent();
         $this->assertStringContainsString('class="tap-target mt-2 self-start', $wallet);
     }
+
+    /** @return list<string> */
+    private static function fieldProblems(string $html): array
+    {
+        $problems = [];
+        preg_match_all('~<(input|select|textarea)\b[^>]*>~', $html, $tags);
+        foreach ($tags[0] as $tag) {
+            $attr = fn (string $name) => preg_match('~\s'.$name.'="([^"]*)"~', $tag, $m) ? $m[1] : null;
+            $name = (string) $attr('name');
+            $type = $attr('type');
+
+            if (preg_match('~\btext-(xs|sm)\b~', (string) $attr('class'))) {
+                $problems[] = "{$name}: smaller than 16px (iOS zooms in)";
+            }
+            if (preg_match('~(^|_)(amount|price|budget|allowance)\]?$~', $name) && $attr('inputmode') !== 'decimal') {
+                $problems[] = "{$name}: a money field without inputmode=\"decimal\"";
+            }
+            if ($name === 'email' && ! in_array($type, ['email', 'hidden'], true)) {
+                $problems[] = 'email: not type="email"';
+            }
+            if (str_starts_with($name, 'items[') && ($type !== 'number' || $attr('inputmode') !== 'numeric')) {
+                $problems[] = "{$name}: a quantity that isn't a numeric field";
+            }
+            if ($name === 'pay_code' && ($attr('inputmode') !== 'text' || $attr('autocapitalize') !== 'characters' || $attr('autocomplete') !== 'off')) {
+                $problems[] = 'pay_code: changed from text, capitals, no autocomplete';
+            }
+        }
+
+        return array_values(array_unique($problems));
+    }
+
+    public function test_every_field_is_16px_and_brings_up_the_right_keyboard(): void
+    {
+        $found = [];
+        $check = function (string $html, string $where) use (&$found) {
+            if ($problems = self::fieldProblems($html)) {
+                $found[$where] = $problems;
+            }
+        };
+        $this->sweepPages($check);
+
+        // Fields that only show up in a state: a menu to pay from, and a merchant's menu editor.
+        $grind = \App\Models\Merchant::where('name', 'Farragut Grind')->value('id');
+        $employee = $this->signIn(Role::Employee);
+        $check($this->actingAs($employee)->get('/employee?merchant='.$grind)->assertOk()->getContent(), 'redeem from a menu');
+        $check($this->actingAs($employee)->get('/employee?tab=in-person&pay_merchant='.$grind)->assertOk()->getContent(), 'pay in person from a menu');
+
+        $this->assertSame([], $found, "Fields:\n".collect($found)->map(fn ($p, $w) => "{$w}: ".implode('; ', $p))->implode("\n"));
+
+        $css = File::get(resource_path('css/app.css'));
+        $this->assertMatchesRegularExpression('/:is\(input, select, textarea\) \{\s*font-size: max\(1rem, 1em\);/', $css);
+    }
+
+    public function test_the_known_fields_keep_their_keyboards(): void
+    {
+        $html = $this->actingAs($this->signIn(Role::EmployerAdmin))->get('/employer')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<input id="purchase_amount" name="purchase_amount" type="text" inputmode="decimal"~', $html);
+
+        $login = File::get(resource_path('views/auth/login.blade.php'));
+        $this->assertStringContainsString('name="email" type="email" autocomplete="username"', $login);
+
+        $payCode = File::get(resource_path('views/dashboards/partials/pay-code-field.blade.php'));
+        $this->assertStringContainsString('inputmode="text" enterkeyhint="go"', $payCode);
+    }
 }
