@@ -4,13 +4,18 @@ namespace App\Services;
 
 use App\Models\Merchant;
 use App\Models\RedemptionItem;
+use App\Support\SalesTax;
+use App\Support\TaxBreakdown;
 use Illuminate\Validation\ValidationException;
 
 /**
  * Turns what an employee picked from a merchant's menu (ADR 0023) into the
  * redemption total and its item lines. The server works out the total from
- * the menu's own prices; nothing the browser adds up is trusted. Display
- * only: the items never reach Redemption Fraud Detection.
+ * the menu's own prices and the DC sales tax in effect now (ADR 0027);
+ * nothing the browser adds up is trusted. Tax is added on menu items only:
+ * an "Other amount" or a bare typed-in amount is the shop's own total with
+ * any tax already in it. Display only: the items and tax never reach
+ * Redemption Fraud Detection, which sees just the total.
  */
 class RedemptionBasket
 {
@@ -19,7 +24,7 @@ class RedemptionBasket
     /**
      * @param  array<int|string, mixed>  $quantities  product id => quantity (0 or blank = not chosen)
      * @param  int  $otherCents  the "Other amount" part, 0 if none
-     * @return array{total_cents: int, items: list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int}>}
+     * @return array{total_cents: int, items: list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int, tax_category: ?string, tax_rate_bps: ?int}>, tax: TaxBreakdown}
      */
     public static function build(Merchant $merchant, array $quantities, int $otherCents): array
     {
@@ -32,20 +37,20 @@ class RedemptionBasket
 
         $items = [];
         foreach ($products as $id => $product) {
-            $items[] = ['merchant_product_id' => $id, 'name' => $product->name, 'unit_price_cents' => $product->price_cents, 'quantity' => (int) $chosen[$id]];
+            $items[] = ['merchant_product_id' => $id, 'name' => $product->name, 'unit_price_cents' => $product->price_cents, 'quantity' => (int) $chosen[$id], 'tax_category' => $product->taxCategory()];
         }
 
         // Only an amount with nothing picked stays a bare amount, exactly as before menus.
         if ($items !== [] && $otherCents > 0) {
-            $items[] = ['merchant_product_id' => null, 'name' => RedemptionItem::OTHER_AMOUNT, 'unit_price_cents' => $otherCents, 'quantity' => 1];
+            $items[] = ['merchant_product_id' => null, 'name' => RedemptionItem::OTHER_AMOUNT, 'unit_price_cents' => $otherCents, 'quantity' => 1, 'tax_category' => null];
         }
 
-        $total = $items === [] ? $otherCents : array_sum(array_map(fn ($i) => $i['unit_price_cents'] * $i['quantity'], $items));
+        $tax = $items === [] ? TaxBreakdown::included($otherCents) : SalesTax::forItems($items);
 
-        if ($total <= 0) {
+        if ($tax->totalCents <= 0) {
             throw ValidationException::withMessages(['amount' => 'Choose at least one item, or enter an other amount.']);
         }
 
-        return ['total_cents' => $total, 'items' => $items];
+        return ['total_cents' => $tax->totalCents, 'items' => $tax->items, 'tax' => $tax];
     }
 }

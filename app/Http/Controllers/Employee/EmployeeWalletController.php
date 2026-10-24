@@ -118,7 +118,7 @@ class EmployeeWalletController extends Controller
         $merchant = Merchant::findOrFail($data['merchant_id']);
         $basket = RedemptionBasket::build($merchant, $data['items'] ?? [], isset($data['amount']) ? Money::toCents($data['amount']) : 0);
 
-        $redemption = $service->redeem($this->employee($request), $merchant, $basket['total_cents'], $basket['items']);
+        $redemption = $service->redeem($this->employee($request), $merchant, $basket['total_cents'], $basket['items'], tax: $basket['tax']);
 
         $redemption->load(['merchant', 'items']);
         $for = $redemption->itemsSummary();

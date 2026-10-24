@@ -10,6 +10,7 @@ use App\Services\Fraud\RedemptionFraudDetector;
 use App\Services\Fraud\SignalCalculator;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
+use App\Support\TaxBreakdown;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use LogicException;
@@ -38,12 +39,22 @@ class RedemptionService
      * ("to_go" or "in_person", ADR 0026) is the same: stored on the row for
      * display, never passed to the signals or the AI.
      *
-     * @param  list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int}>  $items
+     * $tax (ADR 0027) is the DC sales tax snapshot, stored on the row in the
+     * same transaction. $amountCents is the total including any tax: it is
+     * what the AI sees, what the ledger debits and what the merchant is
+     * paid, exactly as before. Without $tax the amount is a typed-in shop
+     * total with any tax already in it. The tax is display only and never
+     * reaches the signals or the AI.
+     *
+     * @param  list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int, tax_category?: ?string, tax_rate_bps?: ?int}>  $items
      */
-    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], string $channel = Redemption::CHANNEL_TO_GO): Redemption
+    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], string $channel = Redemption::CHANNEL_TO_GO, ?TaxBreakdown $tax = null): Redemption
     {
-        if ($items !== [] && array_sum(array_map(fn ($i) => $i['unit_price_cents'] * $i['quantity'], $items)) !== $amountCents) {
-            throw new LogicException('The items must add up to the redemption amount.');
+        $tax ??= TaxBreakdown::included($amountCents);
+
+        if ($tax->totalCents !== $amountCents
+            || ($items !== [] && array_sum(array_map(fn ($i) => $i['unit_price_cents'] * $i['quantity'], $items)) + ($tax->taxCents ?? 0) !== $amountCents)) {
+            throw new LogicException('The items and tax must add up to the redemption amount.');
         }
 
         $this->ensureAffordable($employee, $amountCents);
@@ -53,7 +64,7 @@ class RedemptionService
         // The AI call happens outside the transaction so the database is never locked while we wait.
         $verdict = $this->detector->score($signals);
 
-        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $channel, $signals, $verdict) {
+        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $channel, $tax, $signals, $verdict) {
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.
@@ -73,6 +84,7 @@ class RedemptionService
                 'signals' => $signals,
                 'scored_by' => $verdict->scoredBy,
                 'channel' => $channel,
+                ...$tax->columns(),
             ]);
 
             foreach ($items as $item) {

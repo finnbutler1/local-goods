@@ -44,7 +44,7 @@ class PayCodeController extends Controller
 
             $merchant = Merchant::findOrFail($data['pay_merchant_id']);
             $basket = RedemptionBasket::build($merchant, $data['items'] ?? [], isset($data['amount']) ? Money::toCents($data['amount']) : 0);
-            $payCode = $codes->issue($this->employee($request), $merchant, $basket['total_cents'], $basket['items']);
+            $payCode = $codes->issue($this->employee($request), $merchant, $basket['total_cents'], $basket['items'], $basket['tax']);
         } catch (ValidationException $e) {
             throw $e->errorBag(self::ERRORS)->redirectTo(route('employee.wallet', ['tab' => 'in-person']).'#pay');
         }
