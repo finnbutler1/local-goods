@@ -34,11 +34,13 @@ class RedemptionService
      *
      * $items (from RedemptionBasket) are display only (ADR 0023): they are
      * stored with the redemption after scoring and never reach the signals
-     * or the AI, which see exactly the amount and nothing else.
+     * or the AI, which see exactly the amount and nothing else. $channel
+     * ("to_go" or "in_person", ADR 0026) is the same: stored on the row for
+     * display, never passed to the signals or the AI.
      *
      * @param  list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int}>  $items
      */
-    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = []): Redemption
+    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], string $channel = Redemption::CHANNEL_TO_GO): Redemption
     {
         if ($items !== [] && array_sum(array_map(fn ($i) => $i['unit_price_cents'] * $i['quantity'], $items)) !== $amountCents) {
             throw new LogicException('The items must add up to the redemption amount.');
@@ -51,7 +53,7 @@ class RedemptionService
         // The AI call happens outside the transaction so the database is never locked while we wait.
         $verdict = $this->detector->score($signals);
 
-        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $signals, $verdict) {
+        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $channel, $signals, $verdict) {
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.
@@ -70,6 +72,7 @@ class RedemptionService
                 'ai_explanation' => $verdict->explanation,
                 'signals' => $signals,
                 'scored_by' => $verdict->scoredBy,
+                'channel' => $channel,
             ]);
 
             foreach ($items as $item) {
