@@ -113,8 +113,8 @@
         @if ($reviewers->isEmpty())
             <p class="mt-3 text-muted">No reviewers yet.</p>
         @else
-            <x-card class="mt-3 scroll-region" padding="p-0" role="region" tabindex="0" aria-label="Named reviewers table">
-                <table class="w-full text-left text-sm">
+            <x-rtable class="mt-3" label="Named reviewers table">
+                <table data-rtable="stack" class="w-full text-left text-sm">
                     <caption class="sr-only">Named reviewers, their status and their magic-link actions</caption>
                     <thead class="border-b border-line text-muted">
                         <tr>
@@ -130,22 +130,22 @@
                     <tbody class="divide-y divide-line">
                         @foreach ($reviewers as $reviewer)
                             <tr>
-                                <td class="px-4 py-3">
+                                <td data-primary class="px-4 py-3">
                                     <p class="font-semibold">{{ $reviewer->adminLabel() }}</p>
                                     @if ($reviewer->adminEmail())
-                                        <p class="break-all text-muted">{{ $reviewer->adminEmail() }}</p>
+                                        <p class="text-sm font-normal text-muted"><x-breakable :value="$reviewer->adminEmail()" /></p>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3">{{ $reviewer->reviewer_type?->label() ?? '—' }}</td>
-                                <td class="px-4 py-3">
+                                <td data-label="Type" class="px-4 py-3">{{ $reviewer->reviewer_type?->label() ?? '—' }}</td>
+                                <td data-label="Status" class="px-4 py-3">
                                     @php [$tone, $label] = $status($reviewer); @endphp
                                     <x-badge :tone="$tone">{{ $label }}</x-badge>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->invited_at) }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->first_login_at) }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->last_seen_at) }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-wrap justify-end gap-2">
+                                <td data-label="Added" class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->invited_at) }}</td>
+                                <td data-label="First login" class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->first_login_at) }}</td>
+                                <td data-label="Last seen" class="px-4 py-3 whitespace-nowrap">{{ $when($reviewer->last_seen_at) }}</td>
+                                <td data-label="" class="px-4 py-3">
+                                    <div class="flex flex-wrap gap-3 sm:justify-end sm:gap-2">
                                         <form method="POST" action="{{ route('admin.reviewers.link', $reviewer) }}" data-busy="Making a new link…">
                                             @csrf
                                             @php $linkLabel = $reviewer->isRevoked() ? 'Restore with new link' : 'New link'; @endphp
@@ -164,7 +164,7 @@
                         @endforeach
                     </tbody>
                 </table>
-            </x-card>
+            </x-rtable>
         @endif
     </section>
 </div>

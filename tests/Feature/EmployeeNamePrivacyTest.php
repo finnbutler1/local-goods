@@ -137,6 +137,8 @@ class EmployeeNamePrivacyTest extends TestCase
         $this->assertNotEmpty($candidates);
 
         $check = function (string $html, string $where) use ($others, $candidates) {
+            // <x-breakable> puts <wbr> inside long emails; an email split that way still counts.
+            $html = str_replace('<wbr>', '', $html);
             $this->assertNoFullNames($html, $where);
             foreach ($candidates as $name) {
                 $this->assertStringNotContainsString(e($name), $html, "Candidate {$name} appears on {$where}.");
@@ -192,6 +194,7 @@ class EmployeeNamePrivacyTest extends TestCase
         auth()->logout();
 
         $check = function (string $html, string $where) {
+            $html = str_replace('<wbr>', '', $html);
             $this->assertStringNotContainsString('Quincy', $html, "A personal contact's name appears on {$where}.");
             $this->assertStringNotContainsString('Fakecontact', $html, "A personal contact's name appears on {$where}.");
             $this->assertStringNotContainsString('quincy.fakecontact', $html, "A personal contact's email appears on {$where}.");

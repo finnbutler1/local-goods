@@ -40,8 +40,8 @@
     </div>
 
     @foreach (['by_split' => ['Split', FraudEvalRunner::SPLITS], 'by_tag' => ['Pattern', FraudEvalPatterns::TAGS]] as $key => [$heading, $names])
-        <div class="scroll-region" role="region" tabindex="0" aria-label="{{ $label }}: disputed cases by {{ strtolower($heading) }} table">
-            <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
+        <x-rtable :card="false" label="{{ $label }}: disputed cases by {{ strtolower($heading) }} table">
+            <table data-rtable="stack" class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                 <caption class="px-4 pt-4 pb-1 text-left font-semibold">{{ $label }}: disputed cases by {{ strtolower($heading) }}</caption>
                 <thead>
                     <tr class="bg-band/60 text-sm text-muted">
@@ -58,18 +58,18 @@
                     @foreach ($all[$key] as $name => $row)
                         @php $u = $unseen[$key][$name] ?? null; @endphp
                         <tr class="border-t border-line/70">
-                            <th scope="row" class="{{ $th }} font-semibold">{{ $names[$name] ?? $name }}</th>
-                            <td class="{{ $th }}">{{ $row['cases'] }} ({{ $row['votes'] }} {{ Str::plural('vote', $row['votes']) }})</td>
-                            <td class="{{ $th }}">{{ $withVotes($row, 'ai') }}</td>
-                            <td class="{{ $th }}">{{ $withVotes($row, 'finn') }}</td>
-                            <td class="{{ $th }}">{{ $withVotes($row, 'split') }}</td>
-                            <td class="{{ $th }}">{{ $withVotes($row, 'too_few') }}</td>
-                            <td class="{{ $th }}">{{ count($unseen['adjudicators']) > 0 && $u ? "{$u['ai']} / {$u['finn']} / {$u['split']} / {$u['too_few']}" : '—' }}</td>
+                            <th scope="row" data-primary class="{{ $th }} font-semibold">{{ $names[$name] ?? $name }}</th>
+                            <td data-label="Disputed cases (votes)" class="{{ $th }}">{{ $row['cases'] }} ({{ $row['votes'] }} {{ Str::plural('vote', $row['votes']) }})</td>
+                            <td data-label="All: with the AI" class="{{ $th }}">{{ $withVotes($row, 'ai') }}</td>
+                            <td data-label="All: with Finn" class="{{ $th }}">{{ $withVotes($row, 'finn') }}</td>
+                            <td data-label="All: split" class="{{ $th }}">{{ $withVotes($row, 'split') }}</td>
+                            <td data-label="All: too few votes to call" class="{{ $th }}">{{ $withVotes($row, 'too_few') }}</td>
+                            <td data-label="Hadn't seen eval: AI / Finn / split / too few" class="{{ $th }}">{{ count($unseen['adjudicators']) > 0 && $u ? "{$u['ai']} / {$u['finn']} / {$u['split']} / {$u['too_few']}" : '—' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-rtable>
     @endforeach
 
     @if ($showCases)

@@ -38,8 +38,8 @@
             </section>
         @endif
 
-        <x-card padding="p-0" class="scroll-region" role="region" tabindex="0" aria-label="Ledger next to Stripe table">
-            <table class="w-full text-left">
+        <x-rtable label="Ledger next to Stripe table">
+            <table data-rtable="stack" class="w-full text-left">
                 <caption class="px-5 pt-5 text-left text-xl font-semibold sm:px-6">Ledger next to Stripe</caption>
                 <thead class="border-b border-line/70 text-sm text-muted">
                     <tr>
@@ -55,16 +55,16 @@
                         ['Transfers to merchants', $report['ledger']['transfer_cents'], $report['ledger']['transfers'], $report['stripe']['transfer_cents'], $report['stripe']['transfers']],
                     ] as [$label, $ours, $ourCount, $theirs, $theirCount])
                         <tr>
-                            <th scope="row" class="px-5 py-3 font-semibold sm:px-6">{{ $label }}</th>
-                            <td class="px-5 py-3 text-right">
+                            <th scope="row" data-primary class="px-5 py-3 font-semibold sm:px-6">{{ $label }}</th>
+                            <td data-label="Local Goods ledger" class="px-5 py-3 text-right">
                                 {{ Money::format($ours) }} <span class="text-sm text-muted">({{ $ourCount }})</span>
                                 @if ($loop->first && $report['ledger']['fee_cents'] > 0)
                                     {{-- Only when the platform fee is on (ADR 0021). --}}
                                     <span class="block text-sm text-muted" data-fee-split>credits {{ Money::format($report['ledger']['credit_cents']) }} + platform fees {{ Money::format($report['ledger']['fee_cents']) }}</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-3 text-right">{{ Money::format($theirs) }} <span class="text-sm text-muted">({{ $theirCount }})</span></td>
-                            <td class="px-5 py-3">
+                            <td data-label="Stripe" class="px-5 py-3 text-right">{{ Money::format($theirs) }} <span class="text-sm text-muted">({{ $theirCount }})</span></td>
+                            <td data-label="Match?" class="px-5 py-3">
                                 @if ($ours === $theirs && $ourCount === $theirCount)
                                     <x-badge tone="ok">Matches</x-badge>
                                 @else
@@ -74,14 +74,14 @@
                         </tr>
                     @endforeach
                     <tr>
-                        <th scope="row" class="px-5 py-3 font-semibold sm:px-6">Balance held by Stripe</th>
-                        <td class="px-5 py-3 text-right">{{ Money::format($report['expected_balance_cents']) }} <span class="block text-sm text-muted">paid minus transferred</span></td>
-                        <td class="px-5 py-3 text-right">{{ Money::format($report['stripe']['balance_cents']) }} <span class="block text-sm text-muted">{{ Money::format($report['stripe']['available_cents']) }} available now</span></td>
-                        <td class="px-5 py-3"><x-badge tone="neutral">For information</x-badge></td>
+                        <th scope="row" data-primary class="px-5 py-3 font-semibold sm:px-6">Balance held by Stripe</th>
+                        <td data-label="Local Goods ledger" class="px-5 py-3 text-right">{{ Money::format($report['expected_balance_cents']) }} <span class="block text-sm text-muted">paid minus transferred</span></td>
+                        <td data-label="Stripe" class="px-5 py-3 text-right">{{ Money::format($report['stripe']['balance_cents']) }} <span class="block text-sm text-muted">{{ Money::format($report['stripe']['available_cents']) }} available now</span></td>
+                        <td data-label="Match?" class="px-5 py-3"><x-badge tone="neutral">For information</x-badge></td>
                     </tr>
                 </tbody>
             </table>
-        </x-card>
+        </x-rtable>
         @if ($transfersByChannel->isNotEmpty())
             <p class="text-sm text-muted" data-transfers-by-channel>
                 Sent transfers by how the customer paid:
@@ -134,8 +134,8 @@
             Then a cleared Stripe-funded redemption at any of them sends a test transfer. Real merchants always onboard themselves through Stripe's Express pages,
             and so does any merchant with a login. Real DC businesses never get a Stripe account.
         </p>
-        <div class="scroll-region mt-4" role="region" tabindex="0" aria-label="Demo merchants and their Stripe status">
-            <table class="w-full text-left text-sm">
+        <x-rtable :card="false" class="mt-4" label="Demo merchants and their Stripe status">
+            <table data-rtable="stack" class="w-full text-left text-sm">
                 <caption class="sr-only">Each fictional demo merchant, whether it has a login, and its Stripe status</caption>
                 <thead>
                     <tr class="border-b border-line">
@@ -147,14 +147,14 @@
                 <tbody>
                     @foreach ($demoMerchants as $merchant)
                         <tr class="border-b border-line/60" data-demo-merchant="{{ $merchant->stripeOnboardingStatus() }}">
-                            <td class="py-2 pr-4">{{ $merchant->name }}</td>
-                            <td class="py-2 pr-4">{{ $merchant->user_id ? 'Yes, onboards itself' : 'No' }}</td>
-                            <td class="py-2">{{ $merchant->stripeOnboardingLabel() }}@if ($merchant->stripe_account_id)<code class="block break-all font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif</td>
+                            <td data-primary class="py-2 pr-4">{{ $merchant->name }}</td>
+                            <td data-label="Login" class="py-2 pr-4">{{ $merchant->user_id ? 'Yes, onboards itself' : 'No' }}</td>
+                            <td data-label="Stripe" class="py-2">{{ $merchant->stripeOnboardingLabel() }}@if ($merchant->stripe_account_id)<code class="wrap-anywhere-safe block font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-rtable>
         @if ($report['active'])
             @if ($demoProgress['done'] < $demoProgress['total'])
                 {{-- One merchant per press, so no request waits long on Stripe. With JavaScript the page presses again by itself. --}}
