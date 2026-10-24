@@ -93,6 +93,13 @@ the local multiplier. An estimate from an outside study, not measured by Local G
    funded by Stripe-paid credits becomes a Stripe test-mode transfer to the
    merchant's connected account. Held or denied ones never transfer: one gate,
    `TransferGate`, decides every transfer ([ADR 0016](docs/adr/0016-fraud-detection-gates-stripe-transfers.md)).*
+4. **Mistakes get fixed, on the record.** Employees, merchants and HR can ask
+   for a correction; the platform admin approves or rejects it with a reason
+   they see. A refund reverses that part of the merchant's Stripe transfer,
+   unspent credits go back to the employer's card as Stripe refunds, and a
+   missed payout is sent again, each as a new append-only ledger line
+   confirmed by Stripe's webhook, and reconciliation still matches
+   ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)).
 
 **Try it:** [log in](https://d4ghrpm72uczx.cloudfront.net/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,
@@ -101,7 +108,8 @@ from a menu in the wallet. On **Pay in person**, get a pay
 code, then log in as the merchant and enter it under **Take a payment**. As the BID admin, see the AI's
 score, decision and explanation for each one, approve or deny held
 redemptions, and press **Run a collusion example** to watch the real AI
-check a synthetic credit-to-cash redemption. The [AI eval results](https://d4ghrpm72uczx.cloudfront.net/eval) are public.
+check a synthetic credit-to-cash redemption. Open **Corrections** to see how a
+refund or a missed payout is fixed. The [AI eval results](https://d4ghrpm72uczx.cloudfront.net/eval) are public.
 Judges and other reviewers sign in with a magic link (no account, no password;
 see **For judges** above) to a read-only view with a guided tour, a "view as"
 switcher for each role, and a Feedback button on every page

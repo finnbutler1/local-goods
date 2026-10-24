@@ -5,6 +5,50 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Refunds and corrections — done (2026-10-24, ADR 0028).** One
+migration (additive: `corrections`, `correction_items`,
+`correction_actions`, nullable `credit_ledger_entries.correction_id`).
+Fraud prompt (`8d5e1e70`), signals, eval data, locks, adjudication,
+`TransferGate`, `RedemptionService` and `MerchantPayouts` unchanged.
+
+- Requests: `CorrectionRequests` (employee/merchant on a cleared
+  redemption, merchant on a Stripe payout, HR on unspent credits); own
+  items only (404), `throttle:5,1,<name>`, one open per item via the unique
+  `corrections.open_key`. Shared `partials/correction-request` (judges get
+  disabled fields, no form). Asking moves no money.
+- Decisions: `CorrectionDecisions`, **platform admin only**
+  (`decide-corrections`), always a reason the requester sees. Queue
+  `/bid-admin/corrections` (BID admin and judges read-only). Statuses
+  requested → approved → processing → completed/failed, rejected, closed
+  (Close releases employer holds; refused while a step is unknown).
+- Approval: claim (requested only) + lock the item + re-check every
+  counted correction (`CorrectionLimits`: amounts, item quantities,
+  cumulative snapshot tax, each payment's `refundableCents`). Stripe after
+  commit in `CorrectionProcessor` (key per action/attempt, never throws).
+- Redemption refund: sent transfer → `reverseTransfer`, ledger on
+  `transfer.reversed` (`refund`, `merchant_refunded`, `refund_reversal`);
+  simulated → at once, netted from the merchant; not-yet-sent or
+  dashboard-reversed payout → refused (`NOT_SENT_YET`,
+  `REVERSED_IN_DASHBOARD`). Employer refund: hold at approval, newest
+  payment first, credits only, `createRefund`, `refund.created/updated/failed`.
+  Merchant adjustment reuses `MerchantPayouts::send` on the owed row.
+  `CreditPurchase::unclaimedCents` subtracts refunds.
+- Webhook: `transfer.reversed` records our reversals first; the old
+  "owed again" path only for unexplained reversed money. Reconciliation
+  matches reversals and refunds; Tax collected is net of refunds
+  (`net_tax_cents`, by `completed_at`); CSV has refund rows.
+- Never send corrections to the AI (`FraudInputCorrectionsTest`).
+  Seed: one completed partial refund (Cold brew + tax) and one rejected
+  request at Farragut Grind, never Jordan; tables in `DEMO_TABLES` and
+  `EMPTY_AFTER_SEED`. Tour step 9. Stripe trial fixtures in
+  `tests/Fixtures/stripe/corrections/` (scrubbed; `StripeTrialFixturesTest`).
+  Tests: `CorrectionRequestTest`, `RedemptionRefundTest`,
+  `EmployerRefundTest`, `MerchantAdjustmentTest`, `CorrectionRetryTest`,
+  `CorrectionWebhookTest`, `CorrectionReconciliationTest`,
+  `CorrectionTaxTest`, `CorrectionQueueTest`, `CorrectionPrivacyTest`,
+  `CorrectionsDemoTest`, `CorrectionsMigrationSafetyTest`,
+  `MysqlCorrectionLockTest`. Test helper `Tests\Concerns\MakesCorrections`.
+
 **DC sales tax at redemption — done (2026-10-24, ADR 0027).** One
 migration (additive: `merchant_products.tax_category` backfilled from the
 merchant; item category/rate; `tax_basis`, `subtotal_cents`, `tax_cents`,
@@ -467,14 +511,16 @@ platform fee ready but off (ADR 0021) and platform-set-up Stripe test
 accounts for the demo merchants (ADR 0022), display-only product menus
 (ADR 0023), mission-first messaging (ADR 0024), the Transit lines
 brand with button states and menus (ADR 0025), paying in person with
-pay codes (ADR 0026), the phone-first pass and DC sales tax at
-redemption (ADR 0027).
+pay codes (ADR 0026), the phone-first pass, DC sales tax at
+redemption (ADR 0027) and refunds and corrections (ADR 0028).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
   redemption only once it clears, never while held. Invariant: purchases −
   payouts (sent or simulated) − amounts under review = sum of all entries.
-  Seeded payouts are `simulated`.
+  With corrections (ADR 0028): payouts are net of `refund_reversal` lines,
+  and employer refunds held or done come off too
+  (`MakesCorrections::assertLedgerInvariant`). Seeded payouts are `simulated`.
 - Seed: Meridian (120 staff, 40 enrolled). Jordan Rivera must stay the first
   employee with the same 12 redemptions (fraud eval signal test and wallet
   demo depend on it). `DemoHistorySeeder` adds 39 employees, 8 weeks of
