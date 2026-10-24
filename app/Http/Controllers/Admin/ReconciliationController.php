@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
+use App\Models\MerchantPayout;
 use App\Services\Payments\DemoMerchantStripeSetup;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeGatewayException;
@@ -26,6 +27,12 @@ class ReconciliationController extends Controller
     {
         return view('admin.reconciliation', [
             'report' => $reconciliation->report(),
+            // Display only (ADR 0026): sent Stripe transfers split by how the customer paid. Not part of the check.
+            'transfersByChannel' => MerchantPayout::query()->join('redemptions', 'redemptions.id', '=', 'merchant_payouts.redemption_id')
+                ->where('merchant_payouts.status', MerchantPayout::STATUS_SENT)
+                ->groupBy('redemptions.channel')
+                ->selectRaw('redemptions.channel as channel, count(*) as transfers, sum(merchant_payouts.amount_cents) as cents')
+                ->get()->keyBy('channel'),
             'demoMerchants' => DemoMerchantStripeSetup::demoMerchants(),
             'demoProgress' => $setup->progress(),
             // Set only by the redirect after a step that left work to do.

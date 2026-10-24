@@ -165,7 +165,7 @@
                             @if ($for = $redemption->itemsSummary())
                                 <p class="text-sm break-words" data-items>{{ $for }}</p>
                             @endif
-                            <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}</p>
+                            <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></p>
                             @if ($redemption->scored_by !== 'seed')
                                 <p class="text-sm text-muted" data-audit-trail>{{ implode(' → ', $redemption->auditTrail()) }}</p>
                             @endif
