@@ -3,6 +3,31 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-24: Built for phones first
+
+- **Tables become cards on phones.** Below 640px every table (admin
+  Accounts, reviewers, adjudication, reconciliation, participation, BID
+  impact, both eval pages) shows one card per row: each value next to its
+  column name, the row's name as the card's title. No more swiping
+  sideways to find a column. Desktop keeps the same tables.
+- **No more split words.** Emails and links break only after @ . / _ or
+  -, never in the middle of a word ("butle / rf@c" is gone).
+- **Easy to tap.** On phones every button, link on its own, dropdown,
+  checkbox row and "Show as a table" is at least 44px tall, and Approve
+  and Deny are two equal buttons with space between them.
+- **iPhone-ready.** Nothing hides behind the bottom tab bar or the home
+  indicator, the toast keeps clear of the notch, and no field is under
+  16px, so iOS never zooms in while you type.
+- **Charts work on touch.** Tapping a weekly bar on BID impact or the HR
+  dashboard shows its week, like hovering does with a mouse.
+- **The demo notice shows on phones too.** "Demonstration project. All
+  businesses, people and transactions are fictional." was desktop-only in
+  the signed-in pages; it is now at the bottom of every page at every
+  width.
+- Smaller fixes: the public header fits a 320px screen (logo mark on
+  phones), titles and the landing headline scale smoothly, and the judge
+  tour's descriptions use the card's full width.
+
 ## 2026-10-23: Pay in person with a pay code
 
 - **Two ways to pay.** The wallet now has two tabs: **Order to go** (the

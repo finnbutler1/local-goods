@@ -5,6 +5,30 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Phone-first pass — done (2026-10-24).** Front end only: no route,
+controller logic, money, Stripe, prompt, eval, lock or migration change.
+Checks that ran: `docs/accessibility.md` "Phone-first pass".
+
+- Tables: one pattern. `<x-rtable label="…">` around
+  `<table data-rtable="stack">`; below 640px each row is a card. Every
+  body cell needs `data-label="Column"`, `data-primary` (card title) or
+  `data-label=""` (actions). Only a short table that fits 320px may be
+  `data-rtable="fit"`. `ResponsiveTablesTest` sweeps every page.
+- Long emails/links: `<x-breakable :value>` (`<wbr>` after @ . / _ -);
+  ids: `wrap-anywhere-safe`. Never `break-all` (a test checks). Tests
+  that look for an email must strip `<wbr>` (`EmployeeNamePrivacyTest`
+  does).
+- Phones: every `x-button` size and select is 44px; standalone links use
+  `tap-target`; summaries and checkbox/radio rows are 44px (rules in
+  `app.css`). Fields are at least 16px. Page titles use `text-title`
+  (clamp). Hover tooltips also open on tap (`data-bar`).
+- Safe areas: the app-shell footer (demo notice, now shown on phones
+  too) carries `pb-[calc(10rem+env(safe-area-inset-bottom))]`; tab bar,
+  toast and Feedback button use the insets. Honesty lines must never sit
+  in anything hidden on phones (`PhoneHonestyTest`).
+- Desktop (1280px) unchanged: before/after screenshots match apart from
+  sub-pixel kerning around `<wbr>`.
+
 **Pay in person with pay codes — done (2026-10-23, ADR 0026).** One
 migration (`pay_codes`, `redemptions.channel` default `to_go`, additive).
 Fraud prompt (`8d5e1e70`), signals, model, eval data, ledger rules,
@@ -407,8 +431,8 @@ contacts in adjudication (ADR 0019), one-step Buy credits with the
 platform fee ready but off (ADR 0021) and platform-set-up Stripe test
 accounts for the demo merchants (ADR 0022), display-only product menus
 (ADR 0023), mission-first messaging (ADR 0024), the Transit lines
-brand with button states and menus (ADR 0025) and paying in person with
-pay codes (ADR 0026).
+brand with button states and menus (ADR 0025), paying in person with
+pay codes (ADR 0026) and the phone-first pass.
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

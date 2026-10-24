@@ -296,21 +296,97 @@ only twice (one minute left, expired). Not checked: how a screen reader
 actually reads the tabs, the code or the announcements, 320px, and axe on
 these screens.
 
+## Phone-first pass (2026-10-24)
+
+Every page made to work on a phone first, desktop unchanged.
+
+**How it was checked.** A Playwright script (installed in a scratch
+folder, not in `package.json`) drove headless Chrome against `php -S` on
+a scratch SQLite database with the demo data, simulated payments and no
+AI key. Every page with no parameter in its address was opened signed out
+and as each of the six roles, at 320px, 375px and 414px wide, and
+screenshotted in light and dark. Extra states: the wallet's menu step and
+a live pay code, the cashier's Take a payment card before and after
+looking up that code, reviewers (three fictional ones added to the
+scratch database) and reconciliation. Playwright's WebKit (the engine
+inside Safari) ran the public pages, the wallet, the merchant dashboard,
+the judge pages, both eval pages and the same states at 375px.
+
+For each page the script measured:
+
+- sideways scroll (page wider than the screen);
+- tables wider than their box;
+- words split across two lines (a run of five or more letters or digits,
+  not at a hyphen or slash, whose letters sit on two lines);
+- controls under 44 × 44px (links inside a sentence don't count, as in
+  WCAG 2.5.8; a checkbox or radio is measured with its label);
+- the last content ending less than 34px above the tab bar (a simulated
+  iPhone home indicator; content scrolled inside its own box doesn't
+  count);
+- fields under 16px (iOS zooms in on them);
+- things shown only on hover.
+
+**Results** (counts of page, role and width combinations; distinct words
+or controls for "split" and "under 44px"):
+
+| | Chrome before | Chrome after | WebKit before | WebKit after |
+|---|---|---|---|---|
+| Sideways scroll | 21 | 0 | 0 | 0 |
+| Tables cut off | 70 | 0 | 35 | 0 |
+| Words split mid-word | 10 | 0 | 1 | 0 |
+| Controls under 44px | 484 | 0 | 73 | 0 |
+| Content behind the tab bar | 0 | 0 | 0 | 0 |
+| Hover-only | 5 | 0 | 0 | 0 |
+| Fields under 16px | 0 | 0 | 0 | 0 |
+
+The sideways scroll was the public header at 320px; most small controls
+were the 32px "sm" buttons (about 240 on the merchant candidate queue)
+and the employer's employee checkboxes. Nothing was hidden behind the tab
+bar before either, but the padding didn't allow for the home indicator; it
+does now (`env(safe-area-inset-bottom)`). WebKit drew dropdowns at 28px
+whatever their padding, so on phones they are now drawn by us.
+
+**Desktop.** Every page as every role at 1280px was screenshotted on the
+commit before this pass and after it, and compared pixel by pixel. Public
+pages match exactly. On signed-in pages the only differences are
+sub-pixel letter spacing in emails (around the `<wbr>` breaks) and, in
+full-page screenshots only, the Feedback button fading as the window is
+resized; a normal 1280 × 900 screenshot of `/employer` matched exactly.
+
+**Tests added:** `ResponsiveTablesTest` (every table on every page, as
+every role, uses the card pattern with a label on each cell),
+`PhoneLayoutTest` (no `break-all`; emails break only between their parts;
+safe-area padding; 44px rules; 16px fields and the right keyboard for
+money, email, quantity and pay code fields; nothing hover-only; titles
+scale) and `PhoneHonestyTest` (demo-data, not-affiliated, 3x evidence,
+money-mode, read-only and Stripe test-mode lines are never hidden on
+phones). `AccessibilityTest` still passes on every page.
+
+**Screen readers and the card tables.** Below 640px a table's rows are
+drawn as cards, but it stays a real `<table>` with its header row (visually
+hidden), and `app.js` adds table roles because Safari otherwise stops
+treating it as a table. Not checked: how VoiceOver actually reads the
+cards (whether it reads the column name twice, from the header and the
+on-screen label), and axe was not re-run in this pass.
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session
   was run. Names, labels and announcements were checked from the HTML and
   with axe, which is not the same as listening to the pages.
 - **Not tested on a real phone.** Phone widths were Chrome's emulation of
-  a touch screen at 375px and 320px, not an iPhone or Android device.
+  a touch screen at 320px, 375px and 414px, and Playwright's WebKit (the
+  engine inside Safari) at 375px, not an iPhone or Android device. The
+  home indicator and notch were not seen: `env(safe-area-inset-*)` is 0
+  in both, so the safe-area padding was checked in the HTML and with a
+  simulated 34px indicator, not on a device.
 - **Not tested by a person with a keyboard.** The keyboard walkthrough was
   a script pressing keys in headless Chrome.
 - **Not tested with browser zoom or larger text settings**, other than the
   320px width check that WCAG's reflow rule treats as equal to 400% zoom.
 - **Not tested in Windows High Contrast (forced colors) mode, or in
-  Safari, Firefox or Edge.**
-- **Touch target sizes were not measured.** Buttons were looked at in the
-  screenshots only.
+  real Safari, Firefox or Edge.** WebKit was run headless through
+  Playwright for the phone-first pass only.
 - **Stripe mode was only partly audited.** The 9B browser audit ran in
   simulated mode. Buying credits in Stripe test mode was checked later (see
   "Buying credits"), but the onboarding buttons and the reconciliation page
@@ -335,9 +411,10 @@ these screens.
   the screenshot, or the element holds only a symbol such as an arrow. It
   found no contrast failures. All text colors come from token pairs that
   `ColorContrastTest` checks at 4.5:1 or more.
-- **Chart bars are for mouse users.** The bars are hidden from screen
-  readers and show their week's numbers on hover only. Everyone gets a
-  one-line summary under each chart and every number in "Show as a table".
+- **Chart bars are for mouse and touch.** The bars are hidden from screen
+  readers and show their week's numbers on hover or tap, not on keyboard
+  focus. Everyone gets a one-line summary under each chart and every
+  number in "Show as a table".
 - **The "working…" state needs JavaScript.** Without it, forms still work
   but the button doesn't change while the next page loads, and the menus
   show their lists open in the page.
