@@ -522,3 +522,27 @@
 @utility tabular {
     font-variant-numeric: tabular-nums lining-nums;
 }
+
+/* A standalone text link (not one inside a sentence) that must be 44px tall
+   to tap on phones. From 640px up it is an ordinary link. */
+@utility tap-target {
+    @media (width < 40rem) {
+        display: inline-flex;
+        align-items: center;
+        column-gap: 0.25em;
+        min-height: 2.75rem;
+    }
+}
+
+/* On phones, "Show as a table" and other disclosures, and every checkbox or
+   radio row, are 44px tall to tap. */
+@media (width < 40rem) {
+    summary {
+        padding-block: 0.75rem;
+    }
+
+    label:has(> input:is([type='checkbox'], [type='radio'])) {
+        min-height: 2.75rem;
+        align-items: center;
+    }
+}

@@ -302,7 +302,7 @@
                             @if (PlatformFee::enabled())
                                 <p class="tabular text-sm font-semibold" aria-live="polite" data-fee-preview data-fee-basis-points="{{ PlatformFee::basisPoints() }}"></p>
                             @endif
-                            <x-button type="submit" variant="accent" :aria-describedby="$readOnly ? 'read-only-note' : null">
+                            <x-button type="submit" variant="accent" class="max-sm:w-full" :aria-describedby="$readOnly ? 'read-only-note' : null">
                                 {{ $buy['state'] === 'cancelled' ? 'Try again' : ($stripe ? 'Buy credits' : 'Buy credits (simulated, no real money)') }}
                             </x-button>
                         </fieldset>
@@ -472,7 +472,7 @@
                                        value="{{ old('mode') === $mode ? old('amount') : Money::toDollars($employer->monthly_allowance_cents) }}"
                                        class="{{ $input }} tabular border-muted" {!! $invalid('amount') !!}>
                             </x-field>
-                            <x-button type="submit" :aria-describedby="$readOnly ? 'read-only-note' : null">{{ $mode === 'individual' ? 'Give credits' : 'Give credits to everyone chosen' }}</x-button>
+                            <x-button type="submit" class="max-sm:w-full" :aria-describedby="$readOnly ? 'read-only-note' : null">{{ $mode === 'individual' ? 'Give credits' : 'Give credits to everyone chosen' }}</x-button>
                         </fieldset>
                     </form>
                 </x-card>
@@ -578,7 +578,7 @@
                         </div>
                     </fieldset>
 
-                    <x-button type="submit" :aria-describedby="$readOnly ? 'read-only-note' : null">Save program</x-button>
+                    <x-button type="submit" class="max-sm:w-full" :aria-describedby="$readOnly ? 'read-only-note' : null">Save program</x-button>
                 </fieldset>
             </form>
         </x-card>

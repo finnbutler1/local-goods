@@ -57,7 +57,7 @@
                             <input type="checkbox" name="is_available" value="1" @checked($product->is_available) class="size-5 accent-primary">
                             On the menu (employees can pick it)
                         </label>
-                        <x-button type="submit" size="sm" :disabled="$readOnly">Save {{ $product->name }}</x-button>
+                        <x-button type="submit" size="sm" class="max-sm:w-full" :disabled="$readOnly">Save {{ $product->name }}</x-button>
                     </form>
                 </x-card>
             @endforeach
@@ -87,11 +87,11 @@
                            class="block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary"
                            @if ($add->has('description')) aria-invalid="true" aria-describedby="add-description-error" @endif>
                 </x-field>
-                <x-button type="submit" size="sm" :disabled="$readOnly">Add to the menu</x-button>
+                <x-button type="submit" size="sm" class="max-sm:w-full" :disabled="$readOnly">Add to the menu</x-button>
             </form>
         </x-card>
     @endif
 
-    <p><a href="{{ route('merchant.dashboard') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Back to the merchant dashboard</a></p>
+    <p><a href="{{ route('merchant.dashboard') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Back to the merchant dashboard</a></p>
 </div>
 </x-app-shell>

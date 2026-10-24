@@ -14,8 +14,10 @@
 
     <header class="relative z-10">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-            <a href="{{ route('home') }}" class="shrink-0 rounded-lg" aria-label="Local Goods home">
-                <x-logo class="h-8 w-auto sm:h-9" />
+            <a href="{{ route('home') }}" class="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-lg" aria-label="Local Goods home">
+                {{-- The mark alone on phones, so the header fits 320px. --}}
+                <x-logo :mark-only="true" class="h-8 w-auto sm:hidden" />
+                <x-logo class="hidden h-9 w-auto sm:block" />
             </a>
             <nav aria-label="Site" class="flex items-center gap-1 sm:gap-2">
                 <ul class="hidden items-center gap-6 pr-4 text-sm font-semibold text-primary md:flex">
@@ -24,7 +26,7 @@
                     <li><a href="{{ route('home') }}#trust" class="underline-offset-4 hover:underline">Trust &amp; AI</a></li>
                 </ul>
                 {{-- On phones the three section links live in a menu (ADR 0025). --}}
-                <x-menu id="site-menu" class="md:hidden" button-class="grid size-10 place-items-center rounded-full border border-edge bg-surface text-ink hover:border-primary hover:text-primary aria-expanded:border-primary active:translate-y-px">
+                <x-menu id="site-menu" class="md:hidden" button-class="grid size-11 place-items-center rounded-full border border-edge bg-surface text-ink hover:border-primary hover:text-primary aria-expanded:border-primary active:translate-y-px">
                     <x-slot:trigger>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                         <span class="sr-only">Site menu</span>

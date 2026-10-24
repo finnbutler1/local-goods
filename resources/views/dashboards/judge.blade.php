@@ -106,7 +106,7 @@
                         <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-display text-lg font-semibold text-on-primary" aria-hidden="true">{{ $i + 1 }}</span>
                         <div class="min-w-0">
                             <h3 class="flex flex-wrap items-center gap-2 text-xl font-semibold">
-                                <a href="{{ $step['url'] }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                                <a href="{{ $step['url'] }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                                     <span class="sr-only">Step {{ $i + 1 }}: </span>{{ $step['title'] }}
                                 </a>
                                 @unless ($step['available'])

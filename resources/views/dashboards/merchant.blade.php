@@ -188,7 +188,7 @@
                 @endforelse
             </x-card>
             @if (! $showAll && $receivedCount > $received->count())
-                <p class="mt-3"><a href="{{ route('merchant.dashboard', ['all' => 1]) }}#received" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $receivedCount }} redemptions</a></p>
+                <p class="mt-3"><a href="{{ route('merchant.dashboard', ['all' => 1]) }}#received" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $receivedCount }} redemptions</a></p>
             @elseif ($showAll && $receivedCount > \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT)
                 <p class="mt-3"><a href="{{ route('merchant.dashboard') }}#received" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show the newest {{ \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT }} only</a></p>
             @endif
