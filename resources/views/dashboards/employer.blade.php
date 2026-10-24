@@ -98,13 +98,13 @@
                     <p class="mt-6 rounded-xl bg-band p-4 text-muted">No visits yet. Once your team redeems credits, each week's visits show here.</p>
                 @else
                     {{-- Bars are hidden from screen readers: the sentence under them sums them up and
-                         "Show as a table" has every week's numbers. Hover a bar for its week. --}}
+                         "Show as a table" has every week's numbers. Hover or tap a bar for its week. --}}
                     <div class="mt-6 flex h-44 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
                         @foreach ($weeks as $week)
-                            <div class="group relative flex h-full flex-1 items-end justify-center">
-                                <div class="w-full max-w-12 rounded-t-[4px] bg-primary transition-colors group-hover:bg-primary-hover"
+                            <div class="group relative flex h-full flex-1 items-end justify-center" data-bar>
+                                <div class="w-full max-w-12 rounded-t-[4px] bg-primary transition-colors group-hover:bg-primary-hover group-data-open:bg-primary-hover"
                                      style="height: {{ max(2, round(100 * $week['visits'] / $max)) }}%"></div>
-                                <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-max -translate-x-1/2 rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night shadow group-hover:block">
+                                <div @class(['pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night shadow group-hover:block group-data-open:block', 'left-0' => $loop->first, 'right-0' => $loop->last, 'left-1/2 -translate-x-1/2' => ! $loop->first && ! $loop->last])>
                                     <span class="font-semibold">Week of {{ $week['start']->format('M j') }}</span><br>
                                     {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }} · {{ Money::format($week['cents']) }}
                                 </div>

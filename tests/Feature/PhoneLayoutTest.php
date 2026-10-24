@@ -154,4 +154,19 @@ class PhoneLayoutTest extends TestCase
         $payCode = File::get(resource_path('views/dashboards/partials/pay-code-field.blade.php'));
         $this->assertStringContainsString('inputmode="text" enterkeyhint="go"', $payCode);
     }
+
+    public function test_nothing_only_appears_on_hover(): void
+    {
+        // A phone can't hover: whatever hover shows, a tap (data-open, set by app.js) shows too.
+        $this->sweepPages(function (string $html, string $where) {
+            preg_match_all('~class="([^"]*\bhover:(?:block|flex|visible|opacity-100)[^"]*)"~', $html, $m);
+            foreach ($m[1] as $class) {
+                $this->assertMatchesRegularExpression('~\b(group-)?data-open:(block|flex|visible|opacity-100)\b~', $class, "Hover-only on {$where}: {$class}");
+            }
+        });
+
+        $impact = $this->actingAs($this->signIn(Role::BidAdmin))->get('/bid-admin/impact')->assertOk()->getContent();
+        $this->assertStringContainsString('data-bar>', $impact);
+        $this->assertStringContainsString("closest('[data-bar]')", File::get(resource_path('js/app.js')));
+    }
 }
