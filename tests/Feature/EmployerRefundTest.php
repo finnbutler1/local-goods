@@ -39,6 +39,7 @@ class EmployerRefundTest extends TestCase
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+        $this->withoutSeededCorrections();
         $this->employer = Employer::firstOrFail();
     }
 

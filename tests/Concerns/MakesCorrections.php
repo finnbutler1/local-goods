@@ -18,6 +18,7 @@ use App\Services\CreditLedger;
 use App\Services\Payments\StripeOnboarding;
 use App\Services\RedemptionBasket;
 use App\Services\RedemptionService;
+use Illuminate\Support\Facades\DB;
 use Tests\Fakes\FakeClaudeClient;
 
 /**
@@ -28,6 +29,19 @@ use Tests\Fakes\FakeClaudeClient;
  */
 trait MakesCorrections
 {
+    /**
+     * Removes the seed's two example corrections (and their two ledger
+     * lines, which net to zero), for tests that count corrections or
+     * refunds from a clean start.
+     */
+    protected function withoutSeededCorrections(): void
+    {
+        CreditLedgerEntry::query()->whereNotNull('correction_id')->toBase()->delete();
+        foreach (['correction_actions', 'correction_items', 'corrections'] as $table) {
+            DB::table($table)->delete();
+        }
+    }
+
     protected function farragut(): Merchant
     {
         return Merchant::where('name', config('demo.accounts.merchant.business'))->firstOrFail();

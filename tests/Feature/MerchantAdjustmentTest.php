@@ -33,6 +33,7 @@ class MerchantAdjustmentTest extends TestCase
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+        $this->withoutSeededCorrections();
         $this->fakeStripe();
         $this->stripePurchase();
         $this->payout = MerchantPayout::where('redemption_id', $this->cleared(1250)->id)->sole();

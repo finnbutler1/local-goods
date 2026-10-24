@@ -184,7 +184,7 @@
         <h2 id="simulated-heading" class="flex flex-wrap items-center gap-2 text-xl font-semibold">Not part of this check <x-money-mode mode="simulated" /></h2>
         <p class="mt-2 text-muted">
             {{ $report['simulated']['purchases'] }} simulated {{ Str::plural('purchase', $report['simulated']['purchases']) }} ({{ Money::format($report['simulated']['purchase_cents']) }})
-            and {{ $report['simulated']['payouts'] }} simulated {{ Str::plural('payout', $report['simulated']['payouts']) }} ({{ Money::format($report['simulated']['payout_cents']) }})@if ($report['simulated']['refunds'] > 0), plus {{ $report['simulated']['refunds'] }} simulated {{ Str::plural('refund', $report['simulated']['refunds']) }} ({{ Money::format($report['simulated']['refund_cents']) }})@endif:
+            and {{ $report['simulated']['payouts'] }} simulated {{ Str::plural('payout', $report['simulated']['payouts']) }} ({{ Money::format($report['simulated']['payout_cents']) }})@if ($report['simulated']['refunds'] > 0), plus {{ $report['simulated']['refunds'] }} simulated {{ Str::plural('correction', $report['simulated']['refunds']) }} ({{ Money::format($report['simulated']['refund_cents']) }})@endif:
             seeded demo history and anything paid while Stripe was off. They are in the ledger with no money behind them.
         </p>
     </x-card>

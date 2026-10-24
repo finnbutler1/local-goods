@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Http\Controllers\JudgeController;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,9 +29,9 @@ class JudgeLandingTest extends TestCase
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
 
-        // The eight tour links all open for a judge.
+        // The nine tour links all open for a judge (the ninth, Corrections, came with ADR 0028).
         preg_match_all('/<a href="([^"]+)" class="tap-target text-primary underline decoration-accent/', $page->getContent(), $links);
-        $this->assertCount(8, $links[1]);
+        $this->assertCount(9, $links[1]);
 
         foreach ($links[1] as $link) {
             $this->followingRedirects()->get($link)->assertOk();
@@ -43,7 +44,7 @@ class JudgeLandingTest extends TestCase
         $html = $this->get('/judge')->getContent();
 
         $this->assertSame(0, substr_count($html, 'Coming in a later build'));
-        $this->assertTrue(collect(\App\Http\Controllers\JudgeController::tour())->every('available'));
+        $this->assertTrue(collect(JudgeController::tour())->every('available'));
     }
 
     public function test_no_adjudication_card_before_a_set_is_published(): void

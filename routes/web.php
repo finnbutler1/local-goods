@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\CollusionExampleController;
+use App\Http\Controllers\BidAdmin\CorrectionsController;
 use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
@@ -96,6 +97,13 @@ Route::middleware('auth')->group(function () {
         // Admins only, never judges: a fresh synthetic collusion example through the real AI check (ADR 0016).
         Route::post('/collusion-example', CollusionExampleController::class)->middleware('throttle:5,1,bid-admin.collusion-example')->name('collusion-example');
         Route::post('/reset', ResetDemoController::class)->middleware('throttle:5,1,bid-admin.reset')->name('reset');
+
+        // Corrections (ADR 0028): the BID admin and judges look; only the platform admin decides (decide-corrections).
+        Route::get('/corrections', [CorrectionsController::class, 'index'])->name('corrections');
+        Route::post('/corrections/{correction}/approve', [CorrectionsController::class, 'approve'])->middleware('throttle:30,1,bid-admin.corrections.approve')->name('corrections.approve');
+        Route::post('/corrections/{correction}/reject', [CorrectionsController::class, 'reject'])->middleware('throttle:30,1,bid-admin.corrections.reject')->name('corrections.reject');
+        Route::post('/corrections/{correction}/retry', [CorrectionsController::class, 'retry'])->middleware('throttle:20,1,bid-admin.corrections.retry')->name('corrections.retry');
+        Route::post('/corrections/{correction}/close', [CorrectionsController::class, 'close'])->middleware('throttle:20,1,bid-admin.corrections.close')->name('corrections.close');
 
         // Merchant Eligibility Matching review queue: real candidates, never participants.
         Route::get('/merchants', [MerchantEligibilityController::class, 'index'])->name('merchants');

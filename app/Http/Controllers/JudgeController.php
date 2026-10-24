@@ -86,6 +86,12 @@ class JudgeController extends Controller
                 'url' => route('judge.view-as', Role::Merchant->value),
                 'available' => true,
             ],
+            [
+                'title' => 'See how mistakes get fixed: open Corrections',
+                'look_for' => 'Employees, merchants and HR ask for a refund or a payment they never got; the platform admin decides, always with a reason the requester sees. Every fix is a new ledger line backed by a Stripe test-mode action (a transfer reversal or a card refund), confirmed by Stripe\'s webhook, and reconciliation still matches. A seeded partial refund (with its tax) and a rejected request are there to look at; reviewers can\'t approve or ask.',
+                'url' => route('bid-admin.corrections'),
+                'available' => true,
+            ],
         ];
     }
 
