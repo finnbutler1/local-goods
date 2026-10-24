@@ -47,13 +47,13 @@ class CorrectionRequestController extends Controller
             route('merchant.dashboard').'#received');
     }
 
-    public function merchantPayout(Request $request, MerchantPayout $payout): RedirectResponse
+    public function merchantPayout(Request $request, MerchantPayout $merchantPayout): RedirectResponse
     {
-        abort_unless($request->user()->merchant?->id === $payout->merchant_id, 404);
+        abort_unless($request->user()->merchant?->id === $merchantPayout->merchant_id, 404);
 
-        return $this->ask($request, CorrectionReasons::MERCHANT_PAYOUT, 'payout:'.$payout->id,
-            fn ($reason, $note) => $this->requests->forPayout($request->user(), $payout, $reason, $note),
-            'Question sent about your '.Money::format($payout->amount_cents).' payout. A Local Goods admin will check it with Stripe; the answer shows on it.',
+        return $this->ask($request, CorrectionReasons::MERCHANT_PAYOUT, 'payout:'.$merchantPayout->id,
+            fn ($reason, $note) => $this->requests->forPayout($request->user(), $merchantPayout, $reason, $note),
+            'Question sent about your '.Money::format($merchantPayout->amount_cents).' payout. A Local Goods admin will check it with Stripe; the answer shows on it.',
             route('merchant.dashboard').'#payouts-heading');
     }
 
