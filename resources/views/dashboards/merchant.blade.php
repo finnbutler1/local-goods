@@ -24,6 +24,82 @@
         <x-money-mode class="mt-3" />
     </header>
 
+    {{-- Pay in person (ADR 0026): the customer shows a pay code, the cashier types it here and confirms. --}}
+    <x-card as="section" id="take-payment" aria-labelledby="take-payment-heading" class="scroll-mt-24 max-w-xl border-2 border-primary ring-0!">
+        <h2 id="take-payment-heading" class="text-2xl font-semibold text-primary">Take a payment</h2>
+        @if ($payResult)
+            @php $paidOk = $payResult->isApproved(); @endphp
+            <div @class(['mt-4 rounded-2xl border-2 p-4', 'border-ok bg-ok-bg text-ok' => $paidOk, 'border-hold bg-hold-bg text-hold' => ! $paidOk]) data-pay-result>
+                <p class="font-display text-2xl font-semibold">{{ $paidOk ? 'Payment confirmed' : 'Payment not completed yet' }}</p>
+                <p class="tabular mt-1 text-lg font-semibold text-ink">{{ Money::format($payResult->amount_cents) }} · {{ $payResult->employee->initials() }}</p>
+                @if ($for = $payResult->itemsSummary()) <p class="text-ink" data-items>{{ $for }}</p> @endif
+                <p class="mt-2 text-ink">
+                    @if ($paidOk)
+                        Cleared. You're owed it on Local Goods; hand over the order.
+                    @else
+                        It's being held for a quick review, and no money moves until a BID admin decides. You can ask for another way to pay, or wait for the review.
+                    @endif
+                </p>
+                @unless ($paidOk) <p class="mt-2"><x-badge tone="hold">Under review</x-badge></p> @endunless
+            </div>
+        @endif
+
+        @if ($lookedUp)
+            {{-- Step 2: check it, then confirm. The customer is shown by initials only. --}}
+            <div class="mt-4" data-pay-review>
+                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                    <dt class="text-muted">Amount</dt><dd class="tabular font-display text-3xl font-semibold text-ink">{{ Money::format($lookedUp->amount_cents) }}</dd>
+                    @if ($for = $lookedUp->itemsSummary())
+                        <dt class="text-muted">Items</dt><dd class="text-ink" data-items>{{ $for }}</dd>
+                    @endif
+                    <dt class="text-muted">Customer</dt><dd class="tabular font-semibold text-ink">{{ $lookedUp->employee->initials() }}</dd>
+                    <dt class="text-muted">Code expires</dt><dd class="text-ink">{{ $lookedUp->expires_at->setTimezone('America/New_York')->format('g:i A') }}</dd>
+                </dl>
+                <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                    <form method="POST" action="{{ route('merchant.pay-code.confirm', $lookedUp) }}" data-busy="Checking with Redemption Fraud Detection…">
+                        @csrf
+                        <x-button type="submit" variant="accent" size="lg" class="w-full">Confirm payment</x-button>
+                    </form>
+                    <form method="POST" action="{{ route('merchant.pay-code.decline', $lookedUp) }}" data-busy="Declining…">
+                        @csrf
+                        <x-button type="submit" variant="secondary" size="lg" class="w-full">Decline</x-button>
+                    </form>
+                </div>
+                <form method="POST" action="{{ route('merchant.pay-code.clear') }}" data-busy="Clearing…" class="mt-2">
+                    @csrf
+                    <x-button type="submit" variant="ghost" size="sm">Enter a different code</x-button>
+                </form>
+            </div>
+        @else
+            {{-- Step 1: the customer's code. Judges get the same field, disabled and outside any form. --}}
+            @can('take-payments')
+                <form method="POST" action="{{ route('merchant.pay-code.lookup') }}" data-busy="Checking the code…" class="mt-4 space-y-3">
+                    @csrf
+                    @include('dashboards.partials.pay-code-field', ['disabled' => false])
+                    <x-button type="submit" size="lg" class="w-full">Check code</x-button>
+                </form>
+            @else
+                <div class="mt-4 space-y-3">
+                    @include('dashboards.partials.pay-code-field', ['disabled' => true])
+                    <x-button type="button" size="lg" class="w-full" disabled aria-describedby="take-payment-read-only">Check code</x-button>
+                    <p id="take-payment-read-only" class="text-sm text-muted">Read-only: judges can't take payments.</p>
+                </div>
+            @endcan
+            @cannot('take-payments')
+                {{-- Judges: what the cashier sees after checking a code. A sample, not a real payment. --}}
+                <div class="mt-5 rounded-2xl border-2 border-dashed border-line p-4">
+                    <p class="text-sm font-semibold uppercase tracking-widest text-muted">Sample, after a code is checked</p>
+                    <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                        <dt class="text-muted">Amount</dt><dd class="tabular font-display text-2xl font-semibold text-ink">$8.50</dd>
+                        <dt class="text-muted">Items</dt><dd class="text-ink">2× Latte</dd>
+                        <dt class="text-muted">Customer</dt><dd class="font-semibold text-ink">A.B.</dd>
+                    </dl>
+                    <p class="mt-2 text-sm text-muted">Then Confirm payment (checked by Redemption Fraud Detection, like every redemption) or Decline.</p>
+                </div>
+            @endcannot
+        @endif
+    </x-card>
+
     <dl class="grid gap-3 sm:grid-cols-3">
         <x-card tone="night">
             <dt class="text-sm font-semibold text-night-muted">Owed to you now</dt>

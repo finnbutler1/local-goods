@@ -92,6 +92,11 @@ class AccessibilityTest extends TestCase
         $this->actingAs($employee)->post('/employee/pay-code', ['pay_merchant_id' => Merchant::where('name', 'Farragut Grind')->value('id'), 'amount' => '5'])->assertRedirect();
         $found += array_filter(['pay code screen' => AccessibilityAudit::problems($this->actingAs($employee)->get('/employee')->assertOk()->assertSee('data-pay-code', false)->getContent())]);
 
+        // The cashier's review card for that code.
+        $merchant = $this->signIn(Role::Merchant);
+        $this->actingAs($merchant)->post('/merchant/pay-code', ['pay_code' => \App\Models\PayCode::latest('id')->firstOrFail()->code])->assertSessionHasNoErrors();
+        $found += array_filter(['pay code review' => AccessibilityAudit::problems($this->actingAs($merchant)->get('/merchant')->assertOk()->assertSee('Confirm payment')->getContent())]);
+
         $this->assertNoProblems($found);
     }
 
@@ -118,6 +123,7 @@ class AccessibilityTest extends TestCase
             'pay code from a menu, nothing picked' => [Role::Employee, '/employee', 'post', '/employee/pay-code', ['pay_merchant_id' => 'grind', 'items' => ['latte' => '0']]],
             'deny, no reason given' => [Role::BidAdmin, '/bid-admin', 'post', 'deny', ['reason' => '']],
             'menu, change a product badly' => [Role::Merchant, '/merchant/menu', 'post', 'menu-product', ['name' => '', 'price' => 'free']],
+            'pay code at the counter, not valid' => [Role::Merchant, '/merchant', 'post', '/merchant/pay-code', ['pay_code' => 'ZZZZZZ']],
             'menu, add a product badly' => [Role::Merchant, '/merchant/menu', 'post', '/merchant/menu', ['name' => '', 'price' => '0']],
             'feedback, empty' => [Role::Employee, '/employee', 'post', '/feedback', ['page_url' => 'http://localhost/employee']],
             'change password, wrong current one' => [Role::Employee, '/account', 'put', '/user/password', ['current_password' => 'wrong', 'password' => 'x', 'password_confirmation' => 'y']],

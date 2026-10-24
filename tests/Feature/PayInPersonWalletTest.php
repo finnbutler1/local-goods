@@ -172,7 +172,7 @@ class PayInPersonWalletTest extends TestCase
 
         $this->getJson(route('employee.pay-code.status', $payCode))->assertExactJson(['status' => 'used']);
         $this->get('/employee?pay_code='.$payCode->id)->assertOk()
-            ->assertSeeInOrder(['Approved', '$8.50', 'Farragut Grind', 'LG-'.str_pad((string) $redemption->id, 6, '0', STR_PAD_LEFT), 'In person', 'Paid. Farragut Grind confirmed it at the counter'])
+            ->assertSeeInOrder(['Approved', '$8.50', 'Farragut Grind', 'LG-'.str_pad((string) $redemption->id, 6, '0', STR_PAD_LEFT), 'In person', 'Done. Farragut Grind confirmed it at the counter'])
             ->assertSee('data-live-clock', false);
     }
 

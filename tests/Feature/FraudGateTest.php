@@ -15,6 +15,7 @@ use App\Models\RedemptionDecision;
 use App\Models\User;
 use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
+use App\Services\PayCodes;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
 use App\Services\Payments\StripeOnboarding;
@@ -178,6 +179,38 @@ class FraudGateTest extends TestCase
         $this->assertCount(20, $this->stripe->callsOf('transfer'));
     }
 
+    public function test_an_in_person_payment_the_ai_clears_transfers_once_like_to_go(): void
+    {
+        $this->onboard($this->grind);
+        $this->aiHoldsRoundAmounts();
+        $codes = app(PayCodes::class);
+
+        $redemption = $codes->confirm($codes->issue($this->employee('Alex Moreau', 5000), $this->grind, 437), $this->grind);
+
+        $this->assertTrue($redemption->isApproved());
+        $this->assertSame(Redemption::CHANNEL_IN_PERSON, $redemption->fresh()->channel);
+        $this->assertTrue(app(TransferGate::class)->allows($redemption->fresh()));
+        $transfers = $this->stripe->callsOf('transfer');
+        $this->assertCount(1, $transfers);
+        $this->assertSame(437, $transfers[0]['amount']);
+        $this->assertSame((string) $redemption->id, $transfers[0]['metadata']['lg_redemption_id']);
+
+        app(MerchantPayouts::class)->send($this->grind);
+        $this->assertCount(1, $this->stripe->callsOf('transfer'));
+    }
+
+    public function test_an_in_person_payment_the_ai_holds_moves_no_money(): void
+    {
+        $this->onboard($this->grind);
+        $this->aiHoldsRoundAmounts();
+        $codes = app(PayCodes::class);
+
+        $held = $codes->confirm($codes->issue($this->employee('Alex Moreau', 10000), $this->grind, 4000), $this->grind);
+
+        $this->assertTrue($held->isUnderReview());
+        $this->assertNoMoneyMoved($held);
+    }
+
     public function test_approve_sends_exactly_one_transfer_even_on_double_clicks_and_retries(): void
     {
         $this->onboard($this->grind);
@@ -303,6 +336,9 @@ class FraudGateTest extends TestCase
         $this->post(route('admin.reconciliation.retry'));
         $this->redeem($this->employee('Alex Moreau'), $this->grind, 512);
         app(RedemptionReviewService::class)->approve($held, $this->admin(), 'Checked with the merchant.');
+        // Paying in person (ADR 0026): the merchant confirms a pay code.
+        $codes = app(PayCodes::class);
+        $codes->confirm($codes->issue($this->employee('Alex Moreau'), $this->grind->fresh(), 613), $this->grind->fresh());
 
         $this->assertSame([], $this->stripe->callsOf('transfer'));
         $this->assertGreaterThan(0, $calls, 'The gate was asked');

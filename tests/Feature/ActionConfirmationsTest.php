@@ -7,9 +7,11 @@ use App\Models\CreditPurchase;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
+use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
+use App\Services\PayCodes;
 use App\Services\Payments\StripeOnboarding;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -139,6 +141,58 @@ class ActionConfirmationsTest extends TestCase
 
         $this->assertStringContainsString('$8.00 at Farragut Grind held for a quick review: no money moves until a BID admin decides.', $toast);
         $this->assertStringNotContainsString('approved', $toast);
+    }
+
+    public function test_getting_and_cancelling_a_pay_code_say_where_and_that_nothing_was_charged(): void
+    {
+        $this->signIn(Role::Employee);
+
+        $toast = $this->toast($this->followingRedirects()->post('/employee/pay-code', ['pay_merchant_id' => $this->grind->id, 'amount' => '8']));
+        $this->assertStringContainsString('Pay code ready for $8.00 at Farragut Grind. Show it to the cashier.', $toast);
+
+        $payCode = PayCode::latest('id')->firstOrFail();
+        $toast = $this->toast($this->followingRedirects()->post(route('employee.pay-code.cancel', $payCode)));
+        $this->assertStringContainsString('Pay code cancelled. Nothing was charged.', $toast);
+    }
+
+    public function test_confirming_a_pay_code_names_the_customer_by_initials_and_the_money(): void
+    {
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(10, 'clear'));
+        $payCode = app(PayCodes::class)->issue($this->jordan, $this->grind, 850);
+        $this->signIn(Role::Merchant);
+        $this->post(route('merchant.pay-code.lookup'), ['pay_code' => $payCode->code]);
+
+        $toast = $this->toast($this->followingRedirects()->post(route('merchant.pay-code.confirm', $payCode)));
+
+        $this->assertStringContainsString('Payment confirmed: $8.50 from J.R. at Farragut Grind. Now owed to the merchant (simulated, no money moved).', $toast);
+        $this->assertStringNotContainsString('Jordan', $toast);
+        $this->assertStringNotContainsString('paid', $toast);
+    }
+
+    public function test_a_held_pay_code_says_not_completed_and_what_to_do(): void
+    {
+        $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(90, 'hold'));
+        $payCode = app(PayCodes::class)->issue($this->jordan, $this->grind, 850);
+        $this->signIn(Role::Merchant);
+        $this->post(route('merchant.pay-code.lookup'), ['pay_code' => $payCode->code]);
+
+        $toast = $this->toast($this->followingRedirects()->post(route('merchant.pay-code.confirm', $payCode)), 'notice');
+
+        $this->assertStringContainsString("Payment not completed yet: \$8.50 from J.R. at Farragut Grind. It's being held for a quick review, and no money moves until a BID admin decides.", $toast);
+        foreach (['fraud', 'suspic', 'Jordan'] as $word) {
+            $this->assertStringNotContainsStringIgnoringCase($word, $toast);
+        }
+    }
+
+    public function test_declining_a_pay_code_says_nothing_was_charged(): void
+    {
+        $payCode = app(PayCodes::class)->issue($this->jordan, $this->grind, 850);
+        $this->signIn(Role::Merchant);
+        $this->post(route('merchant.pay-code.lookup'), ['pay_code' => $payCode->code]);
+
+        $toast = $this->toast($this->followingRedirects()->post(route('merchant.pay-code.decline', $payCode)));
+
+        $this->assertStringContainsString('Pay code declined: $8.50 from J.R. at Farragut Grind. Nothing was charged.', $toast);
     }
 
     public function test_denying_names_the_employee_by_initials_and_where_the_credit_went(): void

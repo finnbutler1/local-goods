@@ -52,7 +52,7 @@
                 @endif
                 <p class="mx-auto mt-4 max-w-sm">
                     @if ($result->isInPerson() && $approved)
-                        Paid. {{ $result->merchant->name }} confirmed it at the counter and sees it on their Local Goods dashboard.
+                        Done. {{ $result->merchant->name }} confirmed it at the counter and sees it on their Local Goods dashboard.
                     @elseif ($result->isInPerson())
                         Your payment is being held for a quick review. Your credits are set aside, and come back to you if it isn't approved.
                     @elseif ($approved)
