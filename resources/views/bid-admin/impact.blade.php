@@ -132,7 +132,7 @@
 
             <details class="mt-3 text-sm">
                 <summary class="cursor-pointer font-semibold text-primary">Show as a table</summary>
-                <table class="mt-2 w-full text-left">
+                <table data-rtable="fit" class="mt-2 w-full text-left">
                     <caption class="sr-only">Cleared redemptions and dollars spent at independent merchants per week</caption>
                     <thead class="text-muted"><tr><th scope="col" class="py-1 font-semibold">Week of</th><th scope="col" class="py-1 text-right font-semibold">Visits</th><th scope="col" class="py-1 text-right font-semibold">Spent</th></tr></thead>
                     <tbody class="tabular divide-y divide-line/70">
@@ -152,8 +152,8 @@
             <h2 id="employers-heading" class="text-2xl font-semibold text-primary">Employer engagement, {{ $monthName }} so far</h2>
             <p class="mt-1 text-sm text-muted">Each row is the employer's own HR dashboard, unchanged, so the numbers match what HR sees.</p>
 
-            <x-card padding="p-0" class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Employer engagement table">
-                <table class="w-full min-w-2xl text-left">
+            <x-rtable class="mt-3" label="Employer engagement table">
+                <table data-rtable="stack" class="w-full min-w-2xl text-left">
                     <caption class="sr-only">Each employer's engagement this month, as shown on its HR dashboard</caption>
                     <thead class="border-b border-line/70 text-sm text-muted">
                         <tr>
@@ -168,17 +168,17 @@
                     <tbody class="tabular divide-y divide-line/70">
                         @foreach ($impact['employers'] as ['employer' => $employer, 'metrics' => $m])
                             <tr>
-                                <th scope="row" class="px-5 py-3 font-semibold">{{ $employer->name }}</th>
-                                <td class="px-5 py-3 text-right">{{ $m['redeemers'] }} of {{ $m['enrolled'] }} <span class="text-sm text-muted">({{ $m['participation_pct'] }}%)</span></td>
-                                <td class="px-5 py-3 text-right">{{ $m['visits'] }}</td>
-                                <td class="px-5 py-3 text-right">{{ $m['businesses'] }} of {{ $m['participating'] }}</td>
-                                <td class="px-5 py-3 text-right">{{ $m['first_visits'] }}</td>
-                                <td class="px-5 py-3 text-right">{{ Money::format($m['spent_cents']) }}</td>
+                                <th scope="row" data-primary class="px-5 py-3 font-semibold">{{ $employer->name }}</th>
+                                <td data-label="Employees who got out" class="px-5 py-3 text-right">{{ $m['redeemers'] }} of {{ $m['enrolled'] }} <span class="text-sm text-muted">({{ $m['participation_pct'] }}%)</span></td>
+                                <td data-label="Visits out of the office" class="px-5 py-3 text-right">{{ $m['visits'] }}</td>
+                                <td data-label="Local businesses visited" class="px-5 py-3 text-right">{{ $m['businesses'] }} of {{ $m['participating'] }}</td>
+                                <td data-label="First-time visits" class="px-5 py-3 text-right">{{ $m['first_visits'] }}</td>
+                                <td data-label="Spent locally" class="px-5 py-3 text-right">{{ Money::format($m['spent_cents']) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-            </x-card>
+            </x-rtable>
             <details class="mt-2 text-sm">
                 <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
                 <p class="mt-1 text-muted">

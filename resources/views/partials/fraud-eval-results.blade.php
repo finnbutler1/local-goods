@@ -66,8 +66,8 @@
                     <em>False alarm</em>: labeled normal, AI held. The "why" comes from the AI's own explanations.
                 </p>
                 @foreach (['tags' => ['Pattern', FraudEvalPatterns::TAGS], 'categories' => ['Merchant category', []]] as $key => [$heading, $names])
-                    <div class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Misses and false alarms by {{ strtolower($heading) }} table">
-                        <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                    <x-rtable :card="false" class="mt-3" label="Misses and false alarms by {{ strtolower($heading) }} table">
+                        <table data-rtable="stack" class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                             <caption class="sr-only">Misses and false alarms by {{ strtolower($heading) }}</caption>
                             <thead>
                                 <tr class="bg-band/60 text-sm text-muted">
@@ -82,18 +82,18 @@
                             <tbody>
                                 @foreach ($patterns[$key] as $name => $r)
                                     <tr class="border-t border-line/70 align-top">
-                                        <th scope="row" class="px-4 py-2 font-semibold">{{ $names[$name] ?? ucfirst($name) }}</th>
-                                        <td class="px-4 py-2">{{ $r['cases'] }}</td>
-                                        <td class="px-4 py-2">{{ $r['suspicious'] }}</td>
-                                        <td class="px-4 py-2">{{ $r['missed'] }}</td>
-                                        <td class="px-4 py-2">{{ $r['false_alarms'] }}</td>
+                                        <th scope="row" data-primary class="px-4 py-2 font-semibold">{{ $names[$name] ?? ucfirst($name) }}</th>
+                                        <td data-label="Cases" class="px-4 py-2">{{ $r['cases'] }}</td>
+                                        <td data-label="Labeled suspicious" class="px-4 py-2">{{ $r['suspicious'] }}</td>
+                                        <td data-label="Missed" class="px-4 py-2">{{ $r['missed'] }}</td>
+                                        <td data-label="False alarms" class="px-4 py-2">{{ $r['false_alarms'] }}</td>
                                         {{-- The notes name cases and the AI's calls, so they wait until a blind adjudicator has voted. --}}
-                                        <td class="px-4 py-2 text-sm">{{ $hideCaseDetails ? 'Shown after you submit your votes.' : ($headline['pattern_notes'][$name] ?? '') }}</td>
+                                        <td data-label="Why" class="px-4 py-2 text-sm">{{ $hideCaseDetails ? 'Shown after you submit your votes.' : ($headline['pattern_notes'][$name] ?? '') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
+                    </x-rtable>
                 @endforeach
             </section>
         @endif
@@ -127,7 +127,7 @@
             <div class="mt-3 grid gap-4 md:grid-cols-2">
                 @foreach (array_filter(['holdout_3' => 'Holdout 3 cases', 'holdout_2' => 'Holdout 2 cases', 'holdout' => 'Holdout cases', 'dev' => 'Dev cases'], fn ($title, $key) => ($s[$key]['cases'] ?? 0) > 0, ARRAY_FILTER_USE_BOTH) as $key => $title)
                     @php $m = $s[$key]['matrix']; @endphp
-                    <table class="tabular w-full overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                    <table data-rtable="fit" class="tabular w-full overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-line/70">
                         <caption class="px-4 pt-4 pb-1 text-left font-semibold">{{ $title }}: person's label (rows) vs the AI's call (columns)</caption>
                         <thead>
                             <tr class="bg-band/60 text-sm text-muted">
@@ -210,8 +210,8 @@
             <section aria-labelledby="history-heading">
                 <h2 id="history-heading" class="text-2xl font-semibold text-primary">Earlier runs</h2>
                 <p class="mt-1 text-sm text-muted">Every run is kept. A new prompt version means the prompt was changed between runs. Each cell: agreement, and how many of the suspicious cases the AI caught.</p>
-                <div class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Agreement for every eval run table">
-                    <table class="tabular w-full min-w-3xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                <x-rtable :card="false" class="mt-3" label="Agreement for every eval run table">
+                    <table data-rtable="stack" class="tabular w-full min-w-3xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                         <caption class="sr-only">Agreement for every eval run</caption>
                         <thead>
                             <tr class="bg-band/60 text-sm text-muted">
@@ -227,17 +227,17 @@
                         <tbody>
                             @foreach ($run['history'] as $h)
                                 <tr class="border-t border-line/70">
-                                    <td class="px-4 py-2">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
-                                    <td class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
+                                    <td data-primary class="px-4 py-2">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
+                                    <td data-label="Prompt version" class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
                                     @foreach (['dev', 'holdout', 'holdout_2', 'holdout_3'] as $split)
-                                        <td class="px-4 py-2 text-sm">{{ FraudEvalReport::historyCell($h['summary'][$split]) }}</td>
+                                        <td data-label="{{ \App\Services\Fraud\FraudEvalRunner::SPLITS[$split] }}" class="px-4 py-2 text-sm">{{ FraudEvalReport::historyCell($h['summary'][$split]) }}</td>
                                     @endforeach
-                                    <td class="px-4 py-2 text-sm">{{ $h['note'] ?? '' }}</td>
+                                    <td data-label="Note" class="px-4 py-2 text-sm">{{ $h['note'] ?? '' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </x-rtable>
             </section>
         @endif
     @endif

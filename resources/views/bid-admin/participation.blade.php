@@ -51,24 +51,8 @@
         @if ($roster->isEmpty())
             <x-card class="mt-3 text-muted">No merchants take part yet. Approved businesses will be listed here once they join.</x-card>
         @else
-            {{-- Cards on phones, a table from sm up. --}}
-            <ul class="mt-3 space-y-3 sm:hidden">
-                @foreach ($roster as $merchant)
-                    <x-card as="li" padding="p-4">
-                        <p class="font-semibold">{{ $merchant->name }}</p>
-                        <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
-                        <dl class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-                            <dt class="text-muted">This month</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->month_cents) }} · {{ $merchant->month_visits }} {{ Str::plural('visit', $merchant->month_visits) }}</dd>
-                            <dt class="text-muted">Owed via Stripe test mode</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->owed_stripe_cents) }}</dd>
-                            <dt class="text-muted">Owed, simulated</dt><dd class="tabular text-right">{{ Money::format((int) $merchant->owed_cents - (int) $merchant->owed_stripe_cents) }}</dd>
-                            <dt class="text-muted">Stripe</dt><dd class="text-right">{{ $merchant->stripeOnboardingLabel() }}@if ($merchant->stripe_account_id)<code class="block break-all font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif</dd>
-                            <dt class="text-muted">Last payout</dt><dd class="text-right">{{ $merchant->last_payout_at ? \Illuminate\Support\Carbon::parse($merchant->last_payout_at)->setTimezone('America/New_York')->format('M j') : 'None yet' }}</dd>
-                        </dl>
-                    </x-card>
-                @endforeach
-            </ul>
-            <x-card padding="p-0" class="mt-3 hidden scroll-region sm:block" role="region" tabindex="0" aria-label="Participating merchants table">
-                <table class="w-full text-left">
+            <x-rtable class="mt-3" label="Participating merchants table">
+                <table data-rtable="stack" class="w-full text-left">
                     <caption class="sr-only">Participating merchants with this month's cleared sales, what they are owed through Stripe test mode and simulated, their last payout and Stripe onboarding</caption>
                     <thead class="border-b border-line/70 text-sm text-muted">
                         <tr>
@@ -85,22 +69,22 @@
                     <tbody class="tabular divide-y divide-line/70">
                         @foreach ($roster as $merchant)
                             <tr>
-                                <th scope="row" class="px-5 py-3 font-semibold">{{ $merchant->name }}<span class="block text-sm font-normal text-muted">{{ $merchant->address }}</span></th>
-                                <td class="px-5 py-3 capitalize">{{ $merchant->category }}</td>
-                                <td class="px-5 py-3 text-right">{{ $merchant->month_visits }}</td>
-                                <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->month_cents) }}</td>
-                                <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_stripe_cents) }}</td>
-                                <td class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_cents - (int) $merchant->owed_stripe_cents) }}</td>
-                                <td class="px-5 py-3 text-right">{{ $merchant->last_payout_at ? \Illuminate\Support\Carbon::parse($merchant->last_payout_at)->setTimezone('America/New_York')->format('M j') : 'None yet' }}</td>
-                                <td class="px-5 py-3 text-sm" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">
+                                <th scope="row" data-primary class="px-5 py-3 font-semibold">{{ $merchant->name }}<span class="block text-sm font-normal text-muted">{{ $merchant->address }}</span></th>
+                                <td data-label="Category" class="px-5 py-3 capitalize">{{ $merchant->category }}</td>
+                                <td data-label="Visits this month" class="px-5 py-3 text-right">{{ $merchant->month_visits }}</td>
+                                <td data-label="Sales this month" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->month_cents) }}</td>
+                                <td data-label="Owed via Stripe test mode" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_stripe_cents) }}</td>
+                                <td data-label="Owed, simulated" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_cents - (int) $merchant->owed_stripe_cents) }}</td>
+                                <td data-label="Last payout" class="px-5 py-3 text-right">{{ $merchant->last_payout_at ? \Illuminate\Support\Carbon::parse($merchant->last_payout_at)->setTimezone('America/New_York')->format('M j') : 'None yet' }}</td>
+                                <td data-label="Stripe onboarding" class="px-5 py-3 text-sm" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">
                                     {{ $merchant->stripeOnboardingLabel() }}
-                                    @if ($merchant->stripe_account_id)<code class="block break-all font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif
+                                    @if ($merchant->stripe_account_id)<code class="wrap-anywhere-safe block font-mono text-xs text-muted">{{ $merchant->stripe_account_id }}</code>@endif
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-            </x-card>
+            </x-rtable>
             <p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
                 <x-money-mode />
                 @if ($stripe)

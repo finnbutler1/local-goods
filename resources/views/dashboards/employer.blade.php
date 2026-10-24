@@ -124,7 +124,7 @@
 
                 <details class="mt-3 text-sm">
                     <summary class="cursor-pointer font-semibold text-primary">Show as a table</summary>
-                    <table class="mt-2 w-full text-left">
+                    <table data-rtable="fit" class="mt-2 w-full text-left">
                         <caption class="sr-only">Cleared visits and dollars spent locally per week</caption>
                         <thead class="text-muted"><tr><th scope="col" class="py-1 font-semibold">Week of</th><th scope="col" class="py-1 text-right font-semibold">Visits</th><th scope="col" class="py-1 text-right font-semibold">Spent locally</th></tr></thead>
                         <tbody class="tabular divide-y divide-line/70">

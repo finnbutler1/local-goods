@@ -65,6 +65,36 @@ class ResponsiveTablesTest extends TestCase
         return array_values(array_unique($problems));
     }
 
+    public function test_every_table_on_every_page_uses_the_responsive_pattern(): void
+    {
+        $found = [];
+        $tables = 0;
+        $this->sweepPages(function (string $html, string $where) use (&$found, &$tables) {
+            $tables += substr_count($html, '<table');
+            if ($problems = self::problems($html)) {
+                $found[$where] = $problems;
+            }
+        });
+
+        $judge = $this->signIn(Role::Judge);
+        foreach (ViewAs::ROLES as $role) {
+            $html = $this->actingAs($judge)->followingRedirects()->get(route('judge.view-as', $role->value))->assertOk()->getContent();
+            if ($problems = self::problems($html)) {
+                $found["view as {$role->value}"] = $problems;
+            }
+        }
+
+        // The styleguide shows the pattern; it only opens locally.
+        $this->app['env'] = 'local';
+        auth()->logout();
+        if ($problems = self::problems($this->get('/styleguide')->assertOk()->getContent())) {
+            $found['/styleguide'] = $problems;
+        }
+
+        $this->assertGreaterThan(10, $tables, 'Too few tables were checked.');
+        $this->assertSame([], $found, "Tables outside the responsive pattern:\n".collect($found)->flatten()->unique()->implode("\n"));
+    }
+
     public function test_the_admin_accounts_table_stacks_with_labelled_cells(): void
     {
         $html = $this->actingAs($this->signIn(Role::PlatformAdmin))->get('/admin')->assertOk()->getContent();

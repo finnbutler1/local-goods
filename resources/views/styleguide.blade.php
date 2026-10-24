@@ -175,9 +175,9 @@
     {{-- Tables --}}
     <section id="tables" aria-labelledby="tables-heading" class="scroll-mt-24">
         <h2 id="tables-heading" class="text-3xl font-semibold text-primary">Tables</h2>
-        <p class="mt-1 text-muted">Use a <code>&lt;caption&gt;</code> and <code>scope</code> on header cells. Wrap wide tables in <code>&lt;div class="scroll-region" role="region" tabindex="0" aria-label="…"&gt;</code> so keyboard users can scroll them too.</p>
-        <div class="mt-6 scroll-region" role="region" tabindex="0" aria-label="Recent redemptions table">
-            <table class="tabular w-full min-w-lg overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-line/70">
+        <p class="mt-1 text-muted">Use a <code>&lt;caption&gt;</code> and <code>scope</code> on header cells. Put every table in <code>&lt;x-rtable label="…"&gt;</code> with <code>&lt;table data-rtable="stack"&gt;</code>: below 640px each row becomes a card. Give every body cell <code>data-label="Column name"</code>, the row's name <code>data-primary</code> and an actions cell <code>data-label=""</code>. Only a short table that fits a 320px phone as it is uses <code>data-rtable="fit"</code>. Long emails and links go in <code>&lt;x-breakable :value="…" /&gt;</code>, so they never split mid-word.</p>
+        <x-rtable :card="false" class="mt-6" label="Recent redemptions table">
+            <table data-rtable="stack" class="tabular w-full min-w-lg overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-line/70">
                 <caption class="px-4 pt-4 pb-2 text-left font-semibold">Recent redemptions (example data)</caption>
                 <thead>
                     <tr class="bg-band/60 text-sm text-muted">
@@ -190,17 +190,17 @@
                 <tbody>
                     @foreach ([['Press Room Deli', 'Oct 9, 12:15 PM', '$12.90', true], ['Triangle Stems', 'Oct 8, 11:40 PM', '$150.00', false], ['Farragut Grind', 'Oct 6, 9:00 AM', '$6.10', true]] as [$m, $w, $a, $ok])
                         <tr class="border-t border-line/70">
-                            <th scope="row" class="px-4 py-3 font-semibold">{{ $m }}</th>
-                            <td class="px-4 py-3 text-muted">{{ $w }}</td>
-                            <td class="px-4 py-3 text-right font-semibold">{{ $a }}</td>
-                            <td class="px-4 py-3">
+                            <th scope="row" data-primary class="px-4 py-3 font-semibold">{{ $m }}</th>
+                            <td data-label="When" class="px-4 py-3 text-muted">{{ $w }}</td>
+                            <td data-label="Amount" class="px-4 py-3 text-right font-semibold">{{ $a }}</td>
+                            <td data-label="Status" class="px-4 py-3">
                                 <x-badge :tone="$ok ? 'ok' : 'hold'">{{ $ok ? 'Approved' : 'Under review' }}</x-badge>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-rtable>
     </section>
 
     {{-- States --}}
