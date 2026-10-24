@@ -60,6 +60,12 @@ class Redemption extends Model
         return $this->items->isEmpty() ? null : $this->items->map->label()->implode(', ');
     }
 
+    /** "LG-000123", the confirmation number shown at the counter. */
+    public function reference(): string
+    {
+        return 'LG-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
     /** The DC sales tax snapshotted on it (ADR 0027), or null for a row from before tax display. */
     public function taxBreakdown(): ?TaxBreakdown
     {

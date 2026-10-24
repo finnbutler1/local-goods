@@ -45,7 +45,7 @@
                 @endif
                 @include('partials.tax-breakdown', ['tax' => $result->taxBreakdown(), 'class' => 'mx-auto mt-3 max-w-xs text-left text-sm text-ink'])
                 <dl class="mx-auto mt-4 grid max-w-xs grid-cols-2 gap-2 text-left text-sm text-ink">
-                    <dt class="text-muted">Confirmation</dt><dd class="tabular text-right font-semibold">LG-{{ str_pad((string) $result->id, 6, '0', STR_PAD_LEFT) }}</dd>
+                    <dt class="text-muted">Confirmation</dt><dd class="tabular text-right font-semibold">{{ $result->reference() }}</dd>
                     <dt class="text-muted">Time</dt><dd class="text-right font-semibold">{{ $when->format('M j, g:i A') }}</dd>
                     <dt class="text-muted">How</dt><dd class="text-right font-semibold" data-channel>{{ $result->channelLabel() }}</dd>
                 </dl>

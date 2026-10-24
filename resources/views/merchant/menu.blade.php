@@ -12,6 +12,10 @@
             The menu is display only. Redemption Fraud Detection checks the amount, never the items.
             Reset demo puts the original menu back.
         </p>
+        <p class="mt-2 text-sm text-muted">
+            Each product's tax category sets the DC sales tax added on top of its price at checkout, at DC's published rates.
+            Your business files and remits DC sales tax; Local Goods does not, and this isn't tax advice.
+        </p>
         @if ($readOnly)
             <p class="mt-3 rounded-xl bg-primary-tint p-3 text-sm text-primary">Read-only: judges can see {{ $merchant->name }}'s menu but can't change it.</p>
         @endif
@@ -53,6 +57,7 @@
                                    class="block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary"
                                    @if ($bag->has('description')) aria-invalid="true" aria-describedby="{{ $id }}-description-error" @endif>
                         </x-field>
+                        @include('merchant.partials.tax-category', ['id' => $id.'-tax', 'bag' => $bag, 'selected' => $value('tax_category', $product->taxCategory())])
                         <label class="flex items-center gap-2">
                             <input type="checkbox" name="is_available" value="1" @checked($product->is_available) class="size-5 accent-primary">
                             On the menu (employees can pick it)
@@ -87,6 +92,7 @@
                            class="block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary"
                            @if ($add->has('description')) aria-invalid="true" aria-describedby="add-description-error" @endif>
                 </x-field>
+                @include('merchant.partials.tax-category', ['id' => 'add-tax', 'bag' => $add, 'selected' => $add->any() ? old('tax_category', $defaultTax) : $defaultTax])
                 <x-button type="submit" size="sm" class="max-sm:w-full" :disabled="$readOnly">Add to the menu</x-button>
             </form>
         </x-card>

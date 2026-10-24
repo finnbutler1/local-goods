@@ -5,16 +5,19 @@ namespace App\Http\Controllers\Merchant;
 use App\Http\Controllers\Controller;
 use App\Models\MerchantProduct;
 use App\Support\Money;
+use App\Support\SalesTax;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
  * A merchant's own product menu (ADR 0023): view it, change a product's
  * name, price or description, take it off the menu or put it back, and
  * add one. Changes apply to new redemptions only; past ones keep the name
- * and price they had. Display only: Redemption Fraud Detection checks the
- * amount, never the items. A judge sees the demo merchant's menu, read-only.
+ * and price they had. Each product has a DC sales tax category (ADR 0027),
+ * starting from the merchant's default. Display only: Redemption Fraud
+ * Detection checks the amount, never the items. A judge sees the demo merchant's menu, read-only.
  */
 class MenuController extends Controller
 {
@@ -32,6 +35,7 @@ class MenuController extends Controller
             'products' => $merchant->products()->get(),
             'readOnly' => $request->user()->isReadOnly(),
             'canAdd' => $merchant->mayHaveProducts() && $merchant->products()->count() < self::MAX_PRODUCTS,
+            'defaultTax' => SalesTax::defaultFor($merchant),
         ]);
     }
 
@@ -47,6 +51,7 @@ class MenuController extends Controller
         $data = $request->validateWithBag('add', $this->rules(), $this->messages());
 
         $product = $merchant->products()->create([
+            'tax_category' => SalesTax::defaultFor($merchant),
             ...$this->fields($data),
             'is_available' => true,
             'position' => (int) $merchant->products()->max('position') + 1,
@@ -75,6 +80,8 @@ class MenuController extends Controller
             'name' => ['required', 'string', 'max:80'],
             'price' => ['required', 'regex:/^\d{1,4}(\.\d{1,2})?$/', 'not_regex:/^0+(\.0+)?$/'],
             'description' => ['nullable', 'string', 'max:160'],
+            // Left out, a product keeps its category (a new one gets the merchant's default).
+            'tax_category' => ['nullable', Rule::in(SalesTax::categories())],
         ];
     }
 
@@ -84,19 +91,21 @@ class MenuController extends Controller
         return [
             'price.regex' => 'Enter a price in dollars, like 5.75.',
             'price.not_regex' => 'Enter a price greater than zero.',
+            'tax_category.in' => 'Choose one of the tax categories listed.',
         ];
     }
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{name: string, price_cents: int, description: ?string}
+     * @return array{name: string, price_cents: int, description: ?string, tax_category?: string}
      */
     private function fields(array $data): array
     {
-        return [
+        return array_filter([
             'name' => trim($data['name']),
             'price_cents' => Money::toCents($data['price']),
             'description' => filled($data['description'] ?? null) ? trim($data['description']) : null,
-        ];
+            'tax_category' => $data['tax_category'] ?? null,
+        ], fn ($value, $key) => $key !== 'tax_category' || $value !== null, ARRAY_FILTER_USE_BOTH);
     }
 }
