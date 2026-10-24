@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use App\Services\Fraud\FraudVerdict;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
@@ -110,6 +111,28 @@ class Redemption extends Model
         return $this->status === self::STATUS_REJECTED;
     }
 
+    /** A held in-person payment its merchant or employee called off (ADR 0026). Not a fraud denial. */
+    public function isCancelled(): bool
+    {
+        return $this->isRejected() && $this->decision?->isCancel() === true;
+    }
+
+    /** "Cancelled by merchant" or "Cancelled by employee", or null when it wasn't cancelled. */
+    public function cancelledLabel(): ?string
+    {
+        if (! $this->isCancelled()) {
+            return null;
+        }
+
+        return $this->decision->decided_by_role === Role::Merchant->value ? 'Cancelled by merchant' : 'Cancelled by employee';
+    }
+
+    /** Its merchant or employee may still cancel it: held, in person (ADR 0026). */
+    public function mayBeCancelledBy(User $person): bool
+    {
+        return $this->isUnderReview() && RedemptionDecision::mayCancel($person, $this);
+    }
+
     /** What the AI decided, e.g. "hold (risk 82)". Kept apart from the person's call. */
     public function aiDecisionLabel(): string
     {
@@ -128,7 +151,7 @@ class Redemption extends Model
         }
 
         if ($this->reviewed_by) {
-            return ($this->isRejected() ? 'denied' : $this->status)." by {$this->reviewed_by} on "
+            return ($this->isCancelled() ? 'cancelled at the counter' : ($this->isRejected() ? 'denied' : $this->status))." by {$this->reviewed_by} on "
                 .$this->reviewed_at->setTimezone('America/New_York')->format('M j, g:i A');
         }
 
@@ -156,7 +179,11 @@ class Redemption extends Model
 
         if ($decision !== null) {
             $when = $decision->decided_at->setTimezone('America/New_York')->format('M j');
-            $steps[] = ($decision->isApproval() ? 'approved' : 'denied').' by '.$decision->deciderLabel().' · '.$when;
+            $steps[] = match (true) {
+                $decision->isApproval() => 'approved',
+                $decision->isCancel() => 'cancelled at the counter',
+                default => 'denied',
+            }.' by '.$decision->deciderLabel().' · '.$when;
         } elseif ($this->isUnderReview()) {
             $steps[] = 'waiting for a BID admin';
         }

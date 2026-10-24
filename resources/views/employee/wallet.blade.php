@@ -28,7 +28,7 @@
                         @endif
                     </span>
                 </span>
-                <h2 id="confirmation-heading" class="mt-3 font-display text-4xl font-semibold">{{ $approved ? 'Approved' : 'Under review' }}</h2>
+                <h2 id="confirmation-heading" class="mt-3 font-display text-4xl font-semibold">{{ $approved ? 'Approved' : ($result->isRejected() ? ($result->cancelledLabel() ?? 'Denied') : 'Under review') }}</h2>
                 @if ($approved)
                     <p class="mt-2 inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
                         <span class="relative flex size-2.5" aria-hidden="true">
@@ -53,8 +53,11 @@
                 <p class="mx-auto mt-4 max-w-sm">
                     @if ($result->isInPerson() && $approved)
                         Done. {{ $result->merchant->name }} confirmed it at the counter and sees it on their Local Goods dashboard.
+                    @elseif ($result->isRejected())
+                        {{ $result->decision?->credit_returned_to === 'employer' ? 'The credits went back to your employer.' : 'Your credits are back in your balance.' }}
                     @elseif ($result->isInPerson())
                         Your payment is being held for a quick review. Your credits are set aside, and come back to you if it isn't approved.
+                        If you pay another way, press Cancel this payment to get your credits back now; otherwise wait.
                     @elseif ($approved)
                         Show this screen at the counter. The clock is live, so it can't be a saved screenshot.
                         {{ $result->merchant->name }} also sees this redemption on their Local Goods dashboard.
@@ -63,6 +66,12 @@
                         Your credits are reserved meanwhile, and come back to you if it isn't approved.
                     @endif
                 </p>
+                @if ($result->mayBeCancelledBy(auth()->user()))
+                    <form method="POST" action="{{ route('employee.redemption.cancel', $result) }}" data-busy="Cancelling the payment…" class="mt-5">
+                        @csrf
+                        <x-button type="submit" variant="secondary" class="bg-surface">Cancel this payment</x-button>
+                    </form>
+                @endif
                 <x-button :href="route('employee.wallet')" variant="secondary" class="mt-5 bg-surface">Done</x-button>
             </section>
         @endif
@@ -216,8 +225,14 @@
                     <div class="shrink-0 text-right">
                         <p class="tabular font-semibold">{{ Money::format($redemption->amount_cents) }}</p>
                         <x-status-badge :redemption="$redemption" class="mt-1" />
+                        @if ($redemption->mayBeCancelledBy(auth()->user()))
+                            <form method="POST" action="{{ route('employee.redemption.cancel', $redemption) }}" data-busy="Cancelling…" class="mt-1">
+                                @csrf
+                                <x-button type="submit" variant="ghost" size="sm" aria-label="Cancel this payment: {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Cancel this payment</x-button>
+                            </form>
+                        @endif
                         @if ($redemption->isRejected())
-                            <p class="mt-1 max-w-36 text-xs text-muted">{{ $redemption->decision?->credit_returned_to === 'employer' ? 'Credit returned to your employer' : 'Credit back in your balance' }}</p>
+                            <p class="mt-1 max-w-36 text-xs text-muted">{{ $redemption->isCancelled() ? 'Cancelled, credits returned' : ($redemption->decision?->credit_returned_to === 'employer' ? 'Credit returned to your employer' : 'Credit back in your balance') }}</p>
                         @endif
                     </div>
                 </li>

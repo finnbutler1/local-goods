@@ -55,7 +55,7 @@ class EmployeeWalletController extends Controller
         $payErrors = $request->session()->get('errors')?->getBag(PayCodeController::ERRORS);
         $liveCode = $codes->liveFor($employee)?->load('merchant');
         $payResult = $liveCode === null && $request->filled('pay_code')
-            ? PayCode::with(['merchant', 'redemption.merchant', 'redemption.items'])->where('employee_id', $employee->id)->find($request->integer('pay_code'))
+            ? PayCode::with(['merchant', 'redemption.merchant', 'redemption.items', 'redemption.decision'])->where('employee_id', $employee->id)->find($request->integer('pay_code'))
             : null;
         $payMerchant = $merchants->firstWhere('id', (int) $request->old('pay_merchant_id', $request->integer('pay_merchant') ?: null));
         $tab = $request->query('tab') === 'in-person' || $liveCode || $payResult || $payMerchant || $payErrors?->any()

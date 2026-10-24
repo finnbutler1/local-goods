@@ -36,11 +36,38 @@
                 <p class="mt-2 text-ink">
                     @if ($paidOk)
                         Cleared. You're owed it on Local Goods; hand over the order.
+                    @elseif ($payResult->isUnderReview())
+                        It's being held for a quick review, and no money moves until a BID admin decides. If they pay another way, press Cancel this payment; otherwise wait for the review.
                     @else
-                        It's being held for a quick review, and no money moves until a BID admin decides. You can ask for another way to pay, or wait for the review.
+                        Cancelled: the credits went back to the customer. You aren't owed it.
                     @endif
                 </p>
-                @unless ($paidOk) <p class="mt-2"><x-badge tone="hold">Under review</x-badge></p> @endunless
+                @unless ($paidOk) <p class="mt-2"><x-status-badge :redemption="$payResult" /></p> @endunless
+            </div>
+        @endif
+
+        @if ($heldAtCounter->isNotEmpty())
+            {{-- Held in-person payments: if the customer paid another way, cancel so the hold can never be approved later. --}}
+            <div class="mt-5">
+                <h3 class="font-semibold text-ink">Held at the counter</h3>
+                <p class="text-sm text-muted">Not completed yet: no money moves until a BID admin decides. If the customer paid another way, cancel it here.</p>
+                <ul class="mt-2 divide-y divide-line/70 rounded-xl border-2 border-line">
+                    @foreach ($heldAtCounter as $held)
+                        <li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                            <div class="min-w-0">
+                                <p class="tabular font-semibold">{{ Money::format($held->amount_cents) }} · {{ $held->employee->initials() }}</p>
+                                @if ($for = $held->itemsSummary()) <p class="text-sm break-words" data-items>{{ $for }}</p> @endif
+                                <p class="text-sm text-muted">{{ $held->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} · <x-badge tone="hold">Under review</x-badge></p>
+                            </div>
+                            @if ($held->mayBeCancelledBy(auth()->user()))
+                                <form method="POST" action="{{ route('merchant.redemption.cancel', $held) }}" data-busy="Cancelling the payment…">
+                                    @csrf
+                                    <x-button type="submit" variant="secondary" size="sm" aria-label="Cancel this payment: {{ Money::format($held->amount_cents) }} from {{ $held->employee->initials() }}">Cancel this payment</x-button>
+                                </form>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -147,6 +174,8 @@
                             <p @class(['tabular font-semibold', 'text-muted line-through' => $redemption->isRejected()])>{{ Money::format($redemption->amount_cents) }}</p>
                             @if ($redemption->isUnderReview())
                                 <x-badge tone="hold" class="mt-1">Waiting for review, not owed yet</x-badge>
+                            @elseif ($redemption->isCancelled())
+                                <x-badge tone="neutral" class="mt-1">{{ $redemption->cancelledLabel() }}, not owed</x-badge>
                             @elseif ($redemption->isRejected())
                                 <x-badge tone="neutral" class="mt-1">Denied, not owed</x-badge>
                             @else

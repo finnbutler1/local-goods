@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Employee;
 
+use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\PayCode;
+use App\Models\Redemption;
+use App\Models\RedemptionDecision;
 use App\Services\PayCodes;
 use App\Services\RedemptionBasket;
+use App\Services\RedemptionReviewService;
 use App\Support\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -62,6 +66,26 @@ class PayCodeController extends Controller
 
         return redirect()->to(route('employee.wallet', ['tab' => 'in-person']).'#pay')
             ->with('status', 'Pay code cancelled. Nothing was charged.');
+    }
+
+    /**
+     * "Cancel this payment": a held in-person payment, because they paid
+     * another way (ADR 0026). The credits come back through the same path as
+     * a "no purchase happened" denial; no transfer ever.
+     */
+    public function cancelHeld(Request $request, Redemption $redemption, RedemptionReviewService $reviews): RedirectResponse
+    {
+        Gate::authorize('redeem');
+        abort_unless(RedemptionDecision::mayCancel($request->user(), $redemption), 404);
+        $back = redirect()->to(route('employee.wallet', ['tab' => 'in-person']).'#wallet-tabs');
+
+        try {
+            $reviews->cancel($redemption, $request->user());
+        } catch (RedemptionAlreadyReviewed) {
+            return $back->with('error', 'Nothing changed: this payment was already decided.');
+        }
+
+        return $back->with('status', 'Payment cancelled: '.Money::format($redemption->amount_cents)." back in your credits from {$redemption->merchant->name}.");
     }
 
     /**

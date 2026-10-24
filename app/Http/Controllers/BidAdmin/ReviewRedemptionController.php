@@ -58,7 +58,11 @@ class ReviewRedemptionController extends Controller
         try {
             $action();
         } catch (RedemptionAlreadyReviewed $e) {
-            $done = $e->redemption->isUnderReview() ? 'not under review' : 'already '.($e->redemption->isRejected() ? 'denied' : $e->redemption->status);
+            $done = $e->redemption->isUnderReview() ? 'not under review' : 'already '.match (true) {
+                $e->redemption->isCancelled() => 'cancelled at the counter',
+                $e->redemption->isRejected() => 'denied',
+                default => $e->redemption->status,
+            };
 
             return $back->with('error', 'Nothing changed: this redemption is '.str_replace('_', ' ', $done).'.');
         }
