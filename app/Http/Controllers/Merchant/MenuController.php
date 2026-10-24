@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Merchant;
 use App\Models\MerchantProduct;
 use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
@@ -19,19 +18,10 @@ use Illuminate\View\View;
  */
 class MenuController extends Controller
 {
+    use ResolvesMerchant;
+
     /** Keeps the redeem screen short enough to use on a phone. */
     public const MAX_PRODUCTS = 12;
-
-    private function merchant(Request $request): Merchant
-    {
-        $merchant = $request->user()->isReadOnly()
-            ? Merchant::where('name', config('demo.accounts.merchant.business'))->first() ?? Merchant::orderBy('id')->first()
-            : $request->user()->merchant;
-
-        abort_if($merchant === null, 403, 'No business is linked to this login yet.');
-
-        return $merchant;
-    }
 
     public function show(Request $request): View
     {

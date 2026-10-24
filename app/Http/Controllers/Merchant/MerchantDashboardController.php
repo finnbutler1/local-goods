@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
+use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Services\EmployerProgram;
+use App\Services\PayCodes;
 use App\Support\StripeMode;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +16,8 @@ use Illuminate\View\View;
  * What a merchant sees: Local Goods redemptions at their business, what they
  * are owed (cleared redemptions only; held ones are not owed until a person
  * clears them), split into owed through Stripe test mode and owed simulated
- * (ADR 0015), Stripe onboarding, and payouts. Customers are
+ * (ADR 0015), Stripe onboarding, payouts, and taking a payment in person
+ * with the customer's pay code (ADR 0026). Customers are
  * shown by initials only (ADR 0014). A judge sees the demo merchant.
  */
 class MerchantDashboardController extends Controller
@@ -32,11 +35,18 @@ class MerchantDashboardController extends Controller
             return view('dashboards.merchant', ['merchant' => null]);
         }
 
+        // Pay in person (ADR 0026): the code just looked up, while it's still live, or the payment just confirmed.
+        app(PayCodes::class)->expireStale();
+        $lookedUp = PayCode::with('employee')->where('merchant_id', $merchant->id)->where('status', PayCode::STATUS_ACTIVE)
+            ->find($request->session()->get(PayCodeController::SESSION_KEY));
+
         [$monthStart] = EmployerProgram::month();
         $redemptions = $merchant->redemptions();
 
         return view('dashboards.merchant', [
             'merchant' => $merchant,
+            'lookedUp' => $lookedUp,
+            'payResult' => $merchant->redemptions()->with(['employee', 'items'])->find($request->session()->get(PayCodeController::RESULT_KEY)),
             'owedCents' => $merchant->payableCents(),
             'owedStripeCents' => $merchant->owedViaStripeCents(),
             'owedSimulatedCents' => $merchant->owedSimulatedCents(),

@@ -34,6 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [EndReviewerSessions::class, BlockJudgeWrites::class, KeepPersonalContactsToAdjudication::class, TrackLastSeen::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // A pay code is never sent back to the page as old input (ADR 0026).
+        $exceptions->dontFlash(['pay_code']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

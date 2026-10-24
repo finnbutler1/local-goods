@@ -56,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('run-collusion-example', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('decide-merchant-eligibility', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('redeem', fn (User $user) => $user->hasRole(Role::Employee));
+        // The merchant's own login confirms pay codes at the counter (ADR 0026).
+        Gate::define('take-payments', fn (User $user) => $user->hasRole(Role::Merchant));
         Gate::define('manage-employer-program', fn (User $user) => $user->hasRole(Role::EmployerAdmin));
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
