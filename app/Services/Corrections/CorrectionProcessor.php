@@ -9,6 +9,7 @@ use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeGatewayException;
 use App\Support\Money;
 use App\Support\StripeEnvironment;
+use App\Support\StripeMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -41,6 +42,16 @@ class CorrectionProcessor
 
     public function run(Correction $correction): void
     {
+        // Like MerchantPayouts::send: with Stripe test mode off on this server, Stripe steps wait (nothing is lost).
+        if (! StripeMode::active()) {
+            $correction->actions()->whereIn('status', [CorrectionAction::STATUS_PENDING, CorrectionAction::STATUS_FAILED])
+                ->where('kind', '!=', CorrectionAction::KIND_SIMULATED)
+                ->update(['failure_reason' => 'Stripe test mode is off on this server, so this has not been sent to Stripe yet.']);
+            self::syncStatus($correction);
+
+            return;
+        }
+
         foreach ($correction->actions()->whereIn('status', [CorrectionAction::STATUS_PENDING, CorrectionAction::STATUS_PROCESSING, CorrectionAction::STATUS_FAILED])->get() as $action) {
             if ($action->kind === CorrectionAction::KIND_SIMULATED) {
                 continue;
@@ -88,6 +99,13 @@ class CorrectionProcessor
                     'amount' => $action->amount_cents,
                     'description' => 'Local Goods: refund on redemption #'.$action->correction->redemption_id.' (test mode)',
                     'metadata' => $metadata + ['lg_redemption_id' => (string) $action->correction->redemption_id],
+                ], $key),
+                // Credits only, never more than is left of the payment (CorrectionDecisions checked).
+                CorrectionAction::KIND_CARD_REFUND => $this->stripe->createRefund([
+                    'payment_intent' => $action->creditPurchase->stripe_payment_intent_id,
+                    'amount' => $action->amount_cents,
+                    'reason' => 'requested_by_customer',
+                    'metadata' => $metadata + ['lg_purchase_reference' => $action->creditPurchase->reference],
                 ], $key),
             };
         } catch (StripeGatewayException $e) {
@@ -162,5 +180,61 @@ class CorrectionProcessor
         self::syncStatus($correction);
 
         return 'refund recorded: '.$reversal['id'];
+    }
+
+    /**
+     * Stripe's webhook about a card refund for one of our actions
+     * (refund.created, refund.updated, refund.failed). In test mode Stripe
+     * creates card refunds already succeeded, even on a payment whose funds
+     * are still pending (trial of 2026-10-24), so refund.created usually
+     * completes it. A succeeded refund writes its ledger line once; a failed
+     * or cancelled one fails the action (the credits stay held: retry or
+     * close). Inside the webhook's transaction.
+     */
+    public function confirmRefund(array $refund, Carbon $at): ?string
+    {
+        $action = CorrectionAction::where('kind', CorrectionAction::KIND_CARD_REFUND)
+            ->where(fn ($q) => $q->where('stripe_id', $refund['id'] ?? '-')->orWhere('idempotency_key', $refund['metadata']['lg_correction_key'] ?? '-'))
+            ->first();
+
+        if ($action === null) {
+            return null;
+        }
+
+        $status = (string) ($refund['status'] ?? '');
+
+        if (in_array($status, ['failed', 'canceled'], true)) {
+            $changed = CorrectionAction::whereKey($action->id)->where('status', '!=', CorrectionAction::STATUS_FAILED)->update([
+                'status' => CorrectionAction::STATUS_FAILED, 'stripe_id' => $refund['id'], 'attempts' => $action->attempts + 1,
+                'failure_reason' => 'Stripe says the card refund '.$status.($refund['failure_reason'] ?? null ? ' ('.str_replace('_', ' ', $refund['failure_reason']).')' : '').'. The credits stay held; retry or close it.',
+            ]);
+            self::syncStatus($action->correction);
+
+            return $changed ? 'card refund '.$status.': '.$refund['id'] : 'card refund failure already recorded: '.$refund['id'];
+        }
+
+        if ($status !== 'succeeded') {
+            $action->update(['stripe_id' => $refund['id'], 'failure_reason' => 'Stripe shows the card refund as '.str_replace('_', ' ', $status).'; waiting for it to finish.']);
+
+            return 'card refund '.$status.': '.$refund['id'];
+        }
+
+        if ((int) ($refund['amount'] ?? 0) !== $action->amount_cents) {
+            Log::warning('Stripe refund amount does not match the correction', ['action' => $action->id, 'refund' => $refund['id'] ?? null]);
+
+            return 'refused: refund '.$refund['id'].' is '.Money::format((int) ($refund['amount'] ?? 0)).', the correction is '.Money::format($action->amount_cents);
+        }
+
+        $changed = CorrectionAction::whereKey($action->id)->where('status', '!=', CorrectionAction::STATUS_SUCCEEDED)
+            ->update(['status' => CorrectionAction::STATUS_SUCCEEDED, 'stripe_id' => $refund['id'], 'completed_at' => $at, 'failure_reason' => null]);
+
+        if ($changed === 0) {
+            return 'card refund already recorded: '.$refund['id'];
+        }
+
+        $this->ledger->completeEmployerRefund($action->correction, $action->creditPurchase, $action->amount_cents, $refund['id'], $at);
+        self::syncStatus($action->correction);
+
+        return 'card refund recorded: '.$refund['id'];
     }
 }

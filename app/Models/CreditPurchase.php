@@ -77,12 +77,36 @@ class CreditPurchase extends Model
     }
 
     /**
-     * Money from this Stripe payment not yet claimed by a merchant transfer.
-     * Credits only: the platform fee never funds a transfer.
-     * A reversed transfer keeps its claim: a person decides what happens next.
+     * Money from this Stripe payment not yet claimed by a merchant transfer
+     * or refunded to the employer (ADR 0028). Credits only: the platform fee
+     * never funds a transfer. A reversed transfer keeps its claim: a person
+     * decides what happens next. With no refunds, exactly as before.
      */
     public function unclaimedCents(): int
     {
-        return $this->amount_cents - (int) $this->fundedPayouts()->sum('amount_cents');
+        return $this->amount_cents - (int) $this->fundedPayouts()->sum('amount_cents') - $this->refundedCents();
+    }
+
+    /**
+     * Credits from this purchase refunded to the employer, or held for a
+     * refund on its way (ADR 0028). A refund that was closed without
+     * happening no longer counts; one that went through always does.
+     */
+    public function refundedCents(): int
+    {
+        return (int) CorrectionAction::where('credit_purchase_id', $this->id)
+            ->where(fn ($q) => $q->where('status', CorrectionAction::STATUS_SUCCEEDED)
+                ->orWhereHas('correction', fn ($c) => $c->where('status', '!=', Correction::STATUS_CLOSED)))
+            ->sum('amount_cents');
+    }
+
+    /**
+     * What may still go back to the employer from this purchase: its credits
+     * less what was refunded and, for a Stripe payment, less what merchant
+     * transfers already claimed (that money has left Stripe's balance).
+     */
+    public function refundableCents(): int
+    {
+        return $this->isStripe() ? max(0, $this->unclaimedCents()) : max(0, $this->amount_cents - $this->refundedCents());
     }
 }

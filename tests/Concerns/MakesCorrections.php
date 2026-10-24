@@ -44,7 +44,7 @@ trait MakesCorrections
     {
         $ledger = app(CreditLedger::class);
         $purchase = $ledger->requestPurchase(Employer::firstOrFail(), $cents, 'MPG-STRIPE-'.$charge);
-        $ledger->markPurchasePaidByStripe($purchase, 'pi_'.$charge, $charge, $cents, 'usd');
+        $ledger->markPurchasePaidByStripe($purchase, 'pi_'.$charge, $charge, $purchase->totalCents(), 'usd');
 
         return $purchase->fresh();
     }
@@ -56,12 +56,16 @@ trait MakesCorrections
         app(StripeOnboarding::class)->apply($merchant, $this->stripe->completeOnboarding('acct_test_FG'));
     }
 
-    /** A redemption the AI clears, of a typed-in amount. */
+    /** A redemption the AI clears, of a typed-in amount (topping the employee up first if needed). */
     protected function cleared(int $cents, ?Employee $employee = null): Redemption
     {
+        $employee = ($employee ?? $this->shopper())->fresh();
+        if (($short = $cents - $employee->balanceCents()) > 0) {
+            app(CreditLedger::class)->allocate(Employer::firstOrFail(), $employee, $short);
+        }
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(10, 'clear'));
 
-        return app(RedemptionService::class)->redeem(($employee ?? $this->shopper())->fresh(), $this->farragut(), $cents);
+        return app(RedemptionService::class)->redeem($employee->fresh(), $this->farragut(), $cents);
     }
 
     /**
@@ -113,8 +117,10 @@ trait MakesCorrections
         $moneyIn = (int) (clone $paid)->sum('amount_cents') + (int) (clone $paid)->sum('platform_fee_cents');
         $paidOut = (int) MerchantPayout::paid()->sum('amount_cents') - (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_REFUND_REVERSAL)->sum('amount_cents');
         $held = (int) Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->sum('amount_cents');
-        $employerRefunds = (int) CorrectionAction::whereHas('correction', fn ($q) => $q->where('type', Correction::TYPE_EMPLOYER_REFUND)
-            ->where('status', '!=', Correction::STATUS_CLOSED))->sum('amount_cents');
+        // A part that went through always counts; the rest only while the refund is still open (Close releases it).
+        $employerRefunds = (int) CorrectionAction::whereHas('correction', fn ($q) => $q->where('type', Correction::TYPE_EMPLOYER_REFUND))
+            ->where(fn ($q) => $q->where('status', CorrectionAction::STATUS_SUCCEEDED)
+                ->orWhereHas('correction', fn ($c) => $c->where('status', '!=', Correction::STATUS_CLOSED)))->sum('amount_cents');
 
         $this->assertSame($moneyIn - $paidOut - $held - $employerRefunds, (int) CreditLedgerEntry::sum('amount_cents'), 'The ledger invariant holds with corrections');
     }

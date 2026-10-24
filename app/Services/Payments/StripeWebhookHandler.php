@@ -85,6 +85,7 @@ class StripeWebhookHandler
             'account.updated' => $this->accountUpdated($object, $after),
             'transfer.created' => $this->transferCreated($object, $at),
             'transfer.reversed' => $this->transferReversed($object, $at),
+            'refund.created', 'refund.updated', 'refund.failed' => $this->corrections->confirmRefund($object, $at) ?? 'ignored: not a Local Goods refund',
             default => 'ignored: not an event Local Goods uses',
         };
     }
