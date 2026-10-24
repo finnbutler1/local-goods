@@ -9,7 +9,7 @@
 
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Redemption Fraud Detection</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">How often does the AI agree with a person?</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">How often does the AI agree with a person?</h1>
         <p class="mt-3 text-lg text-muted">
             We wrote 90 synthetic redemptions and a person labeled each one <em>normal</em> or <em>suspicious</em>
             by hand, before the AI saw them. Then the real fraud check (the same prompt and model as production)

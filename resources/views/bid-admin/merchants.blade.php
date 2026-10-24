@@ -17,7 +17,7 @@
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">{{ $bid->name }} BID · {{ $bid->city }}</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Merchant Eligibility Matching</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Merchant Eligibility Matching</h1>
         <p class="mt-3 text-lg text-muted">
             Real businesses inside the BID, taken from DC's public business licenses. For each one the AI says whether it
             looks independent under the rule, how sure it is, and why. A person at the BID makes the decision.

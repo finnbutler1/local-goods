@@ -25,7 +25,7 @@
 
         <header class="max-w-3xl">
             <x-eyebrow class="text-accent-ink">Merchant Eligibility Matching</x-eyebrow>
-            <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Can the AI tell an independent business from a chain?</h1>
+            <h1 class="mt-1 text-title font-semibold text-primary">Can the AI tell an independent business from a chain?</h1>
             <p class="mt-3 text-lg text-muted">
                 Finn hand-labeled 60 real businesses inside the Golden Triangle BID against the independence rule, with a public source for each,
                 and locked the labels before the AI saw them. The AI saw only each business's name, address, category and license activity.

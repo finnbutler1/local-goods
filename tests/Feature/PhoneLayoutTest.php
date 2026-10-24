@@ -169,4 +169,17 @@ class PhoneLayoutTest extends TestCase
         $this->assertStringContainsString('data-bar>', $impact);
         $this->assertStringContainsString("closest('[data-bar]')", File::get(resource_path('js/app.js')));
     }
+
+    public function test_page_titles_scale_smoothly_with_the_screen(): void
+    {
+        $css = File::get(resource_path('css/app.css'));
+        $this->assertMatchesRegularExpression('/@utility text-title \{\s*font-size: clamp\(2rem, 1\.3rem \+ 3\.5vw, 3rem\);/', $css);
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            preg_match_all('~<h1\b[^>]*class="([^"]*)"~', $file->getContents(), $m);
+            foreach ($m[1] as $class) {
+                $this->assertFalse(str_contains($class, 'text-4xl') && str_contains($class, 'sm:text-5xl'), "{$file->getRelativePathname()}: an h1 jumps from text-4xl to sm:text-5xl; use text-title.");
+            }
+        }
+    }
 }

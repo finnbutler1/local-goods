@@ -7,7 +7,7 @@
     <section aria-labelledby="hero-heading" class="mx-auto grid overflow-x-clip max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
         <div>
             <x-eyebrow class="text-accent-ink">For employers in the Golden Triangle · Washington, DC</x-eyebrow>
-            <h1 id="hero-heading" class="mt-4 text-6xl leading-[0.95] font-semibold text-primary sm:text-7xl lg:text-8xl">
+            <h1 id="hero-heading" class="mt-4 text-[clamp(3rem,0.5rem+12.5vw,3.75rem)] leading-[0.95] font-semibold text-primary sm:text-7xl lg:text-8xl">
                 You work here.<br>
                 <span class="relative inline-block">
                     Spend here.

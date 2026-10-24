@@ -13,7 +13,7 @@
 <div class="max-w-3xl space-y-8">
     <header>
         <x-eyebrow class="text-accent-ink">Blind adjudication</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Help check the AI</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Help check the AI</h1>
         <p class="mt-3 text-lg text-muted">
             Our fraud check was tested against cases a person labeled by hand. Where the person and the AI disagree,
             the person may be the one who got it wrong. You'll see synthetic redemptions one at a time, with only the facts,

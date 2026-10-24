@@ -5,7 +5,7 @@
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">{{ $bid->name }} BID · {{ $bid->city }}</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Redemption Fraud Detection</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Redemption Fraud Detection</h1>
         <p class="mt-3 text-lg text-muted">
             Every new redemption is scored by AI from anonymous signals (no names) before any merchant is paid.
             The AI can be wrong, so a held redemption is never approved or denied automatically: a person at the BID decides.

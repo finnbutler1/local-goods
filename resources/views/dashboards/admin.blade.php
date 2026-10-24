@@ -2,7 +2,7 @@
     <div class="space-y-8">
         <header>
             <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-            <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Welcome back, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+            <h1 class="mt-1 text-title font-semibold text-primary">Welcome back, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             <p class="mt-3 max-w-2xl text-lg text-muted">
                 Every login is created by an admin; there is no public sign-up.
                 You can also open fraud review to approve or deny held redemptions.
