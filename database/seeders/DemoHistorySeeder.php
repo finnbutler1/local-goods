@@ -6,8 +6,10 @@ use App\Models\CreditLedgerEntry;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
+use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Services\CreditLedger;
+use App\Services\PayCodes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +32,11 @@ use Random\Randomizer;
  *    redemptions ($80 and $60) at PATTERN_A_MERCHANT within the hour, around
  *    7:30 PM, using $140 of the $150. They never redeem anywhere else.
  *
+ * One completed in-person payment (ADR 0026) is added last: the first of
+ * IN_PERSON_EMPLOYEES with enough credit left paid IN_PERSON_MERCHANT at the
+ * counter with a pay code yesterday morning, IN_PERSON_CENTS as a bare amount
+ * (seeded history has no menu items). It is not part of either pattern.
+ *
  * B. A small ring at one merchant. The three PATTERN_B_EMPLOYEES each make a
  *    round $60 or $70 redemption at PATTERN_B_MERCHANT within ten minutes of
  *    each other, late on Thursday afternoons, on PATTERN_B_DAYS separate
@@ -51,6 +58,13 @@ class DemoHistorySeeder
     public const PATTERN_B_MERCHANT = 'K Street Cuts';
 
     public const PATTERN_B_DAYS = 5;
+
+    /** Who may be the seeded in-person example (ADR 0026), in order: never Jordan, never a pattern member. */
+    public const IN_PERSON_EMPLOYEES = ['Morgan Ellery', 'Avery Holloway', 'Riley Nakamura', 'Drew Okonkwo'];
+
+    public const IN_PERSON_MERCHANT = 'Farragut Grind';
+
+    public const IN_PERSON_CENTS = 1000;
 
     /** Invented names. Any match with a real person is a coincidence. */
     public const NAMES = [
@@ -95,6 +109,70 @@ class DemoHistorySeeder
 
             $this->record($employee, $planted, $everyday, $allowances, $employer->monthly_allowance_cents);
         }
+
+        $this->inPersonExample($byName[self::IN_PERSON_MERCHANT], $now);
+    }
+
+    /**
+     * One completed in-person payment with its used pay code, so the demo
+     * shows how paying at the counter looks afterwards. Skipped if it would
+     * ever take the employee's balance below zero.
+     */
+    private function inPersonExample(Merchant $merchant, Carbon $now): void
+    {
+        $cents = self::IN_PERSON_CENTS;
+        $at = $now->copy()->subDay()->setTime(8, 50)->utc();
+
+        // The first who can afford it: the lowest their balance gets from then on must still cover it.
+        $employee = Employee::whereIn('display_name', self::IN_PERSON_EMPLOYEES)->get()
+            ->sortBy(fn (Employee $e) => array_search($e->display_name, self::IN_PERSON_EMPLOYEES, true))
+            ->first(function (Employee $e) use ($at, $cents) {
+                $running = (int) $e->ledgerEntries()->where('created_at', '<=', $at)->sum('amount_cents');
+                $lowest = $running;
+                foreach ($e->ledgerEntries()->where('created_at', '>', $at)->orderBy('created_at')->pluck('amount_cents') as $amount) {
+                    $lowest = min($lowest, $running += $amount);
+                }
+
+                return $cents <= $lowest;
+            });
+        if ($employee === null) {
+            return;
+        }
+
+        $redemption = Redemption::create([
+            'employee_id' => $employee->id,
+            'merchant_id' => $merchant->id,
+            'amount_cents' => $cents,
+            'status' => Redemption::STATUS_APPROVED,
+            'scored_by' => 'seed',
+            'channel' => Redemption::CHANNEL_IN_PERSON,
+            'created_at' => $at,
+        ]);
+        CreditLedgerEntry::create([
+            'employee_id' => $employee->id,
+            'amount_cents' => -$cents,
+            'type' => CreditLedgerEntry::TYPE_REDEMPTION,
+            'redemption_id' => $redemption->id,
+            'description' => 'Redemption at '.$merchant->name,
+            'created_at' => $at,
+        ]);
+        app(CreditLedger::class)->creditMerchant($redemption, $at);
+
+        $code = PayCodes::generate();
+        $payCode = new PayCode([
+            'employee_id' => $employee->id,
+            'merchant_id' => $merchant->id,
+            'amount_cents' => $cents,
+            'code_hash' => PayCodes::hash($code),
+            'code' => $code,
+            'status' => PayCode::STATUS_USED,
+            'expires_at' => $at->copy()->subMinute()->addMinutes(PayCode::EXPIRES_MINUTES),
+            'used_at' => $at,
+            'redemption_id' => $redemption->id,
+        ]);
+        $payCode->created_at = $at->copy()->subMinute();
+        $payCode->updated_at = $at;
+        $payCode->save();
     }
 
     /**

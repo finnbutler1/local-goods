@@ -131,7 +131,7 @@ class PayCodeTest extends TestCase
     {
         $this->assertSame('That is more than the available balance.',
             $this->refusal(fn () => $this->codes()->issue($this->jordan(), $this->grind(), $this->jordan()->balanceCents() + 1)));
-        $this->assertSame(0, PayCode::count());
+        $this->assertSame(0, PayCode::where('status', PayCode::STATUS_ACTIVE)->count());
     }
 
     public function test_codes_expire_after_ten_minutes(): void
@@ -154,7 +154,7 @@ class PayCodeTest extends TestCase
         Carbon::setTestNow(now()->addMinutes(11));
 
         $this->assertSame(PayCodes::NOT_VALID, $this->refusal(fn () => $this->codes()->confirm($payCode, $this->grind())));
-        $this->assertSame(0, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->count());
+        $this->assertSame(0, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->where('scored_by', '!=', 'seed')->count());
     }
 
     public function test_a_cancelled_code_cannot_be_found_or_confirmed(): void
@@ -224,7 +224,7 @@ class PayCodeTest extends TestCase
         // Single use: a second confirm, or a second lookup, gets nothing.
         $this->assertSame(PayCodes::NOT_VALID, $this->refusal(fn () => $this->codes()->confirm($payCode, $this->grind())));
         $this->assertSame(PayCodes::NOT_VALID, $this->refusal(fn () => $this->codes()->lookup($this->grind(), $payCode->code)));
-        $this->assertSame(1, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->count());
+        $this->assertSame(1, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->where('scored_by', '!=', 'seed')->count());
         $this->assertCount(1, $this->claude->calls);
     }
 
@@ -266,7 +266,7 @@ class PayCodeTest extends TestCase
         $this->assertSame($entries, CreditLedgerEntry::count());
         $this->assertSame(PayCode::STATUS_CANCELLED, $payCode->fresh()->status);
         $this->assertSame(PayCode::BY_BALANCE, $payCode->fresh()->cancelled_by);
-        $this->assertSame(0, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->count());
+        $this->assertSame(0, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->where('scored_by', '!=', 'seed')->count());
     }
 
     public function test_a_code_is_never_written_to_the_log(): void
