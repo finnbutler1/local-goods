@@ -2,10 +2,12 @@
 
 namespace App\Services\Payments;
 
+use App\Models\CorrectionAction;
 use App\Models\CreditPurchase;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\StripeEvent;
+use App\Services\Corrections\CorrectionProcessor;
 use App\Services\CreditLedger;
 use App\Support\StripeEnvironment;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -35,6 +37,7 @@ class StripeWebhookHandler
         private CreditLedger $ledger,
         private StripeOnboarding $onboarding,
         private MerchantPayouts $payouts,
+        private CorrectionProcessor $corrections,
     ) {}
 
     /** @return string a short outcome, for the log and stripe_events */
@@ -195,6 +198,14 @@ class StripeWebhookHandler
             : 'transfer already recorded: '.$transfer['id'];
     }
 
+    /**
+     * Stripe lists every reversal on the transfer, with its metadata, and
+     * amount_reversed adds up (trial of 2026-10-24, ADR 0028). Refund
+     * reversals Local Goods made are recorded first (each once). The old
+     * path, "reversed in Stripe, owed again", only runs for reversed money
+     * those refunds don't explain, so with no refunds it works exactly as
+     * before.
+     */
     private function transferReversed(array $transfer, Carbon $at): string
     {
         $payout = $this->payoutFor($transfer);
@@ -203,8 +214,22 @@ class StripeWebhookHandler
             return 'ignored: not a Local Goods transfer';
         }
 
-        return $this->ledger->recordStripeReversal($payout, $at)
-            ? 'transfer reversed: '.$transfer['id'].' owed again'
-            : 'reversal already recorded: '.$transfer['id'];
+        $outcomes = [];
+        foreach ($transfer['reversals']['data'] ?? [] as $reversal) {
+            if (($outcome = $this->corrections->confirmReversal($reversal, $at)) !== null) {
+                $outcomes[] = $outcome;
+            }
+        }
+
+        $explained = (int) CorrectionAction::where('kind', CorrectionAction::KIND_TRANSFER_REVERSAL)->where('merchant_payout_id', $payout->id)
+            ->where('status', CorrectionAction::STATUS_SUCCEEDED)->sum('amount_cents');
+
+        if (! isset($transfer['amount_reversed']) || $transfer['amount_reversed'] > $explained) {
+            $outcomes[] = $this->ledger->recordStripeReversal($payout, $at)
+                ? 'transfer reversed: '.$transfer['id'].' owed again'
+                : 'reversal already recorded: '.$transfer['id'];
+        }
+
+        return implode('; ', $outcomes) ?: 'refunds already recorded: '.$transfer['id'];
     }
 }
