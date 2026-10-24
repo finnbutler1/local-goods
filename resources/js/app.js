@@ -429,3 +429,28 @@ if (payCode) {
     };
     setTimeout(check, 3000);
 }
+
+// Responsive tables (<table data-rtable="stack">): on phones CSS turns each
+// row into a card, and Safari then stops treating the table as a table.
+// Saying so with roles keeps the column headers read out with every value.
+document.querySelectorAll('table[data-rtable="stack"]').forEach((table) => {
+    table.setAttribute('role', 'table');
+    table.querySelectorAll(':scope > :is(thead, tbody, tfoot)').forEach((group) => group.setAttribute('role', 'rowgroup'));
+    table.querySelectorAll(':scope > * > tr').forEach((row) => {
+        row.setAttribute('role', 'row');
+        row.querySelectorAll(':scope > td').forEach((cell) => cell.setAttribute('role', 'cell'));
+        row.querySelectorAll(':scope > th').forEach((cell) => {
+            cell.setAttribute('role', cell.getAttribute('scope') === 'row' ? 'rowheader' : 'columnheader');
+        });
+    });
+});
+
+// Chart bars (data-bar) show their week on hover and, for touch, on a tap.
+// The bars are hidden from screen readers; "Show as a table" has the numbers.
+document.addEventListener('click', (event) => {
+    const bar = event.target.closest('[data-bar]');
+    document.querySelectorAll('[data-bar][data-open]').forEach((open) => {
+        if (open !== bar) open.removeAttribute('data-open');
+    });
+    bar?.toggleAttribute('data-open');
+});

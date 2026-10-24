@@ -28,8 +28,8 @@
             <p class="mt-1 text-sm text-muted">
                 {{ $showRevoked ? 'Showing every account, revoked ones included.' : 'Revoked accounts are hidden.' }}
             </p>
-            <x-card class="mt-3 scroll-region" padding="p-0" role="region" tabindex="0" aria-label="Accounts table">
-                <table class="w-full text-left">
+            <x-rtable class="mt-3" label="Accounts table">
+                <table data-rtable="stack" class="w-full text-left">
                     <caption class="sr-only">Accounts</caption>
                     <thead class="border-b border-line text-sm text-muted">
                         <tr>
@@ -42,10 +42,10 @@
                     <tbody class="divide-y divide-line">
                         @foreach ($users as $user)
                             <tr>
-                                <td class="px-5 py-3 font-semibold">{{ $user->adminLabel() }}</td>
-                                <td class="px-5 py-3 break-all">{{ $user->adminEmail() ?? '—' }}</td>
-                                <td class="px-5 py-3"><x-badge tone="primary">{{ $user->role->label() }}</x-badge></td>
-                                <td class="px-5 py-3">
+                                <td data-primary class="px-5 py-3 font-semibold">{{ $user->adminLabel() }}</td>
+                                <td data-label="Email" class="px-5 py-3">@if ($user->adminEmail())<x-breakable :value="$user->adminEmail()" />@else—@endif</td>
+                                <td data-label="Role" class="px-5 py-3"><x-badge tone="primary">{{ $user->role->label() }}</x-badge></td>
+                                <td data-label="Status" class="px-5 py-3">
                                     @if ($user->isRevoked())
                                         <x-badge tone="neutral">Revoked</x-badge>
                                     @else
@@ -56,7 +56,7 @@
                         @endforeach
                     </tbody>
                 </table>
-            </x-card>
+            </x-rtable>
         </section>
     </div>
 </x-app-shell>
