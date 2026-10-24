@@ -21,8 +21,8 @@ use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
 
 /**
- * Redeeming from a menu (ADR 0023). The amount is the total of the items;
- * the items are display only and Redemption Fraud Detection sees exactly
+ * Redeeming from a menu (ADR 0023). The amount is the total of the items
+ * plus DC sales tax on them (ADR 0027); the items are display only and Redemption Fraud Detection sees exactly
  * what it saw before menus.
  */
 class RedemptionItemsTest extends TestCase
@@ -57,7 +57,7 @@ class RedemptionItemsTest extends TestCase
         return $this->grind()->products()->where('name', $name)->firstOrFail();
     }
 
-    public function test_the_amount_is_the_sum_of_the_items(): void
+    public function test_the_amount_is_the_sum_of_the_items_plus_tax(): void
     {
         $latte = $this->product('Latte');
         $croissant = $this->product('Croissant');
@@ -69,13 +69,15 @@ class RedemptionItemsTest extends TestCase
         ])->assertSessionHasNoErrors()->assertSessionHas('status', fn ($s) => str_contains($s, '(2× Latte, 1× Croissant) at Farragut Grind'));
 
         $redemption = Redemption::with('items')->latest('id')->firstOrFail();
-        $this->assertSame(2 * $latte->price_cents + $croissant->price_cents, $redemption->amount_cents);
-        $this->assertSame($redemption->amount_cents, $redemption->items->sum->totalCents());
+        $this->assertSame(2 * $latte->price_cents + $croissant->price_cents, $redemption->subtotal_cents);
+        $this->assertSame(158, $redemption->tax_cents); // 10% of $15.75, half up
+        $this->assertSame($redemption->subtotal_cents + $redemption->tax_cents, $redemption->amount_cents);
+        $this->assertSame($redemption->subtotal_cents, $redemption->items->sum->totalCents());
         $this->assertSame('2× Latte, 1× Croissant', $redemption->itemsSummary());
         $this->assertSame($balance - $redemption->amount_cents, Employee::firstOrFail()->balanceCents());
     }
 
-    public function test_an_other_amount_is_its_own_line_and_part_of_the_total(): void
+    public function test_an_other_amount_is_its_own_line_and_part_of_the_total_with_no_tax_added(): void
     {
         $latte = $this->product('Latte');
 
@@ -83,8 +85,10 @@ class RedemptionItemsTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $redemption = Redemption::with('items')->latest('id')->firstOrFail();
-        $this->assertSame($latte->price_cents + 300, $redemption->amount_cents);
-        $this->assertSame($redemption->amount_cents, $redemption->items->sum->totalCents());
+        $this->assertSame($latte->price_cents + 300, $redemption->subtotal_cents);
+        $this->assertSame(58, $redemption->tax_cents); // on the Latte only
+        $this->assertSame($latte->price_cents + 300 + 58, $redemption->amount_cents);
+        $this->assertNull($redemption->items->last()->tax_category);
         $this->assertSame('1× Latte, Other amount $3.00', $redemption->itemsSummary());
     }
 

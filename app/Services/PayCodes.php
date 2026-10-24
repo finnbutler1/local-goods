@@ -6,9 +6,11 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\PayCode;
 use App\Models\Redemption;
+use App\Support\TaxBreakdown;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
+use LogicException;
 use Throwable;
 
 /**
@@ -46,11 +48,21 @@ class PayCodes
      * entry; the balance is only checked here so they find out now, and is
      * checked again (for real) when the merchant confirms.
      *
+     * The DC sales tax is fixed when the code is made (ADR 0027): the code's
+     * amount is the total including tax, and confirming redeems with exactly
+     * that snapshot.
+     *
      * @param  list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int}>  $items
      */
-    public function issue(Employee $employee, Merchant $merchant, int $amountCents, array $items = []): PayCode
+    public function issue(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], ?TaxBreakdown $tax = null): PayCode
     {
-        return DB::transaction(function () use ($employee, $merchant, $amountCents, $items) {
+        $tax ??= TaxBreakdown::included($amountCents);
+
+        if ($tax->totalCents !== $amountCents) {
+            throw new LogicException('The tax must add up to the pay code amount.');
+        }
+
+        return DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $tax) {
             Employee::whereKey($employee->id)->lockForUpdate()->first();
 
             if ($amountCents > $employee->balanceCents()) {
@@ -78,6 +90,7 @@ class PayCodes
                 'code' => $code,
                 'status' => PayCode::STATUS_ACTIVE,
                 'expires_at' => now()->addMinutes(PayCode::EXPIRES_MINUTES),
+                ...$tax->columns(),
             ]);
         });
     }
@@ -149,6 +162,7 @@ class PayCodes
         try {
             $redemption = $this->redemptions->redeem(
                 $payCode->employee, $merchant, $payCode->amount_cents, $payCode->items ?? [], Redemption::CHANNEL_IN_PERSON,
+                $payCode->taxBreakdown(),
             );
         } catch (ValidationException) {
             // The balance check: they spent the credits since getting the code.

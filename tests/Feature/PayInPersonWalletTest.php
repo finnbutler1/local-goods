@@ -100,11 +100,11 @@ class PayInPersonWalletTest extends TestCase
 
         $this->post('/employee/pay-code', ['pay_merchant_id' => $this->grind()->id, 'items' => [$latte->id => 2], 'amount' => ''])
             ->assertRedirect(route('employee.wallet', ['tab' => 'in-person']).'#pay')
-            ->assertSessionHas('status', 'Pay code ready for $11.50 at Farragut Grind. Show it to the cashier.');
+            ->assertSessionHas('status', 'Pay code ready for $12.65 at Farragut Grind. Show it to the cashier.');
 
         $payCode = PayCode::latest('id')->firstOrFail();
         $this->assertSame($entries, CreditLedgerEntry::count());
-        $this->assertSame(2 * $latte->price_cents, $payCode->amount_cents);
+        $this->assertSame(2 * $latte->price_cents + 115, $payCode->amount_cents); // plus 10% DC meals tax
 
         // A live code opens the Pay in person tab on its own.
         $this->get('/employee')->assertOk()
@@ -113,7 +113,7 @@ class PayInPersonWalletTest extends TestCase
             ->assertSee('Pay code: '.$payCode->spokenCode())
             ->assertSee('Show this code to the cashier at Farragut Grind')
             ->assertSee('2× Latte')
-            ->assertSee('$11.50')
+            ->assertSee('$12.65')
             ->assertSee('Expires at 12:10 PM')
             ->assertSee('data-pay-code-status-url="'.route('employee.pay-code.status', $payCode).'"', false)
             ->assertSee('Waiting for Farragut Grind to confirm…')

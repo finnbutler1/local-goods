@@ -63,7 +63,7 @@ class MerchantMenuTest extends TestCase
 
         $this->assertSame(['Oat latte', 625, 'With oat milk', true], [$latte->fresh()->name, $latte->fresh()->price_cents, $latte->fresh()->description, $latte->fresh()->is_available]);
         $this->assertSame('1× Latte', $before->fresh()->load('items')->itemsSummary());
-        $this->assertSame(575, $before->fresh()->amount_cents);
+        $this->assertSame(633, $before->fresh()->amount_cents); // $5.75 + 10% DC meals tax
     }
 
     public function test_a_product_taken_off_the_menu_disappears_from_the_redeem_screen(): void
