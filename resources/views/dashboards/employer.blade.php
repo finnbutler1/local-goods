@@ -169,6 +169,8 @@
     {{-- Credits --}}
     <section id="credits" aria-labelledby="credits-heading" class="scroll-mt-24 space-y-4">
         <h2 id="credits-heading" class="text-2xl font-semibold text-primary">Credits</h2>
+        {{-- How credits are taxed for employees (ADR 0027): one honest line, no numbers, not tax advice. --}}
+        <p class="text-sm text-muted" data-tax-note>Credits that work like cash are generally taxable wages for employees. Confirm the treatment with your tax adviser.</p>
 
         <dl class="grid gap-3 sm:grid-cols-3">
             <x-card tone="night">
