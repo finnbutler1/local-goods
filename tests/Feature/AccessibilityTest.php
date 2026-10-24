@@ -83,7 +83,14 @@ class AccessibilityTest extends TestCase
             'adjudication case' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Judge))->get('/adjudicate?n=1')->assertOk()->getContent()),
             'redeem from a menu' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Employee))->get('/employee?merchant='.Merchant::where('name', 'Farragut Grind')->value('id'))->assertOk()->getContent()),
             'redeem, suspicious example' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Employee))->get('/employee?suspicious=1')->assertOk()->getContent()),
+            'pay in person, from a menu' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Employee))->get('/employee?tab=in-person&pay_merchant='.Merchant::where('name', 'Farragut Grind')->value('id'))->assertOk()->getContent()),
+            'pay in person, sample code for judges' => AccessibilityAudit::problems($this->actingAs($this->signIn(Role::Judge))->followingRedirects()->get(route('judge.view-as', 'employee'))->assertOk()->getContent()),
         ]);
+
+        // A live pay code on the wallet.
+        $employee = $this->signIn(Role::Employee);
+        $this->actingAs($employee)->post('/employee/pay-code', ['pay_merchant_id' => Merchant::where('name', 'Farragut Grind')->value('id'), 'amount' => '5'])->assertRedirect();
+        $found += array_filter(['pay code screen' => AccessibilityAudit::problems($this->actingAs($employee)->get('/employee')->assertOk()->assertSee('data-pay-code', false)->getContent())]);
 
         $this->assertNoProblems($found);
     }
@@ -107,6 +114,8 @@ class AccessibilityTest extends TestCase
             'redeem, nothing chosen' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => '', 'amount' => 'abc']],
             'redeem from a menu, bad quantity' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => 'grind', 'items' => ['latte' => '99']]],
             'redeem from a menu, nothing picked' => [Role::Employee, '/employee', 'post', '/employee/redeem', ['merchant_id' => 'grind', 'items' => ['latte' => '0']]],
+            'pay code, bad amount' => [Role::Employee, '/employee', 'post', '/employee/pay-code', ['pay_merchant_id' => 'grind', 'amount' => 'abc']],
+            'pay code from a menu, nothing picked' => [Role::Employee, '/employee', 'post', '/employee/pay-code', ['pay_merchant_id' => 'grind', 'items' => ['latte' => '0']]],
             'deny, no reason given' => [Role::BidAdmin, '/bid-admin', 'post', 'deny', ['reason' => '']],
             'menu, change a product badly' => [Role::Merchant, '/merchant/menu', 'post', 'menu-product', ['name' => '', 'price' => 'free']],
             'menu, add a product badly' => [Role::Merchant, '/merchant/menu', 'post', '/merchant/menu', ['name' => '', 'price' => '0']],
@@ -126,6 +135,13 @@ class AccessibilityTest extends TestCase
         if (($data['merchant_id'] ?? null) === 'grind') {
             $grind = Merchant::where('name', 'Farragut Grind')->firstOrFail();
             $data = ['merchant_id' => $grind->id, 'items' => [$grind->products()->where('name', 'Latte')->value('id') => $data['items']['latte']]];
+        }
+        if (($data['pay_merchant_id'] ?? null) === 'grind') {
+            $grind = Merchant::where('name', 'Farragut Grind')->firstOrFail();
+            $data['pay_merchant_id'] = $grind->id;
+            if (isset($data['items'])) {
+                $data['items'] = [$grind->products()->where('name', 'Latte')->value('id') => $data['items']['latte']];
+            }
         }
         if ($action === 'menu-product') {
             $action = route('merchant.menu.update', Merchant::where('name', 'Farragut Grind')->firstOrFail()->products()->firstOrFail());

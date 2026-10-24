@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employee;
 use App\Models\Merchant;
+use App\Models\PayCode;
 use App\Models\Redemption;
+use App\Services\PayCodes;
 use App\Services\RedemptionBasket;
 use App\Services\RedemptionService;
 use App\Support\Money;
@@ -13,35 +14,14 @@ use App\Support\PayoutOutcome;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\MessageBag;
 use Illuminate\View\View;
 
 class EmployeeWalletController extends Controller
 {
-    /**
-     * The signed-in employee's own wallet. A login with no wallet linked yet
-     * (for example before the demo data is seeded) gets 403. A judge sees
-     * the demo employee's wallet, read-only.
-     */
-    private function employee(Request $request): Employee
-    {
-        $employee = $request->user()->isReadOnly()
-            ? $this->demoEmployee()
-            : $request->user()->employee()->with('employer')->first();
+    use ResolvesEmployee;
 
-        abort_if($employee === null, 403, 'No wallet is linked to this login yet.');
-
-        return $employee;
-    }
-
-    /** What a judge sees when viewing as an employee: the demo employee's wallet (all synthetic). */
-    private function demoEmployee(): ?Employee
-    {
-        return Employee::with('employer')
-            ->whereHas('user', fn ($q) => $q->where('email', config('demo.accounts.employee.email')))
-            ->first() ?? Employee::with('employer')->orderBy('id')->first();
-    }
-
-    public function show(Request $request): View
+    public function show(Request $request, PayCodes $codes): View
     {
         $employee = $this->employee($request);
         $balance = $employee->balanceCents();
@@ -70,6 +50,17 @@ class EmployeeWalletController extends Controller
             ->when($search !== '', fn ($list) => $list->filter(fn (Merchant $m) => str_contains(mb_strtolower($m->name.' '.$m->category.' '.$m->address), mb_strtolower($search))))
             ->values();
 
+        // Pay in person (ADR 0026): the live code, or how the one just shown ended.
+        // Its form keeps its own old input (pay_merchant_id) and error bag, apart from Order to go.
+        $payErrors = $request->session()->get('errors')?->getBag(PayCodeController::ERRORS);
+        $liveCode = $codes->liveFor($employee)?->load('merchant');
+        $payResult = $liveCode === null && $request->filled('pay_code')
+            ? PayCode::with(['merchant', 'redemption.merchant', 'redemption.items'])->where('employee_id', $employee->id)->find($request->integer('pay_code'))
+            : null;
+        $payMerchant = $merchants->firstWhere('id', (int) $request->old('pay_merchant_id', $request->integer('pay_merchant') ?: null));
+        $tab = $request->query('tab') === 'in-person' || $liveCode || $payResult || $payMerchant || $payErrors?->any()
+            ? 'in-person' : 'to-go';
+
         // Newest first, each with the balance right after it (from the ledger).
         $showAll = $request->boolean('history');
         $entries = $employee->ledgerEntries()->latest('created_at')->latest('id')->when(! $showAll, fn ($q) => $q->take(20))->get();
@@ -97,7 +88,14 @@ class EmployeeWalletController extends Controller
             'menuMerchant' => $menuMerchant,
             'menu' => $menu,
             'suspicious' => $suspicious,
-            'result' => Redemption::with(['merchant', 'items'])->find($request->session()->get('redemption_id')),
+            'result' => Redemption::with(['merchant', 'items'])->find($request->session()->get('redemption_id'))
+                ?? ($payResult?->redemption),
+            'tab' => $tab,
+            'liveCode' => $liveCode,
+            'payResult' => $payResult,
+            'payMerchant' => $payMerchant,
+            'payMenu' => $payMerchant?->products()->available()->get() ?? collect(),
+            'payErrors' => $payErrors ?? new MessageBag,
         ]);
     }
 
