@@ -63,7 +63,7 @@ class EmployeeWalletController extends Controller
 
         // Newest first, each with the balance right after it (from the ledger).
         $showAll = $request->boolean('history');
-        $entries = $employee->ledgerEntries()->latest('created_at')->latest('id')->when(! $showAll, fn ($q) => $q->take(20))->get();
+        $entries = $employee->ledgerEntries()->with('redemption')->latest('created_at')->latest('id')->when(! $showAll, fn ($q) => $q->take(20))->get();
         $running = $balance;
         $history = $entries->map(function ($entry) use (&$running) {
             $row = ['entry' => $entry, 'balance_after' => $running];

@@ -82,6 +82,15 @@
                 </tbody>
             </table>
         </x-card>
+        @if ($transfersByChannel->isNotEmpty())
+            <p class="text-sm text-muted" data-transfers-by-channel>
+                Sent transfers by how the customer paid:
+                {{ collect([\App\Models\Redemption::CHANNEL_TO_GO => 'to go', \App\Models\Redemption::CHANNEL_IN_PERSON => 'in person'])
+                    ->map(fn ($label, $channel) => (int) ($transfersByChannel[$channel]->transfers ?? 0).' '.$label.' ('.Money::format((int) ($transfersByChannel[$channel]->cents ?? 0)).')')
+                    ->implode(', ') }}.
+                Display only: the check above doesn't use it.
+            </p>
+        @endif
 
         @if ($report['notes'] !== [])
             <x-card as="section" aria-labelledby="notes-heading">

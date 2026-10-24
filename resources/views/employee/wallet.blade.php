@@ -46,6 +46,7 @@
                 <dl class="mx-auto mt-4 grid max-w-xs grid-cols-2 gap-2 text-left text-sm text-ink">
                     <dt class="text-muted">Confirmation</dt><dd class="tabular text-right font-semibold">LG-{{ str_pad((string) $result->id, 6, '0', STR_PAD_LEFT) }}</dd>
                     <dt class="text-muted">Time</dt><dd class="text-right font-semibold">{{ $when->format('M j, g:i A') }}</dd>
+                    <dt class="text-muted">How</dt><dd class="text-right font-semibold" data-channel>{{ $result->channelLabel() }}</dd>
                 </dl>
                 @if ($result->isInPerson())
                     <p class="mt-2"><x-badge>In person</x-badge></p>
@@ -220,7 +221,7 @@
                         @if ($for = $redemption->itemsSummary())
                             <p class="text-sm break-words" data-items>{{ $for }}</p>
                         @endif
-                        <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}</p>
+                        <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></p>
                     </div>
                     <div class="shrink-0 text-right">
                         <p class="tabular font-semibold">{{ Money::format($redemption->amount_cents) }}</p>
@@ -250,6 +251,9 @@
                 <li class="flex items-start justify-between gap-3 px-5 py-3">
                     <div class="min-w-0">
                         <p class="font-semibold">{{ $row['entry']->description }}</p>
+                        @if ($row['entry']->type === \App\Models\CreditLedgerEntry::TYPE_REDEMPTION && $row['entry']->redemption)
+                            <p class="text-sm text-muted" data-channel>{{ $row['entry']->redemption->channelLabel() }}</p>
+                        @endif
                         <p class="text-sm text-muted">{{ $row['entry']->created_at->setTimezone('America/New_York')->format('M j, Y, g:i A') }}</p>
                     </div>
                     <div class="shrink-0 text-right">

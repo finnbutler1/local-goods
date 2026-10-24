@@ -95,6 +95,7 @@
                                 <span title="Employee initials and staff number: names are never shown outside an employee's own wallet">{{ $redemption->employee->publicLabel() }}</span>, {{ $redemption->employee->employer->name }} ·
                                 {{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}
                             </p>
+                            <p class="text-sm text-muted" data-channel>Channel: {{ $redemption->channelLabel() }} <span>(not sent to Redemption Fraud Detection)</span></p>
                         </div>
                         <div class="flex items-center gap-2">
                             @if ($redemption->risk_score !== null)
