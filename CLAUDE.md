@@ -5,6 +5,38 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Pay in person with pay codes — done (2026-10-23, ADR 0026).** One
+migration (`pay_codes`, `redemptions.channel` default `to_go`, additive).
+Fraud prompt (`8d5e1e70`), signals, model, eval data, ledger rules,
+webhook, reconciliation logic and `TransferGate` unchanged.
+
+- Wallet tabs: Order to go (old flow, default; `?merchant=`, `?q=` land
+  there) and Pay in person (`?tab=in-person`, `pay_merchant=`, own error
+  bag `payCode`, ids prefixed `pay-`; shared `employee/partials/basket-fields`).
+  Real tabs (`[data-tabs]` in `app.js`, arrow keys); links without JS.
+- `App\Services\PayCodes` is the only place codes change: 6 chars from
+  `PayCodes::ALPHABET`, 10 min, one live per employee, single use (atomic
+  claim), HMAC `code_hash` + encrypted `code`; `NOT_VALID` for every miss,
+  5 misses/min per merchant (`failureKey`). Never log a code, never put it
+  in a URL or JSON; `pay_code` is in `dontFlash`. Expiry is lazy
+  (`expireStale`).
+- Confirm = `RedemptionService::redeem(..., $items, Redemption::CHANNEL_IN_PERSON)`.
+  The channel is display only (`channelLabel()`); **never pass it to
+  signals or the AI** (`FraudInputByChannelTest`).
+- Merchant: "Take a payment" on `/merchant`; the session keeps only the
+  looked-up id (`Merchant\PayCodeController::SESSION_KEY`). Initials only.
+  Held wording neutral, no fraud words.
+- Cancel this payment: held in-person only, by its own merchant or
+  employee login (`RedemptionDecision::mayCancel`), via
+  `RedemptionReviewService::cancel` (same `decide()` path, `review_rejected`
+  back to the employee, decision `cancel`). Approve/deny stay admin only.
+  Not eval or adjudication data.
+- Seed: one in-person $10.00 at Farragut Grind (`DemoHistorySeeder::IN_PERSON_*`,
+  never Jordan). `pay_codes` in `DEMO_TABLES` and `EMPTY_AFTER_SEED`.
+- Tests: `PayCodeTest`, `PayInPersonWalletTest`, `MerchantPayInPersonTest`,
+  `HeldPaymentCancelTest`, `ChannelDisplayTest`, `FraudInputByChannelTest`,
+  `PayCodesMigrationSafetyTest`; FraudGateTest covers in-person flows.
+
 **Transit lines brand, button states and menus — done (2026-10-23, ADR
 0025).** Front end only: no route, controller logic, money, Stripe, prompt,
 eval or migration change. Source of truth: `docs/brand/` (Transit, Logo A).
@@ -373,8 +405,9 @@ pass (Prompt 9B), the security audit (ADR 0018, Prompt 9C) and personal
 contacts in adjudication (ADR 0019), one-step Buy credits with the
 platform fee ready but off (ADR 0021) and platform-set-up Stripe test
 accounts for the demo merchants (ADR 0022), display-only product menus
-(ADR 0023), mission-first messaging (ADR 0024) and the Transit lines
-brand with button states and menus (ADR 0025).
+(ADR 0023), mission-first messaging (ADR 0024), the Transit lines
+brand with button states and menus (ADR 0025) and paying in person with
+pay codes (ADR 0026).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

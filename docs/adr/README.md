@@ -31,3 +31,4 @@ trade-off in under a minute.
 | [0023](0023-product-menus-are-display-only.md) | Product menus for the demo merchants: the amount is the total, items are display only and never sent to the fraud AI | Accepted, implemented |
 | [0024](0024-mission-framing-and-the-labelled-3x-line.md) | Lead with the buy-local mission; "roughly 3x" only next to its outside-study label and source (replaces 0017's no-multiplier rule) | Accepted, implemented |
 | [0025](0025-transit-lines-brand.md) | Transit lines brand and Logo A, light and dark tokens, visible button states, disclosure menus | Accepted, implemented |
+| [0026](0026-pay-in-person-with-pay-codes.md) | Pay in person: one-time 6-character pay codes the merchant confirms, through the same RedemptionService and TransferGate; channel display only; held payments can be cancelled | Accepted, implemented |
