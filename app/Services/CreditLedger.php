@@ -402,6 +402,60 @@ class CreditLedger
     }
 
     /**
+     * Unspent credits held for a refund to the employer (ADR 0028): they
+     * leave the employer's balance at once, like a held redemption's
+     * credits, so they can't be given to employees while the refund goes
+     * through. Called inside the approval's transaction, after its checks.
+     */
+    public function holdEmployerRefund(Correction $correction, int $amountCents, ?Carbon $at = null): CreditLedgerEntry
+    {
+        $this->ensurePositive($amountCents);
+
+        return CreditLedgerEntry::create([
+            'employer_id' => $correction->employer_id,
+            'amount_cents' => -$amountCents,
+            'type' => CreditLedgerEntry::TYPE_EMPLOYER_REFUND_HOLD,
+            'correction_id' => $correction->id,
+            'description' => 'Unspent credits held for a refund of '.Money::format($amountCents),
+            'created_at' => $at ?? now(),
+        ]);
+    }
+
+    /**
+     * One payment's part of an employer refund went through: Stripe's webhook
+     * confirmed the card refund, or the simulated purchase was returned.
+     * Amount 0, like review_approved: the hold already took the credits.
+     */
+    public function completeEmployerRefund(Correction $correction, CreditPurchase $purchase, int $amountCents, ?string $refundId = null, ?Carbon $at = null): CreditLedgerEntry
+    {
+        return CreditLedgerEntry::create([
+            'employer_id' => $correction->employer_id,
+            'amount_cents' => 0,
+            'type' => CreditLedgerEntry::TYPE_EMPLOYER_REFUNDED,
+            'credit_purchase_id' => $purchase->id,
+            'correction_id' => $correction->id,
+            'description' => Money::format($amountCents).' refunded on '.$purchase->reference
+                .($refundId ? ' to the card (Stripe test mode, '.$refundId.')' : ' (simulated, no real money)'),
+            'created_at' => $at ?? now(),
+        ]);
+    }
+
+    /** A refund closed without happening (in full or in part): those held credits are the employer's again. */
+    public function releaseEmployerRefund(Correction $correction, int $amountCents, ?Carbon $at = null): CreditLedgerEntry
+    {
+        $this->ensurePositive($amountCents);
+
+        return CreditLedgerEntry::create([
+            'employer_id' => $correction->employer_id,
+            'amount_cents' => $amountCents,
+            'type' => CreditLedgerEntry::TYPE_EMPLOYER_REFUND_RELEASED,
+            'correction_id' => $correction->id,
+            'description' => 'Refund closed: '.Money::format($amountCents).' of held credits back to give',
+            'created_at' => $at ?? now(),
+        ]);
+    }
+
+    /**
      * Pays a merchant out of what cleared redemptions earned it, with no
      * Stripe transfer (the seed's weekly payouts). Refuses more than the
      * simulated part of what the merchant is owed, so it can never pay out

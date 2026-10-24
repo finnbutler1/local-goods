@@ -5,10 +5,13 @@ namespace App\Services\Corrections;
 use App\Enums\Role;
 use App\Models\Correction;
 use App\Models\CorrectionAction;
+use App\Models\CreditPurchase;
+use App\Models\Employer;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Services\CreditLedger;
+use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
@@ -118,6 +121,111 @@ class CorrectionDecisions
         $this->processor->run($correction->refresh());
 
         return $correction->refresh();
+    }
+
+    /**
+     * Refund unspent credits to the employer, up to its balance (credits
+     * bought and not given out). The credits are held at once. The refund
+     * goes back to the payments that bought them, newest first: merchant
+     * transfers are funded oldest first, so the newest payments are the
+     * least likely to have been claimed. Each payment gives back at most
+     * what is left of it (credits only, never the platform fee; for a Stripe
+     * payment, less what transfers claimed). A Stripe payment gets a Stripe
+     * refund; a simulated purchase is returned at once, simulated.
+     */
+    public function approveEmployerRefund(Correction $correction, User $by, string $reason, int $amountCents): Correction
+    {
+        $reason = $this->checkDecider($by, $reason);
+        $this->checkType($correction, Correction::TYPE_EMPLOYER_REFUND);
+
+        $correction = DB::transaction(function () use ($correction, $by, $reason, $amountCents) {
+            $this->claim($correction, $by, $reason);
+
+            // Lock the employer (as allocating credits does), then its purchases.
+            $employer = Employer::whereKey($correction->employer_id)->lockForUpdate()->firstOrFail();
+            $purchases = CreditPurchase::where('employer_id', $employer->id)->whereIn('status', CreditPurchase::PAID_STATUSES)
+                ->orderByDesc('purchased_at')->orderByDesc('id')->lockForUpdate()->get();
+
+            if ($amountCents <= 0) {
+                throw new InvalidArgumentException('Enter an amount more than $0.00.');
+            }
+
+            if ($amountCents > $employer->balanceCents()) {
+                throw new InvalidArgumentException('Only '.Money::format(max(0, $employer->balanceCents())).' of unspent credits can be refunded.');
+            }
+
+            $plan = [];
+            $left = $amountCents;
+            foreach ($purchases as $purchase) {
+                if ($left === 0) {
+                    break;
+                }
+                if (($take = min($left, $purchase->refundableCents())) > 0) {
+                    $plan[] = [$purchase, $take];
+                    $left -= $take;
+                }
+            }
+
+            if ($left > 0) {
+                throw new InvalidArgumentException('Only '.Money::format($amountCents - $left).' can go back to the payments that bought these credits.');
+            }
+
+            $correction->update(['amount_cents' => $amountCents]);
+            $this->ledger->holdEmployerRefund($correction, $amountCents);
+
+            foreach ($plan as [$purchase, $take]) {
+                $simulated = ! $purchase->isStripe();
+                $correction->actions()->create([
+                    'kind' => $simulated ? CorrectionAction::KIND_SIMULATED : CorrectionAction::KIND_CARD_REFUND,
+                    'credit_purchase_id' => $purchase->id, 'amount_cents' => $take,
+                    'status' => $simulated ? CorrectionAction::STATUS_SUCCEEDED : CorrectionAction::STATUS_PENDING,
+                    'completed_at' => $simulated ? now() : null,
+                ]);
+                if ($simulated) {
+                    $this->ledger->completeEmployerRefund($correction, $purchase, $take);
+                }
+            }
+
+            if (! self::completeIfDone($correction)) {
+                $correction->update(['status' => Correction::STATUS_PROCESSING]);
+            }
+
+            return $correction;
+        });
+
+        $this->processor->run($correction->refresh());
+
+        return $correction->refresh();
+    }
+
+    /**
+     * Stop a failed correction: nothing more is sent, and an employer
+     * refund's credits that never went back are the employer's again. Not
+     * while any part's outcome at Stripe is still unknown (a lost answer):
+     * retry first, so a refund that did happen is never also released.
+     */
+    public function close(Correction $correction, User $by, string $reason): Correction
+    {
+        $reason = $this->checkDecider($by, $reason);
+
+        return DB::transaction(function () use ($correction, $by, $reason) {
+            $changed = Correction::whereKey($correction->id)->where('status', Correction::STATUS_FAILED)
+                ->whereDoesntHave('actions', fn ($q) => $q->where('status', CorrectionAction::STATUS_PROCESSING))
+                ->update(['status' => Correction::STATUS_CLOSED, 'open_key' => null, 'decision_reason' => $reason, 'decided_by_user_id' => $by->id]);
+
+            if ($changed === 0) {
+                throw new InvalidArgumentException('Only a failed correction with no step still waiting on Stripe can be closed. Retry it first.');
+            }
+
+            $correction->refresh();
+            $unsent = (int) $correction->actions()->where('status', '!=', CorrectionAction::STATUS_SUCCEEDED)->sum('amount_cents');
+
+            if ($correction->type === Correction::TYPE_EMPLOYER_REFUND && $unsent > 0) {
+                $this->ledger->releaseEmployerRefund($correction, $unsent);
+            }
+
+            return $correction;
+        });
     }
 
     /**
