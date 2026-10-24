@@ -73,6 +73,12 @@ final readonly class TaxBreakdown
         ];
     }
 
+    /** "DC meals tax 10%", or "Not taxed" at 0%. */
+    public static function lineLabel(string $label, int $rateBps): string
+    {
+        return $rateBps === 0 ? 'Not taxed' : $label.' '.self::percent($rateBps);
+    }
+
     /** "10%", "6.5%" */
     public static function percent(int $rateBps): string
     {

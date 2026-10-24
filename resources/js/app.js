@@ -322,22 +322,58 @@ document.querySelectorAll('form[data-auto-submit]').forEach((form) => {
 });
 
 // Redeem from a menu: <form data-basket>. Quantity fields carry data-price (in
-// cents); the "Other amount" field is [data-basket-other]. Shows the − / +
-// buttons and a running total (read out politely). Display only: the server
-// works out the real total from the menu's own prices.
+// cents) and their DC sales tax (data-tax-category, -rate in basis points,
+// -label, -order; ADR 0027); the "Other amount" field is [data-basket-other]
+// and already includes any tax. Shows the − / + buttons, the subtotal, one tax
+// line per category and the total (read out politely). Tax is worked out per
+// category on its subtotal, half up, in whole cents, exactly like
+// App\Support\SalesTax. Display only: the server works out the real total
+// from the menu's own prices and rates.
 document.querySelectorAll('form[data-basket]').forEach((form) => {
     const quantities = [...form.querySelectorAll('input[data-price]')];
     const other = form.querySelector('[data-basket-other]');
     const summary = form.querySelector('[data-basket-summary]');
+    const lines = form.querySelector('[data-basket-lines]');
     const total = form.querySelector('[data-basket-total]');
     const cents = (value) => {
         const match = /^(\d{1,4})(?:\.(\d{1,2}))?$/.exec(value.trim());
         return match ? Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0')) : 0;
     };
+    const money = (amount) => '$' + (amount / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const row = (term, amount, strong = false) => {
+        const dt = document.createElement('dt');
+        const dd = document.createElement('dd');
+        dt.textContent = term;
+        dd.textContent = money(amount);
+        dd.className = 'tabular text-right';
+        if (strong) {
+            dt.className = 'font-semibold';
+        }
+        lines.append(dt, dd);
+    };
     const update = () => {
-        const sum = quantities.reduce((acc, input) => acc + Math.max(0, Math.trunc(Number(input.value) || 0)) * Number(input.dataset.price), 0)
-            + (other ? cents(other.value) : 0);
-        total.textContent = '$' + (sum / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const taxable = new Map();
+        let subtotal = other ? cents(other.value) : 0;
+        quantities.forEach((input) => {
+            const amount = Math.max(0, Math.trunc(Number(input.value) || 0)) * Number(input.dataset.price);
+            subtotal += amount;
+            if (amount > 0) {
+                const category = taxable.get(input.dataset.taxCategory) ?? { label: input.dataset.taxLabel, rate: Number(input.dataset.taxRate), order: Number(input.dataset.taxOrder), cents: 0 };
+                category.cents += amount;
+                taxable.set(input.dataset.taxCategory, category);
+            }
+        });
+        const taxLines = [...taxable.values()].sort((a, b) => a.order - b.order)
+            .map((category) => ({ ...category, tax: Math.floor((category.cents * category.rate + 5000) / 10000) }));
+        const tax = taxLines.reduce((acc, line) => acc + line.tax, 0);
+
+        lines.replaceChildren();
+        lines.hidden = taxLines.length === 0;
+        if (taxLines.length > 0) {
+            row('Subtotal', subtotal);
+            taxLines.forEach((line) => row(line.cents === subtotal ? line.label : `${line.label} on ${money(line.cents)}`, line.tax));
+        }
+        total.textContent = money(subtotal + tax);
     };
 
     form.querySelectorAll('button[data-step]').forEach((button) => {

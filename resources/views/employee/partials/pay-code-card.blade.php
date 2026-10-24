@@ -12,6 +12,7 @@
     <p class="sr-only">{{ $sample ? 'Sample pay code' : 'Pay code' }}: {{ $spoken }}</p>
     <p class="tabular mt-4 font-display text-3xl font-semibold text-ink">{{ Money::format($amountCents) }}</p>
     @if ($items) <p class="mt-1 text-ink" data-items>{{ $items }}</p> @endif
+    @include('partials.tax-breakdown', ['tax' => $tax, 'class' => 'mx-auto mt-3 max-w-xs text-left text-sm text-ink'])
     <p class="mt-3 text-sm text-ink">
         <span aria-hidden="true">Expires in <span class="tabular font-semibold" data-countdown>{{ $sample ? '10:00' : sprintf('%d:%02d', intdiv($left = max(0, (int) now()->diffInSeconds($expiresAt, false)), 60), $left % 60) }}</span> · at {{ $expires->format('g:i A') }}</span>
         <span class="sr-only">Expires at {{ $expires->format('g:i A') }}</span>
