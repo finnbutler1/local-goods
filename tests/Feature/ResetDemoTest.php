@@ -74,9 +74,10 @@ class ResetDemoTest extends TestCase
     public function test_reset_only_ever_clears_the_demo_tables(): void
     {
         // Adding a table here (users, sessions, feedback...) would let Reset
-        // demo delete real data. Change this list only on purpose.
+        // demo delete real data. Change this list only on purpose. The
+        // correction tables (ADR 0028) are demo data like the ledger.
         $this->assertSame(
-            ['pay_codes', 'credit_ledger_entries', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
+            ['pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
     }

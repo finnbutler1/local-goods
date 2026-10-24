@@ -18,6 +18,9 @@ class DemoResetter
     public const DEMO_TABLES = [
         'pay_codes',
         'credit_ledger_entries',
+        'correction_actions',
+        'correction_items',
+        'corrections',
         'redemption_decisions',
         'merchant_payouts',
         'redemption_items',
@@ -36,9 +39,10 @@ class DemoResetter
      * doesn't count them: decisions only exist once a person reviews a held
      * redemption. Items (the seed's three taxed menu orders, ADR 0027) and
      * pay codes (one used code, ADR 0026) came after the live demo was first
-     * seeded, so a demo seeded before them has none, and that is fine.
+     * seeded, so a demo seeded before them has none, and that is fine. So did
+     * corrections (ADR 0028): the live demo has none until someone asks.
      */
-    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes'];
+    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes', 'corrections', 'correction_items', 'correction_actions'];
 
     /**
      * Added after the live demo was first seeded (ADR 0023): if only this
