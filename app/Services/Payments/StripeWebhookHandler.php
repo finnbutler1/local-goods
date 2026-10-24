@@ -194,7 +194,11 @@ class StripeWebhookHandler
 
         // Normally already recorded when Stripe answered; this catches a
         // transfer whose answer we never got (a timeout).
-        return $this->ledger->recordStripeTransfer($payout, $transfer['id'], $at)
+        $recorded = $this->ledger->recordStripeTransfer($payout, $transfer['id'], $at);
+        // A merchant adjustment waiting on this row is done (ADR 0028).
+        $this->corrections->payoutSent($payout->refresh(), $at);
+
+        return $recorded
             ? 'transfer recorded from webhook: '.$transfer['id']
             : 'transfer already recorded: '.$transfer['id'];
     }

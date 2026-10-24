@@ -315,6 +315,9 @@ class CreditLedger
                 'amount_cents' => -$payout->amount_cents,
                 'type' => CreditLedgerEntry::TYPE_PAYOUT,
                 'merchant_payout_id' => $payout->id,
+                // A merchant adjustment ("I wasn't paid", ADR 0028) that sent this row; null for every other transfer.
+                'correction_id' => Correction::where('type', Correction::TYPE_MERCHANT_ADJUSTMENT)->where('merchant_payout_id', $payout->id)
+                    ->whereIn('status', [Correction::STATUS_PROCESSING, Correction::STATUS_FAILED])->value('id'),
                 'description' => 'Stripe test-mode transfer '.$transferId.' to '.$payout->merchant->name,
                 'created_at' => $at,
             ]);
