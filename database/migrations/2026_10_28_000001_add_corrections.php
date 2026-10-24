@@ -56,7 +56,11 @@ return new class extends Migration
         Schema::create('correction_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('correction_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('redemption_item_id')->constrained();
+            // Indexed, not a foreign key: MySQL would then refuse to drop
+            // redemption_items, which the menu migration's own rollback
+            // (and its safety test) does. Rows only ever point at items of
+            // the correction's own redemption (CorrectionLimits checks).
+            $table->unsignedBigInteger('redemption_item_id')->index();
             $table->unsignedSmallInteger('quantity');
             $table->unsignedInteger('amount_cents');
             $table->timestamp('created_at')->nullable();
