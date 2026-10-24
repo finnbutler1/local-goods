@@ -541,6 +541,11 @@
         padding-block: 0.75rem;
     }
 
+    /* iOS zooms into any field under 16px; never let one be smaller. */
+    :is(input, select, textarea) {
+        font-size: max(1rem, 1em);
+    }
+
     label:has(> input:is([type='checkbox'], [type='radio'])) {
         min-height: 2.75rem;
         align-items: center;
