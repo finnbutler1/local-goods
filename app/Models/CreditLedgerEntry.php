@@ -57,6 +57,7 @@ class CreditLedgerEntry extends Model
     protected $fillable = [
         'employee_id', 'employer_id', 'merchant_id', 'amount_cents', 'type', 'redemption_id',
         'credit_purchase_id', 'credit_allocation_id', 'merchant_payout_id', 'description', 'decided_by', 'created_at', 'platform',
+        'correction_id',
     ];
 
     protected function casts(): array
@@ -99,5 +100,11 @@ class CreditLedgerEntry extends Model
     public function redemption(): BelongsTo
     {
         return $this->belongsTo(Redemption::class);
+    }
+
+    /** The correction (ADR 0028) this line belongs to, if any. */
+    public function correction(): BelongsTo
+    {
+        return $this->belongsTo(Correction::class);
     }
 }
