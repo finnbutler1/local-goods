@@ -43,6 +43,7 @@
                 @if ($for = $result->itemsSummary())
                     <p class="mt-1 text-ink" data-items>{{ $for }}</p>
                 @endif
+                @include('partials.tax-breakdown', ['tax' => $result->taxBreakdown(), 'class' => 'mx-auto mt-3 max-w-xs text-left text-sm text-ink'])
                 <dl class="mx-auto mt-4 grid max-w-xs grid-cols-2 gap-2 text-left text-sm text-ink">
                     <dt class="text-muted">Confirmation</dt><dd class="tabular text-right font-semibold">LG-{{ str_pad((string) $result->id, 6, '0', STR_PAD_LEFT) }}</dd>
                     <dt class="text-muted">Time</dt><dd class="text-right font-semibold">{{ $when->format('M j, g:i A') }}</dd>
@@ -214,6 +215,7 @@
                         @if ($for = $redemption->itemsSummary())
                             <p class="text-sm break-words" data-items>{{ $for }}</p>
                         @endif
+                        @include('partials.tax-breakdown', ['tax' => $redemption->taxBreakdown(), 'compact' => true, 'class' => 'text-sm text-muted'])
                         <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></p>
                     </div>
                     <div class="shrink-0 text-right">

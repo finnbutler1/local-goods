@@ -1,5 +1,5 @@
 {{-- Pay in person (ADR 0026): pick a merchant, the amount or menu items, then get a one-time code for the cashier. --}}
-@php use App\Models\PayCode; use App\Support\Money; @endphp
+@php use App\Models\PayCode; use App\Support\Money; use App\Support\SalesTax; @endphp
 <x-card as="section" id="pay" aria-labelledby="pay-heading" class="scroll-mt-24">
     <h2 id="pay-heading" class="text-2xl font-semibold text-primary">Pay in person</h2>
     <p class="mt-1 text-sm text-muted">At the counter: get a pay code, the cashier types it in and confirms. Nothing is charged until they do.</p>
@@ -11,6 +11,7 @@
             'merchantName' => $liveCode->merchant->name,
             'amountCents' => $liveCode->amount_cents,
             'items' => $liveCode->itemsSummary(),
+            'tax' => $liveCode->taxBreakdown(),
             'expiresAt' => $liveCode->expires_at,
             'statusUrl' => route('employee.pay-code.status', $liveCode),
             'resultUrl' => route('employee.wallet', ['pay_code' => $liveCode->id]).'#wallet-tabs',
@@ -81,13 +82,15 @@
         @cannot('redeem')
             {{-- Judges: what the code screen looks like. Not a real code; nothing is stored. --}}
             <div class="mt-6">
+                @php $sampleTax = SalesTax::forItems([['name' => 'Latte', 'unit_price_cents' => 575, 'quantity' => 2, 'tax_category' => 'prepared_food']]); @endphp
                 <p class="text-sm font-semibold uppercase tracking-widest text-muted">Sample code screen</p>
                 @include('employee.partials.pay-code-card', [
                     'code' => 'K7M 4PQ',
                     'spoken' => 'K, 7, M, 4, P, Q',
                     'merchantName' => 'Farragut Grind',
-                    'amountCents' => 850,
+                    'amountCents' => $sampleTax->totalCents,
                     'items' => '2× Latte',
+                    'tax' => $sampleTax,
                     'expiresAt' => now()->addMinutes(PayCode::EXPIRES_MINUTES),
                     'statusUrl' => null,
                     'resultUrl' => null,
