@@ -11,6 +11,8 @@ use App\Models\MerchantPayout;
 use App\Models\MerchantProduct;
 use App\Models\Redemption;
 use App\Services\CreditLedger;
+use App\Support\SalesTax;
+use App\Support\TaxBreakdown;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -55,7 +57,8 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Each demo merchant's menu (ADR 0023): name, price in cents, short
-     * description. Downtown DC prices. Display only: products are never sent
+     * description and, only where it differs from the merchant's default
+     * (config/tax.php), a DC sales tax category (ADR 0027). Downtown DC prices. Display only: products are never sent
      * to Redemption Fraud Detection. No gift cards, which would be cash.
      */
     public const DEMO_MENUS = [
@@ -104,8 +107,10 @@ class DatabaseSeeder extends Seeder
             ['Drop-in class', 3200, '45-minute ride'],
             ['5-class pack', 14500, 'Use within 2 months'],
             ['Shoe rental', 400, null],
-            ['Bottled water', 300, null],
-            ['Recovery smoothie', 900, null],
+            // A health club's classes are taxable at the general rate; a smoothie is prepared food;
+            // bottled water is a grocery item (SNAP eligible), not taxed.
+            ['Bottled water', 300, null, 'exempt'],
+            ['Recovery smoothie', 900, null, 'prepared_food'],
         ],
         'florist' => [
             ['Single stem', 600, null],
@@ -195,6 +200,8 @@ class DatabaseSeeder extends Seeder
                 'status' => Redemption::STATUS_APPROVED,
                 'scored_by' => 'seed',
                 'created_at' => $at,
+                // A typed-in shop total with any tax already in it (ADR 0027).
+                'tax_basis' => TaxBreakdown::INCLUDED,
             ]);
 
             CreditLedgerEntry::create([
@@ -226,10 +233,12 @@ class DatabaseSeeder extends Seeder
     public static function seedMenus($merchants): void
     {
         foreach (self::DEMO_MENUS as $key => $products) {
-            foreach ($products as $position => [$name, $cents, $description]) {
+            foreach ($products as $position => $product) {
+                [$name, $cents, $description] = $product;
                 MerchantProduct::create([
                     'merchant_id' => $merchants[$key]->id, 'name' => $name, 'price_cents' => $cents,
                     'description' => $description, 'position' => $position,
+                    'tax_category' => $product[3] ?? SalesTax::defaultFor($merchants[$key]),
                 ]);
             }
         }

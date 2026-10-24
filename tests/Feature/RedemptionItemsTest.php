@@ -98,7 +98,7 @@ class RedemptionItemsTest extends TestCase
 
         $redemption = Redemption::latest('id')->firstOrFail();
         $this->assertSame(650, $redemption->amount_cents);
-        $this->assertSame(0, RedemptionItem::count());
+        $this->assertSame(0, RedemptionItem::whereHas('redemption', fn ($q) => $q->where('scored_by', '!=', 'seed'))->count());
         $this->assertNull($redemption->itemsSummary());
     }
 
@@ -138,7 +138,7 @@ class RedemptionItemsTest extends TestCase
             $this->post('/employee/redeem', ['merchant_id' => $this->grind()->id, 'items' => [$id => 1]])->assertSessionHasErrors('items');
         }
 
-        $this->assertSame(0, RedemptionItem::count());
+        $this->assertSame(0, RedemptionItem::whereHas('redemption', fn ($q) => $q->where('scored_by', '!=', 'seed'))->count());
         $this->assertCount(0, $this->claude->calls);
     }
 
@@ -161,7 +161,7 @@ class RedemptionItemsTest extends TestCase
 
         $this->post('/employee/redeem', ['merchant_id' => $pack->merchant_id, 'items' => [$pack->id => 1]])
             ->assertSessionHasErrors('amount');
-        $this->assertSame(0, RedemptionItem::count());
+        $this->assertSame(0, RedemptionItem::whereHas('redemption', fn ($q) => $q->where('scored_by', '!=', 'seed'))->count());
     }
 
     public function test_items_that_dont_add_up_are_refused(): void

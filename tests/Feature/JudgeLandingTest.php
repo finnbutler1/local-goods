@@ -28,9 +28,9 @@ class JudgeLandingTest extends TestCase
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
 
-        // The seven tour links all open for a judge.
+        // The eight tour links all open for a judge.
         preg_match_all('/<a href="([^"]+)" class="tap-target text-primary underline decoration-accent/', $page->getContent(), $links);
-        $this->assertCount(7, $links[1]);
+        $this->assertCount(8, $links[1]);
 
         foreach ($links[1] as $link) {
             $this->followingRedirects()->get($link)->assertOk();
