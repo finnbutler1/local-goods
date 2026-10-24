@@ -123,7 +123,7 @@
                                 <div><dt class="inline font-semibold">AI recommendation:</dt> <dd class="inline">{{ $a['eligible'] ? 'eligible — confirm before approving' : 'not eligible' }}</dd></div>
                                 <div><dt class="inline font-semibold">Confidence:</dt> <dd class="inline tabular">{{ round(100 * $a['confidence']) }}% ({{ $confidenceWords($a['confidence']) }})</dd></div>
                                 <div><dt class="inline font-semibold">Assessed by:</dt> <dd class="inline">{{ $a['assessed_by'] === 'fallback' ? 'nobody: the AI check failed' : $a['assessed_by'] }}, prompt {{ $a['prompt_version'] }}</dd></div>
-                                <div><dt class="inline font-semibold">Source:</dt> <dd class="inline"><a href="{{ $c['source_url'] }}" class="underline underline-offset-4" rel="noopener" target="_blank">DC license record<span class="sr-only"> for {{ $c['name'] }} (opens in a new tab)</span></a></dd></div>
+                                <div><dt class="inline font-semibold">Source:</dt> <dd class="inline"><a href="{{ $c['source_url'] }}" class="tap-target underline underline-offset-4" rel="noopener" target="_blank">DC license record<span class="sr-only"> for {{ $c['name'] }} (opens in a new tab)</span></a></dd></div>
                             </dl>
                         </div>
 

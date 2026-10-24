@@ -172,7 +172,7 @@
                     <li>
                         <a href="{{ route('employee.wallet', array_filter(['category' => $value, 'q' => $search])) }}#browse"
                            @if ($category === (string) $value) aria-current="true" @endif
-                           class="inline-block rounded-full border-2 border-primary px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-tint aria-[current=true]:bg-primary aria-[current=true]:text-on-primary">{{ $label }}</a>
+                           class="tap-target inline-block rounded-full border-2 border-primary px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-tint aria-[current=true]:bg-primary aria-[current=true]:text-on-primary">{{ $label }}</a>
                     </li>
                 @endforeach
             </ul>
@@ -189,7 +189,7 @@
                             <p class="font-semibold">{{ $merchant->name }}</p>
                             <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
                             <a href="{{ route('employee.wallet', ['merchant' => $merchant->id]) }}#redeem"
-                               class="mt-2 self-start text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                               class="tap-target mt-2 self-start text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
                                 Redeem here<span class="sr-only"> at {{ $merchant->name }}</span>
                             </a>
                         </x-card>
@@ -255,7 +255,7 @@
             @endforelse
         </x-card>
         @if (! $showAllHistory && $historyCount > $history->count())
-            <p class="mt-3"><a href="{{ route('employee.wallet', ['history' => 1]) }}#history" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $historyCount }} transactions</a></p>
+            <p class="mt-3"><a href="{{ route('employee.wallet', ['history' => 1]) }}#history" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $historyCount }} transactions</a></p>
         @endif
     </section>
 </div>

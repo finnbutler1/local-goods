@@ -111,12 +111,12 @@
         </div>
     </aside>
 
-    <div class="lg:pl-64">
+    <div class="pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:pl-64">
         {{-- Top bar --}}
         <header class="sticky top-0 z-20 border-b border-line bg-page/95 backdrop-blur supports-[backdrop-filter]:bg-page/85">
             <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
                 <div class="min-w-0">
-                    <a href="{{ route('home') }}" class="inline-block rounded-lg lg:hidden" aria-label="Local Goods home">
+                    <a href="{{ route('home') }}" class="grid min-h-11 min-w-11 place-items-center rounded-lg lg:hidden" aria-label="Local Goods home">
                         <x-logo :mark-only="true" class="h-8 w-auto sm:hidden" />
                         <x-logo class="hidden h-7 w-auto sm:block" />
                     </a>
@@ -124,7 +124,7 @@
                 </div>
                 <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                     @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
-                        <x-menu id="view-as-menu" button-class="flex items-center gap-1 rounded-full border-2 border-primary px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary-tint aria-expanded:bg-primary-tint active:translate-y-px">
+                        <x-menu id="view-as-menu" button-class="flex items-center gap-1 rounded-full border-2 border-primary px-3 py-1.5 max-lg:min-h-11 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary-tint aria-expanded:bg-primary-tint active:translate-y-px">
                             <x-slot:trigger>View as<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></x-slot:trigger>
                             <ul>
                                 @foreach (\App\Support\ViewAs::ROLES as $option)
@@ -136,7 +136,7 @@
                     @endif
                     <x-theme-toggle />
                     @if ($user)
-                        <x-menu id="account-menu" button-class="flex items-center gap-2 rounded-full border border-edge bg-surface py-1 pr-2 pl-1 text-sm font-semibold hover:border-primary aria-expanded:border-primary active:translate-y-px sm:pr-3">
+                        <x-menu id="account-menu" button-class="flex items-center gap-2 rounded-full border border-edge bg-surface py-1 pr-2 pl-1 max-lg:min-h-11 text-sm font-semibold hover:border-primary aria-expanded:border-primary active:translate-y-px sm:pr-3">
                             <x-slot:trigger>
                                 <span class="grid size-8 shrink-0 place-items-center rounded-full bg-accent font-display text-on-accent" aria-hidden="true">{{ $initials }}</span>
                                 <span class="sr-only">Account: </span><span class="max-w-40 truncate max-sm:sr-only">{{ $userName }}</span>
@@ -170,11 +170,11 @@
             </div>
         </header>
 
-        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-40 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
+        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-[calc(10rem+env(safe-area-inset-bottom))] focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
             @if ($viewAs)
                 <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-band px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
-                    <a href="{{ route('judge.view-as') }}" class="text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline">Back to judge home</a>
+                    <a href="{{ route('judge.view-as') }}" class="tap-target text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline">Back to judge home</a>
                 </div>
             @endif
             {{ $slot }}
@@ -190,7 +190,7 @@
     @endif
 
     {{-- Mobile bottom tab bar --}}
-    <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-night-line bg-night pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-night-line bg-night pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] lg:hidden">
         <ul class="grid {{ $tabColumns }}">
             @foreach ($tabNav as $key => $item)
                 <li>

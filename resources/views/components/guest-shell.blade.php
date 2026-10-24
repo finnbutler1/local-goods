@@ -16,7 +16,7 @@
 
     <div class="mx-auto flex w-full max-w-md justify-end px-4 pt-4"><x-theme-toggle /></div>
     <header class="mx-auto w-full max-w-md px-4 pt-4 pb-6 text-center">
-        <a href="{{ route('home') }}" class="inline-block rounded-lg" aria-label="Local Goods home"><x-logo class="h-10 w-auto" /></a>
+        <a href="{{ route('home') }}" class="inline-block rounded-lg max-sm:py-0.5" aria-label="Local Goods home"><x-logo class="h-10 w-auto" /></a>
         <p class="mt-2 text-sm font-semibold text-muted">Reroute your lunch.</p>
     </header>
 
@@ -25,7 +25,7 @@
             {{ $slot }}
         </x-card>
         <p class="mt-6 text-center text-sm">
-            <a href="{{ route('home') }}" class="font-semibold text-primary underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">
+            <a href="{{ route('home') }}" class="tap-target font-semibold text-primary underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">
                 <span aria-hidden="true">←</span> Back to the public site
             </a>
         </p>

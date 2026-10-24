@@ -25,6 +25,6 @@
     @endif
 
     <p class="mt-6 text-sm">
-        <a href="{{ route('login') }}" class="font-semibold text-primary underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">Back to log in</a>
+        <a href="{{ route('login') }}" class="tap-target font-semibold text-primary underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">Back to log in</a>
     </p>
 </x-guest-shell>

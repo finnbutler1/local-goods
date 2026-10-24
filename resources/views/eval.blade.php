@@ -5,7 +5,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl space-y-10 px-4 py-12 sm:px-6">
         <nav aria-label="Breadcrumb" class="text-sm font-semibold text-primary">
-            <a href="{{ route('home') }}" class="underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">
+            <a href="{{ route('home') }}" class="tap-target underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">
                 <span aria-hidden="true">←</span> Home
             </a>
         </nav>

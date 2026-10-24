@@ -8,11 +8,11 @@
                 You can also open fraud review to approve or deny held redemptions.
             </p>
             <p class="mt-3 flex flex-wrap gap-x-6 gap-y-2 font-semibold">
-                <a href="{{ route('admin.reviewers.index') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Invite reviewers</a>
-                <a href="{{ route('admin.feedback.index') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Feedback inbox</a>
-                <a href="{{ route('admin.changelog.index') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Changelog for reviewers</a>
-                <a href="{{ route('admin.reconciliation') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Stripe reconciliation</a>
-                <a href="{{ route('bid-admin.impact') }}" class="text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
+                <a href="{{ route('admin.reviewers.index') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Invite reviewers</a>
+                <a href="{{ route('admin.feedback.index') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Feedback inbox</a>
+                <a href="{{ route('admin.changelog.index') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Changelog for reviewers</a>
+                <a href="{{ route('admin.reconciliation') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Stripe reconciliation</a>
+                <a href="{{ route('bid-admin.impact') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
             </p>
         </header>
 

@@ -25,7 +25,7 @@ class ToastTest extends TestCase
             ->assertSee('data-flash', false)
             ->assertSee('$50.00 sent to J.R. They can spend it now.')
             ->assertSee('<button type="button" data-toast-dismiss aria-label="Dismiss message"', false)
-            ->assertSee('pointer-events-none fixed inset-x-0 top-3 z-50', false);
+            ->assertSee('pointer-events-none fixed inset-x-0 top-[calc(0.75rem+env(safe-area-inset-top))] z-50', false);
     }
 
     public function test_a_notice_is_polite_and_fades_out(): void

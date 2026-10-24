@@ -31,7 +31,7 @@
 
 @if ($messages)
     <div data-toasts @class([
-        'pointer-events-none fixed inset-x-0 top-3 z-50 flex flex-col items-center gap-2 px-4' => $floating,
+        'pointer-events-none fixed inset-x-0 top-[calc(0.75rem+env(safe-area-inset-top))] z-50 flex flex-col items-center gap-2 px-4' => $floating,
         'space-y-3' => ! $floating,
     ])>
         @foreach ($messages as $tone => $text)

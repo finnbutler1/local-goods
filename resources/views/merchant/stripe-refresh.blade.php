@@ -13,6 +13,6 @@
         @else
             <p class="mt-4 text-sm text-muted">Read-only: judges can't onboard.</p>
         @endif
-        <p class="mt-4"><a href="{{ route('merchant.dashboard') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Back to the merchant dashboard</a></p>
+        <p class="mt-4"><a href="{{ route('merchant.dashboard') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Back to the merchant dashboard</a></p>
     </x-card>
 </x-app-shell>

@@ -8,10 +8,12 @@
         .'active:translate-y-px aria-busy:cursor-progress '
         .'unavailable:cursor-not-allowed unavailable:border-disabled-bg unavailable:bg-disabled-bg unavailable:text-disabled-ink '
         .'unavailable:no-underline unavailable:shadow-none unavailable:translate-y-0 [&[href][aria-disabled=true]]:pointer-events-none';
+    // Every size is at least 44px to tap on phones; sm keeps its compact
+    // look from 640px up.
     $sizes = [
-        'sm' => 'px-3.5 py-1.5 text-sm',
-        'md' => 'px-5 py-2.5',
-        'lg' => 'px-6 py-3.5 text-lg',
+        'sm' => 'px-3.5 py-1.5 text-sm max-sm:min-h-11 max-sm:min-w-11',
+        'md' => 'min-h-11 px-5 py-2.5',
+        'lg' => 'min-h-11 px-6 py-3.5 text-lg',
     ];
     $variants = [
         // Teal: the default action.

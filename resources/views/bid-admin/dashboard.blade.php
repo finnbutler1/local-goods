@@ -174,7 +174,8 @@
                                         <p id="denial-{{ $redemption->id }}-error" class="text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $bag->first('denial') }}</p>
                                     @endif
                                 </fieldset>
-                                <div class="flex flex-wrap gap-2">
+                                {{-- Phones: two equal buttons with room between them. --}}
+                                <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-2">
                                     <x-button type="submit" size="sm" aria-label="Approve {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Approve</x-button>
                                     <x-button type="submit" size="sm" variant="danger" class="bg-surface" formaction="{{ route('bid-admin.deny', $redemption) }}" aria-label="Deny {{ Money::format($redemption->amount_cents) }} at {{ $redemption->merchant->name }}">Deny</x-button>
                                 </div>
