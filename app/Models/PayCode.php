@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Money;
+use App\Support\TaxBreakdown;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -38,6 +39,7 @@ class PayCode extends Model
     protected $fillable = [
         'employee_id', 'merchant_id', 'amount_cents', 'items', 'code_hash', 'code', 'status',
         'cancelled_by', 'expires_at', 'used_at', 'cancelled_at', 'redemption_id',
+        'tax_basis', 'subtotal_cents', 'tax_cents', 'tax_lines',
     ];
 
     protected $hidden = ['code', 'code_hash'];
@@ -46,6 +48,7 @@ class PayCode extends Model
     {
         return [
             'items' => 'array',
+            'tax_lines' => 'array',
             'code' => 'encrypted',
             'expires_at' => 'datetime',
             'used_at' => 'datetime',
@@ -104,5 +107,11 @@ class PayCode extends Model
         return collect($this->items)->map(fn (array $item) => $item['merchant_product_id'] === null && $item['name'] === RedemptionItem::OTHER_AMOUNT
             ? RedemptionItem::OTHER_AMOUNT.' '.Money::format($item['unit_price_cents'])
             : "{$item['quantity']}× {$item['name']}")->implode(', ');
+    }
+
+    /** The DC sales tax fixed when the code was made (ADR 0027); confirming redeems with exactly this. */
+    public function taxBreakdown(): ?TaxBreakdown
+    {
+        return TaxBreakdown::fromStored($this->only(['tax_basis', 'amount_cents', 'subtotal_cents', 'tax_cents', 'tax_lines']), $this->items ?? []);
     }
 }

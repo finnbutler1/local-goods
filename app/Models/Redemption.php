@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Role;
 use App\Services\Fraud\FraudVerdict;
 use App\Support\Money;
+use App\Support\TaxBreakdown;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,11 +30,12 @@ class Redemption extends Model
         'employee_id', 'merchant_id', 'amount_cents', 'status', 'risk_score',
         'ai_decision', 'ai_explanation', 'signals', 'scored_by', 'created_at',
         'reviewed_by', 'reviewed_by_user_id', 'reviewed_at', 'channel',
+        'tax_basis', 'subtotal_cents', 'tax_cents', 'tax_lines',
     ];
 
     protected function casts(): array
     {
-        return ['signals' => 'array', 'reviewed_at' => 'datetime'];
+        return ['signals' => 'array', 'reviewed_at' => 'datetime', 'tax_lines' => 'array'];
     }
 
     public function employee(): BelongsTo
@@ -56,6 +58,12 @@ class Redemption extends Model
     public function itemsSummary(): ?string
     {
         return $this->items->isEmpty() ? null : $this->items->map->label()->implode(', ');
+    }
+
+    /** The DC sales tax snapshotted on it (ADR 0027), or null for a row from before tax display. */
+    public function taxBreakdown(): ?TaxBreakdown
+    {
+        return TaxBreakdown::fromStored($this->only(['tax_basis', 'amount_cents', 'subtotal_cents', 'tax_cents', 'tax_lines']));
     }
 
     /** A person's Approve or Deny, if there was one (ADR 0016). */

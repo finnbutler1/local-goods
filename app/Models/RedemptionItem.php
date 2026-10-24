@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * What a redemption was for (ADR 0023). The product's name and price are
  * copied at the time, so a later menu edit never changes history. A row
- * with no product is the "Other amount" part. Display only.
+ * with no product is the "Other amount" part, which already includes any
+ * tax. The tax category and rate are snapshotted too (ADR 0027). Display
+ * only: never sent to Redemption Fraud Detection.
  */
 class RedemptionItem extends Model
 {
@@ -17,7 +19,7 @@ class RedemptionItem extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['redemption_id', 'merchant_product_id', 'name', 'unit_price_cents', 'quantity'];
+    protected $fillable = ['redemption_id', 'merchant_product_id', 'name', 'unit_price_cents', 'quantity', 'tax_category', 'tax_rate_bps'];
 
     public function redemption(): BelongsTo
     {
