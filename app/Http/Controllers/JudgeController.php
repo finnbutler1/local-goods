@@ -7,6 +7,7 @@ use App\Enums\Role;
 use App\Models\AdjudicationSet;
 use App\Models\AdjudicationVote;
 use App\Models\ChangelogEntry;
+use App\Models\Merchant;
 use App\Models\User;
 use App\Services\Adjudication\AdjudicationAssigner;
 use App\Support\ViewAs;
@@ -39,6 +40,14 @@ class JudgeController extends Controller
                 'title' => 'Employee wallet',
                 'look_for' => 'The phone is the card: a balance funded by the employer, spent only at independent merchants in the BID. Confirming is switched off for reviewers; step 2 shows redemptions the AI already held. Try paying in person: open the wallet\'s Pay in person tab, then view as the merchant and enter the code. (Reviewers see a sample code and a disabled code field; the demo employee and merchant logins do it for real.)',
                 'url' => route('judge.view-as', Role::Employee->value),
+                'available' => true,
+            ],
+            [
+                'title' => 'See tax at checkout',
+                'look_for' => 'Order from a menu in the wallet. Each item shows its DC sales tax, and the total adds it up before paying; the merchant dashboard shows the tax collected, for the shop\'s own records.',
+                'url' => ($grind = Merchant::where('name', config('demo.accounts.merchant.business'))->value('id'))
+                    ? route('employee.wallet', ['merchant' => $grind]).'#redeem'
+                    : route('judge.view-as', Role::Employee->value),
                 'available' => true,
             ],
             [

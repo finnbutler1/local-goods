@@ -10,6 +10,8 @@ use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Services\CreditLedger;
 use App\Services\PayCodes;
+use App\Support\SalesTax;
+use App\Support\TaxBreakdown;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -34,8 +36,15 @@ use Random\Randomizer;
  *
  * One completed in-person payment (ADR 0026) is added last: the first of
  * IN_PERSON_EMPLOYEES with enough credit left paid IN_PERSON_MERCHANT at the
- * counter with a pay code yesterday morning, IN_PERSON_CENTS as a bare amount
- * (seeded history has no menu items). It is not part of either pattern.
+ * counter with a pay code yesterday morning, IN_PERSON_CENTS as a bare
+ * amount. It is not part of either pattern.
+ *
+ * Then three menu orders with DC sales tax added (ADR 0027) at
+ * TAXED_ORDER_MERCHANT, by TAXED_ORDER_EMPLOYEES: one last month and two in
+ * the last two days (early in a month those fall in last month too), so the
+ * merchant's "Tax collected" isn't empty after Reset demo. Tax is worked out
+ * with the rate in effect on each order's date. Every other seeded
+ * redemption is a typed-in amount, which already includes any tax.
  *
  * B. A small ring at one merchant. The three PATTERN_B_EMPLOYEES each make a
  *    round $60 or $70 redemption at PATTERN_B_MERCHANT within ten minutes of
@@ -65,6 +74,18 @@ class DemoHistorySeeder
     public const IN_PERSON_MERCHANT = 'Farragut Grind';
 
     public const IN_PERSON_CENTS = 1000;
+
+    /** Who may place the seeded menu orders with tax (ADR 0027), in order: never Jordan, never a pattern member. */
+    public const TAXED_ORDER_EMPLOYEES = ['Alex Moreau', 'Taylor Brennan', 'Sam Achterberg', 'Casey Abernathy'];
+
+    public const TAXED_ORDER_MERCHANT = 'Farragut Grind';
+
+    /** [days ago (or 'last_month'), time, [product name => quantity]] */
+    public const TAXED_ORDERS = [
+        ['last_month', '09:05', ['Latte' => 2, 'Croissant' => 1]],
+        [2, '08:15', ['Cappuccino' => 1]],
+        [1, '12:40', ['Avocado toast' => 1, 'Cold brew' => 1]],
+    ];
 
     /** Invented names. Any match with a real person is a coincidence. */
     public const NAMES = [
@@ -111,6 +132,70 @@ class DemoHistorySeeder
         }
 
         $this->inPersonExample($byName[self::IN_PERSON_MERCHANT], $now);
+        $this->taxedMenuOrders($byName[self::TAXED_ORDER_MERCHANT], $now);
+    }
+
+    /**
+     * The three seeded menu orders with DC sales tax added, written like
+     * every other seeded redemption (cleared, simulated) plus their items and
+     * tax snapshot. An order is skipped if no listed employee can afford it.
+     */
+    private function taxedMenuOrders(Merchant $merchant, Carbon $now): void
+    {
+        $products = $merchant->products()->get()->keyBy('name');
+        $ledger = app(CreditLedger::class);
+
+        foreach (self::TAXED_ORDERS as [$daysAgo, $time, $picked]) {
+            [$hour, $minute] = explode(':', $time);
+            $day = $daysAgo === 'last_month' ? $now->copy()->startOfMonth()->subDays(10) : $now->copy()->subDays($daysAgo);
+            $at = $day->setTime((int) $hour, (int) $minute)->utc();
+
+            $tax = SalesTax::forItems(array_map(fn (string $name, int $quantity) => [
+                'merchant_product_id' => $products[$name]->id, 'name' => $name, 'unit_price_cents' => $products[$name]->price_cents,
+                'quantity' => $quantity, 'tax_category' => $products[$name]->tax_category,
+            ], array_keys($picked), $picked), $at);
+
+            $employee = Employee::whereIn('display_name', self::TAXED_ORDER_EMPLOYEES)->get()
+                ->sortBy(fn (Employee $e) => array_search($e->display_name, self::TAXED_ORDER_EMPLOYEES, true))
+                ->first(fn (Employee $e) => $this->canAfford($e, $at, $tax->totalCents));
+            if ($employee === null) {
+                continue;
+            }
+
+            $redemption = Redemption::create([
+                'employee_id' => $employee->id,
+                'merchant_id' => $merchant->id,
+                'amount_cents' => $tax->totalCents,
+                'status' => Redemption::STATUS_APPROVED,
+                'scored_by' => 'seed',
+                'created_at' => $at,
+                ...$tax->columns(),
+            ]);
+            foreach ($tax->items as $item) {
+                $redemption->items()->make($item)->forceFill(['created_at' => $at])->save();
+            }
+            CreditLedgerEntry::create([
+                'employee_id' => $employee->id,
+                'amount_cents' => -$tax->totalCents,
+                'type' => CreditLedgerEntry::TYPE_REDEMPTION,
+                'redemption_id' => $redemption->id,
+                'description' => 'Redemption at '.$merchant->name,
+                'created_at' => $at,
+            ]);
+            $ledger->creditMerchant($redemption, $at);
+        }
+    }
+
+    /** Whether the employee's balance at $at, and at every point after it, still covers $cents. */
+    private function canAfford(Employee $employee, Carbon $at, int $cents): bool
+    {
+        $running = (int) $employee->ledgerEntries()->where('created_at', '<=', $at)->sum('amount_cents');
+        $lowest = $running;
+        foreach ($employee->ledgerEntries()->where('created_at', '>', $at)->orderBy('created_at')->pluck('amount_cents') as $amount) {
+            $lowest = min($lowest, $running += $amount);
+        }
+
+        return $cents <= $lowest;
     }
 
     /**
@@ -126,15 +211,7 @@ class DemoHistorySeeder
         // The first who can afford it: the lowest their balance gets from then on must still cover it.
         $employee = Employee::whereIn('display_name', self::IN_PERSON_EMPLOYEES)->get()
             ->sortBy(fn (Employee $e) => array_search($e->display_name, self::IN_PERSON_EMPLOYEES, true))
-            ->first(function (Employee $e) use ($at, $cents) {
-                $running = (int) $e->ledgerEntries()->where('created_at', '<=', $at)->sum('amount_cents');
-                $lowest = $running;
-                foreach ($e->ledgerEntries()->where('created_at', '>', $at)->orderBy('created_at')->pluck('amount_cents') as $amount) {
-                    $lowest = min($lowest, $running += $amount);
-                }
-
-                return $cents <= $lowest;
-            });
+            ->first(fn (Employee $e) => $this->canAfford($e, $at, $cents));
         if ($employee === null) {
             return;
         }
@@ -147,6 +224,7 @@ class DemoHistorySeeder
             'scored_by' => 'seed',
             'channel' => Redemption::CHANNEL_IN_PERSON,
             'created_at' => $at,
+            'tax_basis' => TaxBreakdown::INCLUDED,
         ]);
         CreditLedgerEntry::create([
             'employee_id' => $employee->id,
@@ -169,6 +247,7 @@ class DemoHistorySeeder
             'expires_at' => $at->copy()->subMinute()->addMinutes(PayCode::EXPIRES_MINUTES),
             'used_at' => $at,
             'redemption_id' => $redemption->id,
+            'tax_basis' => TaxBreakdown::INCLUDED,
         ]);
         $payCode->created_at = $at->copy()->subMinute();
         $payCode->updated_at = $at;
@@ -211,6 +290,7 @@ class DemoHistorySeeder
                 'scored_by' => 'seed',
                 'created_at' => $at->copy()->utc(),
                 'updated_at' => $at->copy()->utc(),
+                'tax_basis' => TaxBreakdown::INCLUDED,
             ];
         }
 
