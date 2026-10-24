@@ -226,6 +226,16 @@ class Redemption extends Model
             default => $payout->status,
         };
 
+        // Refunds a platform admin approved (ADR 0028), oldest first. Requests not approved aren't money steps.
+        foreach ($this->corrections()->with('decidedBy')->whereIn('status', Correction::COUNTED_STATUSES)->orderBy('id')->get() as $refund) {
+            $by = $refund->decidedBy ? User::initialsOf($refund->decidedBy->name) : 'Local Goods';
+            $steps[] = match ($refund->status) {
+                Correction::STATUS_COMPLETED => 'refunded '.$refund->amountLabel().' by '.$by.' · '.$refund->completed_at->setTimezone('America/New_York')->format('M j'),
+                Correction::STATUS_FAILED => 'refund of '.$refund->amountLabel().' approved by '.$by.', not through yet',
+                default => 'refund of '.$refund->amountLabel().' approved by '.$by.', waiting for Stripe',
+            };
+        }
+
         return $steps;
     }
 
