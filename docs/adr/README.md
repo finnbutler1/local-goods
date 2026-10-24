@@ -32,3 +32,4 @@ trade-off in under a minute.
 | [0024](0024-mission-framing-and-the-labelled-3x-line.md) | Lead with the buy-local mission; "roughly 3x" only next to its outside-study label and source (replaces 0017's no-multiplier rule) | Accepted, implemented |
 | [0025](0025-transit-lines-brand.md) | Transit lines brand and Logo A, light and dark tokens, visible button states, disclosure menus | Accepted, implemented |
 | [0026](0026-pay-in-person-with-pay-codes.md) | Pay in person: one-time 6-character pay codes the merchant confirms, through the same RedemptionService and TransferGate; channel display only; held payments can be cancelled | Accepted, implemented |
+| [0027](0027-dc-sales-tax-shown-at-redemption.md) | DC sales tax shown at redemption: rates by date in config, added on menu items only, snapshotted on each redemption; the amount stays the total the AI, ledger and Stripe use | Accepted, implemented |

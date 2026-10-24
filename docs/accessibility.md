@@ -435,3 +435,37 @@ decorative element overlaps it; every text colour comes from a pair
 - **The Feedback button steps aside** (fades out) while it would cover a
   field or while someone is typing. That is on purpose, but on a phone it
   can be out of sight while a form is in use.
+
+## Sales tax at checkout (2026-10-24)
+
+**How it was checked.** A Playwright script (in a scratch folder, not in
+`package.json`) drove headless Chrome against `php -S` on a scratch SQLite
+database with the demo data, simulated payments and no AI key (so every
+new redemption was held, which the screens handle). At 320px, light and
+dark: the wallet's menu with one Latte, then Latte, Croissant and a $3
+Other amount; the cycle studio with one item in each tax category; a real
+order to go and its confirmation card; a pay code; the cashier's review of
+that code; the merchant dashboard's Tax collected card and redemption
+list; the menu editor; the employer dashboard in dark mode. The CSV was
+downloaded and read.
+
+- The live summaries read "Subtotal $5.75 DC meals tax 10% $0.58 Total
+  $6.33", "Subtotal $13.00 DC meals tax 10% on $10.00 $1.00 Total $14.00"
+  and "Subtotal $44.00 DC meals tax 10% on $9.00 $0.90 DC sales tax 6% on
+  $32.00 $1.92 Not taxed on $3.00 $0.00 Total $46.82", the same as the
+  server's totals.
+- axe-core 4.10 (WCAG 2.0, 2.1 and 2.2 A and AA, plus best practice): no
+  violations on the wallet menu, the wallet after an order, the cashier's
+  review, the merchant dashboard, the menu editor and the employer
+  dashboard (dark).
+- No sideways scroll on any of them, after one fix: a held order's
+  "Waiting for review, not owed yet" badge didn't wrap and pushed the
+  merchant's list 21px wider than a 320px screen. It now wraps.
+- Tax lines are a `<dl>` (term and amount pairs) with tabular figures;
+  the live summary is a polite live region, as the total was before.
+- Screenshots of the summary (dark), the cashier's review and Tax
+  collected were looked at.
+
+Static checks (`AccessibilityTest`, `ResponsiveTablesTest`) sweep the
+changed pages automatically. Not checked: a screen reader, a real phone,
+WebKit, 375px and 414px.

@@ -5,6 +5,41 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**DC sales tax at redemption — done (2026-10-24, ADR 0027).** One
+migration (additive: `merchant_products.tax_category` backfilled from the
+merchant; item category/rate; `tax_basis`, `subtotal_cents`, `tax_cents`,
+`tax_lines` on redemptions and pay codes). Fraud prompt (`8d5e1e70`),
+signals, eval data, ledger rules, webhook, `TransferGate` and
+reconciliation unchanged.
+
+- `amount_cents` stays the total (subtotal + tax): the AI, ledger debit,
+  merchant earning and Stripe transfer all use it as before. **Never add
+  tax fields to the AI input** (`FraudInputTaxTest`).
+- Rates only in `config/tax.php` (basis points, `effective_from` in DC
+  time, sources, `verified_on`); a change is a new row. Prepared food 10%,
+  general 6% then 7% from 2027-10-01 (OTR's own notice conflicts: body says
+  2026, banner/FAQ say 2027; we follow the banner), exempt 0%.
+  `App\Support\SalesTax` (per category on its subtotal, half up) and
+  `TaxBreakdown` (snapshot; `added`, `included`, null = before tax display).
+- Tax is added on menu items only; a typed-in amount or Other amount is
+  the shop's total, "Amount includes any tax charged by the shop."
+  `RedemptionBasket::build` returns `tax`; `redeem(..., ?TaxBreakdown $tax)`
+  (default included) checks items + tax = amount and writes the columns.
+  Pay codes fix tax at issue and confirm with it.
+- Screens read only the snapshot (`partials/tax-breakdown`). Merchant:
+  Tax collected (`MerchantTaxSummary`, cleared `added` orders, this and
+  last month), `merchant.redemptions.csv` (initials, formula guard), menu
+  tax category with "Confirm this with your accountant." Employer: one
+  note, no numbers (`EmployerTaxNoteTest`). Never "tax-free", never tax
+  advice: merchants file and remit.
+- Demo: `DEMO_MENUS` optional 4th value overrides the default category;
+  seeded typed-in rows are `included`; `DemoHistorySeeder::TAXED_ORDERS`
+  adds three taxed Farragut Grind orders (never Jordan). Tour step "See tax
+  at checkout".
+- Tests: `SalesTaxTest`, `SalesTaxRedemptionTest`, `SalesTaxDisplayTest`,
+  `MerchantTaxTest`, `EmployerTaxNoteTest`, `FraudInputTaxTest`,
+  `SalesTaxDemoTest`, `SalesTaxMigrationSafetyTest`.
+
 **Phone-first pass — done (2026-10-24).** Front end only: no route,
 controller logic, money, Stripe, prompt, eval, lock or migration change.
 Checks that ran: `docs/accessibility.md` "Phone-first pass".
@@ -114,8 +149,8 @@ fraud prompt (`8d5e1e70`), signals, model and eval data unchanged.
   `items[product_id]=qty` (0–20) plus `amount` = Other amount.
   `RedemptionBasket::build` computes the total from the menu prices;
   `RedemptionService::redeem(..., $items)` scores the amount as before,
-  then stores items (name and price copied). Items always add up to the
-  amount; a bare amount has no items. **Never pass items into signals or
+  then stores items (name and price copied). Items plus their tax (ADR
+  0027) always add up to the amount; a bare amount has no items. **Never pass items into signals or
   the AI** (`RedemptionItemsTest` checks the input is identical).
 - Shown via `Redemption::itemsSummary()` (load `items`): wallet, merchant
   dashboard, Fraud review ("not sent to Redemption Fraud Detection"),
@@ -432,7 +467,8 @@ platform fee ready but off (ADR 0021) and platform-set-up Stripe test
 accounts for the demo merchants (ADR 0022), display-only product menus
 (ADR 0023), mission-first messaging (ADR 0024), the Transit lines
 brand with button states and menus (ADR 0025), paying in person with
-pay codes (ADR 0026) and the phone-first pass.
+pay codes (ADR 0026), the phone-first pass and DC sales tax at
+redemption (ADR 0027).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

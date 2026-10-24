@@ -79,7 +79,11 @@ the local multiplier. An estimate from an outside study, not measured by Local G
    the card, two ways: **Order to go** (redeem in the app and show the
    confirmation) or **Pay in person** (get a one-time 6-character pay code
    that the cashier types into the merchant dashboard and confirms; nothing
-   moves until they do, [ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)). *Today: employees can only redeem at merchants in the demo's
+   moves until they do, [ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)).
+   Ordering from a menu shows the DC sales tax before paying (subtotal, tax,
+   total), and the merchant sees the tax it collected for its own records;
+   it's a display at DC's published rates, not tax advice
+   ([ADR 0027](docs/adr/0027-dc-sales-tax-shown-at-redemption.md)). *Today: employees can only redeem at merchants in the demo's
    hand-seeded list. Merchant Eligibility Matching assesses real businesses in
    the BID for the BID admin to approve or reject. Turning an approved business
    into a participant is planned.*
@@ -92,7 +96,8 @@ the local multiplier. An estimate from an outside study, not measured by Local G
 
 **Try it:** [log in](https://d4ghrpm72uczx.cloudfront.net/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,
-then click **Try a suspicious redemption**. On **Pay in person**, get a pay
+then click **Try a suspicious redemption**. To see tax at checkout, order
+from a menu in the wallet. On **Pay in person**, get a pay
 code, then log in as the merchant and enter it under **Take a payment**. As the BID admin, see the AI's
 score, decision and explanation for each one, approve or deny held
 redemptions, and press **Run a collusion example** to watch the real AI
