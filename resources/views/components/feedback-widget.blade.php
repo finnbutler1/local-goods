@@ -22,7 +22,7 @@
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h2 id="feedback-heading" class="text-2xl font-semibold text-primary">Leave feedback</h2>
-                <p class="mt-1 text-sm text-muted break-all">About this page: {{ request()->path() === '/' ? '/' : '/'.request()->path() }}</p>
+                <p class="mt-1 text-sm text-muted">About this page: <x-breakable :value="request()->path() === '/' ? '/' : '/'.request()->path()" /></p>
             </div>
             <button type="button" data-dialog-close class="rounded-full p-1 text-muted hover:text-ink" aria-label="Close feedback form">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>

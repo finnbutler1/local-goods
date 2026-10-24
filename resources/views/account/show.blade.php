@@ -5,7 +5,7 @@
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Your account</x-eyebrow>
         <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">{{ auth()->user()->name }}</h1>
-        <p class="mt-3 text-lg text-muted break-all">{{ auth()->user()->email }}</p>
+        <p class="mt-3 text-lg text-muted"><x-breakable :value="auth()->user()->email" /></p>
     </header>
 
     {{-- Reviewers have no password: they sign in with their magic link. --}}
@@ -48,7 +48,7 @@
                             <p class="font-semibold">{{ $item->category->label() }} · {{ $item->rating }}/5 · {{ $item->severity->label() }}</p>
                             <x-badge :tone="$item->status === \App\Enums\FeedbackStatus::Fixed ? 'ok' : 'neutral'">{{ $item->status->label() }}</x-badge>
                         </div>
-                        <p class="mt-1 text-sm text-muted break-all">{{ $item->page_url }}</p>
+                        <p class="mt-1 text-sm text-muted"><x-breakable :value="$item->page_url" /></p>
                         <p class="mt-2 whitespace-pre-line">{{ $item->comment }}</p>
                         @if ($item->fixed_commit_sha)
                             <p class="mt-2 text-sm text-muted">Fixed in commit <code class="font-mono">{{ $item->fixed_commit_sha }}</code></p>

@@ -50,7 +50,7 @@
                         the {{ $lock['case_count'] }} cases were labeled by hand in commit
                         <a href="{{ config('fraud.eval_repo_url') }}/commit/{{ $lock['labeling_commit'] }}" class="font-mono text-on-night underline underline-offset-4">{{ substr($lock['labeling_commit'], 0, 7) }}</a>
                         and locked on {{ Carbon::parse($lock['locked_at'])->format('M j, Y') }} with a SHA-256 of every row
-                        (combined <code class="break-all">{{ substr($lock['combined_sha256'], 0, 12) }}</code>,
+                        (combined <code class="whitespace-nowrap">{{ substr($lock['combined_sha256'], 0, 12) }}</code>,
                         <a href="{{ config('fraud.eval_repo_url') }}/blob/main/data/fraud_eval_lock.json" class="text-on-night underline underline-offset-4">lock file</a>).
                         The eval refuses to run if any of them changes.
                     </p>
