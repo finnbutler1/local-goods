@@ -16,6 +16,7 @@ class DemoResetter
      * Children before parents, so foreign keys are never violated.
      */
     public const DEMO_TABLES = [
+        'pay_codes',
         'credit_ledger_entries',
         'redemption_decisions',
         'merchant_payouts',
@@ -34,9 +35,11 @@ class DemoResetter
      * Demo tables the seed leaves empty: decisions only exist once a person
      * reviews a held redemption, and items only once an employee picks from
      * a menu (seeded history is bare amounts), so demo:seed-if-empty doesn't
-     * count them.
+     * count them. Pay codes (ADR 0026) came after the live demo was seeded:
+     * the seed adds one used code, but a demo seeded before them has none,
+     * and that is fine.
      */
-    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items'];
+    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes'];
 
     /**
      * Added after the live demo was first seeded (ADR 0023): if only this
