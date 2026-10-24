@@ -79,8 +79,6 @@ Route::middleware('auth')->group(function () {
         // Pay in person (ADR 0026): a one-time code for the merchant to confirm. Getting one moves nothing.
         Route::post('/employee/pay-code', [PayCodeController::class, 'store'])->middleware('throttle:10,1,employee.pay-code.store')->name('employee.pay-code.store');
         Route::post('/employee/pay-code/{payCode}/cancel', [PayCodeController::class, 'cancel'])->middleware('throttle:20,1,employee.pay-code.cancel')->name('employee.pay-code.cancel');
-        // "Cancel this payment" on a held in-person payment: paid another way, credits back (ADR 0026).
-        Route::post('/employee/redemptions/{redemption}/cancel', [PayCodeController::class, 'cancelHeld'])->middleware('throttle:20,1,employee.redemption.cancel')->name('employee.redemption.cancel');
         Route::get('/employee/pay-code/{payCode}/status', [PayCodeController::class, 'status'])->middleware('throttle:90,1,employee.pay-code.status')->name('employee.pay-code.status');
     });
 

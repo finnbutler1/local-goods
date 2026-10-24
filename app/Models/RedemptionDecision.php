@@ -9,8 +9,8 @@ use LogicException;
 
 /**
  * A person's Approve or Deny on a redemption Redemption Fraud Detection held
- * (ADR 0016), or a Cancel of a held in-person payment by its own merchant or
- * employee (ADR 0026: they paid another way). Append-only, at most one per
+ * (ADR 0016), or a Cancel of a held in-person payment by its own merchant (or
+ * a BID or platform admin) because the customer paid another way (ADR 0026). Append-only, at most one per
  * redemption (a unique index), so a double click or a second tab can't
  * decide twice. Keeps who decided, when, why, where the credit went, and a
  * copy of what the AI said. A cancel is not a fraud judgment.
@@ -24,7 +24,7 @@ class RedemptionDecision extends Model
 
     public const DENY = 'deny';
 
-    /** The merchant or employee called off a held in-person payment (ADR 0026). Credit back to the employee. */
+    /** The merchant (or an admin) called off a held in-person payment (ADR 0026). Credit back to the employee. */
     public const CANCEL = 'cancel';
 
     public const UPDATED_AT = null;
@@ -50,7 +50,7 @@ class RedemptionDecision extends Model
 
             if ($decision->decision === self::CANCEL) {
                 if ($person === null || ! self::mayCancel($person, Redemption::findOrFail($decision->redemption_id))) {
-                    throw new LogicException('Only the merchant or the employee of a held in-person payment may cancel it.');
+                    throw new LogicException('Only the merchant of a held in-person payment, or a BID or platform admin, may cancel it.');
                 }
             } elseif ($person === null || ! $person->hasRole(Role::BidAdmin, Role::PlatformAdmin)) {
                 throw new LogicException('A redemption decision must be made by a person: a BID admin or platform admin.');
@@ -77,8 +77,9 @@ class RedemptionDecision extends Model
 
     /**
      * Cancel (ADR 0026): only an in-person payment, and only its own merchant's
-     * login or its own employee's login. Approving and denying stay BID and
-     * platform admins only. Whether it's still held is checked when deciding.
+     * login, or a BID or platform admin. Never the employee: they ask the shop.
+     * Approving and denying stay BID and platform admins only. Whether it's
+     * still held is checked when deciding.
      */
     public static function mayCancel(User $person, Redemption $redemption): bool
     {
@@ -88,7 +89,7 @@ class RedemptionDecision extends Model
 
         return match ($person->role) {
             Role::Merchant => $person->merchant?->id === $redemption->merchant_id,
-            Role::Employee => $person->employee?->id === $redemption->employee_id,
+            Role::BidAdmin, Role::PlatformAdmin => true,
             default => false,
         };
     }

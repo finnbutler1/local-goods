@@ -58,18 +58,24 @@ the same Redemption Fraud Detection call with the same inputs (the prompt
   screens say so in neutral words (no fraud words) with the existing
   "Under review" badge. The merchant: "Payment not completed yet…". The
   employee: their credits are set aside and come back if it isn't
-  approved.
+  approved, and if they pay another way the shop can cancel the payment.
 - **Cancel this payment.** If the customer pays another way, the merchant
-  or the employee can cancel a held in-person payment, so it can never be
+  cancels the held in-person payment on its dashboard, so it can never be
   approved later. It goes through `RedemptionReviewService`'s existing
   `decide()` path, like a "no purchase happened" denial: one
   `review_rejected` entry gives the credits back, status `rejected`, no
   transfer ever. It is recorded as `RedemptionDecision::CANCEL` with the
-  merchant or employee role, not as a fraud denial. Fraud review shows
-  "Cancelled by merchant" or "Cancelled by employee", and it leaves the
-  pending queue. `RedemptionDecision` now accepts a cancel from that
-  payment's own merchant or employee login only; approve and deny stay BID
-  and platform admins only. Cancels are not eval or adjudication data.
+  canceller's role, not as a fraud denial. Fraud review shows "Cancelled
+  by merchant", and it leaves the pending queue. Cancels are not eval or
+  adjudication data.
+- **Who can record a decision.** Approve and deny: BID and platform admins
+  only, as before. Cancel (`RedemptionDecision::mayCancel`): that
+  payment's own merchant login, or a BID or platform admin; never the
+  employee or a judge. The employee can still cancel their own unused pay
+  code before the merchant confirms. (Changed the same day: at first the
+  employee could also cancel a held payment; Finn narrowed it to the shop.) There is no separate admin Cancel button: in Fraud review
+  an admin's existing Deny ("no purchase happened") returns the credits
+  the same way.
 - **The channel is shown** on the wallet's receipt, recent list and
   history, the merchant's list, Fraud review ("not sent to Redemption
   Fraud Detection") and as a split of sent transfers on reconciliation,

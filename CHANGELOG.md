@@ -22,9 +22,9 @@ commit history.
   valid." for every wrong code; 5 wrong tries a minute and the shop waits;
   never logged or stored in plain text.
 - **Cancel this payment:** if a held in-person payment is paid another
-  way, the merchant or the employee can cancel it. The credits come back,
-  no money moves, and it shows as "Cancelled by merchant/employee", not as
-  a fraud denial.
+  way, the shop can cancel it on its dashboard (the employee's screen says
+  so; they can't cancel it themselves). The credits come back, no money
+  moves, and it shows as "Cancelled by merchant", not as a fraud denial.
 - **To go or In person** is shown on receipts, both histories, Fraud
   review and reconciliation. The AI never sees it.
 - The demo has one completed in-person payment, and the judge tour says

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  * happened. Each decision writes one RedemptionDecision (who, when, why,
  * what the AI said) and one ledger entry; nothing is edited or deleted.
  * Who may decide is checked by RedemptionPolicy::review before this. A held
- * in-person payment can also be cancelled by its own merchant or employee
+ * in-person payment can also be cancelled by its own merchant or an admin
  * (ADR 0026), through the same path as a "no purchase" denial.
  */
 class RedemptionReviewService
@@ -63,8 +63,8 @@ class RedemptionReviewService
     }
 
     /**
-     * The merchant or the employee calls off a held in-person payment because
-     * they paid another way (ADR 0026). The same return path as a "no
+     * The merchant (or a BID or platform admin) calls off a held in-person
+     * payment because the customer paid another way (ADR 0026). The same return path as a "no
      * purchase happened" denial: one entry gives the employee the reserved
      * credits back, no transfer ever. Recorded as a cancel, not a fraud
      * denial. Who may cancel is RedemptionDecision::mayCancel; it can't be
@@ -72,7 +72,7 @@ class RedemptionReviewService
      */
     public function cancel(Redemption $redemption, User $by): Redemption
     {
-        $who = $by->role === Role::Merchant ? 'the merchant' : 'the employee';
+        $who = $by->role === Role::Merchant ? 'the merchant' : 'a '.$by->role->label();
 
         return $this->decide($redemption, $by, "Cancelled at the counter by {$who}: paid another way.", RedemptionDecision::CANCEL, 'employee', $who, fn (Redemption $r) => [
             'employee_id' => $r->employee_id,

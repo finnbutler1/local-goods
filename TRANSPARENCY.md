@@ -67,13 +67,14 @@ Nothing moves until the merchant presses Confirm payment, and the balance
 is checked again then.
 
 If the AI holds an in-person payment, both screens say so in neutral words
-and no money moves. If the customer then pays another way, the merchant or
-the employee can press **Cancel this payment**: the credits go back to the
-employee through the same path as a "no purchase happened" denial, no
-transfer ever happens, and it can't be approved later. It is recorded as a
-cancel by the merchant or employee, not as a fraud decision, and like
-every review decision it is never used as an eval label or in
-adjudication.
+and no money moves. If the customer then pays another way, the shop
+presses **Cancel this payment** on its dashboard: the credits go back to
+the employee through the same path as a "no purchase happened" denial, no
+transfer ever happens, and it can't be approved later. Only that
+payment's own merchant (or a BID or platform admin) may record a cancel;
+the employee can't, and their screen tells them the shop can. It is
+recorded as a cancel, not as a fraud decision, and like every review
+decision it is never used as an eval label or in adjudication.
 
 ### What Claude decides
 
