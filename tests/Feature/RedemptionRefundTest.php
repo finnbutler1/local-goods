@@ -64,6 +64,7 @@ class RedemptionRefundTest extends TestCase
         $this->assertSame([$redemption->id, $redemption->id], $lines->pluck('redemption_id')->all());
         $this->assertSame($employeeBefore + 500, $redemption->employee->balanceCents());
         $this->assertSame($merchantBefore - 500, $this->farragut()->payableCents(), 'Deducted from what the merchant is owed');
+        $this->assertStringStartsWith('refunded $5.00 by '.User::initialsOf($this->admin()->name).' · ', last($redemption->fresh()->auditTrail()));
         $this->assertLedgerInvariant();
     }
 
