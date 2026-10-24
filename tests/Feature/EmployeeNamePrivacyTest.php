@@ -179,7 +179,7 @@ class EmployeeNamePrivacyTest extends TestCase
         // A different judge first, so the sweep's judge (the first one) isn't the contact on their own pages.
         $this->signIn(Role::Judge);
         $contact = User::factory()->role(Role::Judge)->create([
-            'name' => 'Quincy Fakecontact', 'email' => 'quincy.fakecontact@example.test', 'reviewer_type' => ReviewerType::PersonalContact,
+            'name' => 'Quinzel Fakecontact', 'email' => 'quinzel.fakecontact@example.test', 'reviewer_type' => ReviewerType::PersonalContact,
         ]);
         $this->actingAs($contact)->post('/adjudicate/start', ['seen_eval_before' => 'no']);
         foreach ($set->cases as $case) {
@@ -195,9 +195,9 @@ class EmployeeNamePrivacyTest extends TestCase
 
         $check = function (string $html, string $where) {
             $html = str_replace('<wbr>', '', $html);
-            $this->assertStringNotContainsString('Quincy', $html, "A personal contact's name appears on {$where}.");
+            $this->assertStringNotContainsString('Quinzel', $html, "A personal contact's name appears on {$where}.");
             $this->assertStringNotContainsString('Fakecontact', $html, "A personal contact's name appears on {$where}.");
-            $this->assertStringNotContainsString('quincy.fakecontact', $html, "A personal contact's email appears on {$where}.");
+            $this->assertStringNotContainsString('quinzel.fakecontact', $html, "A personal contact's email appears on {$where}.");
         };
 
         $checked = $this->sweepPages($check);
