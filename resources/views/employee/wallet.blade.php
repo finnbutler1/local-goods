@@ -136,7 +136,7 @@
                     <input type="hidden" name="merchant_id" value="{{ $menuMerchant->id }}">
                     <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                         <p class="text-lg font-semibold">At {{ $menuMerchant->name }}</p>
-                        <a href="{{ route('employee.wallet') }}#redeem" class="text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Change merchant</a>
+                        <a href="{{ route('employee.wallet') }}#redeem" class="tap-target text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Change merchant</a>
                     </div>
 
                     @include('employee.partials.basket-fields', ['prefix' => '', 'menu' => $menu, 'quantities' => $quantities, 'amount' => old('amount', $prefill['amount'])])

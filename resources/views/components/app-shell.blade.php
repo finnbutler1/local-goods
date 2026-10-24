@@ -170,7 +170,7 @@
             </div>
         </header>
 
-        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-[calc(10rem+env(safe-area-inset-bottom))] focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
+        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-8 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
             @if ($viewAs)
                 <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-band px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
@@ -180,7 +180,10 @@
             {{ $slot }}
         </main>
 
-        <footer class="mx-auto hidden max-w-6xl px-4 pb-8 text-sm text-muted sm:px-6 lg:block lg:px-10">
+        {{-- Shown at every width (the sidebar's demo note is desktop-only). On phones it is
+             the last thing on the page, with room under it for the tab bar, the Feedback
+             button and the home indicator. --}}
+        <footer class="mx-auto max-w-6xl px-4 pb-[calc(10rem+env(safe-area-inset-bottom))] text-sm text-muted sm:px-6 lg:px-10 lg:pb-8">
             Demonstration project. All businesses, people and transactions are fictional.
         </footer>
     </div>

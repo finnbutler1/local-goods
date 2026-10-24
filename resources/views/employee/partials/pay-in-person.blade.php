@@ -58,7 +58,7 @@
                 <input type="hidden" name="pay_merchant_id" value="{{ $payMerchant->id }}">
                 <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <p class="text-lg font-semibold">Paying {{ $payMerchant->name }}</p>
-                    <a href="{{ route('employee.wallet', ['tab' => 'in-person']) }}#pay" class="text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Change merchant</a>
+                    <a href="{{ route('employee.wallet', ['tab' => 'in-person']) }}#pay" class="tap-target text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Change merchant</a>
                 </div>
 
                 @include('employee.partials.basket-fields', [
