@@ -33,6 +33,7 @@
                 <p class="font-display text-2xl font-semibold">{{ $paidOk ? 'Payment confirmed' : 'Payment not completed yet' }}</p>
                 <p class="tabular mt-1 text-lg font-semibold text-ink">{{ Money::format($payResult->amount_cents) }} · {{ $payResult->employee->initials() }}</p>
                 @if ($for = $payResult->itemsSummary()) <p class="text-ink" data-items>{{ $for }}</p> @endif
+                @include('partials.tax-breakdown', ['tax' => $payResult->taxBreakdown(), 'compact' => true, 'class' => 'text-sm text-ink'])
                 <p class="mt-2 text-ink">
                     @if ($paidOk)
                         Cleared. You're owed it on Local Goods; hand over the order.
@@ -57,6 +58,7 @@
                             <div class="min-w-0">
                                 <p class="tabular font-semibold">{{ Money::format($held->amount_cents) }} · {{ $held->employee->initials() }}</p>
                                 @if ($for = $held->itemsSummary()) <p class="text-sm break-words" data-items>{{ $for }}</p> @endif
+                                @include('partials.tax-breakdown', ['tax' => $held->taxBreakdown(), 'compact' => true, 'class' => 'text-sm text-muted'])
                                 <p class="text-sm text-muted">{{ $held->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} · <x-badge tone="hold">Under review</x-badge></p>
                             </div>
                             @if ($held->mayBeCancelledBy(auth()->user()))
@@ -82,6 +84,7 @@
                     <dt class="text-muted">Customer</dt><dd class="tabular font-semibold text-ink">{{ $lookedUp->employee->initials() }}</dd>
                     <dt class="text-muted">Code expires</dt><dd class="text-ink">{{ $lookedUp->expires_at->setTimezone('America/New_York')->format('g:i A') }}</dd>
                 </dl>
+                @include('partials.tax-breakdown', ['tax' => $lookedUp->taxBreakdown(), 'class' => 'mt-3 max-w-xs rounded-xl bg-band p-3 text-sm text-ink'])
                 <div class="mt-4 grid gap-2 sm:grid-cols-2">
                     <form method="POST" action="{{ route('merchant.pay-code.confirm', $lookedUp) }}" data-busy="Checking with Redemption Fraud Detection…">
                         @csrf
@@ -145,11 +148,36 @@
             </dd>
         </div>
         <x-card>
-            <dt class="text-sm font-semibold text-muted">Cleared sales this month</dt>
+            <dt class="text-sm font-semibold text-muted">Cleared sales this month (including tax)</dt>
             <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ Money::format($monthCents) }}</dd>
             <dd class="mt-1 text-sm text-muted">{{ $monthVisits }} cleared {{ Str::plural('visit', $monthVisits) }} · {{ Money::format($paidOutCents) }} paid out in all</dd>
         </x-card>
     </dl>
+
+    {{-- DC sales tax on cleared menu orders (ADR 0027), for the merchant's records. Not tax advice; they file it. --}}
+    <x-card as="section" id="tax" aria-labelledby="tax-heading" class="scroll-mt-24" data-tax-summary>
+        <h2 id="tax-heading" class="text-2xl font-semibold text-primary">Tax collected</h2>
+        <p class="mt-1 text-sm text-ink">For your records. Your business files and remits DC sales tax; Local Goods does not.</p>
+        <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+            @foreach (['this_month' => 'This month', 'last_month' => 'Last month'] as $key => $title)
+                @php $month = $taxSummary[$key]; @endphp
+                <div>
+                    <dt class="text-sm font-semibold text-muted">{{ $title }} ({{ $month['label'] }})</dt>
+                    <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary" data-tax-month="{{ $key }}">{{ Money::format($month['tax_cents']) }}</dd>
+                    <dd class="text-sm text-muted">On {{ $month['orders'] }} cleared menu {{ Str::plural('order', $month['orders']) }}</dd>
+                </div>
+            @endforeach
+        </dl>
+        <details class="mt-4 text-sm">
+            <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
+            <p class="mt-1 text-muted">
+                The DC sales tax added at checkout to cleared menu orders, by the date of the order in DC time, at the rate snapshotted on each one.
+                Held and denied orders aren't counted. Typed-in amounts already include any tax you charged and aren't split out here.
+                Rates are DC's published rates, shown for display; check them and your categories with your accountant.
+            </p>
+        </details>
+        <p class="mt-3"><a href="{{ route('merchant.redemptions.csv') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Download all redemptions (CSV, with subtotal, tax and total)</a></p>
+    </x-card>
 
     <div class="grid gap-6 lg:grid-cols-5">
         <section id="received" aria-labelledby="received-heading" class="scroll-mt-24 lg:col-span-3">
@@ -165,6 +193,7 @@
                             @if ($for = $redemption->itemsSummary())
                                 <p class="text-sm break-words" data-items>{{ $for }}</p>
                             @endif
+                            @include('partials.tax-breakdown', ['tax' => $redemption->taxBreakdown(), 'compact' => true, 'class' => 'text-sm text-muted'])
                             <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></p>
                             @if ($redemption->scored_by !== 'seed')
                                 <p class="text-sm text-muted" data-audit-trail>{{ implode(' → ', $redemption->auditTrail()) }}</p>

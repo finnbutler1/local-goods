@@ -24,6 +24,7 @@ use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Merchant\MenuController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
+use App\Http\Controllers\Merchant\RedemptionsExportController;
 use App\Http\Controllers\Merchant\PayCodeController as MerchantPayCodeController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\MerchantEvalController;
@@ -113,6 +114,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('role:merchant')->group(function () {
         Route::get('/merchant', MerchantDashboardController::class)->name('merchant.dashboard');
+        // Redemptions with subtotal, DC sales tax and total, for the merchant's records (ADR 0027). Reads only.
+        Route::get('/merchant/redemptions.csv', RedemptionsExportController::class)->middleware('throttle:30,1,merchant.redemptions.csv')->name('merchant.redemptions.csv');
         // The merchant's own product menu (ADR 0023). Display only; never sent to the fraud AI.
         Route::get('/merchant/menu', [MenuController::class, 'show'])->name('merchant.menu');
         Route::post('/merchant/menu', [MenuController::class, 'store'])->middleware('throttle:20,1,merchant.menu.store')->name('merchant.menu.store');
