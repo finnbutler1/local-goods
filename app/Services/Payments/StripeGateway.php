@@ -42,6 +42,27 @@ interface StripeGateway
     /** @return array<string, mixed> a Transfer */
     public function createTransfer(array $params, string $idempotencyKey): array;
 
+    /**
+     * Pulls part or all of a sent Transfer back from the merchant (a refund,
+     * ADR 0028). Stripe answers at once; the transfer.reversed event lists
+     * every reversal with its metadata, and amount_reversed adds up.
+     *
+     * @return array<string, mixed> a TransferReversal
+     */
+    public function reverseTransfer(string $transferId, array $params, string $idempotencyKey): array;
+
+    /**
+     * Refunds part of a card payment to the employer (ADR 0028). In test mode
+     * Stripe answers succeeded at once, even while the payment's funds are
+     * still pending; refund.created carries the same status.
+     *
+     * @return array<string, mixed> a Refund
+     */
+    public function createRefund(array $params, string $idempotencyKey): array;
+
+    /** @return list<array<string, mixed>> Refunds created at or after $since (unix time) */
+    public function listRefunds(int $since, int $max = 300): array;
+
     /** @return array<string, mixed> the platform Balance */
     public function retrieveBalance(): array;
 

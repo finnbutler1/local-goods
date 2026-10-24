@@ -56,6 +56,21 @@ class NoticeSafeStripeGateway implements StripeGateway
         return StripeNotices::quietly('transfers.create', fn () => $this->inner->createTransfer($params, $idempotencyKey));
     }
 
+    public function reverseTransfer(string $transferId, array $params, string $idempotencyKey): array
+    {
+        return StripeNotices::quietly('transfers.reversals.create', fn () => $this->inner->reverseTransfer($transferId, $params, $idempotencyKey));
+    }
+
+    public function createRefund(array $params, string $idempotencyKey): array
+    {
+        return StripeNotices::quietly('refunds.create', fn () => $this->inner->createRefund($params, $idempotencyKey));
+    }
+
+    public function listRefunds(int $since, int $max = 300): array
+    {
+        return StripeNotices::quietly('refunds.list', fn () => $this->inner->listRefunds($since, $max));
+    }
+
     public function retrieveBalance(): array
     {
         return StripeNotices::quietly('balance.retrieve', fn () => $this->inner->retrieveBalance());

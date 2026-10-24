@@ -203,6 +203,81 @@ class FakeStripeGateway implements StripeGateway
         });
     }
 
+    /** Next reversal / refund fails with this, once per entry: [message, definite = true]. */
+    public array $reversalFailures = [];
+
+    public array $refundFailures = [];
+
+    /** @var list<array> Refunds Stripe "has", for reconciliation and webhooks. */
+    public array $refunds = [];
+
+    /** Status the next refunds come back with (Stripe test mode: succeeded). */
+    public string $refundStatus = 'succeeded';
+
+    /**
+     * Like Stripe (trial of 2026-10-24): the reversal is added to the
+     * transfer's reversals list, newest first, with its metadata, and
+     * amount_reversed adds up. Refuses more than is left on the transfer.
+     */
+    public function reverseTransfer(string $transferId, array $params, string $idempotencyKey): array
+    {
+        return $this->remember($idempotencyKey, function () use ($transferId, $params) {
+            $this->calls[] = ['reversal', ['transfer' => $transferId] + $params];
+            $this->failIfTold($this->reversalFailures);
+
+            $index = array_search($transferId, array_column($this->transfers, 'id'), true);
+            if ($index === false) {
+                throw new StripeGatewayException('Stripe refused the request (resource_missing). Stripe says: No such transfer.');
+            }
+            $transfer = &$this->transfers[$index];
+            $transfer['amount_reversed'] ??= 0;
+            if ($params['amount'] > $transfer['amount'] - $transfer['amount_reversed']) {
+                throw new StripeGatewayException('Stripe refused the request (parameter_invalid_integer, field amount). Stripe says: Amount is greater than the transfer amount left.');
+            }
+
+            $reversal = ['id' => 'trr_test_'.$this->next(), 'object' => 'transfer_reversal', 'amount' => $params['amount'], 'currency' => 'usd',
+                'transfer' => $transferId, 'metadata' => $params['metadata'] ?? [], 'created' => time()];
+            $transfer['amount_reversed'] += $params['amount'];
+            $transfer['reversed'] = $transfer['amount_reversed'] === $transfer['amount'];
+            $data = $transfer['reversals']['data'] ?? [];
+            array_unshift($data, $reversal);
+            $transfer['reversals'] = ['object' => 'list', 'data' => $data, 'total_count' => count($data)];
+
+            return $reversal;
+        });
+    }
+
+    public function createRefund(array $params, string $idempotencyKey): array
+    {
+        return $this->remember($idempotencyKey, function () use ($params) {
+            $this->calls[] = ['refund', $params];
+            $this->failIfTold($this->refundFailures);
+
+            return $this->refunds[] = ['id' => 're_test_'.$this->next(), 'object' => 'refund', 'amount' => $params['amount'], 'currency' => 'usd',
+                'payment_intent' => $params['payment_intent'], 'status' => $this->refundStatus, 'metadata' => $params['metadata'] ?? [], 'created' => time()];
+        });
+    }
+
+    public function listRefunds(int $since, int $max = 300): array
+    {
+        return $this->refunds;
+    }
+
+    /** The transfer Stripe "has" with this id, as a webhook would carry it. */
+    public function transfer(string $id): array
+    {
+        return collect($this->transfers)->firstWhere('id', $id) ?? throw new StripeGatewayException('No such transfer.');
+    }
+
+    private function failIfTold(array &$failures): void
+    {
+        if ($failures !== []) {
+            [$message, $definite] = array_shift($failures) + [1 => true];
+
+            throw new StripeGatewayException($message, definite: $definite);
+        }
+    }
+
     public function retrieveBalance(): array
     {
         $this->calls[] = ['balance', []];

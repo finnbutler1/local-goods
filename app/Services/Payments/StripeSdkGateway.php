@@ -106,6 +106,21 @@ class StripeSdkGateway implements StripeGateway
         return $this->call('transfers.create', fn () => $this->client()->transfers->create($params, ['idempotency_key' => $idempotencyKey]));
     }
 
+    public function reverseTransfer(string $transferId, array $params, string $idempotencyKey): array
+    {
+        return $this->call('transfers.reversals.create', fn () => $this->client()->transfers->createReversal($transferId, $params, ['idempotency_key' => $idempotencyKey]));
+    }
+
+    public function createRefund(array $params, string $idempotencyKey): array
+    {
+        return $this->call('refunds.create', fn () => $this->client()->refunds->create($params, ['idempotency_key' => $idempotencyKey]));
+    }
+
+    public function listRefunds(int $since, int $max = 300): array
+    {
+        return $this->call('refunds.list', fn () => $this->collect($this->client()->refunds->all(['created' => ['gte' => $since], 'limit' => 100]), $max), list: true);
+    }
+
     public function retrieveBalance(): array
     {
         return $this->call('balance.retrieve', fn () => $this->client()->balance->retrieve());
