@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\SalesTax;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use LogicException;
  */
 class MerchantProduct extends Model
 {
-    protected $fillable = ['merchant_id', 'name', 'price_cents', 'description', 'position', 'is_available'];
+    protected $fillable = ['merchant_id', 'name', 'price_cents', 'description', 'position', 'is_available', 'tax_category'];
 
     protected function casts(): array
     {
@@ -34,6 +35,12 @@ class MerchantProduct extends Model
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    /** prepared_food, general or exempt (ADR 0027); the merchant's default if never set. */
+    public function taxCategory(): string
+    {
+        return $this->tax_category ?? SalesTax::defaultFor($this->merchant);
     }
 
     /** @param  Builder<self>  $query */
