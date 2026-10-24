@@ -53,6 +53,9 @@
                     @foreach ([
                         ['Purchases paid by card', $report['ledger']['purchase_cents'], $report['ledger']['purchases'], $report['stripe']['purchase_cents'], $report['stripe']['purchases']],
                         ['Transfers to merchants', $report['ledger']['transfer_cents'], $report['ledger']['transfers'], $report['stripe']['transfer_cents'], $report['stripe']['transfers']],
+                        // Refunds to employers' cards (ADR 0028): shown once there are any.
+                        ...($report['ledger']['refunds'] + $report['stripe']['refunds'] > 0
+                            ? [['Refunds to employers\' cards', $report['ledger']['refund_cents'], $report['ledger']['refunds'], $report['stripe']['refund_cents'], $report['stripe']['refunds']]] : []),
                     ] as [$label, $ours, $ourCount, $theirs, $theirCount])
                         <tr>
                             <th scope="row" data-primary class="px-5 py-3 font-semibold sm:px-6">{{ $label }}</th>
@@ -61,6 +64,9 @@
                                 @if ($loop->first && $report['ledger']['fee_cents'] > 0)
                                     {{-- Only when the platform fee is on (ADR 0021). --}}
                                     <span class="block text-sm text-muted" data-fee-split>credits {{ Money::format($report['ledger']['credit_cents']) }} + platform fees {{ Money::format($report['ledger']['fee_cents']) }}</span>
+                                @endif
+                                @if ($loop->index === 1 && $report['ledger']['refund_reversal_cents'] > 0)
+                                    <span class="block text-sm text-muted" data-refund-reversals>after {{ Money::format($report['ledger']['refund_reversal_cents']) }} pulled back for refunds</span>
                                 @endif
                             </td>
                             <td data-label="Stripe" class="px-5 py-3 text-right">{{ Money::format($theirs) }} <span class="text-sm text-muted">({{ $theirCount }})</span></td>
@@ -75,7 +81,7 @@
                     @endforeach
                     <tr>
                         <th scope="row" data-primary class="px-5 py-3 font-semibold sm:px-6">Balance held by Stripe</th>
-                        <td data-label="Local Goods ledger" class="px-5 py-3 text-right">{{ Money::format($report['expected_balance_cents']) }} <span class="block text-sm text-muted">paid minus transferred</span></td>
+                        <td data-label="Local Goods ledger" class="px-5 py-3 text-right">{{ Money::format($report['expected_balance_cents']) }} <span class="block text-sm text-muted">paid minus transferred{{ $report['ledger']['refund_cents'] > 0 ? ' and refunded' : '' }}</span></td>
                         <td data-label="Stripe" class="px-5 py-3 text-right">{{ Money::format($report['stripe']['balance_cents']) }} <span class="block text-sm text-muted">{{ Money::format($report['stripe']['available_cents']) }} available now</span></td>
                         <td data-label="Match?" class="px-5 py-3"><x-badge tone="neutral">For information</x-badge></td>
                     </tr>
@@ -108,7 +114,7 @@
                 <h2 id="other-env-heading" class="text-xl font-semibold">From another environment, not counted</h2>
                 <p class="mt-2 text-muted">
                     {{ $report['other']['payments'] }} {{ Str::plural('payment', $report['other']['payments']) }} ({{ Money::format($report['other']['payment_cents']) }})
-                    and {{ $report['other']['transfers'] }} {{ Str::plural('transfer', $report['other']['transfers']) }} ({{ Money::format($report['other']['transfer_cents']) }})
+                    and {{ $report['other']['transfers'] }} {{ Str::plural('transfer', $report['other']['transfers']) }} ({{ Money::format($report['other']['transfer_cents']) }})@if ($report['other']['refunds'] > 0), plus {{ $report['other']['refunds'] }} {{ Str::plural('refund', $report['other']['refunds']) }} ({{ Money::format($report['other']['refund_cents']) }}),@endif
                     in this Stripe account were made by another copy of Local Goods (for example local development sharing the sandbox), or before objects were tagged, and this database has no record of them. They are left out of every total above.
                 </p>
                 <ul class="mt-3 list-disc space-y-2 pl-5 text-muted">
@@ -178,7 +184,7 @@
         <h2 id="simulated-heading" class="flex flex-wrap items-center gap-2 text-xl font-semibold">Not part of this check <x-money-mode mode="simulated" /></h2>
         <p class="mt-2 text-muted">
             {{ $report['simulated']['purchases'] }} simulated {{ Str::plural('purchase', $report['simulated']['purchases']) }} ({{ Money::format($report['simulated']['purchase_cents']) }})
-            and {{ $report['simulated']['payouts'] }} simulated {{ Str::plural('payout', $report['simulated']['payouts']) }} ({{ Money::format($report['simulated']['payout_cents']) }}):
+            and {{ $report['simulated']['payouts'] }} simulated {{ Str::plural('payout', $report['simulated']['payouts']) }} ({{ Money::format($report['simulated']['payout_cents']) }})@if ($report['simulated']['refunds'] > 0), plus {{ $report['simulated']['refunds'] }} simulated {{ Str::plural('refund', $report['simulated']['refunds']) }} ({{ Money::format($report['simulated']['refund_cents']) }})@endif:
             seeded demo history and anything paid while Stripe was off. They are in the ledger with no money behind them.
         </p>
     </x-card>
