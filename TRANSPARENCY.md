@@ -46,6 +46,11 @@ with and without items. Using products to catch abuse would be a new
 signal, so a new prompt version and a fresh unseen holdout. Only the
 fictional demo merchants have menus; real DC businesses never do.
 
+Since sales tax display ([ADR 0027](docs/adr/0027-dc-sales-tax-shown-at-redemption.md)),
+the total of a menu order includes DC tax on its items, and that total is
+what the AI scores. Tax itself is never sent to it (see "Sales tax at
+checkout" below).
+
 ### Paying in person: what the AI does and doesn't see
 
 Employees can also pay at the counter with a one-time pay code that the
@@ -75,6 +80,79 @@ payment's own merchant (or a BID or platform admin) may record a cancel;
 the employee can't, and their screen tells them the shop can. It is
 recorded as a cancel, not as a fraud decision, and like every review
 decision it is never used as an eval label or in adjudication.
+
+### Sales tax at checkout
+
+When an employee pays from a merchant's menu, the wallet shows the DC sales
+tax before they pay, for example "Latte $5.75, DC meals tax 10% $0.58,
+total $6.33" ([ADR 0027](docs/adr/0027-dc-sales-tax-shown-at-redemption.md)).
+No AI is involved.
+
+**How it's calculated.** Each menu product has a tax category, which its
+merchant can change: prepared food and drinks, general merchandise and
+taxable services, or not taxed. Tax is worked out per category, on that
+category's subtotal, rounded half up to the cent, in whole cents only, at
+the rate in effect at that moment. A typed-in amount (alone, or as an
+"Other amount" next to menu items) is the shop's own total with any tax
+already in it, so nothing is added. The rate used is saved on each
+redemption, so a later rate change never rewrites a receipt. Redemptions
+from before tax display say "Tax not itemized (before tax display)".
+
+**The rates and where they come from.** Checked on 2026-10-24 against DC's
+Office of Tax and Revenue (OTR) and the DC Code, and kept in
+`config/tax.php` with the date each took effect:
+
+| Category | Rate | From |
+|---|---|---|
+| Prepared food and drinks ("DC meals tax") | 10% | in effect on 2025-10-01 |
+| General merchandise and taxable services | 6% | 2025-10-01 |
+| General merchandise and taxable services | 7% | 2027-10-01 |
+| Not taxed (for example groceries, most personal services) | 0% | 2025-10-01 |
+
+- [OTR Sales and Use Tax FAQs](https://otr.cfo.dc.gov/page/sales-and-use-tax-faqs):
+  food and drink prepared for immediate consumption at 10%, the general
+  rate at 6%, and "The general sales tax rate remains 6% through
+  September 30, 2027."
+- [OTR notice of October 1, 2025 tax changes](https://otr.cfo.dc.gov/release/notice-oct-1-2025-tax-changes):
+  its banner says the increase to 7% is postponed to that date. The older
+  body text of the same notice still says 7% from October 1, 2026; we
+  follow the newer banner and FAQ, and will check again before
+  October 2027.
+- [OTR taxable and non-taxable services](https://otr.cfo.dc.gov/page/taxable-and-non-taxable-services):
+  health-club services are taxed at the general rate, so the demo cycle
+  studio's classes are taxed.
+- [DC Code § 47-2001](https://code.dccouncil.gov/us/dc/council/code/sections/47-2001):
+  groceries (SNAP "eligible foods") and personal service transactions are
+  not retail sales, so salons start as not taxed. No OTR page says this
+  about salons directly.
+
+Not modelled: DC's soft drink rate and the rental vehicle, off-premises
+alcohol, lodging and parking rates; no demo menu needs them. Two demo
+items are judgment calls: the deli's fountain drink is taxed as part of a
+prepared meal, and the cycle studio's bottled water is not taxed as a
+grocery item.
+
+**Where the money goes.** The total (subtotal plus tax) is what the
+employee's credits pay, what the ledger records, what the merchant is owed
+and what a Stripe test-mode transfer sends, exactly as for any amount. The
+ledger rules, reconciliation and the gate on transfers didn't change.
+
+**The AI.** Redemption Fraud Detection sees the amount charged, which for a
+menu order now includes tax. It never sees tax, subtotal or category: a
+test checks that a taxed menu order and a typed-in amount of the same
+total give the AI identical input. One side effect, documented rather than
+changed (the prompt is frozen): the "compared with this employee's usual
+amount" signal now compares new taxed totals with older amounts, a
+difference of at most the 10% rate.
+
+**What this is and isn't.** It is a display for receipts and records, at
+DC's published rates. It is not tax advice. The merchant files and remits
+DC sales tax, never Local Goods, and the merchant dashboard says so next
+to "Tax collected" (cleared menu orders, this month and last, plus a CSV).
+Each product's category comes with "Confirm this with your accountant."
+The employer dashboard carries one line with no numbers: "Credits that
+work like cash are generally taxable wages for employees. Confirm the
+treatment with your tax adviser."
 
 ### What Claude decides
 

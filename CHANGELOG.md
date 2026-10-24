@@ -3,6 +3,36 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-24: DC sales tax shown at checkout
+
+- **See the tax before you pay.** Ordering from a menu, each item shows its
+  DC tax ("+ DC meals tax 10%" or "not taxed"), and the total reads
+  subtotal, each tax line and the total, for example $5.75 + $0.58 =
+  $6.33, in both Order to go and Pay in person
+  ([ADR 0027](docs/adr/0027-dc-sales-tax-shown-at-redemption.md)). The
+  confirmation, recent redemptions and the pay code show it too.
+- **Typed-in amounts stay as typed.** An amount you type is the shop's own
+  total, "Amount includes any tax charged by the shop."; no tax is added.
+- **Merchants:** every redemption shows its subtotal and tax, the cashier's
+  pay code check shows subtotal, tax and total before Confirm, a **Tax
+  collected** card shows this month and last ("For your records. Your
+  business files and remits DC sales tax; Local Goods does not."), and
+  **Download all redemptions** gives a CSV with subtotal, tax and total.
+  Each menu product has a tax category, with "Confirm this with your
+  accountant."
+- **Employers** see one line: "Credits that work like cash are generally
+  taxable wages for employees. Confirm the treatment with your tax
+  adviser."
+- **Honest about the source.** Rates come from DC's Office of Tax and
+  Revenue, checked on 2026-10-24, kept by date in `config/tax.php`, and
+  saved on each redemption so a later change never rewrites a receipt.
+  Older redemptions say "Tax not itemized (before tax display)". The AI,
+  ledger rules, Stripe transfers and reconciliation are unchanged: they
+  all use the total, as before.
+- Smaller fixes: a held order's "Waiting for review" badge no longer
+  pushes the merchant's list sideways on a phone, and the judges' sample
+  of a checked pay code adds up.
+
 ## 2026-10-24: Built for phones first
 
 - **Tables become cards on phones.** Below 640px every table (admin

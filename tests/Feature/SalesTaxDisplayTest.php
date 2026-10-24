@@ -113,6 +113,20 @@ class SalesTaxDisplayTest extends TestCase
             ->assertSeeInOrder(['$12.65', '2× Latte', 'Subtotal', '$11.50', 'DC meals tax 10%', '$1.15', 'Total', '$12.65']);
     }
 
+    public function test_nothing_says_tax_free(): void
+    {
+        $files = [...glob(resource_path('views/**/*.blade.php')), ...glob(resource_path('views/*/*/*.blade.php')), ...glob(resource_path('views/*.blade.php')),
+            base_path('README.md'), base_path('TRANSPARENCY.md'), base_path('CHANGELOG.md'), base_path('config/tax.php'),
+            base_path('docs/adr/0027-dc-sales-tax-shown-at-redemption.md')];
+
+        foreach ($files as $file) {
+            $this->assertDoesNotMatchRegularExpression('/tax[\s-]?free/i', file_get_contents($file), $file);
+        }
+
+        $this->signIn(Role::Employee);
+        $this->get('/employee?merchant='.$this->grind()->id)->assertOk()->assertDontSee('tax-free')->assertDontSee('tax free');
+    }
+
     public function test_the_judges_sample_pay_code_adds_up(): void
     {
         $this->signIn(Role::Judge);
