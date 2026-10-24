@@ -127,7 +127,7 @@ class MerchantPayInPersonTest extends TestCase
         $this->post(route('merchant.pay-code.confirm', $payCode))->assertSessionHasErrors(['pay_code' => PayCodes::NOT_VALID]);
         $this->post(route('merchant.pay-code.decline', $payCode))->assertSessionHasErrors(['pay_code' => PayCodes::NOT_VALID]);
         $this->assertSame(PayCode::STATUS_ACTIVE, $payCode->fresh()->status);
-        $this->assertSame(0, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->count());
+        $this->assertSame(0, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->where('scored_by', '!=', 'seed')->count());
     }
 
     public function test_another_merchant_gets_code_not_valid_and_nothing_else(): void

@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
+use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Services\DemoResetter;
 use Database\Seeders\DatabaseSeeder;
@@ -129,5 +130,31 @@ class DemoSeedTest extends TestCase
         app(DemoResetter::class)->reset();
 
         $this->assertSame($first, $fingerprint());
+    }
+
+    public function test_one_completed_in_person_payment_is_seeded_with_its_used_pay_code(): void
+    {
+        $inPerson = Redemption::with(['employee', 'merchant', 'items'])->where('channel', Redemption::CHANNEL_IN_PERSON)->sole();
+
+        $this->assertContains($inPerson->employee->display_name, DemoHistorySeeder::IN_PERSON_EMPLOYEES);
+        $this->assertSame(DemoHistorySeeder::IN_PERSON_MERCHANT, $inPerson->merchant->name);
+        $this->assertTrue($inPerson->isApproved());
+        $this->assertSame(DemoHistorySeeder::IN_PERSON_CENTS, $inPerson->amount_cents);
+        $this->assertNull($inPerson->itemsSummary());
+        $this->assertSame(1, CreditLedgerEntry::where('redemption_id', $inPerson->id)->where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->count());
+
+        $payCode = PayCode::where('redemption_id', $inPerson->id)->sole();
+        $this->assertSame(PayCode::STATUS_USED, $payCode->status);
+        $this->assertSame($inPerson->amount_cents, $payCode->amount_cents);
+        $this->assertSame(0, PayCode::where('status', PayCode::STATUS_ACTIVE)->count());
+
+        // Never Jordan, never part of a planted pattern; Jordan keeps the same 12.
+        $this->assertSame([], array_intersect(DemoHistorySeeder::IN_PERSON_EMPLOYEES, [DemoHistorySeeder::PATTERN_A_EMPLOYEE, ...DemoHistorySeeder::PATTERN_B_EMPLOYEES]));
+        $this->assertSame(12, Employee::orderBy('id')->firstOrFail()->redemptions()->where('channel', Redemption::CHANNEL_TO_GO)->count());
+        $this->assertSame(12, Employee::orderBy('id')->firstOrFail()->redemptions()->count());
+
+        app(DemoResetter::class)->reset();
+        $this->assertSame(1, Redemption::where('channel', Redemption::CHANNEL_IN_PERSON)->count());
+        $this->assertSame(1, PayCode::count());
     }
 }

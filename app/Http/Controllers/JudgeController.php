@@ -37,7 +37,7 @@ class JudgeController extends Controller
         return [
             [
                 'title' => 'Employee wallet',
-                'look_for' => 'The phone is the card: a balance funded by the employer, spent only at independent merchants in the BID. Confirming is switched off for reviewers; step 2 shows redemptions the AI already held.',
+                'look_for' => 'The phone is the card: a balance funded by the employer, spent only at independent merchants in the BID. Confirming is switched off for reviewers; step 2 shows redemptions the AI already held. Try paying in person: open the wallet\'s Pay in person tab, then view as the merchant and enter the code. (Reviewers see a sample code and a disabled code field; the demo employee and merchant logins do it for real.)',
                 'url' => route('judge.view-as', Role::Employee->value),
                 'available' => true,
             ],

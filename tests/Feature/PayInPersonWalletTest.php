@@ -102,7 +102,7 @@ class PayInPersonWalletTest extends TestCase
             ->assertRedirect(route('employee.wallet', ['tab' => 'in-person']).'#pay')
             ->assertSessionHas('status', 'Pay code ready for $11.50 at Farragut Grind. Show it to the cashier.');
 
-        $payCode = PayCode::firstOrFail();
+        $payCode = PayCode::latest('id')->firstOrFail();
         $this->assertSame($entries, CreditLedgerEntry::count());
         $this->assertSame(2 * $latte->price_cents, $payCode->amount_cents);
 
@@ -218,7 +218,7 @@ class PayInPersonWalletTest extends TestCase
     {
         $this->post('/employee/pay-code', ['pay_merchant_id' => $this->grind()->id, 'amount' => '9999'])
             ->assertSessionHasErrorsIn(\App\Http\Controllers\Employee\PayCodeController::ERRORS, ['amount' => 'That is more than the available balance.']);
-        $this->assertSame(0, PayCode::count());
+        $this->assertSame(0, PayCode::where('status', PayCode::STATUS_ACTIVE)->count());
     }
 
     public function test_judges_see_both_tabs_and_a_sample_code_but_cannot_get_one(): void
@@ -235,7 +235,13 @@ class PayInPersonWalletTest extends TestCase
         $this->actingAs($judge)->get('/employee?tab=in-person&pay_merchant='.$this->grind()->id)->assertOk()
             ->assertSee("Read-only: judges can't get pay codes.", false);
         $this->actingAs($judge)->post('/employee/pay-code', ['pay_merchant_id' => $this->grind()->id, 'amount' => '5'])->assertForbidden();
-        $this->assertSame(0, PayCode::count());
+        $this->assertSame(0, PayCode::where('status', PayCode::STATUS_ACTIVE)->count());
         $this->assertSame(0, PayCode::where('code_hash', PayCodes::hash('K7M4PQ'))->count());
+    }
+
+    public function test_the_judge_tour_says_how_to_try_paying_in_person(): void
+    {
+        $this->actingAs($this->signIn(Role::Judge))->get('/judge')->assertOk()
+            ->assertSee("Try paying in person: open the wallet's Pay in person tab, then view as the merchant and enter the code.");
     }
 }
