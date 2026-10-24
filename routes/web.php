@@ -133,7 +133,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/merchant/pay-code/{payCode}/decline', [MerchantPayCodeController::class, 'decline'])->middleware('throttle:20,1,merchant.pay-code.decline')->name('merchant.pay-code.decline');
         // Request a correction (ADR 0028): "Customer was charged wrongly" and "I wasn't paid". Requests only.
         Route::post('/merchant/redemptions/{redemption}/correction', [CorrectionRequestController::class, 'merchantRedemption'])->middleware('throttle:5,1,merchant.correction.redemption')->name('merchant.correction.redemption');
-        Route::post('/merchant/payouts/{payout}/correction', [CorrectionRequestController::class, 'merchantPayout'])->middleware('throttle:5,1,merchant.correction.payout')->name('merchant.correction.payout');
+        Route::post('/merchant/payouts/{merchantPayout}/correction', [CorrectionRequestController::class, 'merchantPayout'])->middleware('throttle:5,1,merchant.correction.payout')->name('merchant.correction.payout');
         Route::post('/merchant/redemptions/{redemption}/cancel', [MerchantPayCodeController::class, 'cancelHeld'])->middleware('throttle:20,1,merchant.redemption.cancel')->name('merchant.redemption.cancel');
         // Stripe Express onboarding, test mode (ADR 0015). Only the merchant's own login; GETs create nothing.
         Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1,merchant.stripe.onboard')->name('merchant.stripe.onboard');
