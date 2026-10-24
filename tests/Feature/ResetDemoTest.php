@@ -76,7 +76,7 @@ class ResetDemoTest extends TestCase
         // Adding a table here (users, sessions, feedback...) would let Reset
         // demo delete real data. Change this list only on purpose.
         $this->assertSame(
-            ['credit_ledger_entries', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
+            ['pay_codes', 'credit_ledger_entries', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
     }

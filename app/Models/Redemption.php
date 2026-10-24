@@ -18,10 +18,16 @@ class Redemption extends Model
     /** Denied by a person after a hold (shown as "Denied"; the stored value predates the word). */
     public const STATUS_REJECTED = 'rejected';
 
+    /** Ordered ahead and shown at the counter (the wallet's "Order to go" tab). */
+    public const CHANNEL_TO_GO = 'to_go';
+
+    /** Paid at the counter with a pay code the merchant confirmed (ADR 0026). */
+    public const CHANNEL_IN_PERSON = 'in_person';
+
     protected $fillable = [
         'employee_id', 'merchant_id', 'amount_cents', 'status', 'risk_score',
         'ai_decision', 'ai_explanation', 'signals', 'scored_by', 'created_at',
-        'reviewed_by', 'reviewed_by_user_id', 'reviewed_at',
+        'reviewed_by', 'reviewed_by_user_id', 'reviewed_at', 'channel',
     ];
 
     protected function casts(): array
@@ -73,6 +79,20 @@ class Redemption extends Model
         return $this->ai_decision === FraudVerdict::CLEAR
             && ! in_array($this->scored_by, ['fallback', 'seed'], true)
             && $this->reviewed_at === null;
+    }
+
+    public function isInPerson(): bool
+    {
+        return $this->channel === self::CHANNEL_IN_PERSON;
+    }
+
+    /**
+     * "To go" or "In person". Display only (ADR 0026): the channel is never
+     * sent to Redemption Fraud Detection.
+     */
+    public function channelLabel(): string
+    {
+        return $this->isInPerson() ? 'In person' : 'To go';
     }
 
     public function isApproved(): bool
