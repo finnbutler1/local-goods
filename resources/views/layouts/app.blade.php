@@ -14,7 +14,7 @@
 
     <header class="relative z-10">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-            <a href="{{ route('home') }}" class="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-lg" aria-label="Local Goods home">
+            <a href="{{ route('home') }}" class="shrink-0 rounded-lg max-sm:grid max-sm:min-h-11 max-sm:min-w-11 max-sm:place-items-center" aria-label="Local Goods home">
                 {{-- The mark alone on phones, so the header fits 320px. --}}
                 <x-logo :mark-only="true" class="h-8 w-auto sm:hidden" />
                 <x-logo class="hidden h-9 w-auto sm:block" />
