@@ -135,6 +135,14 @@ class MerchantTaxTest extends TestCase
         $this->assertSame(825, PayCode::findOrFail($code->id)->amount_cents);
     }
 
+    public function test_the_judges_sample_review_adds_up_with_tax(): void
+    {
+        $this->signIn(Role::Judge);
+
+        $this->get('/merchant')->assertOk()
+            ->assertSeeInOrder(['Sample, after a code is checked', '$12.65', '2× Latte', 'Subtotal', '$11.50', 'DC meals tax 10%', '$1.15', 'Total', '$12.65']);
+    }
+
     public function test_the_csv_has_subtotal_tax_and_total_with_initials_only(): void
     {
         $order = $this->orderDripCoffee(1);
