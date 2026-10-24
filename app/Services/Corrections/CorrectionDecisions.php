@@ -199,6 +199,49 @@ class CorrectionDecisions
     }
 
     /**
+     * "I wasn't paid": the merchant is owed a Stripe transfer the ledger
+     * shows but never got. Reuses the existing payout path (the same as
+     * Reconciliation → Retry owed transfers): the payout row itself is sent,
+     * for exactly its amount, through MerchantPayouts and the TransferGate.
+     * No new kind of Stripe transfer. A sent or simulated payout has nothing
+     * owed; one reversed in the Stripe dashboard is sorted out by hand.
+     */
+    public function approveMerchantAdjustment(Correction $correction, User $by, string $reason): Correction
+    {
+        $reason = $this->checkDecider($by, $reason);
+        $this->checkType($correction, Correction::TYPE_MERCHANT_ADJUSTMENT);
+
+        $correction = DB::transaction(function () use ($correction, $by, $reason) {
+            $this->claim($correction, $by, $reason);
+            $payout = MerchantPayout::whereKey($correction->merchant_payout_id)->lockForUpdate()->firstOrFail();
+
+            if ($payout->status === MerchantPayout::STATUS_REVERSED) {
+                throw new InvalidArgumentException(self::REVERSED_IN_DASHBOARD);
+            }
+
+            if (! in_array($payout->status, MerchantPayout::SENDABLE_STATUSES, true)) {
+                throw new InvalidArgumentException($payout->status === MerchantPayout::STATUS_SENT
+                    ? 'This payout was transferred ('.$payout->stripe_transfer_id.'), so nothing is owed on it. Reject the request with what you found.'
+                    : 'Simulated payouts move no real money, so there is nothing to send.');
+            }
+
+            if ($payout->amount_cents > $payout->merchant->payableCents()) {
+                throw new InvalidArgumentException('The ledger shows less than '.Money::format($payout->amount_cents).' owed to this merchant, so nothing is sent.');
+            }
+
+            $correction->update(['amount_cents' => $payout->amount_cents, 'status' => Correction::STATUS_PROCESSING]);
+            $correction->actions()->create(['kind' => CorrectionAction::KIND_ADJUSTMENT_TRANSFER, 'merchant_payout_id' => $payout->id,
+                'amount_cents' => $payout->amount_cents, 'status' => CorrectionAction::STATUS_PENDING]);
+
+            return $correction;
+        });
+
+        $this->processor->run($correction->refresh());
+
+        return $correction->refresh();
+    }
+
+    /**
      * Stop a failed correction: nothing more is sent, and an employer
      * refund's credits that never went back are the employer's again. Not
      * while any part's outcome at Stripe is still unknown (a lost answer):

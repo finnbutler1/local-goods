@@ -4,7 +4,9 @@ namespace App\Services\Corrections;
 
 use App\Models\Correction;
 use App\Models\CorrectionAction;
+use App\Models\MerchantPayout;
 use App\Services\CreditLedger;
+use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeGatewayException;
 use App\Support\Money;
@@ -27,7 +29,7 @@ use Throwable;
  */
 class CorrectionProcessor
 {
-    public function __construct(private StripeGateway $stripe, private CreditLedger $ledger) {}
+    public function __construct(private StripeGateway $stripe, private CreditLedger $ledger, private MerchantPayouts $payouts) {}
 
     /**
      * One key per action and attempt: this server, the correction, the
@@ -58,7 +60,7 @@ class CorrectionProcessor
             }
 
             try {
-                $this->send($action);
+                $action->kind === CorrectionAction::KIND_ADJUSTMENT_TRANSFER ? $this->sendOwedPayout($action) : $this->send($action);
             } catch (Throwable $e) {
                 Log::error('Correction step failed; nothing was recorded', ['correction' => $correction->id, 'action' => $action->id, 'type' => class_basename($e)]);
                 $this->fail($action, 'Local Goods could not finish this step. Nothing was recorded; retry it.', definite: false);
@@ -115,6 +117,45 @@ class CorrectionProcessor
         }
 
         $action->update(['stripe_id' => $made['id'], 'failure_reason' => null]);
+    }
+
+    /**
+     * A merchant adjustment: send its owed payout row through the existing
+     * path (MerchantPayouts::send, the TransferGate, the row's own
+     * idempotency key), then reflect what happened to the row.
+     */
+    private function sendOwedPayout(CorrectionAction $action): void
+    {
+        $action->update(['status' => CorrectionAction::STATUS_PROCESSING]);
+        $this->payouts->send($action->payout->merchant);
+        $payout = $action->payout->fresh();
+
+        match ($payout->status) {
+            MerchantPayout::STATUS_SENT => DB::transaction(fn () => $this->payoutSent($payout, now())),
+            MerchantPayout::STATUS_OWED => $action->update(['failure_reason' => 'Waiting for the merchant to finish Stripe onboarding; it is sent as soon as they do.']),
+            MerchantPayout::STATUS_FAILED => $action->update(['status' => CorrectionAction::STATUS_FAILED, 'failure_reason' => $payout->failure_reason]),
+            default => $action->update(['failure_reason' => $payout->failure_reason ?? 'Sending; Stripe has not answered yet.']),
+        };
+    }
+
+    /**
+     * A payout row was sent (by a merchant adjustment, Retry, or the
+     * transfer.created webhook): its adjustment action is done. The ledger
+     * line is the payout's own (CreditLedger::recordStripeTransfer).
+     */
+    public function payoutSent(MerchantPayout $payout, Carbon $at): void
+    {
+        if ($payout->status !== MerchantPayout::STATUS_SENT) {
+            return;
+        }
+
+        $actions = CorrectionAction::where('kind', CorrectionAction::KIND_ADJUSTMENT_TRANSFER)->where('merchant_payout_id', $payout->id)
+            ->where('status', '!=', CorrectionAction::STATUS_SUCCEEDED)->get();
+
+        foreach ($actions as $action) {
+            $action->update(['status' => CorrectionAction::STATUS_SUCCEEDED, 'stripe_id' => $payout->stripe_transfer_id, 'completed_at' => $at, 'failure_reason' => null]);
+            self::syncStatus($action->correction);
+        }
     }
 
     /** A refusal (definite: Stripe made nothing, next try gets a new key) or a lost answer (same key next time). */
