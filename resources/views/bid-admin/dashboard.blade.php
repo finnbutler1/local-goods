@@ -182,7 +182,11 @@
                         @endcan
                     @elseif ($redemption->reviewed_by)
                         <p class="mt-4 text-sm text-muted">
-                            {{ $redemption->isApproved() ? 'The reserved credits were spent.' : 'Denied: the credits went back to the '.($redemption->decision?->credit_returned_to ?? 'employee').'.' }}
+                            {{ match (true) {
+                                $redemption->isApproved() => 'The reserved credits were spent.',
+                                $redemption->isCancelled() => $redemption->cancelledLabel().' at the counter (paid another way, not a fraud denial): the credits went back to the employee.',
+                                default => 'Denied: the credits went back to the '.($redemption->decision?->credit_returned_to ?? 'employee').'.',
+                            } }}
                         </p>
                     @endif
                 </x-card>

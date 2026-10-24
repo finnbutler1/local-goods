@@ -46,7 +46,10 @@ class MerchantDashboardController extends Controller
         return view('dashboards.merchant', [
             'merchant' => $merchant,
             'lookedUp' => $lookedUp,
-            'payResult' => $merchant->redemptions()->with(['employee', 'items'])->find($request->session()->get(PayCodeController::RESULT_KEY)),
+            'payResult' => $merchant->redemptions()->with(['employee', 'items', 'decision'])->find($request->session()->get(PayCodeController::RESULT_KEY)),
+            // Held in-person payments stay here with "Cancel this payment" until a BID admin decides (ADR 0026).
+            'heldAtCounter' => (clone $redemptions)->with(['employee', 'items'])->where('channel', Redemption::CHANNEL_IN_PERSON)
+                ->where('status', Redemption::STATUS_UNDER_REVIEW)->latest()->latest('id')->get(),
             'owedCents' => $merchant->payableCents(),
             'owedStripeCents' => $merchant->owedViaStripeCents(),
             'owedSimulatedCents' => $merchant->owedSimulatedCents(),

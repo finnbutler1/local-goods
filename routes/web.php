@@ -79,6 +79,8 @@ Route::middleware('auth')->group(function () {
         // Pay in person (ADR 0026): a one-time code for the merchant to confirm. Getting one moves nothing.
         Route::post('/employee/pay-code', [PayCodeController::class, 'store'])->middleware('throttle:10,1,employee.pay-code.store')->name('employee.pay-code.store');
         Route::post('/employee/pay-code/{payCode}/cancel', [PayCodeController::class, 'cancel'])->middleware('throttle:20,1,employee.pay-code.cancel')->name('employee.pay-code.cancel');
+        // "Cancel this payment" on a held in-person payment: paid another way, credits back (ADR 0026).
+        Route::post('/employee/redemptions/{redemption}/cancel', [PayCodeController::class, 'cancelHeld'])->middleware('throttle:20,1,employee.redemption.cancel')->name('employee.redemption.cancel');
         Route::get('/employee/pay-code/{payCode}/status', [PayCodeController::class, 'status'])->middleware('throttle:90,1,employee.pay-code.status')->name('employee.pay-code.status');
     });
 
@@ -123,6 +125,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/merchant/pay-code/clear', [MerchantPayCodeController::class, 'clear'])->middleware('throttle:30,1,merchant.pay-code.clear')->name('merchant.pay-code.clear');
         Route::post('/merchant/pay-code/{payCode}/confirm', [MerchantPayCodeController::class, 'confirm'])->middleware('throttle:20,1,merchant.pay-code.confirm')->name('merchant.pay-code.confirm');
         Route::post('/merchant/pay-code/{payCode}/decline', [MerchantPayCodeController::class, 'decline'])->middleware('throttle:20,1,merchant.pay-code.decline')->name('merchant.pay-code.decline');
+        Route::post('/merchant/redemptions/{redemption}/cancel', [MerchantPayCodeController::class, 'cancelHeld'])->middleware('throttle:20,1,merchant.redemption.cancel')->name('merchant.redemption.cancel');
         // Stripe Express onboarding, test mode (ADR 0015). Only the merchant's own login; GETs create nothing.
         Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1,merchant.stripe.onboard')->name('merchant.stripe.onboard');
         Route::post('/merchant/stripe/sync', [StripeOnboardingController::class, 'sync'])->middleware('throttle:20,1,merchant.stripe.sync')->name('merchant.stripe.sync');
