@@ -46,6 +46,35 @@ with and without items. Using products to catch abuse would be a new
 signal, so a new prompt version and a fresh unseen holdout. Only the
 fictional demo merchants have menus; real DC businesses never do.
 
+### Paying in person: what the AI does and doesn't see
+
+Employees can also pay at the counter with a one-time pay code that the
+merchant types in and confirms
+([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)). **The AI sees
+exactly the same as for ordering to go.** Confirming makes an ordinary
+redemption: the same anonymous signals, the same prompt, the same hold or
+clear, the same gate on Stripe transfers. Whether it was to go or in
+person is stored for people to see and is never sent to Redemption Fraud
+Detection; a test checks the AI's input is identical either way. The pay
+code itself never reaches the AI, the logs or a URL.
+
+How the codes are kept safe: 6 characters with nothing that reads two
+ways (no 0/O, 1/I/L), 10 minutes, one use, one employee, one merchant and
+one amount. Stored only as a keyed hash plus an encrypted copy, never in
+plain text. A shop that types someone else's code gets the same "Code not
+valid." as for a made-up one, and 5 wrong tries a minute make it wait.
+Nothing moves until the merchant presses Confirm payment, and the balance
+is checked again then.
+
+If the AI holds an in-person payment, both screens say so in neutral words
+and no money moves. If the customer then pays another way, the merchant or
+the employee can press **Cancel this payment**: the credits go back to the
+employee through the same path as a "no purchase happened" denial, no
+transfer ever happens, and it can't be approved later. It is recorded as a
+cancel by the merchant or employee, not as a fraud decision, and like
+every review decision it is never used as an eval label or in
+adjudication.
+
 ### What Claude decides
 
 Claude replies in a fixed JSON format with three things:

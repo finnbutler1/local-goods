@@ -265,6 +265,37 @@ Not checked this time: the menus in Safari (it does not focus clicked
 links; app.js has a guard for that, untested), 320px, and the adjudication
 voting page in the browser (covered by `AccessibilityTest`).
 
+## Pay in person (2026-10-23)
+
+The wallet's two tabs, the code screen and the merchant's Take a payment
+card ([ADR 0026](adr/0026-pay-in-person-with-pay-codes.md)). Checked in
+headless Chrome (a script driving it over the DevTools protocol, on a
+scratch SQLite database, simulated payments, no AI key, so the payment was
+held) at 375px:
+
+- No sideways scroll on the wallet (both tabs, the menu step and the code
+  screen), the merchant dashboard, the review card and the held result.
+- The code "MPY 4ZF" fit inside its card at 375px, and the countdown went
+  from 9:58 to 9:56 two seconds later.
+- Keyboard, by key events in the script: with focus on "Order to go",
+  ArrowRight moved focus to "Pay in person", set `aria-selected="true"`,
+  showed its panel, hid the other and changed the address to
+  `?tab=in-person`; Home went back. End was pressed but not checked.
+- "One more Latte" pressed twice made the in-person total $11.50; the
+  review card read "Amount $11.50 Items 2× Latte Customer J.R.".
+- Screenshots of the code screen in light and dark, and of the merchant's
+  held result, were looked at.
+
+Static checks (`AccessibilityTest`): the in-person menu step, the code
+screen, the judges' sample screen, the cashier's review card, the error
+states of both new forms, and (in `HeldPaymentCancelTest`) the held
+screens with Cancel this payment. Tests check that the code is given to
+screen readers one character at a time, that the countdown is hidden from
+them with a fixed "Expires at" time instead, and that the script speaks
+only twice (one minute left, expired). Not checked: how a screen reader
+actually reads the tabs, the code or the announcements, 320px, and axe on
+these screens.
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session

@@ -3,6 +3,33 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-23: Pay in person with a pay code
+
+- **Two ways to pay.** The wallet now has two tabs: **Order to go** (the
+  same flow as before) and **Pay in person**
+  ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)).
+- **Pay in person:** pick the shop, type the amount or pick from its menu,
+  and get a 6-character code (no 0/O or 1/I/L) with the amount and a
+  10-minute countdown. The cashier types it on the merchant dashboard,
+  sees the amount, the items and your initials, and presses **Confirm
+  payment** or **Decline**. Your phone updates by itself within a few
+  seconds.
+- **Same checks as always:** confirming is an ordinary redemption: the
+  balance is checked again, Redemption Fraud Detection scores it with
+  exactly the same information, and only a cleared one becomes a Stripe
+  test transfer. Nothing moves until the merchant confirms.
+- **Safe codes:** one use, one shop, one amount; the same "Code not
+  valid." for every wrong code; 5 wrong tries a minute and the shop waits;
+  never logged or stored in plain text.
+- **Cancel this payment:** if a held in-person payment is paid another
+  way, the merchant or the employee can cancel it. The credits come back,
+  no money moves, and it shows as "Cancelled by merchant/employee", not as
+  a fraud denial.
+- **To go or In person** is shown on receipts, both histories, Fraud
+  review and reconciliation. The AI never sees it.
+- The demo has one completed in-person payment, and the judge tour says
+  how to try it.
+
 ## 2026-10-23: The Transit lines brand, everywhere
 
 - **New look, light and dark.** Teal route lines, coral local stops and
