@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CorrectionReasons;
 use App\Support\Money;
 use App\Support\TaxBreakdown;
 use Illuminate\Database\Eloquent\Model;
@@ -151,6 +152,11 @@ class Correction extends Model
             self::STATUS_REJECTED => 'Not approved',
             self::STATUS_CLOSED => 'Closed without a refund',
         };
+    }
+
+    public function reasonLabel(): string
+    {
+        return CorrectionReasons::label(CorrectionReasons::contextOf($this), $this->reason_category);
     }
 
     /** The tax part of a refund of menu items, as snapshotted when it was approved; null for a typed-in amount. */

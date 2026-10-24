@@ -14,6 +14,7 @@ use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
+use App\Http\Controllers\CorrectionRequestController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\Employee\PayCodeController;
 use App\Http\Controllers\Employer\EmployerDashboardController;
@@ -24,8 +25,8 @@ use App\Http\Controllers\JudgeLinkController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Merchant\MenuController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
-use App\Http\Controllers\Merchant\RedemptionsExportController;
 use App\Http\Controllers\Merchant\PayCodeController as MerchantPayCodeController;
+use App\Http\Controllers\Merchant\RedemptionsExportController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\StyleguideController;
@@ -81,6 +82,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/employee/pay-code', [PayCodeController::class, 'store'])->middleware('throttle:10,1,employee.pay-code.store')->name('employee.pay-code.store');
         Route::post('/employee/pay-code/{payCode}/cancel', [PayCodeController::class, 'cancel'])->middleware('throttle:20,1,employee.pay-code.cancel')->name('employee.pay-code.cancel');
         Route::get('/employee/pay-code/{payCode}/status', [PayCodeController::class, 'status'])->middleware('throttle:90,1,employee.pay-code.status')->name('employee.pay-code.status');
+        // Request a correction (ADR 0028): moves no money, a platform admin decides.
+        Route::post('/employee/redemptions/{redemption}/correction', [CorrectionRequestController::class, 'employeeRedemption'])->middleware('throttle:5,1,employee.correction.store')->name('employee.correction.store');
     });
 
     Route::middleware('role:bid_admin,platform_admin')->prefix('bid-admin')->name('bid-admin.')->group(function () {
@@ -111,6 +114,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/purchases/{purchase}/status', [EmployerDashboardController::class, 'purchaseStatus'])->middleware('throttle:90,1,employer.purchases.status')->name('purchases.status');
         Route::post('/purchases/{purchase}/cancel', [EmployerDashboardController::class, 'cancelPurchase'])->middleware('throttle:10,1,employer.purchases.cancel')->name('purchases.cancel');
         Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
+        // Refund of unspent credits (ADR 0028): a request only; a platform admin decides.
+        Route::post('/corrections', [CorrectionRequestController::class, 'employerCredits'])->middleware('throttle:5,1,employer.correction.store')->name('correction.store');
     });
     Route::middleware('role:merchant')->group(function () {
         Route::get('/merchant', MerchantDashboardController::class)->name('merchant.dashboard');
@@ -126,6 +131,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/merchant/pay-code/clear', [MerchantPayCodeController::class, 'clear'])->middleware('throttle:30,1,merchant.pay-code.clear')->name('merchant.pay-code.clear');
         Route::post('/merchant/pay-code/{payCode}/confirm', [MerchantPayCodeController::class, 'confirm'])->middleware('throttle:20,1,merchant.pay-code.confirm')->name('merchant.pay-code.confirm');
         Route::post('/merchant/pay-code/{payCode}/decline', [MerchantPayCodeController::class, 'decline'])->middleware('throttle:20,1,merchant.pay-code.decline')->name('merchant.pay-code.decline');
+        // Request a correction (ADR 0028): "Customer was charged wrongly" and "I wasn't paid". Requests only.
+        Route::post('/merchant/redemptions/{redemption}/correction', [CorrectionRequestController::class, 'merchantRedemption'])->middleware('throttle:5,1,merchant.correction.redemption')->name('merchant.correction.redemption');
+        Route::post('/merchant/payouts/{payout}/correction', [CorrectionRequestController::class, 'merchantPayout'])->middleware('throttle:5,1,merchant.correction.payout')->name('merchant.correction.payout');
         Route::post('/merchant/redemptions/{redemption}/cancel', [MerchantPayCodeController::class, 'cancelHeld'])->middleware('throttle:20,1,merchant.redemption.cancel')->name('merchant.redemption.cancel');
         // Stripe Express onboarding, test mode (ADR 0015). Only the merchant's own login; GETs create nothing.
         Route::post('/merchant/stripe/onboard', [StripeOnboardingController::class, 'start'])->middleware('throttle:10,1,merchant.stripe.onboard')->name('merchant.stripe.onboard');

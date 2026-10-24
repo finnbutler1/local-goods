@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Money paid, or owed through Stripe, to a merchant for cleared redemptions.
@@ -84,5 +86,16 @@ class MerchantPayout extends Model
     public function creditPurchase(): BelongsTo
     {
         return $this->belongsTo(CreditPurchase::class);
+    }
+
+    /** Corrections a merchant asked for about this payout ("I wasn't paid", ADR 0028). */
+    public function corrections(): HasMany
+    {
+        return $this->hasMany(Correction::class, 'merchant_payout_id')->where('type', Correction::TYPE_MERCHANT_ADJUSTMENT);
+    }
+
+    public function latestCorrection(): HasOne
+    {
+        return $this->hasOne(Correction::class, 'merchant_payout_id')->where('type', Correction::TYPE_MERCHANT_ADJUSTMENT)->latestOfMany();
     }
 }

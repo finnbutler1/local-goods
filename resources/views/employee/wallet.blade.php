@@ -209,7 +209,7 @@
         <h2 id="recent-heading" class="text-2xl font-semibold text-primary">Recent redemptions</h2>
         <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
             @forelse ($recent as $redemption)
-                <li class="flex items-center justify-between gap-3 px-5 py-4">
+                <li class="flex items-start justify-between gap-3 px-5 py-4">
                     <div class="min-w-0">
                         <p class="font-semibold break-words">{{ $redemption->merchant->name }}</p>
                         @if ($for = $redemption->itemsSummary())
@@ -217,6 +217,11 @@
                         @endif
                         @include('partials.tax-breakdown', ['tax' => $redemption->taxBreakdown(), 'compact' => true, 'class' => 'text-sm text-muted'])
                         <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></p>
+                        @include('partials.correction-request', [
+                            'for' => 'redemption:'.$redemption->id, 'context' => \App\Support\CorrectionReasons::EMPLOYEE_REDEMPTION,
+                            'correction' => $redemption->latestCorrection, 'canAsk' => $redemption->mayAskForRefund(),
+                            'summary' => 'Request a correction', 'action' => route('employee.correction.store', $redemption),
+                        ])
                     </div>
                     <div class="shrink-0 text-right">
                         <p class="tabular font-semibold">{{ Money::format($redemption->amount_cents) }}</p>

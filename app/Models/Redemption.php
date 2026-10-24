@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Services\Corrections\CorrectionLimits;
 use App\Services\Fraud\FraudVerdict;
 use App\Support\Money;
 use App\Support\TaxBreakdown;
@@ -226,5 +227,23 @@ class Redemption extends Model
         };
 
         return $steps;
+    }
+
+    /** Cleared and not yet refunded in full, so its employee or merchant may ask for a refund (ADR 0028). */
+    public function mayAskForRefund(): bool
+    {
+        return $this->isApproved() && CorrectionLimits::redemptionLeftCents($this) > 0;
+    }
+
+    /** Refunds asked for about this redemption (ADR 0028). */
+    public function corrections(): HasMany
+    {
+        return $this->hasMany(Correction::class)->where('type', Correction::TYPE_REDEMPTION_REFUND);
+    }
+
+    /** The newest refund asked for about this, shown on it. */
+    public function latestCorrection(): HasOne
+    {
+        return $this->hasOne(Correction::class)->where('type', Correction::TYPE_REDEMPTION_REFUND)->latestOfMany();
     }
 }

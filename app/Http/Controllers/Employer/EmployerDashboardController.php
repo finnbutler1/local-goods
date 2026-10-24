@@ -71,6 +71,7 @@ class EmployerDashboardController extends Controller
             'returned' => self::returnedCredit($employer),
             'allocationGroups' => self::recentAllocationGroups($employer),
             'employees' => $employees,
+            'refundCorrection' => $employer->latestCorrection,
         ]);
     }
 
