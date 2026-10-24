@@ -48,8 +48,8 @@
                         @if ($split !== '')
                             <h4 class="mt-3 font-sans text-sm font-semibold uppercase tracking-widest text-muted">{{ $splits[$split] ?? $split }}</h4>
                         @endif
-                        <div class="mt-2 scroll-region" role="region" tabindex="0" aria-label="{{ $title }} table">
-                            <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                        <x-rtable :card="false" class="mt-2" label="{{ $title }} table">
+                            <table data-rtable="stack" class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                                 <caption class="sr-only">{{ $title }} {{ $split !== '' ? '('.($splits[$split] ?? $split).')' : '' }}</caption>
                                 <thead>
                                     <tr class="bg-band/60 text-sm text-muted">
@@ -64,12 +64,12 @@
                                 <tbody>
                                     @forelse ($group as $case)
                                         <tr class="border-t border-line/70">
-                                            <th scope="row" class="px-4 py-2 font-semibold">{{ $case->case_id }}</th>
-                                            <td class="px-4 py-2">{{ $splits[$case->split] ?? $case->split }}</td>
-                                            <td class="px-4 py-2">${{ $case->facts['amount'] }} at {{ $case->facts['merchant'] }}, {{ $case->facts['local_time'] }}</td>
-                                            <td class="px-4 py-2">{{ $case->my_label }}</td>
-                                            <td class="px-4 py-2">{{ $case->ai_label }}</td>
-                                            <td class="px-4 py-2 text-right">
+                                            <th scope="row" data-primary class="px-4 py-2 font-semibold">{{ $case->case_id }}</th>
+                                            <td data-label="Split" class="px-4 py-2">{{ $splits[$case->split] ?? $case->split }}</td>
+                                            <td data-label="Redemption" class="px-4 py-2">${{ $case->facts['amount'] }} at {{ $case->facts['merchant'] }}, {{ $case->facts['local_time'] }}</td>
+                                            <td data-label="Your label" class="px-4 py-2">{{ $case->my_label }}</td>
+                                            <td data-label="AI" class="px-4 py-2">{{ $case->ai_label }}</td>
+                                            <td data-label="" class="px-4 py-2 text-right">
                                                 <form method="POST" action="{{ route('admin.adjudication.cases.destroy', $case) }}" data-busy="Removing…">
                                                     @csrf @method('DELETE')
                                                     <x-button type="submit" variant="ghost" size="sm">Remove<span class="sr-only"> {{ $case->case_id }}</span></x-button>
@@ -77,11 +77,11 @@
                                             </td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="6" class="px-4 py-3 text-muted">None.</td></tr>
+                                        <tr><td colspan="6" data-label="" class="px-4 py-3 text-muted">None.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
-                        </div>
+                        </x-rtable>
                     @endforeach
                 </div>
             @endforeach
