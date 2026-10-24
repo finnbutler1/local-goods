@@ -200,6 +200,11 @@
                             @if ($redemption->scored_by !== 'seed')
                                 <p class="text-sm text-muted" data-audit-trail>{{ implode(' → ', $redemption->auditTrail()) }}</p>
                             @endif
+                            @include('partials.correction-request', [
+                                'for' => 'redemption:'.$redemption->id, 'context' => \App\Support\CorrectionReasons::MERCHANT_REDEMPTION,
+                                'correction' => $redemption->latestCorrection, 'canAsk' => $redemption->mayAskForRefund(),
+                                'summary' => 'Customer was charged wrongly', 'action' => route('merchant.correction.redemption', $redemption),
+                            ])
                         </div>
                         <div class="text-right">
                             <p @class(['tabular font-semibold', 'text-muted line-through' => $redemption->isRejected()])>{{ Money::format($redemption->amount_cents) }}</p>
@@ -293,6 +298,13 @@
                             @endif
                             @if ($payout->failure_reason && $payout->status !== 'sent')
                                 <p class="mt-1 text-sm text-hold">{{ $payout->failure_reason }}</p>
+                            @endif
+                            @if ($payout->isStripe())
+                                @include('partials.correction-request', [
+                                    'for' => 'payout:'.$payout->id, 'context' => \App\Support\CorrectionReasons::MERCHANT_PAYOUT,
+                                    'correction' => $payout->latestCorrection, 'canAsk' => true,
+                                    'summary' => 'I wasn\'t paid', 'action' => route('merchant.correction.payout', $payout),
+                                ])
                             @endif
                         </div>
                         <p class="tabular font-semibold">{{ Money::format($payout->amount_cents) }}</p>

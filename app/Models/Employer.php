@@ -6,6 +6,7 @@ use App\Enums\Occasion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employer extends Model
 {
@@ -59,5 +60,17 @@ class Employer extends Model
     public function balanceCents(): int
     {
         return (int) $this->ledgerEntries()->sum('amount_cents');
+    }
+
+    /** Corrections asked for by this employer: refunds of unspent credits (ADR 0028). */
+    public function corrections(): HasMany
+    {
+        return $this->hasMany(Correction::class);
+    }
+
+    /** The newest correction asked for about this, shown on it. */
+    public function latestCorrection(): HasOne
+    {
+        return $this->hasOne(Correction::class)->latestOfMany();
     }
 }

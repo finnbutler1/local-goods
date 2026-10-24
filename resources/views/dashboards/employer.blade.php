@@ -386,6 +386,21 @@
                 @endif
             </x-card>
         </div>
+
+        {{-- Refund of unspent credits (ADR 0028): a request only; a platform admin decides. --}}
+        <x-card as="section" id="refund-credits" aria-labelledby="refund-credits-heading" class="scroll-mt-24">
+            <h3 id="refund-credits-heading" class="text-xl font-semibold text-primary">Refund unspent credits</h3>
+            <p class="mt-1 text-sm text-muted">
+                Credits you haven't given to employees ({{ Money::format($balance) }} now) can go back to the card that paid for them,
+                newest payment first, as a Stripe test-mode refund. Simulated purchases are returned as simulated, with no real money.
+                A Local Goods admin decides and tells you why.
+            </p>
+            @include('partials.correction-request', [
+                'for' => 'employer:'.$employer->id, 'context' => \App\Support\CorrectionReasons::EMPLOYER_CREDITS,
+                'correction' => $refundCorrection, 'canAsk' => $balance > 0,
+                'summary' => 'Refund unspent credits', 'action' => route('employer.correction.store'),
+            ])
+        </x-card>
     </section>
 
     {{-- Allocate --}}
