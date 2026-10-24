@@ -377,6 +377,12 @@
         display: block;
     }
 
+    table[data-rtable='stack'] > caption {
+        display: block;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
     table[data-rtable='stack'] {
         width: 100%;
         min-width: 0;

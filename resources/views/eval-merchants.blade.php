@@ -160,8 +160,8 @@
                         </ul>
 
                         <div class="grid gap-6 lg:grid-cols-2">
-                            <div class="scroll-region" role="region" tabindex="0" aria-label="Confusion matrix ({{ $title }}) table">
-                                <table class="tabular w-full rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                            <x-rtable :card="false" label="Confusion matrix ({{ $title }}) table">
+                                <table data-rtable="stack" class="tabular w-full rounded-2xl bg-surface text-left ring-1 ring-line/70">
                                     <caption class="px-4 pt-3 text-left text-sm font-semibold text-muted">Confusion matrix ({{ $title }}): rows are Finn's labels, columns the AI's answers</caption>
                                     <thead>
                                         <tr class="bg-band/60 text-sm text-muted">
@@ -172,15 +172,15 @@
                                     <tbody>
                                         @foreach ($s['matrix'] as $label => $row)
                                             <tr class="border-t border-line/70">
-                                                <th scope="row" class="px-4 py-2 font-semibold">{{ MerchantEvalReport::LABEL_NAMES[$label] }}</th>
-                                                @foreach ($row as $n)<td class="px-4 py-2">{{ $n }}</td>@endforeach
+                                                <th scope="row" data-primary class="px-4 py-2 font-semibold">{{ MerchantEvalReport::LABEL_NAMES[$label] }}</th>
+                                                @foreach ($row as $outcome => $n)<td data-label="AI: {{ MerchantEvalReport::OUTCOME_NAMES[$outcome] ?? $outcome }}" class="px-4 py-2">{{ $n }}</td>@endforeach
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
-                            </div>
-                            <div class="scroll-region" role="region" tabindex="0" aria-label="Not independent, by reason ({{ $title }}) table">
-                                <table class="tabular w-full rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                            </x-rtable>
+                            <x-rtable :card="false" label="Not independent, by reason ({{ $title }}) table">
+                                <table data-rtable="stack" class="tabular w-full rounded-2xl bg-surface text-left ring-1 ring-line/70">
                                     <caption class="px-4 pt-3 text-left text-sm font-semibold text-muted">Not independent, by the reason Finn gave ({{ $title }})</caption>
                                     <thead>
                                         <tr class="bg-band/60 text-sm text-muted">
@@ -195,17 +195,17 @@
                                     <tbody>
                                         @foreach ($s['by_fail_reason'] as $reason => $r)
                                             <tr class="border-t border-line/70">
-                                                <th scope="row" class="px-4 py-2 font-semibold">{{ MerchantEvalReport::CLASS_NAMES[$reason] }}</th>
-                                                <td class="px-4 py-2">{{ $r['cases'] }}</td>
-                                                <td class="px-4 py-2">{{ $rate($r['not_eligible']) }}</td>
-                                                <td class="px-4 py-2">{{ $rate($r['same_reason']) }}</td>
-                                                <td class="px-4 py-2">{{ $r['undetermined'] }}</td>
-                                                <td class="px-4 py-2">{{ $r['called_eligible'] }}</td>
+                                                <th scope="row" data-primary class="px-4 py-2 font-semibold">{{ MerchantEvalReport::CLASS_NAMES[$reason] }}</th>
+                                                <td data-label="Cases" class="px-4 py-2">{{ $r['cases'] }}</td>
+                                                <td data-label="AI: not eligible" class="px-4 py-2">{{ $rate($r['not_eligible']) }}</td>
+                                                <td data-label="AI: same reason" class="px-4 py-2">{{ $rate($r['same_reason']) }}</td>
+                                                <td data-label="AI: undetermined" class="px-4 py-2">{{ $r['undetermined'] }}</td>
+                                                <td data-label="AI: eligible" class="px-4 py-2">{{ $r['called_eligible'] }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
-                            </div>
+                            </x-rtable>
                         </div>
 
                         @isset($s['category_disagreements'])
@@ -261,8 +261,8 @@
 
             <section aria-labelledby="history-heading">
                 <h2 id="history-heading" class="text-2xl font-semibold text-primary">Run history</h2>
-                <div class="mt-3 scroll-region" role="region" tabindex="0" aria-label="Every merchant eval run table">
-                    <table class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
+                <x-rtable :card="false" class="mt-3" label="Every merchant eval run table">
+                    <table data-rtable="stack" class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
                         <caption class="sr-only">Every merchant eval run, oldest first</caption>
                         <thead>
                             <tr class="bg-band/60 text-sm text-muted">
@@ -278,18 +278,18 @@
                         <tbody>
                             @foreach ($latest['history'] as $h)
                                 <tr class="border-t border-line/70">
-                                    <td class="px-4 py-2">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
-                                    <td class="px-4 py-2">{{ MerchantEvalRunner::SPLITS[$h['split']] ?? $h['split'] }}</td>
-                                    <td class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
-                                    <td class="px-4 py-2">{{ $h['agreement_pct'] }}% of {{ $h['cases'] }}</td>
-                                    <td class="px-4 py-2">{{ $rate($h['recall']) }}</td>
-                                    <td class="px-4 py-2">{{ $rate($h['precision']) }}</td>
-                                    <td class="px-4 py-2 text-sm">{{ $h['note'] }}</td>
+                                    <td data-primary class="px-4 py-2">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
+                                    <td data-label="Split" class="px-4 py-2">{{ MerchantEvalRunner::SPLITS[$h['split']] ?? $h['split'] }}</td>
+                                    <td data-label="Prompt" class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
+                                    <td data-label="Agreement" class="px-4 py-2">{{ $h['agreement_pct'] }}% of {{ $h['cases'] }}</td>
+                                    <td data-label="Independent found" class="px-4 py-2">{{ $rate($h['recall']) }}</td>
+                                    <td data-label="Eligible calls right" class="px-4 py-2">{{ $rate($h['precision']) }}</td>
+                                    <td data-label="Note" class="px-4 py-2 text-sm">{{ $h['note'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </x-rtable>
             </section>
         @endif
     </div>
