@@ -13,6 +13,6 @@
         <span class="sr-only">{{ $stripe ? ': test money through Stripe, no real money' : ': no money moves, not sent to Stripe' }}</span>
     </x-badge>
     @if ($id)
-        <code class="break-all font-mono text-xs text-muted">{{ $id }}</code>
+        <code class="wrap-anywhere-safe font-mono text-xs text-muted">{{ $id }}</code>
     @endif
 </span>

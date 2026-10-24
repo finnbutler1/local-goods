@@ -59,7 +59,7 @@
                 <strong class="text-ink">Locked before the AI saw them:</strong> the {{ $lock['row_count'] }} labels were made in commit
                 <a href="{{ config('fraud.eval_repo_url') }}/commit/{{ $lock['labeling_commit'] }}" class="font-mono underline underline-offset-4">{{ substr($lock['labeling_commit'], 0, 7) }}</a>
                 and locked on {{ Carbon::parse($lock['locked_at'])->format('M j, Y') }} with a SHA-256 of every row
-                (combined <code class="break-all">{{ substr($lock['combined_sha256'], 0, 12) }}</code>). The eval refuses to run if any label changes.
+                (combined <code class="whitespace-nowrap">{{ substr($lock['combined_sha256'], 0, 12) }}</code>). The eval refuses to run if any label changes.
             </p>
         @endif
 

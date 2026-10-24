@@ -96,11 +96,11 @@
                                     {{ $item->user->adminLabel() }}{{ $item->user->reviewer_type ? ' · '.$item->user->reviewer_type->label() : ' · '.$item->user->role->label() }}
                                     · {{ $item->created_at->setTimezone('America/New_York')->format('M j, g:i A') }}
                                 </p>
-                                <p class="mt-1 text-sm break-all">
+                                <p class="mt-1 text-sm">
                                     @if ($item->safePageUrl())
-                                        <a href="{{ $item->safePageUrl() }}" class="text-primary underline underline-offset-4">{{ $item->page_url }}</a>
+                                        <a href="{{ $item->safePageUrl() }}" class="text-primary underline underline-offset-4"><x-breakable :value="$item->page_url" /></a>
                                     @else
-                                        {{ $item->page_url }}
+                                        <x-breakable :value="$item->page_url" />
                                     @endif
                                 </p>
                             </div>
