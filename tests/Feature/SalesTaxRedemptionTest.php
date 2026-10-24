@@ -74,7 +74,8 @@ class SalesTaxRedemptionTest extends TestCase
         $redemption = $this->orderLatte();
 
         $this->assertSame([TaxBreakdown::ADDED, 575, 58, 633], [$redemption->tax_basis, $redemption->subtotal_cents, $redemption->tax_cents, $redemption->amount_cents]);
-        $this->assertSame([['category' => 'prepared_food', 'label' => 'DC meals tax', 'rate_bps' => 1000, 'taxable_cents' => 575, 'tax_cents' => 58]], $redemption->tax_lines);
+        // assertEquals: MySQL's JSON column keeps the keys in its own order; the values are what matter.
+        $this->assertEquals([['category' => 'prepared_food', 'label' => 'DC meals tax', 'rate_bps' => 1000, 'taxable_cents' => 575, 'tax_cents' => 58]], $redemption->tax_lines);
         $this->assertSame(['prepared_food', 1000], [$redemption->items[0]->tax_category, $redemption->items[0]->tax_rate_bps]);
     }
 
@@ -148,7 +149,7 @@ class SalesTaxRedemptionTest extends TestCase
         $redemption = app(PayCodes::class)->confirm($code, $this->merchant());
 
         $this->assertSame([TaxBreakdown::ADDED, 1150, 115, 1265], [$redemption->tax_basis, $redemption->subtotal_cents, $redemption->tax_cents, $redemption->amount_cents]);
-        $this->assertSame($code->tax_lines, $redemption->fresh()->tax_lines);
+        $this->assertEquals($code->tax_lines, $redemption->fresh()->tax_lines);
         $this->assertSame(['prepared_food'], $redemption->items()->pluck('tax_category')->all());
     }
 
