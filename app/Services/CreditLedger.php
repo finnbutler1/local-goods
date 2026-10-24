@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\Occasion;
+use App\Models\Correction;
 use App\Models\CreditAllocation;
 use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
@@ -353,6 +354,51 @@ class CreditLedger
 
             return true;
         });
+    }
+
+    /**
+     * A redemption refund has completed (ADR 0028): the employee gets the
+     * credits back and the merchant's earning for that part is taken back.
+     * With $reversedFrom, Stripe reversed that part of the merchant's
+     * transfer, so the money that came back is its own merchant line and
+     * the merchant nets to zero. Without it (simulated), the merchant simply
+     * has less owed: deducted from its next simulated payout, which can
+     * leave a merchant already paid out below zero until then. Every line
+     * links the redemption and the correction. Called inside the
+     * transaction that marks the correction's action done, so it is
+     * written once.
+     */
+    public function refundRedemption(Correction $correction, int $amountCents, ?MerchantPayout $reversedFrom = null, ?string $reversalId = null, ?Carbon $at = null): void
+    {
+        $this->ensurePositive($amountCents);
+        $redemption = $correction->redemption;
+        $at ??= now();
+        $how = $reversedFrom ? 'Stripe test mode, '.$reversalId : 'simulated, deducted from the merchant\'s next payout';
+        $base = ['redemption_id' => $redemption->id, 'correction_id' => $correction->id, 'created_at' => $at];
+
+        CreditLedgerEntry::create($base + [
+            'employee_id' => $redemption->employee_id,
+            'amount_cents' => $amountCents,
+            'type' => CreditLedgerEntry::TYPE_REFUND,
+            'description' => 'Refund from '.$redemption->merchant->name,
+        ]);
+
+        CreditLedgerEntry::create($base + [
+            'merchant_id' => $redemption->merchant_id,
+            'amount_cents' => -$amountCents,
+            'type' => CreditLedgerEntry::TYPE_MERCHANT_REFUNDED,
+            'description' => 'Refund of '.Money::format($amountCents).' on a cleared redemption ('.$how.')',
+        ]);
+
+        if ($reversedFrom !== null) {
+            CreditLedgerEntry::create($base + [
+                'merchant_id' => $redemption->merchant_id,
+                'amount_cents' => $amountCents,
+                'type' => CreditLedgerEntry::TYPE_REFUND_REVERSAL,
+                'merchant_payout_id' => $reversedFrom->id,
+                'description' => 'Stripe test-mode transfer '.$reversedFrom->stripe_transfer_id.' reversed by '.Money::format($amountCents).' for the refund ('.$reversalId.')',
+            ]);
+        }
     }
 
     /**

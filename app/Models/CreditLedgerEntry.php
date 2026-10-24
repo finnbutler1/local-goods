@@ -49,6 +49,24 @@ class CreditLedgerEntry extends Model
     /** Platform account: the platform fee paid on top of a purchase's credits (ADR 0021). Never on the employer's balance. */
     public const TYPE_PLATFORM_FEE = 'platform_fee';
 
+    /** Employee account: a cleared redemption was refunded (all or part), so the credits come back (ADR 0028). */
+    public const TYPE_REFUND = 'refund';
+
+    /** Merchant account: the earning for a refunded part of a redemption is taken back (ADR 0028). */
+    public const TYPE_MERCHANT_REFUNDED = 'merchant_refunded';
+
+    /** Merchant account: for a refund, that part of its Stripe transfer was reversed and came back (ADR 0028). Not a TYPE_PAYOUT_REVERSED: nothing is owed again. */
+    public const TYPE_REFUND_REVERSAL = 'refund_reversal';
+
+    /** Employer account: unspent credits held while their refund to the card goes through (ADR 0028), like a held redemption. */
+    public const TYPE_EMPLOYER_REFUND_HOLD = 'employer_refund_hold';
+
+    /** Employer account: Stripe (or the simulation) confirmed a refund of held credits. Amount 0: the hold already took them. */
+    public const TYPE_EMPLOYER_REFUNDED = 'employer_refunded';
+
+    /** Employer account: a refund that won't happen (closed after a failure); the held credits come back. */
+    public const TYPE_EMPLOYER_REFUND_RELEASED = 'employer_refund_released';
+
     /** "platform" is true on platform-account entries and null on every other one. */
     public const ACCOUNT_COLUMNS = ['employee_id', 'employer_id', 'merchant_id', 'platform'];
 
