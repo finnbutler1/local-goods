@@ -32,8 +32,10 @@ return new class extends Migration
             $table->string('open_key', 64)->nullable()->unique();
             $table->foreignId('requested_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('requested_by_role', 24);
-            $table->foreignId('redemption_id')->nullable()->constrained();
-            $table->foreignId('merchant_payout_id')->nullable()->constrained();
+            // Null on delete, never blocking: in use nothing deletes these (the
+            // ledger points at them too), but tests and Reset demo clear tables.
+            $table->foreignId('redemption_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('merchant_payout_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('employer_id')->nullable()->constrained();
             $table->foreignId('merchant_id')->nullable()->constrained();
             $table->foreignId('employee_id')->nullable()->constrained();
@@ -70,8 +72,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('correction_id')->constrained()->cascadeOnDelete();
             $table->string('kind', 24);
-            $table->foreignId('credit_purchase_id')->nullable()->constrained();
-            $table->foreignId('merchant_payout_id')->nullable()->constrained();
+            $table->foreignId('credit_purchase_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('merchant_payout_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('amount_cents');
             $table->string('status', 16);
             $table->string('idempotency_key', 128)->nullable()->unique();

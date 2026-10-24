@@ -22,6 +22,11 @@
                 How often does the AI agree with a person? See the eval results <span aria-hidden="true">→</span>
             </a>
         </p>
+        <p class="mt-2">
+            <a href="{{ route('bid-admin.corrections') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                Refunds and corrections: how money mistakes get fixed <span aria-hidden="true">→</span>
+            </a>
+        </p>
     </header>
 
     <div aria-live="polite">

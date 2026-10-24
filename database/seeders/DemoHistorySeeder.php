@@ -2,14 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
+use App\Models\Correction;
+use App\Models\CorrectionAction;
 use App\Models\CreditLedgerEntry;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\PayCode;
 use App\Models\Redemption;
+use App\Services\Corrections\CorrectionLimits;
 use App\Services\CreditLedger;
 use App\Services\PayCodes;
+use App\Support\Money;
 use App\Support\SalesTax;
 use App\Support\TaxBreakdown;
 use Illuminate\Support\Carbon;
@@ -45,6 +50,13 @@ use Random\Randomizer;
  * merchant's "Tax collected" isn't empty after Reset demo. Tax is worked out
  * with the rate in effect on each order's date. Every other seeded
  * redemption is a typed-in amount, which already includes any tax.
+ *
+ * Last, two corrections (ADR 0028), so the Corrections queue isn't empty
+ * after Reset demo: a completed partial refund of REFUNDED_ITEM from the
+ * newest taxed order (the item and its tax back to the employee, simulated,
+ * deducted from the merchant's next payout), and a rejected request about
+ * the in-person payment. Both by seeded employees, never Jordan. The live
+ * demo works without them: it is never reset.
  *
  * B. A small ring at one merchant. The three PATTERN_B_EMPLOYEES each make a
  *    round $60 or $70 redemption at PATTERN_B_MERCHANT within ten minutes of
@@ -86,6 +98,9 @@ class DemoHistorySeeder
         [2, '08:15', ['Cappuccino' => 1]],
         [1, '12:40', ['Avocado toast' => 1, 'Cold brew' => 1]],
     ];
+
+    /** The seeded partial refund (ADR 0028): this item of the newest taxed order, with its tax. */
+    public const REFUNDED_ITEM = 'Cold brew';
 
     /** Invented names. Any match with a real person is a coincidence. */
     public const NAMES = [
@@ -133,6 +148,58 @@ class DemoHistorySeeder
 
         $this->inPersonExample($byName[self::IN_PERSON_MERCHANT], $now);
         $this->taxedMenuOrders($byName[self::TAXED_ORDER_MERCHANT], $now);
+        $this->corrections($byName[self::TAXED_ORDER_MERCHANT]);
+    }
+
+    /**
+     * The two seeded corrections: a completed partial refund (simulated,
+     * like all seeded money) and a rejected request. Written the way
+     * CorrectionDecisions would, with the same tax math, but with no admin
+     * login (the seed runs before demo accounts exist), so "Local Goods"
+     * decided them. Skipped if their redemptions weren't seeded.
+     */
+    private function corrections(Merchant $merchant): void
+    {
+        $order = $merchant->redemptions()->whereHas('items', fn ($q) => $q->where('name', self::REFUNDED_ITEM))->with('items')->latest('id')->first();
+
+        if ($order !== null) {
+            $item = $order->items->firstWhere('name', self::REFUNDED_ITEM);
+            $refund = CorrectionLimits::itemRefund($order, [$item->id => 1]);
+            $asked = $order->created_at->copy()->addMinutes(50);
+            $done = $asked->copy()->addMinutes(40);
+
+            $correction = Correction::create([
+                'type' => Correction::TYPE_REDEMPTION_REFUND, 'status' => Correction::STATUS_COMPLETED,
+                'requested_by_role' => Role::Employee->value, 'reason_category' => 'not_received',
+                'note' => 'They were out of cold brew, so I only got the toast.',
+                'redemption_id' => $order->id, 'merchant_id' => $merchant->id, 'employee_id' => $order->employee_id,
+                'amount_cents' => $refund['amount_cents'], 'subtotal_cents' => $refund['subtotal_cents'],
+                'tax_cents' => $refund['tax_cents'], 'tax_lines' => $refund['tax_lines'],
+                'decided_at' => $done, 'decision_reason' => 'The shop confirmed the cold brew was never made: refunded it with its tax.',
+                'completed_at' => $done,
+            ]);
+            $correction->forceFill(['created_at' => $asked, 'updated_at' => $done])->save();
+            foreach ($refund['items'] as $row) {
+                $correction->items()->make($row)->forceFill(['created_at' => $done])->save();
+            }
+            $correction->actions()->make(['kind' => CorrectionAction::KIND_SIMULATED, 'amount_cents' => $refund['amount_cents'],
+                'status' => CorrectionAction::STATUS_SUCCEEDED, 'completed_at' => $done])->forceFill(['created_at' => $done, 'updated_at' => $done])->save();
+            app(CreditLedger::class)->refundRedemption($correction, $refund['amount_cents'], at: $done);
+        }
+
+        $paid = Redemption::where('merchant_id', $merchant->id)->where('channel', Redemption::CHANNEL_IN_PERSON)->where('status', Redemption::STATUS_APPROVED)->latest('id')->first();
+
+        if ($paid !== null) {
+            $asked = $paid->created_at->copy()->addHours(3);
+            Correction::make([
+                'type' => Correction::TYPE_REDEMPTION_REFUND, 'status' => Correction::STATUS_REJECTED,
+                'requested_by_role' => Role::Employee->value, 'reason_category' => 'charged_twice',
+                'note' => 'I think I paid twice at the counter.',
+                'redemption_id' => $paid->id, 'merchant_id' => $merchant->id, 'employee_id' => $paid->employee_id,
+                'decided_at' => $asked->copy()->addHour(),
+                'decision_reason' => 'Checked with the shop and the ledger: one payment of '.Money::format($paid->amount_cents).', made once with a pay code.',
+            ])->forceFill(['created_at' => $asked, 'updated_at' => $asked->copy()->addHour()])->save();
+        }
     }
 
     /**

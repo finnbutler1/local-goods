@@ -30,6 +30,7 @@ class CorrectionTaxTest extends TestCase
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+        $this->withoutSeededCorrections();
     }
 
     private function thisMonth(): array

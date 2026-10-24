@@ -4,6 +4,8 @@ namespace App\Services\Corrections;
 
 use App\Models\Correction;
 use App\Models\CorrectionItem;
+use App\Models\CreditPurchase;
+use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Models\RedemptionItem;
 use App\Support\Money;
@@ -110,6 +112,54 @@ class CorrectionLimits
         }
 
         return $amountCents;
+    }
+
+    /**
+     * Which payments an employer refund goes back to: newest first (merchant
+     * transfers are funded oldest first, so the newest payments are the
+     * least likely to have been claimed), each at most what is left of it.
+     *
+     * @param  iterable<CreditPurchase>  $purchases  the employer's paid purchases
+     * @return array{plan: list<array{0: CreditPurchase, 1: int}>, short_cents: int}
+     */
+    public static function employerPlan(iterable $purchases, int $amountCents): array
+    {
+        $plan = [];
+        $left = $amountCents;
+
+        foreach (collect($purchases)->sortBy([['purchased_at', 'desc'], ['id', 'desc']]) as $purchase) {
+            if ($left <= 0) {
+                break;
+            }
+            if (($take = min($left, $purchase->refundableCents())) > 0) {
+                $plan[] = [$purchase, $take];
+                $left -= $take;
+            }
+        }
+
+        return ['plan' => $plan, 'short_cents' => max(0, $left)];
+    }
+
+    /**
+     * How a refund of this redemption would be paid, for the queue and the
+     * approval: reversing its sent Stripe transfer, netted (simulated), or
+     * not yet (the transfer hasn't gone out, or was reversed in the Stripe
+     * dashboard).
+     *
+     * @return array{path: 'stripe'|'simulated'|'blocked', payout: ?MerchantPayout, text: string}
+     */
+    public static function refundPath(Redemption $redemption): array
+    {
+        $payout = $redemption->relationLoaded('stripePayout') ? $redemption->stripePayout : MerchantPayout::where('redemption_id', $redemption->id)->first();
+
+        return match (true) {
+            $payout === null => ['path' => 'simulated', 'payout' => null,
+                'text' => 'No Stripe transfer behind it (simulated): refunded at once and deducted from what the merchant is owed.'],
+            $payout->status === MerchantPayout::STATUS_SENT => ['path' => 'stripe', 'payout' => $payout,
+                'text' => 'Paid through Stripe (transfer '.$payout->stripe_transfer_id.'): that part of the transfer is reversed, and the credits come back when Stripe confirms.'],
+            $payout->status === MerchantPayout::STATUS_REVERSED => ['path' => 'blocked', 'payout' => $payout, 'text' => CorrectionDecisions::REVERSED_IN_DASHBOARD],
+            default => ['path' => 'blocked', 'payout' => $payout, 'text' => CorrectionDecisions::NOT_SENT_YET],
+        };
     }
 
     /** @return array<string, array<string, mixed>> the redemption's stored tax lines, by category */

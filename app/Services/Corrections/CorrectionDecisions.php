@@ -154,20 +154,10 @@ class CorrectionDecisions
                 throw new InvalidArgumentException('Only '.Money::format(max(0, $employer->balanceCents())).' of unspent credits can be refunded.');
             }
 
-            $plan = [];
-            $left = $amountCents;
-            foreach ($purchases as $purchase) {
-                if ($left === 0) {
-                    break;
-                }
-                if (($take = min($left, $purchase->refundableCents())) > 0) {
-                    $plan[] = [$purchase, $take];
-                    $left -= $take;
-                }
-            }
+            ['plan' => $plan, 'short_cents' => $short] = CorrectionLimits::employerPlan($purchases, $amountCents);
 
-            if ($left > 0) {
-                throw new InvalidArgumentException('Only '.Money::format($amountCents - $left).' can go back to the payments that bought these credits.');
+            if ($short > 0) {
+                throw new InvalidArgumentException('Only '.Money::format($amountCents - $short).' can go back to the payments that bought these credits.');
             }
 
             $correction->update(['amount_cents' => $amountCents]);

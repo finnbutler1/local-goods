@@ -12,6 +12,7 @@
                 <a href="{{ route('admin.feedback.index') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Feedback inbox</a>
                 <a href="{{ route('admin.changelog.index') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Changelog for reviewers</a>
                 <a href="{{ route('admin.reconciliation') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Stripe reconciliation</a>
+                <a href="{{ route('bid-admin.corrections') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Corrections</a>
                 <a href="{{ route('bid-admin.impact') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
             </p>
         </header>

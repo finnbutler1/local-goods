@@ -36,6 +36,7 @@ class RedemptionRefundTest extends TestCase
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+        $this->withoutSeededCorrections();
     }
 
     private function decisions(): CorrectionDecisions

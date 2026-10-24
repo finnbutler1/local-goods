@@ -13,6 +13,7 @@ use App\Models\Redemption;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\MakesCorrections;
 use Tests\TestCase;
 
 /**
@@ -22,12 +23,14 @@ use Tests\TestCase;
  */
 class CorrectionRequestTest extends TestCase
 {
+    use MakesCorrections;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+        $this->withoutSeededCorrections();
     }
 
     private function clearedFor(Employee $employee): Redemption
