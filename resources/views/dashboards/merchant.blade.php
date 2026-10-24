@@ -165,8 +165,12 @@
                 @php $month = $taxSummary[$key]; @endphp
                 <div>
                     <dt class="text-sm font-semibold text-muted">{{ $title }} ({{ $month['label'] }})</dt>
-                    <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary" data-tax-month="{{ $key }}">{{ Money::format($month['tax_cents']) }}</dd>
+                    <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary" data-tax-month="{{ $key }}">{{ Money::format($month['net_tax_cents']) }}</dd>
                     <dd class="text-sm text-muted">On {{ $month['orders'] }} cleared menu {{ Str::plural('order', $month['orders']) }}</dd>
+                    @if ($month['refunds'] > 0)
+                        {{-- Refunds (ADR 0028): their tax comes off in the month the refund completed. --}}
+                        <dd class="tabular text-sm text-muted" data-tax-refunded="{{ $key }}">{{ Money::format($month['tax_cents']) }} added at checkout, less {{ Money::format($month['refunded_tax_cents']) }} refunded on {{ $month['refunds'] }} {{ Str::plural('refund', $month['refunds']) }}</dd>
+                    @endif
                 </div>
             @endforeach
         </dl>
@@ -175,6 +179,7 @@
             <p class="mt-1 text-muted">
                 The DC sales tax added at checkout to cleared menu orders, by the date of the order in DC time, at the rate snapshotted on each one.
                 Held and denied orders aren't counted. Typed-in amounts already include any tax you charged and aren't split out here.
+                When menu items are refunded, their tax (from the order's own snapshot) comes off in the month the refund completed.
                 Rates are DC's published rates, shown for display; check them and your categories with your accountant.
             </p>
         </details>

@@ -20,7 +20,7 @@
 <div class="mt-2 space-y-2 text-sm" data-correction="{{ $for }}">
     @if ($correction)
         <div data-correction-status="{{ $correction->status }}">
-            <x-badge :tone="$tone" :wrap="true">{{ $correction->typeLabel() }}: {{ $correction->statusLabel() }}@if ($correction->status === \App\Models\Correction::STATUS_COMPLETED && $correction->amount_cents) · {{ Money::format($correction->amount_cents) }}@endif</x-badge>
+            <x-badge :tone="$tone" :wrap="true">{{ $correction->typeLabel() }}: {{ $correction->statusLabel() }}@if ($correction->status === \App\Models\Correction::STATUS_COMPLETED && $correction->amount_cents) · {{ \App\Support\Money::format($correction->amount_cents) }}@endif</x-badge>
             @if ($correction->decision_reason)
                 <p class="mt-1 text-muted">Local Goods: “{{ $correction->decision_reason }}”</p>
             @elseif ($correction->status === \App\Models\Correction::STATUS_REQUESTED)
