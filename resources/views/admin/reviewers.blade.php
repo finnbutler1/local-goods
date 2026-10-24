@@ -14,7 +14,7 @@
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Reviewers</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Reviewers</h1>
         <p class="mt-3 text-lg text-muted">
             Invite contest judges, HR managers, merchants, BID staff and friends. Each gets a personal magic link
             that signs them straight into a read-only reviewer view: no password, no account to set up.

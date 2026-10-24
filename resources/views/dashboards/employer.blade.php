@@ -19,7 +19,7 @@
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Employer dashboard · {{ $employer->name }}</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Your team got out into the neighborhood.</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Your team got out into the neighborhood.</h1>
         <p class="mt-3 text-lg text-muted">
             {{ $metrics['month']->format('F') }} so far: who used their perk, where they went, and how much stayed with independent Golden Triangle businesses.
             Every number is worked out from the credit ledger, and each one says how.

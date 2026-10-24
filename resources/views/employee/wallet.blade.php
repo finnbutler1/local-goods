@@ -74,7 +74,7 @@
     <section aria-labelledby="balance-heading" class="relative overflow-hidden rounded-3xl bg-night p-6 text-on-night shadow-[0_12px_30px_-12px_rgb(18_24_32/0.6)] sm:p-8">
         <div class="flex items-start justify-between gap-4">
             <h1 id="balance-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-night-muted">Available balance</h1>
-            <span class="font-display text-sm font-semibold text-on-night">Local Goods</span>
+            <span class="font-display text-sm font-semibold whitespace-nowrap text-on-night">Local Goods</span>
         </div>
         <p class="tabular mt-3 font-display text-6xl font-semibold tracking-tight text-night-accent" data-testid="balance">{{ Money::format($balance) }}</p>
         <p class="mt-4 text-sm text-night-muted">{{ Money::format($employee->employer->monthly_allowance_cents) }} added each month by {{ $employee->employer->name }}</p>

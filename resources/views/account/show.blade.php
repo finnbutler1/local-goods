@@ -4,7 +4,7 @@
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Your account</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">{{ auth()->user()->name }}</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">{{ auth()->user()->name }}</h1>
         <p class="mt-3 text-lg text-muted"><x-breakable :value="auth()->user()->email" /></p>
     </header>
 

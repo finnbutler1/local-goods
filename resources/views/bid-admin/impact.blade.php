@@ -11,7 +11,7 @@
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">{{ $bid?->name ?? 'Golden Triangle' }} BID · Impact</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">What the program did for the district</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">What the program did for the district</h1>
         <p class="mt-3 text-lg text-muted">
             Dollars spent at independent merchants, and who took part. Every number is read from the credit ledger and uses
             the same definitions as the employer dashboards, so the two always agree. Employees are counted, never named.

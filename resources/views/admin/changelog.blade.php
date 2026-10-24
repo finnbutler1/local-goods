@@ -4,7 +4,7 @@
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Changelog for reviewers</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Changelog for reviewers</h1>
         <p class="mt-3 text-lg text-muted">
             Short notes on what changed. Reviewers see entries published since their last visit on their home page,
             next to their own feedback you marked fixed. Keep it to synthetic, demo-safe details.

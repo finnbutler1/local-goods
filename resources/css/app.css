@@ -519,6 +519,17 @@
     }
 }
 
+/* Page titles: 32px on a 320px phone, growing smoothly to 48px (the old
+   sm:text-5xl) by about 780px, so desktop is unchanged. */
+@utility text-title {
+    font-size: clamp(2rem, 1.3rem + 3.5vw, 3rem);
+    line-height: 1.1;
+
+    @media (width >= 40rem) {
+        line-height: 1;
+    }
+}
+
 @utility tabular {
     font-variant-numeric: tabular-nums lining-nums;
 }

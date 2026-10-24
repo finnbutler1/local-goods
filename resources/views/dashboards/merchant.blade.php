@@ -11,7 +11,7 @@
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Merchant dashboard · {{ $merchant->name }}</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Your Local Goods sales</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Your Local Goods sales</h1>
         <p class="mt-3 text-lg text-muted">
             Customers from employers in the BID pay with Local Goods credits. You're owed a redemption once it clears.
             @if ($stripe)

@@ -5,7 +5,7 @@
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">{{ $bid?->name ?? 'Golden Triangle' }} BID · Participation</x-eyebrow>
-        <h1 class="mt-1 text-4xl font-semibold text-primary sm:text-5xl">Dollars kept in the district</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Dollars kept in the district</h1>
         <p class="mt-3 text-lg text-muted">
             Who takes part in Local Goods and how much employer money was spent at independent businesses in the BID.
             Only cleared redemptions count; anything held by Redemption Fraud Detection waits for your decision first.
