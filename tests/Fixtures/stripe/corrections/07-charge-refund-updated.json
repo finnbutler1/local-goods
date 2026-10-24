@@ -1,0 +1,57 @@
+{
+    "id": "fake_evt_27",
+    "object": "event",
+    "api_version": "2026-09-30.endive",
+    "created": 1792860743,
+    "data": {
+        "object": {
+            "id": "fake_re_19",
+            "object": "refund",
+            "amount": 800,
+            "balance_transaction": "fake_txn_20",
+            "charge": "fake_ch_6",
+            "created": 1792860742,
+            "currency": "usd",
+            "customer": null,
+            "customer_account": null,
+            "destination_details": {
+                "card": {
+                    "reference": "fake-removed",
+                    "reference_status": "available",
+                    "reference_type": "acquirer_reference_number",
+                    "type": "refund"
+                },
+                "type": "card"
+            },
+            "metadata": {
+                "lg_env": "scratch",
+                "lg_instance": "step7-trial",
+                "lg_trial": "1",
+                "lg_trial_run": "fake-run",
+                "lg_trial_step": "refund-a"
+            },
+            "payment_intent": "fake_pi_21",
+            "payment_method": "fake_pm_22",
+            "reason": "requested_by_customer",
+            "receipt_number": null,
+            "source_transfer_reversal": null,
+            "status": "succeeded",
+            "transfer_reversal": null
+        },
+        "previous_attributes": {
+            "destination_details": {
+                "card": {
+                    "reference": null,
+                    "reference_status": "pending"
+                }
+            }
+        }
+    },
+    "livemode": false,
+    "pending_webhooks": 0,
+    "request": {
+        "id": null,
+        "idempotency_key": null
+    },
+    "type": "charge.refund.updated"
+}

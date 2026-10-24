@@ -1,0 +1,45 @@
+{
+    "id": "fake_evt_1",
+    "object": "event",
+    "api_version": "2026-09-30.endive",
+    "created": 1792860739,
+    "data": {
+        "object": {
+            "id": "fake_tr_2",
+            "object": "transfer",
+            "amount": 1500,
+            "amount_reversed": 0,
+            "balance_transaction": "fake_txn_3",
+            "created": 1792860739,
+            "currency": "usd",
+            "description": "Local Goods scratch trial transfer",
+            "destination": "fake_acct_4",
+            "destination_payment": "fake_py_5",
+            "livemode": false,
+            "metadata": {
+                "lg_env": "scratch",
+                "lg_instance": "step7-trial",
+                "lg_trial": "1",
+                "lg_trial_run": "fake-run"
+            },
+            "reversals": {
+                "object": "list",
+                "data": [],
+                "has_more": false,
+                "total_count": 0,
+                "url": "/v1/transfers/fake_tr_2/reversals"
+            },
+            "reversed": false,
+            "source_transaction": "fake_ch_6",
+            "source_type": "card",
+            "transfer_group": "LG-TRIAL-fake-run"
+        }
+    },
+    "livemode": false,
+    "pending_webhooks": 0,
+    "request": {
+        "id": "fake_req_7",
+        "idempotency_key": "fake-removed"
+    },
+    "type": "transfer.created"
+}
