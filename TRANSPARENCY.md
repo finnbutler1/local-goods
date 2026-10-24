@@ -239,6 +239,64 @@ A held redemption is never thrown away and never approved automatically.
   those patterns. Catching them needs a check across redemptions, which
   would mean new signals, a new prompt version and a fresh holdout.
 
+### Refunds and corrections: how money mistakes get fixed
+
+Mistakes happen: a wrong amount at a café, a transfer that never reached a
+merchant, credits an employer no longer needs. Local Goods fixes them the
+way a payments company would
+([ADR 0028](docs/adr/0028-refunds-and-corrections.md)). No AI is involved.
+
+**Who asks.** An employee ("Request a correction" on a cleared
+redemption), a merchant ("Customer was charged wrongly" on a received
+redemption, "I wasn't paid" on a Stripe payout) or the employer's HR
+("Refund unspent credits"). They pick what went wrong and may add a note.
+Only their own items; at most one open request per item (the database
+enforces it); a few a minute. Asking moves no money.
+
+**Who decides.** The Local Goods platform admin, never automatically and
+always with a written reason, which the person who asked sees on the item.
+The BID admin and judges can look but not decide. A request that can't go
+through is rejected with that reason; a Stripe step that failed shows
+Stripe's error in plain English and is retried safely or closed.
+
+**What actually happens to the money.**
+
+- *Refund of a redemption:* the credits go back to the employee. If the
+  merchant was paid through Stripe, Local Goods reverses exactly that part
+  of the merchant's Stripe transfer. If it was simulated (all seeded
+  history), it is deducted from what the merchant is owed. Menu items are
+  refunded with the tax that was charged on them, from the receipt's own
+  snapshot, and never more tax than was charged. A refund waits until the
+  merchant's Stripe transfer has gone out; a transfer reversed by hand in
+  the Stripe dashboard is sorted out by hand.
+- *Merchant adjustment:* a Stripe transfer the merchant is owed but never
+  got is sent through the same path as every transfer (and the same gate),
+  for exactly the amount the ledger shows.
+- *Refund of unspent credits:* only credits not yet given to employees.
+  They are held at once, so they can't be handed out meanwhile, and go back
+  to the card as Stripe refunds on the original payments, newest payment
+  first, never more than is left of each payment and never the platform
+  fee. Simulated purchases are returned as simulated.
+
+**The rules underneath.** Whole cents only. The ledger is append-only:
+every fix is a new line linked to the original redemption or purchase and
+to the request. The approval locks the item and re-checks every earlier
+refund on it, so two approvals at the same moment can never refund more
+than was paid. Every Stripe call has its own idempotency key, so a retry
+can't act twice. The ledger lines for a Stripe refund are written when
+Stripe's signed webhook confirms it, and the reconciliation page matches
+every reversal and refund against Stripe. A refunded taxed order lowers
+the merchant's "Tax collected" in the month the refund completed.
+
+**Not the AI.** Corrections are never sent to Redemption Fraud Detection
+and never change a fraud decision. A refund puts credits back in the
+employee's balance, which the AI already sees, exactly like an allowance.
+
+**Known limits.** Impact numbers (BID and employer dashboards) count the
+original spend and don't subtract later refunds. A payout someone reversed
+in the Stripe dashboard is handled by hand, outside Local Goods. The demo
+has one completed partial refund and one rejected request, both synthetic.
+
 ### How we measure it
 
 We test Redemption Fraud Detection against a person's judgment, not our own

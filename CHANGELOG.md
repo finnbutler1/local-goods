@@ -3,6 +3,33 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-24: Refunds and corrections
+
+- **Ask for a fix.** Employees can ask for a correction on a cleared
+  redemption, merchants on a redemption ("Customer was charged wrongly") or
+  a Stripe payout ("I wasn't paid"), and HR for unspent credits back
+  ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)). The answer, and
+  the reason for it, shows on the item.
+- **A person decides.** The new **Corrections** page lists every request
+  with what is left and how it would be paid. The platform admin approves
+  (by menu item, by amount, or the employer's amount) or rejects, always
+  with a reason; the BID admin and judges can look. Failed Stripe steps are
+  retried safely or closed.
+- **Real Stripe actions.** A refund reverses that part of the merchant's
+  Stripe transfer; unspent credits go back to the employer's card as Stripe
+  refunds, newest payment first; a missed payout is sent through the
+  existing payout path. The ledger lines are new append-only entries,
+  written when Stripe's webhook confirms. Simulated money is corrected as
+  simulated.
+- **Never more than was paid,** across every refund, checked with the item
+  locked; never more tax than was charged; idempotency keys on every call.
+- **Reconciliation** matches every reversal and refund against Stripe and
+  still says everything matches. **Tax collected** goes down in the month a
+  taxed refund completes, and the merchant's CSV shows refund rows.
+- **Demo:** a completed partial refund (a cold brew and its tax) and a
+  rejected request at Farragut Grind; the judge tour has a ninth step, "See
+  how mistakes get fixed: open Corrections".
+
 ## 2026-10-24: DC sales tax shown at checkout
 
 - **See the tax before you pay.** Ordering from a menu, each item shows its

@@ -257,6 +257,9 @@ transferred tr_…*.
   `transfer.created` webhook also records it.
 - **A transfer is reversed in Stripe:** the merchant is owed it again
   (*reversed*), and a person decides; it is never re-sent automatically.
+  Refunds and merchant adjustments (ADR 0028) refuse such a payout: it is
+  sorted out by hand in Stripe. A refund's own reversal is not this case
+  (see Refunds and corrections).
 - **Stripe is down when a redemption clears:** the redemption still clears.
   Transfers are sent after the database transaction commits, never inside
   it, and failures are written down rather than thrown.
@@ -302,7 +305,9 @@ sentence and any missing-field lines, keys removed; never for key errors).
   paid, only a pending payout recorded, only a sent one reversed.
 - Handled: `payment_intent.succeeded`, `payment_intent.payment_failed`,
   `checkout.session.expired`, `account.updated`, `transfer.created`,
-  `transfer.reversed`. Anything else gets 200 and is ignored.
+  `transfer.reversed`, and for corrections (ADR 0028) `refund.created`,
+  `refund.updated` and `refund.failed`. Anything else gets 200 and is
+  ignored.
 - An event about an object tagged for **another environment** (see
   below) gets 200 `"ignored: other environment"` before anything is
   written: no ledger entry, no `stripe_events` row. Untagged objects (made
@@ -310,6 +315,35 @@ sentence and any missing-field lines, keys removed; never for key errors).
   this database's own tokens and ids.
 - Works behind CloudFront: CloudFront passes the body unchanged; its origin
   request policy must forward the `Stripe-Signature` header (see setup).
+
+## Refunds and corrections
+
+[ADR 0028](adr/0028-refunds-and-corrections.md). A platform admin approves
+a correction; Stripe is called after the approval commits, each action with
+its own idempotency key
+(`lg-correction-{instance}-c{correction}-a{action}-{created}-{attempts}`,
+attempts up only after a definite refusal) and metadata `lg_correction_key`,
+`lg_correction_id` plus the environment tag.
+
+| Correction | Stripe call | Confirmed by | Ledger lines (when confirmed) |
+|---|---|---|---|
+| Refund of a redemption whose transfer was sent | `POST /v1/transfers/{tr}/reversals` for exactly the refund | `transfer.reversed` (lists every reversal with its metadata; `amount_reversed` adds up) | employee `+r` `refund`, merchant `-r` `merchant_refunded`, merchant `+r` `refund_reversal` |
+| Refund of a simulated redemption | none | at once | employee `+r`, merchant `-r` (deducted from the next payout) |
+| Refund of unspent credits, Stripe payment | `POST /v1/refunds` on the purchase's PaymentIntent, credits only | `refund.created` / `refund.updated` (succeeded at once in test mode, even on pending funds), `refund.failed` | `employer_refund_hold -R` at approval, `employer_refunded 0` per payment when confirmed, `employer_refund_released +R` if closed |
+| Refund of unspent credits, simulated purchase | none | at once | hold, then `employer_refunded 0` |
+| Merchant adjustment ("I wasn't paid") | the existing `MerchantPayouts::send` for the owed row (the `TransferGate`, the row's own key) | Stripe's reply, `transfer.created` as backup | the payout's own `payout` line, with the correction's id |
+
+`transfer.reversed` records our refund reversals first; the old "reversed,
+owed again" path runs only for reversed money they don't explain, so with
+no refunds it behaves as before. A refund waits until the merchant's
+transfer has been sent. Until Stripe's webhook arrives a Stripe step stays
+*processing*; reconciliation names it ("the webhook has not arrived").
+
+The behaviour above was checked against Stripe's test mode on 2026-10-24
+with `scripts/stripe-trial-corrections.php` (a one-off: test keys only,
+objects tagged `lg_env=scratch`, everything refunded and reversed and the
+account deleted afterwards). Its scrubbed payloads are the fixtures in
+`tests/Fixtures/stripe/corrections/`.
 
 ## Simulated fallback
 
@@ -328,7 +362,10 @@ shown as a Stripe one.
 Stripe-funded activity since the last Reset demo: purchases (credits plus
 any platform fee) against Stripe's successful payments, Stripe payouts against Stripe's transfers,
 one by one, and the platform balance for information (Stripe keeps card
-fees, so it never matches exactly). Each difference is a sentence, for
+fees, so it never matches exactly). Corrections (ADR 0028): refund
+reversals are taken off the transfers the ledger counts, every reversal and
+card refund is matched by id and amount both ways, and refunds to
+employers' cards get their own row once there are any. Each difference is a sentence, for
 example "Stripe has a $250.00 payment (pi_…) that Local Goods has no ledger
 record of". Simulated activity is counted but not checked. With the platform fee on it
 also checks that the platform account's fee lines add up to the fees the
@@ -403,7 +440,7 @@ Leave all of them blank for simulated mode.
 1. Install the Stripe CLI (`brew install stripe/stripe-cli/stripe`) and run
    `stripe login`.
 2. In one terminal:
-   `stripe listen --events payment_intent.succeeded,payment_intent.payment_failed,checkout.session.expired,transfer.created,transfer.reversed,account.updated --forward-to localhost:8000/stripe/webhook --forward-connect-to localhost:8000/stripe/webhook`
+   `stripe listen --events payment_intent.succeeded,payment_intent.payment_failed,checkout.session.expired,transfer.created,transfer.reversed,account.updated,refund.created,refund.updated,refund.failed --forward-to localhost:8000/stripe/webhook --forward-connect-to localhost:8000/stripe/webhook`
    (newer versions of the Stripe CLI refuse to start without `--events`). It prints a `whsec_…` secret: put it in `.env` as `STRIPE_WEBHOOK_SECRET`
    (one secret covers both kinds of events locally).
 3. Put the test keys from Stripe → Developers → API keys in `.env` as
@@ -444,13 +481,17 @@ In Stripe: Developers → Webhooks (in Workbench: Event destinations) → Add
 destination.
 
 1. **Events from: Your account.** Payload style **Snapshot**. Destination
-   type **Webhook endpoint**, the URL above. Events, exactly these five:
+   type **Webhook endpoint**, the URL above. Events, exactly these eight:
    - `payment_intent.succeeded` (a purchase is paid: the only thing that
      writes its ledger entry)
    - `payment_intent.payment_failed` (shows the decline reason; stays pending)
    - `checkout.session.expired` (lets HR start a fresh Checkout)
    - `transfer.created` (records a transfer whose reply was lost)
-   - `transfer.reversed` (marks a transfer reversed and owed again)
+   - `transfer.reversed` (records a refund's reversal, or marks a transfer
+     reversed in the dashboard owed again)
+   - `refund.created`, `refund.updated`, `refund.failed` (a refund of
+     unspent credits to the employer's card went through, or failed;
+     ADR 0028)
 
    Copy this destination's signing secret into Beanstalk as
    `STRIPE_WEBHOOK_SECRET`.

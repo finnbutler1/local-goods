@@ -469,3 +469,35 @@ downloaded and read.
 Static checks (`AccessibilityTest`, `ResponsiveTablesTest`) sweep the
 changed pages automatically. Not checked: a screen reader, a real phone,
 WebKit, 375px and 414px.
+
+## Refunds and corrections (2026-10-24)
+
+**How it was checked.** puppeteer-core with axe-core 4.14 (in a scratch
+folder, not in `package.json`) drove headless Chrome against `php -S` on a
+scratch SQLite database with the demo data, simulated payments and no AI
+key. It sent a real "Request a correction" as the employee and "Refund
+unspent credits" as HR, then approved both from the Corrections queue as
+the platform admin. At 320px, 375px and 1280px: the wallet (before and
+after), the employer dashboard's refund card, the queue with open requests
+(light and dark), the queue after the decisions, the queue as the BID
+admin (read-only), the merchant dashboard (Tax collected with the seeded
+refund) and the reconciliation page.
+
+- axe-core (WCAG 2.0, 2.1 and 2.2 A and AA, plus best practice): no
+  violations on any of them. Two reports did not hold up: on one first
+  load at 320px, submit buttons measured mid colour-transition (gone on
+  every reload), and at 1280px scrolled to Tax collected, axe measured the
+  floating Feedback button's label against the page behind it; its real
+  colours are dark text on orange (#0d1216 on #ff8a63).
+- No sideways scroll on any page at any of the three widths; headings
+  never skip a level.
+- The request form is a `<details>` disclosure with a labelled reason
+  select and note (hint "Don't include names or card details."); errors
+  show only on the form that was sent. Judges see the same fields disabled
+  with no form around them. Every decision form has `data-busy`, and the
+  decided list is an `x-rtable` (cards on phones).
+- The 375px screenshot of the queue was looked at.
+
+Static checks (`AccessibilityTest`, `ResponsiveTablesTest`,
+`EmployeeNamePrivacyTest`) sweep the new page and the changed ones
+automatically. Not checked: a screen reader, a real phone, WebKit.
