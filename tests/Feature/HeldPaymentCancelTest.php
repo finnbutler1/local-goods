@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
+use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Models\RedemptionDecision;
 use App\Models\User;
@@ -24,6 +25,7 @@ use App\Services\RedemptionReviewService;
 use App\Services\RedemptionService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use LogicException;
 use Tests\Concerns\UsesFakeStripe;
 use Tests\Fakes\FakeClaudeClient;
@@ -35,7 +37,8 @@ use Tests\TestCase;
  * customer paid another way, so the hold must never be approved later. It
  * goes through the same return path as a "no purchase happened" denial
  * (one ledger entry back to the employee, no transfer), but is recorded as
- * a cancel by the merchant or employee, not as a fraud denial.
+ * a cancel by the merchant (or a BID or platform admin), not as a fraud
+ * denial. The employee can't cancel a held payment: they ask the shop.
  */
 class HeldPaymentCancelTest extends TestCase
 {
@@ -124,21 +127,47 @@ class HeldPaymentCancelTest extends TestCase
         $this->assertLedgerInvariant();
     }
 
-    public function test_the_employee_cancels_from_their_wallet(): void
+    public function test_the_employee_cannot_cancel_a_held_payment_and_is_told_the_shop_can(): void
+    {
+        $held = $this->heldInPerson();
+        $payCode = PayCode::where('redemption_id', $held->id)->sole();
+        $balance = $this->jordan->balanceCents();
+
+        $this->actingAs($this->employeeUser)->post(route('merchant.redemption.cancel', $held))->assertForbidden();
+        $this->actingAs($this->employeeUser)->post("/employee/redemptions/{$held->id}/cancel")->assertNotFound();
+        $this->assertFalse(Route::has('employee.redemption.cancel'));
+        $this->assertFalse(RedemptionDecision::mayCancel($this->employeeUser, $held));
+
+        $this->actingAs($this->employeeUser)->get('/employee?pay_code='.$payCode->id)->assertOk()
+            ->assertSee("Your payment is being held for a quick review. Your credits are set aside, and come back to you if it isn't approved. If you pay another way, the shop can cancel this payment and your credits come back.", false)
+            ->assertDontSee('Cancel this payment');
+        $this->assertTrue($held->fresh()->isUnderReview());
+        $this->assertSame($balance, $this->jordan->balanceCents());
+
+        $this->expectException(LogicException::class);
+        app(RedemptionReviewService::class)->cancel($held, $this->employeeUser);
+    }
+
+    public function test_an_unused_pay_code_can_still_be_cancelled_by_the_employee(): void
+    {
+        $payCode = app(PayCodes::class)->issue($this->jordan->fresh(), $this->grind, 500);
+
+        $this->actingAs($this->employeeUser)->post(route('employee.pay-code.cancel', $payCode))
+            ->assertSessionHas('status', 'Pay code cancelled. Nothing was charged.');
+        $this->assertSame(PayCode::STATUS_CANCELLED, $payCode->fresh()->status);
+    }
+
+    public function test_a_bid_admin_may_cancel_and_it_says_so(): void
     {
         $held = $this->heldInPerson();
         $balance = $this->jordan->balanceCents();
 
-        $this->actingAs($this->employeeUser)->get('/employee')->assertOk()->assertSee(route('employee.redemption.cancel', $held), false);
-        $this->actingAs($this->employeeUser)->post(route('employee.redemption.cancel', $held))
-            ->assertSessionHas('status', 'Payment cancelled: $40.00 back in your credits from Farragut Grind.');
+        app(RedemptionReviewService::class)->cancel($held, $this->admin());
 
         $this->assertSame($balance + 4000, $this->jordan->balanceCents());
-        $this->assertSame('Cancelled by employee', $held->fresh()->cancelledLabel());
-        $this->actingAs($this->employeeUser)->get('/employee')->assertOk()
-            ->assertSee('Cancelled by employee')
-            ->assertSee('Cancelled, credits returned')
-            ->assertSee('Cancelled at the counter by the employee: $40.00 returned from Farragut Grind');
+        $this->assertSame('Cancelled by BID admin', $held->fresh()->cancelledLabel());
+        $this->assertSame(Role::BidAdmin->value, RedemptionDecision::where('redemption_id', $held->id)->sole()->decided_by_role);
+        $this->assertLedgerInvariant();
     }
 
     public function test_a_cancelled_hold_can_never_be_approved_or_denied_and_never_transfers(): void
@@ -177,7 +206,6 @@ class HeldPaymentCancelTest extends TestCase
         $this->assertCount(1, $this->stripe->callsOf('transfer'));
 
         $this->actingAs($this->merchantUser)->post(route('merchant.redemption.cancel', $approved))->assertSessionHas('error');
-        $this->actingAs($this->employeeUser)->post(route('employee.redemption.cancel', $approved))->assertSessionHas('error');
 
         $this->assertTrue($approved->fresh()->isApproved());
         $this->assertCount(1, $this->stripe->callsOf('transfer'));
@@ -190,21 +218,17 @@ class HeldPaymentCancelTest extends TestCase
         $this->assertTrue($toGo->isUnderReview());
 
         $this->actingAs($this->merchantUser)->post(route('merchant.redemption.cancel', $toGo))->assertNotFound();
-        $this->actingAs($this->employeeUser)->post(route('employee.redemption.cancel', $toGo))->assertNotFound();
         $this->expectException(LogicException::class);
         app(RedemptionReviewService::class)->cancel($toGo, $this->merchantUser);
     }
 
-    public function test_only_their_own_merchant_or_employee_can_cancel(): void
+    public function test_only_its_own_merchant_can_cancel_from_the_dashboard(): void
     {
         $held = $this->heldInPerson();
         $otherMerchant = User::factory()->role(Role::Merchant)->create();
         Merchant::where('name', 'Press Room Deli')->firstOrFail()->update(['user_id' => $otherMerchant->id]);
-        $otherEmployee = User::factory()->role(Role::Employee)->create();
-        Employee::whereNull('user_id')->orderBy('id')->firstOrFail()->update(['user_id' => $otherEmployee->id]);
 
         $this->actingAs($otherMerchant)->post(route('merchant.redemption.cancel', $held))->assertNotFound();
-        $this->actingAs($otherEmployee)->post(route('employee.redemption.cancel', $held))->assertNotFound();
         $this->actingAs($this->admin())->post(route('merchant.redemption.cancel', $held))->assertForbidden();
 
         $this->assertTrue($held->fresh()->isUnderReview());
@@ -218,7 +242,6 @@ class HeldPaymentCancelTest extends TestCase
         $judge = $this->signIn(Role::Judge);
 
         $this->actingAs($judge)->post(route('merchant.redemption.cancel', $held))->assertForbidden();
-        $this->actingAs($judge)->post(route('employee.redemption.cancel', $held))->assertForbidden();
         $this->actingAs($judge)->followingRedirects()->get(route('judge.view-as', 'merchant'))->assertOk()
             ->assertSee('Held at the counter')
             ->assertDontSee('Cancel this payment');
@@ -265,7 +288,7 @@ class HeldPaymentCancelTest extends TestCase
 
         $problems = array_filter([
             'merchant, held at the counter' => AccessibilityAudit::problems($this->actingAs($this->merchantUser)->get('/merchant')->assertOk()->assertSee('Held at the counter')->getContent()),
-            'wallet, held confirmation' => AccessibilityAudit::problems($this->actingAs($this->employeeUser)->get('/employee?pay_code='.$payCode->id)->assertOk()->assertSee('Cancel this payment')->getContent()),
+            'wallet, held confirmation' => AccessibilityAudit::problems($this->actingAs($this->employeeUser)->get('/employee?pay_code='.$payCode->id)->assertOk()->assertSee('the shop can cancel this payment')->getContent()),
         ]);
 
         $this->assertSame([], $problems);

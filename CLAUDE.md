@@ -26,8 +26,9 @@ webhook, reconciliation logic and `TransferGate` unchanged.
 - Merchant: "Take a payment" on `/merchant`; the session keeps only the
   looked-up id (`Merchant\PayCodeController::SESSION_KEY`). Initials only.
   Held wording neutral, no fraud words.
-- Cancel this payment: held in-person only, by its own merchant or
-  employee login (`RedemptionDecision::mayCancel`), via
+- Cancel this payment: held in-person only, by its own merchant login or
+  a BID/platform admin, never the employee (`RedemptionDecision::mayCancel`;
+  the employee only cancels an unused pay code), via
   `RedemptionReviewService::cancel` (same `decide()` path, `review_rejected`
   back to the employee, decision `cancel`). Approve/deny stay admin only.
   Not eval or adjudication data.
