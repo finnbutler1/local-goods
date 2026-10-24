@@ -88,7 +88,7 @@ class PhoneLayoutTest extends TestCase
         $judge = $this->actingAs($this->signIn(Role::Judge))->get('/judge')->assertOk()->getContent();
         $this->assertStringContainsString('class="tap-target text-primary underline', $judge);
         $wallet = $this->actingAs($this->signIn(Role::Employee))->get('/employee')->assertOk()->getContent();
-        $this->assertStringContainsString('class="tap-target mt-2 self-start', $wallet);
+        $this->assertStringContainsString('class="tap-target mt-2 min-h-6 self-start', $wallet);
     }
 
     /** @return list<string> */

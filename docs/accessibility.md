@@ -240,10 +240,10 @@ key, with dark mode set through the system setting:
 - **No sideways scroll and no axe violations** at 375px and 1280px, light
   and dark, on `/`, `/employee`, `/merchant`, `/bid-admin`,
   `/bid-admin/impact` and `/judge` (24 page checks), and on every other
-  role page at one width and theme each. The one note left is axe's
+  role page at one width and theme each. The one note left then was axe's
   best-practice `landmark-complementary-is-top-level` on the landing page's
-  labelled 3x box, an `<aside>` inside a section. It is not a WCAG failure,
-  and the claims tests find the box by that tag, so it stays.
+  labelled 3x box, an `<aside>` inside a section; it became a labelled
+  `<section>` in the phone-first pass (see there).
 - **Contrast:** every approved pair passes in both modes
   (`ColorContrastTest`, 84 checks).
 - **Menus by keyboard** (script pressing keys): on the BID admin's phone
@@ -367,7 +367,21 @@ drawn as cards, but it stays a real `<table>` with its header row (visually
 hidden), and `app.js` adds table roles because Safari otherwise stops
 treating it as a table. Not checked: how VoiceOver actually reads the
 cards (whether it reads the column name twice, from the header and the
-on-screen label), and axe was not re-run in this pass.
+on-screen label).
+
+**axe re-run (axe-core 4.10.2, WCAG 2.0/2.1/2.2 A and AA plus best
+practice)** on `/`, `/eval`, `/eval/merchants`, the wallet's two tabs,
+`/merchant`, admin Accounts (`/admin`), `/bid-admin/impact` and `/judge`,
+at 375px and 1280px, light and dark (36 page checks), same scratch setup.
+First run: two violations. `landmark-complementary-is-top-level` on the
+landing page's 3x box (an `<aside>` inside `<main>`), now a labelled
+`<section>`, as is the same box on BID impact; and `target-size` (WCAG
+2.5.8) on the wallet's "Redeem here" links at 1280px (20px tall), now at
+least 24px on desktop and 44px on phones. Second run: no violations. axe
+still lists some text as "needs review" for contrast (up to 10 items, on
+the merchant dashboard), where the Feedback button, the tab bar or a
+decorative element overlaps it; every text colour comes from a pair
+`ColorContrastTest` checks.
 
 ## Not tested
 

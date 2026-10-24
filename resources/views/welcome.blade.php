@@ -160,9 +160,9 @@
         </div>
 
         {{-- Supporting evidence, below the mission, never the hero. Always with its label and source. --}}
-        <aside aria-label="Outside estimate of local recirculation" class="mt-8 rounded-3xl border-2 border-dashed border-muted bg-band p-6 sm:p-8">
+        <section aria-label="Outside estimate of local recirculation" class="mt-8 rounded-3xl border-2 border-dashed border-muted bg-band p-6 sm:p-8">
             @include('partials.recirculation-evidence')
-        </aside>
+        </section>
     </section>
 
     {{-- Trust and AI --}}

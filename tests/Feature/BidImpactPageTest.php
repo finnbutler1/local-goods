@@ -92,7 +92,7 @@ class BidImpactPageTest extends TestCase
             ->getContent();
 
         // The 3x line appears once, inside the labelled box with its source and the pilot line (ADR 0024).
-        $box = str($html)->after('data-recirculation-estimate')->before('</aside>')->toString();
+        $box = str($html)->after('data-recirculation-estimate')->before('</section>')->toString();
         $text = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($box)));
         foreach ([
             'Estimate from an outside study, not measured by Local Goods',
