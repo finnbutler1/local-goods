@@ -557,6 +557,21 @@
         font-size: max(1rem, 1em);
     }
 
+    /* WebKit draws its own select control, ignoring our padding and height
+       (28px tall in the audit), so on phones we draw it: 44px tall, our
+       border and corners, and a chevron in the text color (so it follows
+       dark mode). Tapping still opens the phone's own picker. */
+    select:not([multiple]) {
+        min-height: 2.75rem;
+        appearance: none;
+        padding-right: 2.5rem;
+        background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+            linear-gradient(135deg, currentColor 50%, transparent 50%);
+        background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50%;
+        background-size: 0.375rem 0.375rem;
+        background-repeat: no-repeat;
+    }
+
     label:has(> input:is([type='checkbox'], [type='radio'])) {
         min-height: 2.75rem;
         align-items: center;

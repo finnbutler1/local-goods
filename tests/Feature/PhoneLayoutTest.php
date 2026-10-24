@@ -141,6 +141,7 @@ class PhoneLayoutTest extends TestCase
 
         $css = File::get(resource_path('css/app.css'));
         $this->assertMatchesRegularExpression('/:is\(input, select, textarea\) \{\s*font-size: max\(1rem, 1em\);/', $css);
+        $this->assertMatchesRegularExpression('/select:not\(\[multiple\]\) \{\s*min-height: 2\.75rem;\s*appearance: none;/', $css);
     }
 
     public function test_the_known_fields_keep_their_keyboards(): void
