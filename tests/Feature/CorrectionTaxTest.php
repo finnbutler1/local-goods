@@ -99,8 +99,8 @@ class CorrectionTaxTest extends TestCase
         $rows = array_map(str_getcsv(...), array_filter(explode("\n", $this->get(route('merchant.redemptions.csv'))->streamedContent())));
         $refund = collect($rows)->first(fn ($r) => ($r[3] ?? null) === 'Refund');
 
-        $this->assertSame([$redemption->reference(), $redemption->employee->initials(), '1× Drip coffee', '-3.75', '-0.38', '-4.13', 'Refunded tax: DC meals tax 10% $0.38'],
-            [$refund[1], $refund[4], $refund[5], $refund[6], $refund[7], $refund[8], $refund[9]]);
+        $this->assertSame([$redemption->reference(), $redemption->employee->initials(), '1× Drip coffee', '-3.75', '-0.38', '-4.13', '0.00', '-4.13', 'Refunded tax: DC meals tax 10% $0.38'],
+            [$refund[1], $refund[4], $refund[5], $refund[6], $refund[7], $refund[8], $refund[9], $refund[10], $refund[11]]);
         $this->assertStringNotContainsString($redemption->employee->display_name, implode(',', array_merge(...$rows)));
         $this->assertSame('Refund', $rows[1][3], 'The newest row first');
     }

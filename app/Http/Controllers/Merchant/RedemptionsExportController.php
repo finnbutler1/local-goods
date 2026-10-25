@@ -16,12 +16,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * only (ADR 0014). Reads only; a judge gets the demo merchant's. Completed
  * refunds (ADR 0028) are rows of their own, dated when they completed,
  * with negative amounts and the refunded tax from the order's snapshot.
+ * Local Goods fee and You receive (ADR 0029) come from each redemption's
+ * fee snapshot; a refund row gives back its share of the fee.
  */
 class RedemptionsExportController extends Controller
 {
     use ResolvesMerchant;
 
-    public const HEADERS = ['Date (DC time)', 'Confirmation', 'How', 'Status', 'Customer', 'Items', 'Subtotal', 'Tax', 'Total', 'Tax note'];
+    public const HEADERS = ['Date (DC time)', 'Confirmation', 'How', 'Status', 'Customer', 'Items', 'Subtotal', 'Tax', 'Total', 'Local Goods fee', 'You receive', 'Tax note'];
 
     public function __invoke(Request $request): StreamedResponse
     {
@@ -65,6 +67,9 @@ class RedemptionsExportController extends Controller
             $tax?->isAdded() ? Money::toDollars($tax->subtotalCents) : '',
             $tax?->isAdded() ? Money::toDollars($tax->taxCents) : '',
             Money::toDollars($redemption->amount_cents),
+            // The Local Goods merchant fee (ADR 0029), from the redemption's own snapshot; charged only once it cleared.
+            $redemption->isApproved() ? Money::toDollars((int) $redemption->merchant_fee_cents) : '',
+            $redemption->isApproved() ? Money::toDollars($redemption->amount_cents - (int) $redemption->merchant_fee_cents) : '',
             match (true) {
                 $tax?->isAdded() => implode('; ', array_map(fn ($line) => TaxBreakdown::lineLabel($line['label'], $line['rate_bps']).' '.Money::format($line['tax_cents']), $tax->lines)),
                 $tax !== null => 'Amount includes any tax charged by the shop',
@@ -90,6 +95,8 @@ class RedemptionsExportController extends Controller
             $tax ? $minus($tax->subtotalCents) : '',
             $tax ? $minus($tax->taxCents) : '',
             $minus($refund->amount_cents),
+            $minus((int) $refund->fee_cents),
+            $minus($refund->amount_cents - (int) $refund->fee_cents),
             $tax
                 ? 'Refunded tax: '.implode('; ', array_map(fn ($line) => TaxBreakdown::lineLabel($line['label'], $line['rate_bps']).' '.Money::format($line['tax_cents']), $tax->lines))
                 : 'Amount includes any tax charged by the shop',

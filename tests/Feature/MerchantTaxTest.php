@@ -156,8 +156,8 @@ class MerchantTaxTest extends TestCase
         $this->assertSame(RedemptionsExportController::HEADERS, $rows[0]);
         $byRef = collect(array_slice($rows, 1))->keyBy(1);
         $initials = Employee::firstOrFail()->initials();
-        $this->assertSame(['2026-10-20 12:00', $order->reference(), 'To go', 'Cleared', $initials, '1× Drip coffee', '3.75', '0.38', '4.13', 'DC meals tax 10% $0.38'], $byRef[$order->reference()]);
-        $this->assertSame(['', '', '6.50', 'Amount includes any tax charged by the shop'], array_slice($byRef[$typed->reference()], 6));
+        $this->assertSame(['2026-10-20 12:00', $order->reference(), 'To go', 'Cleared', $initials, '1× Drip coffee', '3.75', '0.38', '4.13', '0.00', '4.13', 'DC meals tax 10% $0.38'], $byRef[$order->reference()]);
+        $this->assertSame(['', '', '6.50', '0.00', '6.50', 'Amount includes any tax charged by the shop'], array_slice($byRef[$typed->reference()], 6));
         // Completed refunds (ADR 0028; the seed has one) are rows of their own.
         $orders = array_filter(array_slice($rows, 1), fn ($row) => $row[3] !== 'Refund');
         $this->assertSame($this->grind()->redemptions()->count(), count($orders), 'only this merchant\'s redemptions');
