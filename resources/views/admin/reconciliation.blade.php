@@ -81,7 +81,12 @@
                     @endforeach
                     <tr>
                         <th scope="row" data-primary class="px-5 py-3 font-semibold sm:px-6">Balance held by Stripe</th>
-                        <td data-label="Local Goods ledger" class="px-5 py-3 text-right">{{ Money::format($report['expected_balance_cents']) }} <span class="block text-sm text-muted">paid minus transferred{{ $report['ledger']['refund_cents'] > 0 ? ' and refunded' : '' }}</span></td>
+                        <td data-label="Local Goods ledger" class="px-5 py-3 text-right">{{ Money::format($report['expected_balance_cents']) }} <span class="block text-sm text-muted">paid minus transferred{{ $report['ledger']['refund_cents'] > 0 ? ' and refunded' : '' }}</span>
+                            @if ($report['ledger']['merchant_fee_cents'] > 0)
+                                {{-- Only when the merchant fee is on (ADR 0029): transfers are net of it, so it is already in this balance. --}}
+                                <span class="block text-sm text-muted" data-merchant-fees>includes {{ Money::format($report['ledger']['merchant_fee_cents']) }} Local Goods fees kept on merchant sales</span>
+                            @endif
+                        </td>
                         <td data-label="Stripe" class="px-5 py-3 text-right">{{ Money::format($report['stripe']['balance_cents']) }} <span class="block text-sm text-muted">{{ Money::format($report['stripe']['available_cents']) }} available now</span></td>
                         <td data-label="Match?" class="px-5 py-3"><x-badge tone="neutral">For information</x-badge></td>
                     </tr>

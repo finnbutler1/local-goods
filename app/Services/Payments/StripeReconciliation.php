@@ -3,10 +3,12 @@
 namespace App\Services\Payments;
 
 use App\Models\Bid;
+use App\Models\Correction;
 use App\Models\CorrectionAction;
 use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
 use App\Models\MerchantPayout;
+use App\Models\Redemption;
 use App\Support\Money;
 use App\Support\StripeEnvironment;
 use App\Support\StripeMode;
@@ -33,6 +35,13 @@ use Illuminate\Support\Carbon;
  * the transfers it counts (Stripe nets them off too), each reversal and
  * each card refund to an employer is matched by id and amount, and refunds
  * have their own total. With no corrections every number is as before.
+ *
+ * The merchant fee (ADR 0029): a transfer is the sale less the fee, so the
+ * fee stays in the platform's balance, and the expected balance already
+ * includes it. Each sent transfer plus its fee must be its redemption's
+ * total, and the platform account's fee lines must add up to the fees on
+ * cleared sales less what completed refunds gave back. With no fee (the
+ * default) every number and sentence is as before.
  */
 class StripeReconciliation
 {
@@ -104,7 +113,7 @@ class StripeReconciliation
         ];
 
         $report['mismatches'] = [...$this->comparePurchases($intents), ...$this->compareTransfers($transfers),
-            ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds)];
+            ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds), ...$this->compareMerchantFees()];
 
         if ($local['purchase_cents'] !== $report['stripe']['purchase_cents']) {
             $report['mismatches'][] = 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe'.self::feeSplit($local).'; Stripe received '
@@ -184,7 +193,43 @@ class StripeReconciliation
             'refund_reversal_cents' => $reversed,
             'refund_cents' => (int) (clone $refunds)->sum('amount_cents'),
             'refunds' => (clone $refunds)->count(),
+            // Kept by the platform on Stripe-paid sales, net of fees given back on refunds (ADR 0029). Already inside the expected balance.
+            'merchant_fee_cents' => (int) CreditLedgerEntry::where('platform', true)
+                ->whereIn('type', [CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED])
+                ->whereIn('redemption_id', (clone $sent)->select('redemption_id'))->sum('amount_cents'),
         ];
+    }
+
+    /**
+     * The merchant fee (ADR 0029): every sent transfer plus the fee held
+     * back from it is its redemption's total, at the redemption's own
+     * snapshot; and the platform account's merchant fee lines are the fees
+     * on cleared sales less the shares completed refunds gave back.
+     *
+     * @return list<string>
+     */
+    private function compareMerchantFees(): array
+    {
+        $out = [];
+
+        foreach (MerchantPayout::where('status', MerchantPayout::STATUS_SENT)->whereNotNull('redemption_id')->with('redemption')->get() as $row) {
+            if ($row->redemption && ($row->amount_cents + $row->fee_cents !== $row->redemption->amount_cents || $row->fee_cents !== (int) $row->redemption->merchant_fee_cents)) {
+                $out[] = 'Transfer '.$row->stripe_transfer_id.' ('.Money::format($row->amount_cents).') plus the Local Goods fee held back ('.Money::format($row->fee_cents)
+                    .') should be redemption '.$row->redemption->reference().'\'s '.Money::format($row->redemption->amount_cents).' less its '.Money::format((int) $row->redemption->merchant_fee_cents).' fee.';
+            }
+        }
+
+        $charged = (int) Redemption::where('status', Redemption::STATUS_APPROVED)->sum('merchant_fee_cents');
+        $returned = (int) Correction::where('type', Correction::TYPE_REDEMPTION_REFUND)->where('status', Correction::STATUS_COMPLETED)->sum('fee_cents');
+        $lines = (int) CreditLedgerEntry::where('platform', true)
+            ->whereIn('type', [CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED])->sum('amount_cents');
+
+        if ($lines !== $charged - $returned) {
+            $out[] = 'Local Goods fees on merchant sales: cleared sales charged '.Money::format($charged).' and refunds gave back '.Money::format($returned)
+                .', but the platform account in the ledger has '.Money::format($lines).' for them.';
+        }
+
+        return $out;
     }
 
     /** @return list<string> */
