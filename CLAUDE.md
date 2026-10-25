@@ -48,6 +48,10 @@ Fraud prompt (`8d5e1e70`), signals, eval data, locks, adjudication,
   `CorrectionTaxTest`, `CorrectionQueueTest`, `CorrectionPrivacyTest`,
   `CorrectionsDemoTest`, `CorrectionsMigrationSafetyTest`,
   `MysqlCorrectionLockTest`. Test helper `Tests\Concerns\MakesCorrections`.
+- Spending figures (BID impact, participation, employer, landing totals,
+  recirculation input) are net of completed refunds via
+  `CompletedRefunds` (ledger `merchant_refunded`, dated when completed),
+  labelled "net of refunds"; visits unchanged (`SpendingNetOfRefundsTest`).
 
 **DC sales tax at redemption — done (2026-10-24, ADR 0027).** One
 migration (additive: `merchant_products.tax_category` backfilled from the

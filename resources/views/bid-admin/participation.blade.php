@@ -31,11 +31,14 @@
         <x-card tone="night">
             <dt class="text-sm font-semibold text-night-muted">Spent at independent merchants</dt>
             <dd class="tabular mt-2 font-display text-4xl font-semibold text-night-accent">{{ Money::format($monthCents) }}</dd>
-            <dd class="mt-1 text-sm text-night-muted">this month · {{ Money::format($allTimeCents) }} since launch</dd>
+            <dd class="mt-1 text-sm text-night-muted">this month{{ $monthRefundedCents > 0 ? ' (net of refunds)' : '' }} · {{ Money::format($allTimeCents) }} since launch{{ $allTimeRefundedCents > 0 ? ' (net of refunds)' : '' }}</dd>
         </x-card>
     </dl>
     <p class="-mt-6 text-sm text-muted">
         How we count this: cleared redemptions (approved by the AI or by a person here) at participating merchants.
+        @if ($allTimeRefundedCents > 0)
+            Refunds that completed come off in the month they completed ({{ Money::format($allTimeRefundedCents) }} since launch).
+        @endif
         @if ($heldCents > 0)
             {{ Money::format($heldCents) }} more is held for review and not counted yet.
         @endif
@@ -72,7 +75,7 @@
                                 <th scope="row" data-primary class="px-5 py-3 font-semibold">{{ $merchant->name }}<span class="block text-sm font-normal text-muted">{{ $merchant->address }}</span></th>
                                 <td data-label="Category" class="px-5 py-3 capitalize">{{ $merchant->category }}</td>
                                 <td data-label="Visits this month" class="px-5 py-3 text-right">{{ $merchant->month_visits }}</td>
-                                <td data-label="Sales this month" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->month_cents) }}</td>
+                                <td data-label="Sales this month" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->month_cents) }}@if ($merchant->month_refunded_cents > 0)<span class="block text-sm text-muted" data-net-of-refunds>net of refunds ({{ Money::format($merchant->month_refunded_cents) }})</span>@endif</td>
                                 <td data-label="Owed via Stripe test mode" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_stripe_cents) }}</td>
                                 <td data-label="Owed, simulated" class="px-5 py-3 text-right">{{ Money::format((int) $merchant->owed_cents - (int) $merchant->owed_stripe_cents) }}</td>
                                 <td data-label="Last payout" class="px-5 py-3 text-right">{{ $merchant->last_payout_at ? \Illuminate\Support\Carbon::parse($merchant->last_payout_at)->setTimezone('America/New_York')->format('M j') : 'None yet' }}</td>

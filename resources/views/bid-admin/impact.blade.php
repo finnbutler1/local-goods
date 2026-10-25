@@ -46,8 +46,9 @@
                     [
                         'label' => 'Spent at independent merchants',
                         'value' => Money::format($month['spent_cents']),
-                        'detail' => Money::format($all['spent_cents']).' since launch'.($impact['held_count'] > 0 ? ' · '.Money::format($impact['held_cents']).' more waiting for review' : ''),
-                        'how' => 'The total of cleared redemptions: each is one "merchant earned" entry in the ledger, written only when a redemption clears. Held and denied redemptions are left out. A redemption counts in the month it happened, in Washington, DC time, even if a person cleared it later. The same total as "Spent locally" on the employer dashboards, added up.',
+                        'unit' => $impact['refunded']['this_month'] > 0 ? 'net of refunds' : null,
+                        'detail' => Money::format($all['spent_cents']).' since launch'.($impact['refunded']['all_time'] > 0 ? ' (net of refunds)' : '').($impact['held_count'] > 0 ? ' · '.Money::format($impact['held_cents']).' more waiting for review' : ''),
+                        'how' => 'The total of cleared redemptions: each is one "merchant earned" entry in the ledger, written only when a redemption clears. Held and denied redemptions are left out. A redemption counts in the month it happened, in Washington, DC time, even if a person cleared it later. A completed refund comes off in the month it completed; one still being processed isn\'t taken off yet. The same total as "Spent locally" on the employer dashboards, added up.',
                         'night' => true,
                     ],
                     [
@@ -79,7 +80,7 @@
                         <dt class="text-sm font-semibold {{ $night ? 'text-night-muted' : 'text-muted' }}">{{ $tile['label'] }}</dt>
                         <dd class="mt-2 {{ $night ? 'text-night-accent' : 'text-primary' }}">
                             <span class="tabular font-display text-4xl font-semibold">{{ $tile['value'] }}</span>
-                            @isset($tile['unit'])<span class="font-semibold"> {{ $tile['unit'] }}</span>@endisset
+                            @if (isset($tile['unit']))<span class="font-semibold"> {{ $tile['unit'] }}</span>@endif
                         </dd>
                         <dd class="mt-1 text-sm {{ $night ? 'text-night-muted' : 'text-muted' }}">{{ $monthName }} so far · {{ $tile['detail'] }}</dd>
                         <dd class="mt-3 border-t {{ $night ? 'border-night-line/40' : 'border-line/70' }} pt-2 text-sm">
@@ -113,7 +114,7 @@
                                  style="height: {{ max(2, round(100 * $week['cents'] / $max)) }}%"></div>
                             <div @class(['pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night shadow group-hover:block group-data-open:block', 'left-0' => $loop->first, 'right-0' => $loop->last, 'left-1/2 -translate-x-1/2' => ! $loop->first && ! $loop->last])>
                                 <span class="font-semibold">Week of {{ $week['start']->format('M j') }}</span><br>
-                                {{ Money::format($week['cents']) }} · {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }}
+                                {{ Money::format($week['cents']) }}{{ $week['refunded_cents'] > 0 ? ' net of refunds' : '' }} · {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }}
                             </div>
                         </div>
                     @endforeach
@@ -137,14 +138,14 @@
                     <thead class="text-muted"><tr><th scope="col" class="py-1 font-semibold">Week of</th><th scope="col" class="py-1 text-right font-semibold">Visits</th><th scope="col" class="py-1 text-right font-semibold">Spent</th></tr></thead>
                     <tbody class="tabular divide-y divide-line/70">
                         @foreach ($weeks as $week)
-                            <tr><th scope="row" class="py-1 font-normal">{{ $week['start']->format('M j') }}</th><td class="py-1 text-right">{{ $week['visits'] }}</td><td class="py-1 text-right">{{ Money::format($week['cents']) }}</td></tr>
+                            <tr><th scope="row" class="py-1 font-normal">{{ $week['start']->format('M j') }}</th><td class="py-1 text-right">{{ $week['visits'] }}</td><td class="py-1 text-right">{{ Money::format($week['cents']) }}@if ($week['refunded_cents'] > 0) <span class="text-muted">(net of {{ Money::format($week['refunded_cents']) }} refunded)</span>@endif</td></tr>
                         @endforeach
                     </tbody>
                 </table>
             </details>
             <details class="mt-2 text-sm">
                 <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
-                <p class="mt-1 text-muted">Cleared redemptions by the week they happened, in Washington, DC time: the employer dashboards' weekly trend, added up across employers.</p>
+                <p class="mt-1 text-muted">Cleared redemptions by the week they happened, in Washington, DC time, less refunds in the week they completed: the employer dashboards' weekly trend, added up across employers.</p>
             </details>
         </x-card>
 
@@ -173,7 +174,7 @@
                                 <td data-label="Visits out of the office" class="px-5 py-3 text-right">{{ $m['visits'] }}</td>
                                 <td data-label="Local businesses visited" class="px-5 py-3 text-right">{{ $m['businesses'] }} of {{ $m['participating'] }}</td>
                                 <td data-label="First-time visits" class="px-5 py-3 text-right">{{ $m['first_visits'] }}</td>
-                                <td data-label="Spent locally" class="px-5 py-3 text-right">{{ Money::format($m['spent_cents']) }}</td>
+                                <td data-label="Spent locally" class="px-5 py-3 text-right">{{ Money::format($m['spent_cents']) }}@if ($m['refunded_cents'] > 0)<span class="block text-sm text-muted" data-net-of-refunds>net of refunds</span>@endif</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -184,7 +185,7 @@
                 <p class="mt-1 text-muted">
                     The same definitions as the employer dashboard: employees with at least one cleared redemption this month, out of those enrolled;
                     each cleared redemption is one visit; different businesses visited, out of every participating business; a first-time visit is
-                    someone going to a business they had never redeemed at before; spent locally is the total of cleared redemptions.
+                    someone going to a business they had never redeemed at before; spent locally is the total of cleared redemptions, less refunds completed this month.
                 </p>
             </details>
         </section>
@@ -198,7 +199,7 @@
                 <p class="mt-3 max-w-3xl text-lg">
                     If the national study's rate held here, about
                     <strong class="tabular font-semibold">{{ Money::format($impact['recirculation_cents']) }}</strong>
-                    of this spending would recirculate locally. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch by
+                    of this spending would recirculate locally. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch{{ $impact['refunded']['all_time'] > 0 ? ' (net of refunds)' : '' }} by
                     {{ round(100 * $source['independent_rate'], 1) }}%; the real share here could be higher or lower.
                 </p>
             </section>

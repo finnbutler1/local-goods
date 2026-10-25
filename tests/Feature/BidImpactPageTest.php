@@ -52,7 +52,8 @@ class BidImpactPageTest extends TestCase
     public function test_the_page_shows_the_ledger_totals_and_explains_every_number(): void
     {
         $this->signIn(Role::BidAdmin);
-        $total = (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents');
+        // Net of completed refunds (ADR 0028; the seed has one).
+        $total = (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents') + (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_REFUNDED)->sum('amount_cents');
         $impact = app(BidImpactMetrics::class)->for();
 
         $response = $this->get('/bid-admin/impact')->assertOk()
@@ -122,7 +123,7 @@ class BidImpactPageTest extends TestCase
         $this->signIn(Role::BidAdmin);
 
         $this->get('/bid-admin/impact')->assertOk()->assertSee(
-            Money::format((int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents')).' since launch',
+            Money::format((int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents') + (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_REFUNDED)->sum('amount_cents')).' since launch',
         );
     }
 

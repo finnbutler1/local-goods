@@ -292,8 +292,13 @@ the merchant's "Tax collected" in the month the refund completed.
 and never change a fraud decision. A refund puts credits back in the
 employee's balance, which the AI already sees, exactly like an allowance.
 
-**Known limits.** Impact numbers (BID and employer dashboards) count the
-original spend and don't subtract later refunds. A payout someone reversed
+**Spending figures are net of refunds.** The BID impact, participation,
+employer and landing pages take a completed refund off the dollars spent in
+the week and month it completed, and say "net of refunds" where one did.
+A refund still processing at Stripe isn't taken off yet; visits and people
+counts don't change (the visit happened).
+
+**Known limits.** A payout someone reversed
 in the Stripe dashboard is handled by hand, outside Local Goods. The demo
 has one completed partial refund and one rejected request, both synthetic.
 
@@ -675,8 +680,10 @@ candidates above are kept out of all of it.
 
 The BID impact page and the landing page strip count only cleared
 redemptions in the credit ledger, using the same definitions as the employer
-dashboard ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)). They
-are demo numbers, labelled as fictional.
+dashboard ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)). Dollars
+are net of completed refunds, in the week and month each refund completed
+([ADR 0028](docs/adr/0028-refunds-and-corrections.md)). They are demo
+numbers, labelled as fictional.
 
 The landing page, the BID impact page and the README say that money spent at
 independent local businesses tends to recirculate roughly 3x more in the

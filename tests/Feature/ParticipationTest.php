@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\CreditLedgerEntry;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
@@ -33,8 +34,11 @@ class ParticipationTest extends TestCase
         app(RedemptionService::class)->redeem(Employee::orderBy('id')->firstOrFail(), Merchant::firstOrFail(), 1111);
 
         [$monthStart] = EmployerProgram::month();
-        $month = (int) Redemption::where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents');
-        $allTime = (int) Redemption::where('status', Redemption::STATUS_APPROVED)->sum('amount_cents');
+        // Net of completed refunds (ADR 0028; the seed has one), in the month they completed.
+        $refunded = fn () => CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_REFUNDED);
+        $month = (int) Redemption::where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents')
+            + (int) $refunded()->where('created_at', '>=', $monthStart)->sum('amount_cents');
+        $allTime = (int) Redemption::where('status', Redemption::STATUS_APPROVED)->sum('amount_cents') + (int) $refunded()->sum('amount_cents');
 
         $this->get('/bid-admin/participation')->assertOk()
             ->assertSee('Spent at independent merchants')

@@ -61,8 +61,8 @@
                 [
                     'label' => 'Spent locally',
                     'value' => Money::format($metrics['spent_cents']),
-                    'detail' => $metrics['held_count'] > 0 ? Money::format($metrics['held_cents']).' more waiting for review' : 'at independent merchants',
-                    'how' => 'The total of cleared redemptions this month. Redemptions held by Redemption Fraud Detection are left out until a person at the BID clears them.',
+                    'detail' => ($metrics['refunded_cents'] > 0 ? 'Net of refunds · ' : '').($metrics['held_count'] > 0 ? Money::format($metrics['held_cents']).' more waiting for review' : 'at independent merchants'),
+                    'how' => 'The total of cleared redemptions this month, less refunds that completed this month. Redemptions held by Redemption Fraud Detection are left out until a person at the BID clears them.',
                 ],
             ];
         @endphp
@@ -106,7 +106,7 @@
                                      style="height: {{ max(2, round(100 * $week['visits'] / $max)) }}%"></div>
                                 <div @class(['pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night shadow group-hover:block group-data-open:block', 'left-0' => $loop->first, 'right-0' => $loop->last, 'left-1/2 -translate-x-1/2' => ! $loop->first && ! $loop->last])>
                                     <span class="font-semibold">Week of {{ $week['start']->format('M j') }}</span><br>
-                                    {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }} · {{ Money::format($week['cents']) }}
+                                    {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }} · {{ Money::format($week['cents']) }}{{ $week['refunded_cents'] > 0 ? ' net of refunds' : '' }}
                                 </div>
                             </div>
                         @endforeach
@@ -129,11 +129,11 @@
                         <thead class="text-muted"><tr><th scope="col" class="py-1 font-semibold">Week of</th><th scope="col" class="py-1 text-right font-semibold">Visits</th><th scope="col" class="py-1 text-right font-semibold">Spent locally</th></tr></thead>
                         <tbody class="tabular divide-y divide-line/70">
                             @foreach ($weeks as $week)
-                                <tr><th scope="row" class="py-1 font-normal">{{ $week['start']->format('M j') }}</th><td class="py-1 text-right">{{ $week['visits'] }}</td><td class="py-1 text-right">{{ Money::format($week['cents']) }}</td></tr>
+                                <tr><th scope="row" class="py-1 font-normal">{{ $week['start']->format('M j') }}</th><td class="py-1 text-right">{{ $week['visits'] }}</td><td class="py-1 text-right">{{ Money::format($week['cents']) }}@if ($week['refunded_cents'] > 0) <span class="text-muted">(net of {{ Money::format($week['refunded_cents']) }} refunded)</span>@endif</td></tr>
                             @endforeach
                         </tbody>
                     </table>
-                    <p class="mt-2 text-muted">How we count this: cleared redemptions by the week they happened, in Washington, DC time.</p>
+                    <p class="mt-2 text-muted">How we count this: cleared redemptions by the week they happened, in Washington, DC time, less refunds in the week they completed.</p>
                 </details>
             </x-card>
 
@@ -149,7 +149,7 @@
                             <li>
                                 <div class="flex items-baseline justify-between gap-2">
                                     <span class="font-semibold capitalize">{{ $category['category'] }}</span>
-                                    <span class="tabular text-sm">{{ Money::format($category['cents']) }} · {{ $category['visits'] }} {{ Str::plural('visit', $category['visits']) }}</span>
+                                    <span class="tabular text-sm">{{ Money::format($category['cents']) }}{{ ($metrics['refunded_by_category'][$category['category']] ?? 0) > 0 ? ' net of refunds' : '' }} · {{ $category['visits'] }} {{ Str::plural('visit', $category['visits']) }}</span>
                                 </div>
                                 <div class="mt-1 h-2 rounded-full bg-band" aria-hidden="true">
                                     <div class="h-2 rounded-full bg-primary" style="width: {{ max(2, round(100 * $category['cents'] / $top)) }}%"></div>
@@ -160,7 +160,7 @@
                 @endif
                 <details class="mt-4 text-sm">
                     <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
-                    <p class="mt-1 text-muted">Cleared redemptions this month, grouped by the merchant's category and added up.</p>
+                    <p class="mt-1 text-muted">Cleared redemptions this month, grouped by the merchant's category and added up, less refunds that completed this month.</p>
                 </details>
             </x-card>
         </div>

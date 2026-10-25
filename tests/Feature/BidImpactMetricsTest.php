@@ -72,7 +72,8 @@ class BidImpactMetricsTest extends TestCase
         $earned = CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED);
         $all = $this->metrics()['all_time'];
 
-        $this->assertSame((int) (clone $earned)->sum('amount_cents'), $all['spent_cents']);
+        // Net of completed refunds (ADR 0028): merchant_refunded lines are negative.
+        $this->assertSame((int) (clone $earned)->sum('amount_cents') + (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_REFUNDED)->sum('amount_cents'), $all['spent_cents']);
         $this->assertSame((clone $earned)->count(), $all['visits']);
         $this->assertSame((clone $earned)->distinct()->count('merchant_id'), $all['merchants']);
         $this->assertSame(

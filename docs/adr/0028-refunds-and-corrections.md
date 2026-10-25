@@ -158,6 +158,16 @@ refunds. A refund Stripe made that the webhook hasn't recorded yet is named
 as such. Simulated corrections are counted, not checked. With no
 corrections every number and line is as before.
 
+### Spending figures
+
+Follow-up the same day: the BID impact, participation, employer and landing
+pages' dollars spent (totals, per-merchant and per-employer figures, weekly
+charts, categories and the recirculation estimate's input) are net of
+completed refunds, from the ledger's `merchant_refunded` lines
+(`App\Services\CompletedRefunds`), in the week and month each completed,
+DC time, labelled "net of refunds" where one did. A refund still processing
+isn't taken off. Visits and people counts are unchanged. Display only.
+
 ### Tax
 
 Tax collected is shown net of refunds: the tax on refunded items, from the
@@ -179,9 +189,6 @@ identical input).
   adjustment or refund runs on it. Today's webhook also treats any manual
   dashboard reversal, even a partial one, as a full one ("owed again");
   that behaviour is unchanged.
-- **Impact numbers count the original spend.** The BID impact and employer
-  dashboards count cleared redemptions (`merchant_earned` lines); a later
-  refund doesn't take the spend back out of them.
 - **Locally, a Stripe refund stays "processing" until `stripe listen`
   forwards its event** (with the new events in `--events`).
 - **Employees never paid by card,** so a refund to an employee is credits
