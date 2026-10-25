@@ -396,13 +396,24 @@ class CreditLedger
      * links the redemption and the correction. Called inside the
      * transaction that marks the correction's action done, so it is
      * written once.
+     *
+     * The refund's share of the Local Goods merchant fee (ADR 0029,
+     * $correction->fee_cents) goes back from the platform to the merchant
+     * as a pair of lines that adds up to zero, so the merchant gives back
+     * only what it received: the reversal is the refund less that share.
+     * With no fee, exactly as before.
      */
     public function refundRedemption(Correction $correction, int $amountCents, ?MerchantPayout $reversedFrom = null, ?string $reversalId = null, ?Carbon $at = null): void
     {
         $this->ensurePositive($amountCents);
         $redemption = $correction->redemption;
         $at ??= now();
-        $how = $reversedFrom ? 'Stripe test mode, '.$reversalId : 'simulated, deducted from the merchant\'s next payout';
+        $fee = min($amountCents, (int) $correction->fee_cents);
+        $how = match (true) {
+            $reversedFrom !== null => 'Stripe test mode, '.$reversalId,
+            $fee === $amountCents => 'all of it was the Local Goods fee, so nothing to reverse',
+            default => 'simulated, deducted from the merchant\'s next payout',
+        };
         $base = ['redemption_id' => $redemption->id, 'correction_id' => $correction->id, 'created_at' => $at];
 
         CreditLedgerEntry::create($base + [
@@ -419,13 +430,28 @@ class CreditLedger
             'description' => 'Refund of '.Money::format($amountCents).' on a cleared redemption ('.$how.')',
         ]);
 
+        if ($fee > 0) {
+            CreditLedgerEntry::create($base + [
+                'merchant_id' => $redemption->merchant_id,
+                'amount_cents' => $fee,
+                'type' => CreditLedgerEntry::TYPE_MERCHANT_FEE_RETURNED,
+                'description' => 'Local Goods fee of '.Money::format($fee).' given back on the refund',
+            ]);
+            CreditLedgerEntry::create($base + [
+                'platform' => true,
+                'amount_cents' => -$fee,
+                'type' => CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED,
+                'description' => 'Local Goods fee given back on a refund of redemption '.$redemption->reference(),
+            ]);
+        }
+
         if ($reversedFrom !== null) {
             CreditLedgerEntry::create($base + [
                 'merchant_id' => $redemption->merchant_id,
-                'amount_cents' => $amountCents,
+                'amount_cents' => $amountCents - $fee,
                 'type' => CreditLedgerEntry::TYPE_REFUND_REVERSAL,
                 'merchant_payout_id' => $reversedFrom->id,
-                'description' => 'Stripe test-mode transfer '.$reversedFrom->stripe_transfer_id.' reversed by '.Money::format($amountCents).' for the refund ('.$reversalId.')',
+                'description' => 'Stripe test-mode transfer '.$reversedFrom->stripe_transfer_id.' reversed by '.Money::format($amountCents - $fee).' for the refund ('.$reversalId.')',
             ]);
         }
     }

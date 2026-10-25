@@ -59,6 +59,10 @@ class CorrectionDecisions
      * that part of its transfer; one with no Stripe transfer (simulated) is
      * refunded at once, netted from what the merchant is owed.
      *
+     * With a Local Goods merchant fee (ADR 0029) the employee still gets the
+     * whole refund; the merchant gives back the refund less the fee's share
+     * (that is what Stripe reverses) and the platform gives back the share.
+     *
      * @param  array<int, int>  $quantities  redemption item id => how many (itemized redemptions)
      */
     public function approveRedemptionRefund(Correction $correction, User $by, string $reason, array $quantities = [], ?int $amountCents = null): Correction
@@ -98,19 +102,28 @@ class CorrectionDecisions
                 throw new InvalidArgumentException('That would refund more than this redemption was for.');
             }
 
-            $correction->update(array_intersect_key($refund, array_flip(['amount_cents', 'subtotal_cents', 'tax_cents', 'tax_lines'])));
+            // The Local Goods merchant fee's share (ADR 0029), fixed now like the tax. 0 with no fee.
+            $fee = CorrectionLimits::feeShare($redemption, $refund['amount_cents'], $correction->id);
+            $correction->update(array_intersect_key($refund, array_flip(['amount_cents', 'subtotal_cents', 'tax_cents', 'tax_lines'])) + ['fee_cents' => $fee]);
             foreach ($refund['items'] as $item) {
                 $correction->items()->create($item);
             }
 
-            if ($payout === null) {
+            if ($payout !== null && $refund['amount_cents'] === $fee) {
+                // All of it is fee the merchant never received: nothing to reverse in Stripe.
+                $this->ledger->refundRedemption($correction, $refund['amount_cents']);
+                $correction->actions()->create(['kind' => CorrectionAction::KIND_FEE_ONLY, 'merchant_payout_id' => $payout->id, 'amount_cents' => 0,
+                    'status' => CorrectionAction::STATUS_SUCCEEDED, 'completed_at' => now()]);
+                $this->complete($correction);
+            } elseif ($payout === null) {
                 $this->ledger->refundRedemption($correction, $refund['amount_cents']);
                 $correction->actions()->create(['kind' => CorrectionAction::KIND_SIMULATED, 'amount_cents' => $refund['amount_cents'],
                     'status' => CorrectionAction::STATUS_SUCCEEDED, 'completed_at' => now()]);
                 $this->complete($correction);
             } else {
+                // Stripe reverses what the merchant received for this part: the refund less the fee share.
                 $correction->actions()->create(['kind' => CorrectionAction::KIND_TRANSFER_REVERSAL, 'merchant_payout_id' => $payout->id,
-                    'amount_cents' => $refund['amount_cents'], 'status' => CorrectionAction::STATUS_PENDING]);
+                    'amount_cents' => $refund['amount_cents'] - $fee, 'status' => CorrectionAction::STATUS_PENDING]);
                 $correction->update(['status' => Correction::STATUS_PROCESSING]);
             }
 

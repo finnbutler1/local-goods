@@ -23,6 +23,14 @@ class CorrectionAction extends Model
 
     public const KIND_SIMULATED = 'simulated';
 
+    /**
+     * A refund of a Stripe-paid redemption whose whole amount is its share
+     * of the Local Goods merchant fee (ADR 0029): the merchant never received
+     * that part, so there is nothing to reverse and no Stripe call. Done at
+     * once; amount 0 (nothing moved in Stripe).
+     */
+    public const KIND_FEE_ONLY = 'fee_only';
+
     /** Not sent to Stripe yet. */
     public const STATUS_PENDING = 'pending';
 

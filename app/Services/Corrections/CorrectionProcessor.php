@@ -217,7 +217,8 @@ class CorrectionProcessor
         }
 
         $correction = $action->correction;
-        $this->ledger->refundRedemption($correction, $action->amount_cents, $action->payout, $reversal['id'], $at);
+        // The whole refund: the action is only the merchant's part, the refund less the fee share (ADR 0029).
+        $this->ledger->refundRedemption($correction, $correction->amount_cents, $action->payout, $reversal['id'], $at);
         self::syncStatus($correction);
 
         return 'refund recorded: '.$reversal['id'];
