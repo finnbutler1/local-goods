@@ -1,4 +1,4 @@
-@php use App\Support\Money; use App\Support\SalesTax; @endphp
+@php use App\Support\Money; use App\Support\SalesTax; $figures = \App\Support\MerchantFee::showsFiguresTo(auth()->user()); @endphp
 
 <x-app-shell title="Merchant dashboard" active="dashboard"
              :context="($merchant?->name ?? 'Merchant').' · Golden Triangle BID'">
@@ -85,6 +85,9 @@
                     <dt class="text-muted">Code expires</dt><dd class="text-ink">{{ $lookedUp->expires_at->setTimezone('America/New_York')->format('g:i A') }}</dd>
                 </dl>
                 @include('partials.tax-breakdown', ['tax' => $lookedUp->taxBreakdown(), 'class' => 'mt-3 max-w-xs rounded-xl bg-band p-3 text-sm text-ink'])
+                @if ($figures)
+                    @include('partials.merchant-fee', ['sale' => $lookedUp->amount_cents, 'fee' => $fee->centsOn($lookedUp->amount_cents), 'class' => 'mt-3 grid max-w-xs grid-cols-[1fr_auto] gap-x-3 rounded-xl bg-band p-3 text-sm text-ink'])
+                @endif
                 <div class="mt-4 grid gap-2 sm:grid-cols-2">
                     <form method="POST" action="{{ route('merchant.pay-code.confirm', $lookedUp) }}" data-busy="Checking with Redemption Fraud Detection…">
                         @csrf
@@ -142,6 +145,7 @@
                 <span>Owed via Stripe test mode</span><span class="tabular text-right font-semibold" data-owed="stripe">{{ Money::format($owedStripeCents) }}</span>
                 <span>Owed, simulated</span><span class="tabular text-right font-semibold" data-owed="simulated">{{ Money::format($owedSimulatedCents) }}</span>
             </dd>
+            <dd class="mt-3 text-sm text-night-muted" data-fee-now>Local Goods fee: {{ $figures ? $fee->label() : $fee->wordsLabel() }}</dd>
         </x-card>
         <div class="rounded-2xl bg-hold-bg p-5 sm:p-6">
             <dt class="text-sm font-semibold text-hold">Waiting for review, not owed yet</dt>
@@ -202,6 +206,9 @@
                                 <p class="text-sm break-words" data-items>{{ $for }}</p>
                             @endif
                             @include('partials.tax-breakdown', ['tax' => $redemption->taxBreakdown(), 'compact' => true, 'class' => 'text-sm text-muted'])
+                            @if ($figures && $redemption->isApproved())
+                                @include('partials.merchant-fee', ['sale' => $redemption->amount_cents, 'fee' => (int) $redemption->merchant_fee_cents])
+                            @endif
                             <p class="text-sm text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></p>
                             @if ($redemption->scored_by !== 'seed')
                                 <p class="text-sm text-muted" data-audit-trail>{{ implode(' → ', $redemption->auditTrail()) }}</p>
@@ -244,6 +251,15 @@
                         <p class="font-semibold" data-onboarding="{{ $merchant->stripeOnboardingStatus() }}">{{ $merchant->stripeOnboardingLabel() }}</p>
                         <x-money-mode :mode="$merchant->stripe_account_id ? 'stripe' : null" :id="$merchant->stripe_account_id" />
                     </div>
+                    <p class="mt-2 text-sm text-ink" data-fee-sentence>
+                        @if ($fee->isNone())
+                            Local Goods charges no fee on your sales right now.
+                        @elseif ($figures)
+                            Local Goods keeps a fee of {{ $fee->label() }}; Stripe transfers you the rest.
+                        @else
+                            Local Goods keeps a fee on each sale; Stripe transfers you the rest.
+                        @endif
+                    </p>
                     @if ($merchant->stripe_set_up_by_platform && $merchant->stripe_account_id)
                         <p class="mt-2 text-sm text-muted" data-platform-setup>
                             This fictional merchant's test account was set up by the Local Goods platform for the demo, with Stripe's test values.
@@ -281,7 +297,7 @@
 
             <div>
             <h2 id="payouts-heading" class="text-2xl font-semibold text-primary">Payout history</h2>
-            <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer (with its id), or simulated (recorded in the ledger, no money moved).</p>
+            <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer (with its id), or simulated (recorded in the ledger, no money moved). Payouts are what you receive, after any Local Goods fee on each sale.</p>
             <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
                 @forelse ($payouts as $payout)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
@@ -297,6 +313,9 @@
                                     <x-money-mode mode="simulated" />
                                 @endif
                             </div>
+                            @if ($figures && $payout->redemption)
+                                @include('partials.merchant-fee', ['sale' => $payout->amount_cents + $payout->fee_cents, 'fee' => $payout->fee_cents])
+                            @endif
                             @if ($payout->redemption)
                                 <p class="mt-1 text-sm text-muted" data-audit-trail>
                                     Redemption #{{ $payout->redemption->id }} ({{ $payout->redemption->employee->initials() }}): {{ implode(' → ', $payout->redemption->auditTrail()) }}

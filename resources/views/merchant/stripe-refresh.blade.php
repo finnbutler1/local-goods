@@ -5,6 +5,16 @@
             <x-money-mode />
         </div>
         <p class="mt-2 text-muted">Stripe onboarding links only work for a few minutes. Start a fresh one to carry on where you left off.</p>
+        @php($fee = \App\Support\MerchantFee::current())
+        <p class="mt-2 text-ink" data-fee-sentence>
+            @if ($fee->isNone())
+                Local Goods charges no fee on your sales right now.
+            @elseif (\App\Support\MerchantFee::showsFiguresTo(auth()->user()))
+                Local Goods keeps a fee of {{ $fee->label() }}; Stripe transfers you the rest.
+            @else
+                Local Goods keeps a fee on each sale; Stripe transfers you the rest.
+            @endif
+        </p>
         @if ($canOnboard)
             <form method="POST" action="{{ route('merchant.stripe.onboard') }}" data-busy="Opening Stripe…" class="mt-4">
                 @csrf

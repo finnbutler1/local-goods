@@ -4,6 +4,7 @@
     use App\Support\CorrectionReasons;
     use App\Support\Money;
 
+    $figures = \App\Support\MerchantFee::showsFiguresTo(auth()->user());
     $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-2 focus-visible:border-primary';
     $who = fn (Correction $c) => match ($c->requested_by_role) {
         \App\Enums\Role::Employee->value => 'Employee '.$c->employee?->initials(),
@@ -98,6 +99,7 @@
                                 <dt class="font-semibold text-muted">{{ $c->amount_cents === null ? 'Left to refund' : 'Approved' }}</dt>
                                 <dd class="tabular mt-0.5">{{ $c->amount_cents === null ? Money::format(max(0, $row['left_cents'])) : $c->amountLabel() }}
                                     @if ($c->tax_cents)<span class="block text-muted">{{ Money::format($c->subtotal_cents) }} + {{ Money::format($c->tax_cents) }} tax</span>@endif
+                                    @if ($figures && $c->fee_cents > 0)<span class="block text-muted" data-fee-returned>Includes {{ Money::format($c->fee_cents) }} Local Goods fee given back</span>@endif
                                 </dd>
                             </div>
                             <div>
@@ -216,6 +218,7 @@
                                 <td data-label="Asked by" class="px-5 py-3">{{ $who($c) }}<span class="block text-muted">{{ $c->reasonLabel() }}</span></td>
                                 <td data-label="Amount" class="tabular px-5 py-3 text-right">{{ $c->amountLabel() }}
                                     @if ($c->tax_cents)<span class="block text-muted">incl. {{ Money::format($c->tax_cents) }} tax</span>@endif
+                                    @if ($figures && $c->fee_cents > 0)<span class="block text-muted" data-fee-returned>incl. {{ Money::format($c->fee_cents) }} Local Goods fee given back</span>@endif
                                 </td>
                                 <td data-label="Outcome" class="px-5 py-3"><x-badge :tone="$tone($c->status)" :wrap="true">{{ $c->statusLabel() }}</x-badge>
                                     @if ($c->actions->isNotEmpty())<span class="mt-1 block text-muted">{{ $c->actions->map(fn ($a) => $kind($a))->unique()->implode('; ') }}</span>@endif
