@@ -155,8 +155,12 @@
             </dd>
         </div>
         <x-card>
-            <dt class="text-sm font-semibold text-muted">Cleared sales this month (including tax)</dt>
-            <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ Money::format($monthCents) }}</dd>
+            <dt class="text-sm font-semibold text-muted">Cleared sales this month (including tax){{ $monthRefundedCents > 0 ? ', net of refunds' : '' }}</dt>
+            <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary" data-month-net>{{ Money::format($monthCents - $monthRefundedCents) }}</dd>
+            @if ($monthRefundedCents > 0)
+                {{-- Refunds (ADR 0028) count in the month they completed, like the BID impact figures. --}}
+                <dd class="tabular mt-1 text-sm text-muted" data-month-refunds>Sales {{ Money::format($monthCents) }} · Refunds −{{ Money::format($monthRefundedCents) }} · Net {{ Money::format($monthCents - $monthRefundedCents) }}</dd>
+            @endif
             <dd class="mt-1 text-sm text-muted">{{ $monthVisits }} cleared {{ Str::plural('visit', $monthVisits) }} · {{ Money::format($paidOutCents) }} paid out in all</dd>
         </x-card>
     </dl>
