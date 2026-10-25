@@ -26,6 +26,9 @@ commit history.
 - **Reconciliation** matches every reversal and refund against Stripe and
   still says everything matches. **Tax collected** goes down in the month a
   taxed refund completes, and the merchant's CSV shows refund rows.
+- **Spending is net of refunds.** The BID impact, participation, employer
+  and landing pages take a completed refund off the dollars spent in the
+  week and month it completed, and say "net of refunds" where one did.
 - **Demo:** a completed partial refund (a cold brew and its tax) and a
   rejected request at Farragut Grind; the judge tour has a ninth step, "See
   how mistakes get fixed: open Corrections".

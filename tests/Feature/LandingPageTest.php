@@ -143,7 +143,8 @@ class LandingPageTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         $totals = app(BidImpactMetrics::class)->totals();
-        $this->assertSame((int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents'), $totals['spent_cents']);
+        // Net of completed refunds (ADR 0028; the seed has one): merchant_refunded lines are negative.
+        $this->assertSame((int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_EARNED)->sum('amount_cents') + (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_REFUNDED)->sum('amount_cents'), $totals['spent_cents']);
 
         $html = $this->get('/')
             ->assertSee('The demo program so far')

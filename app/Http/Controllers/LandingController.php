@@ -19,6 +19,8 @@ class LandingController extends Controller
         return view('welcome', [
             'evalHeadline' => $report->latest()['headline'] ?? null,
             'demoTotals' => $impact->totals(),
+            // Completed refunds come off the spending total (ADR 0028); the label says so when there are any.
+            'demoRefunded' => BidImpactMetrics::refundedCents() > 0,
         ]);
     }
 }

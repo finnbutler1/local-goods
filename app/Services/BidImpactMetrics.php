@@ -18,6 +18,12 @@ use Illuminate\Support\Collection;
  * redemption happened (not when it cleared) in Washington, DC time, the same
  * as EmployerMetrics, so the BID and HR dashboards always agree. Employees
  * are only ever counted, never named.
+ *
+ * Dollars are net of completed refunds (ADR 0028): each merchant_refunded
+ * ledger line comes off in the week and month the refund completed
+ * (CompletedRefunds), so the totals, the weekly trend, the employer rows and
+ * the recirculation estimate's input all agree. Visits and counts of people
+ * and places are unchanged by a refund.
  */
 class BidImpactMetrics
 {
@@ -28,8 +34,9 @@ class BidImpactMetrics
      *     month: Carbon, has_activity: bool,
      *     this_month: array{spent_cents: int, visits: int, merchants: int, employees: int, employers: int},
      *     all_time: array{spent_cents: int, visits: int, merchants: int, employees: int, employers: int},
+     *     refunded: array{this_month: int, all_time: int},
      *     enrolled: int, employers_total: int, merchants_total: int, held_count: int, held_cents: int,
-     *     weeks: list<array{start: Carbon, visits: int, cents: int}>,
+     *     weeks: list<array{start: Carbon, visits: int, cents: int, refunded_cents: int}>,
      *     employers: list<array{employer: Employer, metrics: array<string, mixed>}>,
      *     recirculation_cents: ?int
      * }
@@ -51,6 +58,10 @@ class BidImpactMetrics
             ->toBase()->get()
             ->each(fn ($row) => $row->happened_at = Carbon::parse($row->happened_at, 'UTC'));
         $thisMonth = $recent->filter(fn ($row) => $row->happened_at->gte($monthStart))->values();
+        $refunds = CompletedRefunds::rows($from, $now);
+        $monthRefunded = (int) $refunds->filter(fn ($row) => $row->at->gte($monthStart))->sum('cents');
+        $month = $this->summarise($thisMonth);
+        $month['spent_cents'] -= $monthRefunded;
 
         $held = Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->where('created_at', '>=', $monthStart)->get(['amount_cents']);
         $allTime = $this->totals();
@@ -58,14 +69,15 @@ class BidImpactMetrics
         return [
             'month' => $now->copy()->startOfMonth(),
             'has_activity' => $allTime['visits'] > 0,
-            'this_month' => $this->summarise($thisMonth),
+            'this_month' => $month,
             'all_time' => $allTime,
+            'refunded' => ['this_month' => $monthRefunded, 'all_time' => self::refundedCents()],
             'enrolled' => Employee::count(),
             'employers_total' => Employer::count(),
             'merchants_total' => Merchant::count(),
             'held_count' => $held->count(),
             'held_cents' => (int) $held->sum('amount_cents'),
-            'weeks' => $this->weeks($recent, $trendStart),
+            'weeks' => $this->weeks($recent, $trendStart, $refunds),
             'employers' => Employer::orderBy('id')->get()
                 ->map(fn (Employer $employer) => ['employer' => $employer, 'metrics' => $this->employerMetrics->for($employer, $now)])
                 ->all(),
@@ -87,12 +99,18 @@ class BidImpactMetrics
         )->first();
 
         return [
-            'spent_cents' => (int) $row->spent_cents,
+            'spent_cents' => (int) $row->spent_cents - self::refundedCents(),
             'visits' => (int) $row->visits,
             'merchants' => (int) $row->merchants,
             'employees' => (int) $row->employees,
             'employers' => (int) $row->employers,
         ];
+    }
+
+    /** Every completed refund since launch (ADR 0028), as a positive number. */
+    public static function refundedCents(): int
+    {
+        return -(int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_MERCHANT_REFUNDED)->sum('amount_cents');
     }
 
     /** "If the national study's rate held here": an outside study's rate, never measured by Local Goods. */
@@ -122,17 +140,24 @@ class BidImpactMetrics
         ];
     }
 
-    /** @return list<array{start: Carbon, visits: int, cents: int}> Monday-to-Sunday weeks, oldest first; the last is this week so far. */
-    private function weeks(Collection $rows, Carbon $trendStart): array
+    /**
+     * Monday-to-Sunday weeks, oldest first; the last is this week so far.
+     * cents is net of refunds completed that week.
+     *
+     * @return list<array{start: Carbon, visits: int, cents: int, refunded_cents: int}>
+     */
+    private function weeks(Collection $rows, Carbon $trendStart, Collection $refunds): array
     {
         $tz = config('fraud.timezone');
         $byWeek = $rows->groupBy(fn ($row) => $row->happened_at->copy()->setTimezone($tz)->startOfWeek(Carbon::MONDAY)->toDateString());
+        $refundedByWeek = $refunds->groupBy(fn ($row) => CompletedRefunds::weekOf($row));
 
-        return collect(range(0, EmployerMetrics::TREND_WEEKS - 1))->map(function (int $i) use ($trendStart, $byWeek) {
+        return collect(range(0, EmployerMetrics::TREND_WEEKS - 1))->map(function (int $i) use ($trendStart, $byWeek, $refundedByWeek) {
             $start = $trendStart->copy()->addWeeks($i);
             $week = $byWeek->get($start->toDateString(), collect());
+            $refunded = (int) $refundedByWeek->get($start->toDateString(), collect())->sum('cents');
 
-            return ['start' => $start, 'visits' => $week->count(), 'cents' => (int) $week->sum('amount_cents')];
+            return ['start' => $start, 'visits' => $week->count(), 'cents' => (int) $week->sum('amount_cents') - $refunded, 'refunded_cents' => $refunded];
         })->all();
     }
 }

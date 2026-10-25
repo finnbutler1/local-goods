@@ -217,10 +217,10 @@
             @if ($demoTotals['visits'] === 0)
                 <p class="mt-4 max-w-2xl text-muted">No cleared redemptions yet. Once employees spend their credits, the totals from the credit ledger appear here.</p>
             @else
-                <p class="mt-3 max-w-2xl text-muted">Read live from the credit ledger: cleared redemptions only, since launch. Held and denied redemptions don't count.</p>
+                <p class="mt-3 max-w-2xl text-muted">Read live from the credit ledger: cleared redemptions only, since launch{{ $demoRefunded ? ', less completed refunds' : '' }}. Held and denied redemptions don't count.</p>
                 <dl class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([
-                        ['Spent at independent merchants', \App\Support\Money::format($demoTotals['spent_cents'])],
+                        [$demoRefunded ? 'Spent at independent merchants, net of refunds' : 'Spent at independent merchants', \App\Support\Money::format($demoTotals['spent_cents'])],
                         ['Merchants reached', number_format($demoTotals['merchants'])],
                         ['Employees participating', number_format($demoTotals['employees'])],
                         ['Employers participating', number_format($demoTotals['employers'])],
