@@ -8,6 +8,7 @@ use App\Models\CreditPurchase;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Models\RedemptionItem;
+use App\Support\MerchantFee;
 use App\Support\Money;
 use App\Support\SalesTax;
 use InvalidArgumentException;
@@ -96,6 +97,28 @@ class CorrectionLimits
         $tax = array_sum(array_column($lines, 'tax_cents'));
 
         return ['amount_cents' => $subtotal + $tax, 'subtotal_cents' => $subtotal, 'tax_cents' => $tax, 'tax_lines' => $lines, 'items' => $rows];
+    }
+
+    /**
+     * The share of the Local Goods merchant fee (ADR 0029) a refund of this
+     * many cents gives back, worked out cumulatively like the tax: the share
+     * of everything refunded so far, less what counted refunds already gave
+     * back. So over all of them exactly the fee comes back once the whole
+     * sale is refunded, and never more, and no refund's share is more than
+     * the refund. 0 for a redemption with no fee.
+     */
+    public static function feeShare(Redemption $redemption, int $refundCents, ?int $except = null): int
+    {
+        $fee = (int) $redemption->merchant_fee_cents;
+
+        if ($fee === 0 || $refundCents <= 0) {
+            return 0;
+        }
+
+        $returned = (int) self::counted($redemption, $except)->sum('fee_cents');
+        $after = MerchantFee::returnedAfter($fee, $redemption->amount_cents, self::redemptionRefundedCents($redemption, $except) + $refundCents);
+
+        return max(0, min($refundCents, $after - $returned, $fee - $returned));
     }
 
     /** A refund of a typed-in amount (no items): any whole-cent amount up to what is left. No tax is split out. */

@@ -20,6 +20,7 @@
         CorrectionAction::KIND_TRANSFER_REVERSAL => 'Stripe transfer reversal',
         CorrectionAction::KIND_CARD_REFUND => 'Stripe card refund on '.$a->creditPurchase?->reference,
         CorrectionAction::KIND_ADJUSTMENT_TRANSFER => 'Owed Stripe transfer sent (existing payout path)',
+        CorrectionAction::KIND_FEE_ONLY => 'Nothing to reverse: all of it was the Local Goods fee',
         default => 'Simulated'.($a->creditPurchase ? ' return on '.$a->creditPurchase->reference : '').', no real money',
     };
 @endphp
