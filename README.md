@@ -100,6 +100,13 @@ the local multiplier. An estimate from an outside study, not measured by Local G
    missed payout is sent again, each as a new append-only ledger line
    confirmed by Stripe's webhook, and reconciliation still matches
    ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)).
+5. **How Local Goods would earn money.** A per-transaction merchant fee is
+   a configurable setting that charges nothing by default. When it is set,
+   each sale keeps the fee it was made with, the merchant's Stripe transfer
+   is the sale less the fee, a refund gives back its share of the fee, and
+   reconciliation checks it all. Only the platform admin can change it, and
+   every change is logged
+   ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)).
 
 **Try it:** [log in](https://d4ghrpm72uczx.cloudfront.net/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,
@@ -210,6 +217,8 @@ php artisan test
 - A check across redemptions for collusion rings (new signals, so a new
   prompt version and a fresh holdout)
 - An employer/HR dashboard
+- Interchange revenue would need Local Goods to issue cards (Stripe
+  Issuing). The MVP has no card program, so this is not built.
 
 ---
 
