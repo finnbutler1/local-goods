@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\PayCode;
 use App\Models\Redemption;
+use App\Services\CompletedRefunds;
 use App\Services\EmployerProgram;
 use App\Services\MerchantTaxSummary;
 use App\Services\PayCodes;
@@ -63,6 +64,8 @@ class MerchantDashboardController extends Controller
             'heldCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_UNDER_REVIEW)->sum('amount_cents'),
             'heldCount' => (clone $redemptions)->where('status', Redemption::STATUS_UNDER_REVIEW)->count(),
             'monthCents' => (int) (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->sum('amount_cents'),
+            // Refunds that completed this month (DC time), whatever month the sale was, like the BID impact figures (ADR 0028).
+            'monthRefundedCents' => (int) CompletedRefunds::rows($monthStart)->where('merchant_id', $merchant->id)->sum('cents'),
             'monthVisits' => (clone $redemptions)->where('status', Redemption::STATUS_APPROVED)->where('created_at', '>=', $monthStart)->count(),
             'paidOutCents' => (int) $merchant->payouts()->paid()->sum('amount_cents'),
             'taxSummary' => MerchantTaxSummary::for($merchant),
