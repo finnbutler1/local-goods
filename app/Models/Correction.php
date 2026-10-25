@@ -59,7 +59,7 @@ class Correction extends Model
     protected $fillable = [
         'type', 'status', 'open_key', 'requested_by_user_id', 'requested_by_role', 'redemption_id', 'merchant_payout_id',
         'employer_id', 'merchant_id', 'employee_id', 'reason_category', 'note', 'amount_cents', 'subtotal_cents', 'tax_cents',
-        'tax_lines', 'decided_by_user_id', 'decided_at', 'decision_reason', 'failure_reason', 'completed_at',
+        'tax_lines', 'decided_by_user_id', 'decided_at', 'decision_reason', 'failure_reason', 'completed_at', 'fee_cents',
     ];
 
     protected function casts(): array
