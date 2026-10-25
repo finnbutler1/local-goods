@@ -27,6 +27,11 @@
                 Refunds and corrections: how money mistakes get fixed <span aria-hidden="true">→</span>
             </a>
         </p>
+        <p class="mt-2">
+            <a href="{{ route('bid-admin.fees') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                Fee settings: the Local Goods fee on merchant sales <span aria-hidden="true">→</span>
+            </a>
+        </p>
     </header>
 
     <div aria-live="polite">
