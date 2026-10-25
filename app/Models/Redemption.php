@@ -32,6 +32,7 @@ class Redemption extends Model
         'ai_decision', 'ai_explanation', 'signals', 'scored_by', 'created_at',
         'reviewed_by', 'reviewed_by_user_id', 'reviewed_at', 'channel',
         'tax_basis', 'subtotal_cents', 'tax_cents', 'tax_lines',
+        'merchant_fee_bps', 'merchant_fee_fixed_cents', 'merchant_fee_cents',
     ];
 
     protected function casts(): array
