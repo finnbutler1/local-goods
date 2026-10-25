@@ -12,6 +12,7 @@ use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
+use App\Support\MerchantFee;
 use App\Support\Money;
 use App\Support\PlatformFee;
 use Illuminate\Support\Carbon;
@@ -273,6 +274,12 @@ class CreditLedger
     /**
      * The merchant is owed a redemption once it has cleared, never while it
      * is held. Called inside the transaction that clears it.
+     *
+     * The Local Goods merchant fee snapshotted on it (ADR 0029) moves from
+     * the merchant to the platform account in the same transaction, as two
+     * lines that add up to zero, so the merchant is owed the sale less the
+     * fee. Nothing when the fee is 0 (always, until it is turned on), so the
+     * ledger is then exactly as before.
      */
     public function creditMerchant(Redemption $redemption, ?Carbon $at = null): CreditLedgerEntry
     {
@@ -280,14 +287,33 @@ class CreditLedger
             throw new InvalidArgumentException('Only a cleared redemption earns the merchant anything.');
         }
 
-        return CreditLedgerEntry::create([
+        $at ??= now();
+        $earned = CreditLedgerEntry::create([
             'merchant_id' => $redemption->merchant_id,
             'amount_cents' => $redemption->amount_cents,
             'type' => CreditLedgerEntry::TYPE_MERCHANT_EARNED,
             'redemption_id' => $redemption->id,
             'description' => 'Cleared redemption of '.Money::format($redemption->amount_cents),
-            'created_at' => $at ?? now(),
+            'created_at' => $at,
         ]);
+
+        if (($fee = (int) $redemption->merchant_fee_cents) > 0) {
+            $base = ['redemption_id' => $redemption->id, 'created_at' => $at];
+            CreditLedgerEntry::create($base + [
+                'merchant_id' => $redemption->merchant_id,
+                'amount_cents' => -$fee,
+                'type' => CreditLedgerEntry::TYPE_MERCHANT_FEE,
+                'description' => 'Local Goods fee of '.Money::format($fee).' on a cleared redemption of '.Money::format($redemption->amount_cents).' ('.MerchantFee::of($redemption)->label().')',
+            ]);
+            CreditLedgerEntry::create($base + [
+                'platform' => true,
+                'amount_cents' => $fee,
+                'type' => CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE,
+                'description' => 'Local Goods fee kept on redemption '.$redemption->reference(),
+            ]);
+        }
+
+        return $earned;
     }
 
     /**

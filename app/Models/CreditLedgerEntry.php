@@ -49,6 +49,18 @@ class CreditLedgerEntry extends Model
     /** Platform account: the platform fee paid on top of a purchase's credits (ADR 0021). Never on the employer's balance. */
     public const TYPE_PLATFORM_FEE = 'platform_fee';
 
+    /** Merchant account: the Local Goods merchant fee on a cleared redemption (ADR 0029), taken from what the merchant is owed. */
+    public const TYPE_MERCHANT_FEE = 'merchant_fee';
+
+    /** Platform account: the same merchant fee, kept by Local Goods (ADR 0029). With TYPE_MERCHANT_FEE it adds up to zero. */
+    public const TYPE_PLATFORM_MERCHANT_FEE = 'platform_merchant_fee';
+
+    /** Merchant account: a refund's share of the merchant fee, given back to the merchant (ADR 0029). */
+    public const TYPE_MERCHANT_FEE_RETURNED = 'merchant_fee_returned';
+
+    /** Platform account: the same share, given back by Local Goods (ADR 0029). With TYPE_MERCHANT_FEE_RETURNED it adds up to zero. */
+    public const TYPE_PLATFORM_MERCHANT_FEE_RETURNED = 'platform_merchant_fee_returned';
+
     /** Employee account: a cleared redemption was refunded (all or part), so the credits come back (ADR 0028). */
     public const TYPE_REFUND = 'refund';
 

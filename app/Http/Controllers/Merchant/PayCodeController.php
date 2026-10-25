@@ -9,6 +9,7 @@ use App\Models\Redemption;
 use App\Models\RedemptionDecision;
 use App\Services\PayCodes;
 use App\Services\RedemptionReviewService;
+use App\Support\MerchantFee;
 use App\Support\Money;
 use App\Support\PayoutOutcome;
 use Illuminate\Http\RedirectResponse;
@@ -35,6 +36,8 @@ class PayCodeController extends Controller
     /** The redemption just confirmed, for the "done" card. Not a toast key. */
     public const RESULT_KEY = 'merchant_pay_result_id';
 
+    public const FEE_CHANGED = 'The Local Goods fee changed since you looked this code up. Check the amounts again, then confirm.';
+
     public function lookup(Request $request, PayCodes $codes): RedirectResponse
     {
         Gate::authorize('take-payments');
@@ -57,9 +60,16 @@ class PayCodeController extends Controller
         Gate::authorize('take-payments');
         $merchant = $this->merchant($request);
         $this->ensureLookedUp($request, $payCode);
+
+        // The merchant is charged the Local Goods fee they were shown (ADR 0029). If it changed since, they look again first.
+        $fee = MerchantFee::current();
+        if ($fee->changeId !== (int) $request->input('fee_change', 0)) {
+            throw ValidationException::withMessages(['pay_code' => self::FEE_CHANGED])->redirectTo($this->back());
+        }
+
         $request->session()->forget(self::SESSION_KEY);
 
-        $redemption = $codes->confirm($payCode, $merchant);
+        $redemption = $codes->confirm($payCode, $merchant, $fee);
 
         $redemption->load(['employee', 'merchant', 'items']);
         $for = $redemption->itemsSummary();

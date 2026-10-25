@@ -9,6 +9,7 @@ use App\Models\Redemption;
 use App\Services\EmployerProgram;
 use App\Services\MerchantTaxSummary;
 use App\Services\PayCodes;
+use App\Support\MerchantFee;
 use App\Support\StripeMode;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -48,6 +49,8 @@ class MerchantDashboardController extends Controller
         return view('dashboards.merchant', [
             'merchant' => $merchant,
             'lookedUp' => $lookedUp,
+            // The Local Goods merchant fee now (ADR 0029); each redemption shows its own snapshot.
+            'fee' => MerchantFee::current(),
             'payResult' => $merchant->redemptions()->with(['employee', 'items', 'decision'])->find($request->session()->get(PayCodeController::RESULT_KEY)),
             // Held in-person payments stay here with "Cancel this payment" until a BID admin decides (ADR 0026).
             'heldAtCounter' => (clone $redemptions)->with(['employee', 'items'])->where('channel', Redemption::CHANNEL_IN_PERSON)

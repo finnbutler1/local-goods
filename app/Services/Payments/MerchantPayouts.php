@@ -119,7 +119,10 @@ class MerchantPayouts
                 'transfer_group' => $row->transfer_group,
                 'source_transaction' => $row->source_charge_id,
                 'description' => 'Local Goods: cleared redemption #'.$row->redemption_id.' (test mode)',
-                'metadata' => ['lg_payout_key' => $key, 'lg_redemption_id' => (string) $row->redemption_id] + StripeEnvironment::tag(),
+                'metadata' => ['lg_payout_key' => $key, 'lg_redemption_id' => (string) $row->redemption_id]
+                    // The Local Goods merchant fee held back from this transfer (ADR 0029), only when there is one.
+                    + ($row->fee_cents > 0 ? ['lg_merchant_fee_cents' => (string) $row->fee_cents] : [])
+                    + StripeEnvironment::tag(),
             ], fn ($v) => $v !== null), $key);
         } catch (StripeGatewayException $e) {
             $row->refresh();
