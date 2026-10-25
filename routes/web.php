@@ -12,6 +12,7 @@ use App\Http\Controllers\BidAdmin\CollusionExampleController;
 use App\Http\Controllers\BidAdmin\CorrectionsController;
 use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
+use App\Http\Controllers\BidAdmin\MerchantFeeController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
@@ -104,6 +105,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/corrections/{correction}/reject', [CorrectionsController::class, 'reject'])->middleware('throttle:30,1,bid-admin.corrections.reject')->name('corrections.reject');
         Route::post('/corrections/{correction}/retry', [CorrectionsController::class, 'retry'])->middleware('throttle:20,1,bid-admin.corrections.retry')->name('corrections.retry');
         Route::post('/corrections/{correction}/close', [CorrectionsController::class, 'close'])->middleware('throttle:20,1,bid-admin.corrections.close')->name('corrections.close');
+
+        // Fee settings (ADR 0029): the BID admin and judges look; only the platform admin changes it (change-merchant-fee).
+        Route::get('/fees', [MerchantFeeController::class, 'index'])->name('fees');
+        Route::post('/fees/review', [MerchantFeeController::class, 'review'])->middleware('throttle:20,1,bid-admin.fees.review')->name('fees.review');
+        Route::post('/fees', [MerchantFeeController::class, 'store'])->middleware('throttle:10,1,bid-admin.fees.store')->name('fees.store');
 
         // Merchant Eligibility Matching review queue: real candidates, never participants.
         Route::get('/merchants', [MerchantEligibilityController::class, 'index'])->name('merchants');

@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\MerchantFeeChange;
 use App\Models\Redemption;
+use App\Models\User;
 
 /**
  * The merchant transaction fee (ADR 0029): a percent in basis points plus an
@@ -71,6 +72,21 @@ final class MerchantFee
         ]);
 
         return implode(' + ', $parts).' per sale';
+    }
+
+    /**
+     * For judges (read-only), who count as the public: no fee figures
+     * (PublicClaimsTest), only whether there is a fee at all.
+     */
+    public function wordsLabel(): string
+    {
+        return $this->isNone() ? 'none right now' : 'on (amounts are shown to Local Goods and BID staff)';
+    }
+
+    /** Fee amounts and rates are shown to staff, merchants and employers; never to judges, who count as the public. */
+    public static function showsFiguresTo(?User $user): bool
+    {
+        return $user !== null && ! $user->isReadOnly();
     }
 
     /** 250 → "2.5%" */

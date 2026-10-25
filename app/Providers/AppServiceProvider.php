@@ -63,6 +63,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('request-corrections', fn (User $user) => $user->hasRole(Role::Employee, Role::Merchant, Role::EmployerAdmin));
         // Deciding one moves money, so only the platform operator decides; the BID admin and judges view.
         Gate::define('decide-corrections', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+        // The merchant fee setting (ADR 0029) changes money on every new sale: the platform operator only.
+        Gate::define('change-merchant-fee', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-changelog', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
