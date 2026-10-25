@@ -5,6 +5,44 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Merchant fee, ready but at 0 — done (2026-10-24, ADR 0029).** One
+migration (additive: `merchant_fee_changes`, redemption fee snapshot
+columns, `merchant_payouts.fee_cents`, `corrections.fee_cents`, all 0).
+Fraud prompt (`8d5e1e70`), signals, AI input, eval data, locks,
+adjudication, `TransferGate` and the employer `PlatformFee` unchanged.
+
+- Setting: `App\Support\MerchantFee` (bps ≤ 1000, fixed ≤ 100¢; fee =
+  min(total, half-up(total × bps) + fixed), on the total incl. tax). The
+  newest `merchant_fee_changes` row is the fee, no row = none (append-only
+  audit log, not a demo table). Only `MerchantFeeSettings::change`,
+  platform admin (`change-merchant-fee`), reason, reviewed-against id.
+  `/bid-admin/fees`: Review (writes nothing) → Confirm (checkbox).
+  **Never set a nonzero fee on live or in a seeder** (`MerchantFeeSeedTest`);
+  tests use `Tests\Concerns\SetsMerchantFee`.
+- Snapshot on the redemption in `RedemptionService::redeem` (`?MerchantFee
+  $fee`; pay code confirm passes the one shown, `fee_change`, else
+  `PayCodeController::FEE_CHANGED`). **Never pass the fee to signals or the
+  AI** (`FraudInputMerchantFeeTest`).
+- Ledger: `creditMerchant` adds `merchant_fee` (−) / `platform_merchant_fee`
+  (+, platform) when the fee > 0. Stripe row = total − fee (`fee_cents`),
+  no row when that is 0; `unclaimedCents` counts amount + fee. Refunds:
+  `CorrectionLimits::feeShare` (cumulative, stored on the correction),
+  `merchant_fee_returned` / `platform_merchant_fee_returned`, reversal =
+  refund − share, `fee_only` action when that is 0. Invariant unchanged.
+- Reconciliation: transfer + fee = redemption total; platform fee lines =
+  cleared fees − completed refund shares; "includes $X fees kept".
+- Screens: merchant fee sentence, Sale / Local Goods fee / You receive
+  (`partials/merchant-fee`) on cleared rows, Stripe payouts, pay code
+  review; CSV `Local Goods fee`, `You receive` after `Total`. **Judges
+  count as the public: no fee figures for them** (`MerchantFee::showsFiguresTo`,
+  `PublicClaimsTest` sweeps judge pages). README/TRANSPARENCY words only.
+- Merchant "Cleared sales this month" net of completed refunds (Sales,
+  Refunds, Net), `CompletedRefunds` timing.
+- Tests: `MerchantFeeTest`, `MerchantFeeSettingsTest`, `MerchantFeeSaleTest`,
+  `MerchantFeeRefundTest`, `MerchantFeeReconciliationTest`,
+  `MerchantFeeDisplayTest`, `FraudInputMerchantFeeTest`, `MerchantFeeSeedTest`,
+  `MerchantFeeMigrationSafetyTest`, `MerchantClearedNetOfRefundsTest`.
+
 **Refunds and corrections — done (2026-10-24, ADR 0028).** One
 migration (additive: `corrections`, `correction_items`,
 `correction_actions`, nullable `credit_ledger_entries.correction_id`).
@@ -516,7 +554,8 @@ accounts for the demo merchants (ADR 0022), display-only product menus
 (ADR 0023), mission-first messaging (ADR 0024), the Transit lines
 brand with button states and menus (ADR 0025), paying in person with
 pay codes (ADR 0026), the phone-first pass, DC sales tax at
-redemption (ADR 0027) and refunds and corrections (ADR 0028).
+redemption (ADR 0027), refunds and corrections (ADR 0028) and the
+merchant fee, ready but at 0 (ADR 0029).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a

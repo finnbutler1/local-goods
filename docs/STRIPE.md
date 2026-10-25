@@ -122,6 +122,35 @@ With the fee on:
 - The ledger check becomes: paid credits + fees − payouts − held = sum of
   all entries.
 
+### Merchant fee (at 0)
+
+A separate fee, on the merchant's side: a percent of each sale plus an
+optional fixed amount, kept by Local Goods out of the merchant's transfer
+([ADR 0029](adr/0029-merchant-fee-ready-but-at-zero.md)). It is set on
+`/bid-admin/fees` by the platform admin only (two steps, audit log, at most
+10% + $1.00) and is 0 until someone sets it; live and the seed stay at 0.
+
+- The fee is snapshotted on each redemption when it is made
+  (`merchant_fee_bps`, `merchant_fee_fixed_cents`, `merchant_fee_cents`),
+  on the total including tax, rounded half up, never more than the sale.
+- When the sale clears, `merchant_earned +total` is followed by
+  `merchant_fee −fee` (merchant) and `platform_merchant_fee +fee`
+  (platform account).
+- The Stripe payout row is `total − fee` (`fee_cents` on the row), the
+  transfer is for that and carries `lg_merchant_fee_cents`, and the fee
+  stays in the platform balance. The purchase is claimed for the whole
+  sale, so the fee never funds another transfer or an employer refund.
+- On a refund the employee gets the whole refund. The fee's share (worked
+  out cumulatively, never more than the fee in all, stored as
+  `corrections.fee_cents`) goes back as `merchant_fee_returned +share` and
+  `platform_merchant_fee_returned −share`, and Stripe reverses
+  `refund − share`. A refund that is all fee needs no reversal
+  (`fee_only`).
+
+Worked example, 2.5% on $6.33: fee 16¢, the transfer is $6.17. Refund
+$2.11: 5¢ fee back, $2.06 reversed. Refund the other $4.22: 11¢ fee back,
+$4.11 reversed.
+
 The test card **4000 0000 0000 0077** (any future date, any CVC) makes the
 money *available* in the test balance straight away, so transfers can run
 in the demo without waiting for Stripe's payout schedule.
@@ -327,7 +356,7 @@ attempts up only after a definite refusal) and metadata `lg_correction_key`,
 
 | Correction | Stripe call | Confirmed by | Ledger lines (when confirmed) |
 |---|---|---|---|
-| Refund of a redemption whose transfer was sent | `POST /v1/transfers/{tr}/reversals` for exactly the refund | `transfer.reversed` (lists every reversal with its metadata; `amount_reversed` adds up) | employee `+r` `refund`, merchant `-r` `merchant_refunded`, merchant `+r` `refund_reversal` |
+| Refund of a redemption whose transfer was sent | `POST /v1/transfers/{tr}/reversals` for exactly the refund (less its merchant fee share, ADR 0029) | `transfer.reversed` (lists every reversal with its metadata; `amount_reversed` adds up) | employee `+r` `refund`, merchant `-r` `merchant_refunded`, merchant `+r` `refund_reversal` |
 | Refund of a simulated redemption | none | at once | employee `+r`, merchant `-r` (deducted from the next payout) |
 | Refund of unspent credits, Stripe payment | `POST /v1/refunds` on the purchase's PaymentIntent, credits only | `refund.created` / `refund.updated` (succeeded at once in test mode, even on pending funds), `refund.failed` | `employer_refund_hold -R` at approval, `employer_refunded 0` per payment when confirmed, `employer_refund_released +R` if closed |
 | Refund of unspent credits, simulated purchase | none | at once | hold, then `employer_refunded 0` |
@@ -370,7 +399,11 @@ example "Stripe has a $250.00 payment (pi_…) that Local Goods has no ledger
 record of". Simulated activity is counted but not checked. With the platform fee on it
 also checks that the platform account's fee lines add up to the fees the
 Stripe-paid purchases charged, and the purchases row says "credits $X +
-platform fees $Y"; with the fee off none of this shows.
+platform fees $Y"; with the fee off none of this shows. With the merchant
+fee on (ADR 0029) it checks that each sent transfer plus the fee held back
+is its redemption's total, and that the platform account's merchant fee
+lines are the fees on cleared sales less what refunds gave back; the
+balance row says how much of the expected balance is fees kept.
 
 ### One Stripe sandbox, several environments
 

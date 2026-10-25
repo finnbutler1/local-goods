@@ -302,6 +302,33 @@ counts don't change (the visit happened).
 in the Stripe dashboard is handled by hand, outside Local Goods. The demo
 has one completed partial refund and one rejected request, both synthetic.
 
+### The Local Goods fee on merchant sales
+
+Local Goods has a way to earn money built in, but it is set to charge
+nothing ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)). It
+stays that way until we have talked with merchants about it.
+
+- **What it is.** A fee on each cleared sale: a percent of the sale (tax
+  included) plus an optional fixed amount, both capped, never more than
+  the sale. It is kept out of the merchant's Stripe transfer. Employees
+  and employers never pay it.
+- **Who can change it.** Only the Local Goods platform admin, in two steps
+  (review, then confirm), always with a reason. Every change is kept with
+  who made it and when. The BID admin can see it.
+- **What a change does.** It applies to new redemptions only: each one
+  keeps the fee it was made with, so nothing already made is ever repriced.
+- **Refunds.** The employee always gets the whole refund back. The fee is
+  given back in the same proportion, worked out so that rounding never
+  returns more fee than was charged.
+- **Merchants see it.** The merchant dashboard says the current fee in
+  plain words, and every cleared sale, payout and the CSV show Sale, Local
+  Goods fee and You receive.
+- **The AI never sees it.** Redemption Fraud Detection gets the same
+  anonymous signals with or without a fee (`FraudInputMerchantFeeTest`),
+  and the fee never changes whether a transfer is allowed.
+- **No figures in public.** Public pages, judge views and the README show
+  no fee or revenue figures (`PublicClaimsTest`).
+
 ### How we measure it
 
 We test Redemption Fraud Detection against a person's judgment, not our own

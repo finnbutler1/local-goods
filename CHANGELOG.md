@@ -3,6 +3,28 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-24: A merchant fee, ready but at 0
+
+- **How Local Goods would earn money.** A fee on each merchant sale is now
+  a real setting: a percent plus an optional fixed amount, capped, set on
+  the new **Fee settings** page. It charges nothing by default, and live
+  and the demo stay that way
+  ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)).
+- **Careful changes.** Only the platform admin changes it, in two steps
+  (review, then confirm), with a reason. Every change is logged with who
+  and when, and applies to new redemptions only. The BID admin can look.
+- **Built like a payments company.** Each redemption keeps the fee it was
+  made with. The merchant's Stripe transfer is the sale less the fee, and
+  the fee stays with the platform on its own ledger lines. A refund gives
+  back its share of the fee, never more in total. Reconciliation checks it.
+- **Merchants see it.** "Local Goods fee: none right now", and Sale / Local
+  Goods fee / You receive on cleared sales, payouts, the pay code review
+  and the CSV. Judges see no fee figures.
+- **Cleared sales this month** on the merchant dashboard are now net of
+  completed refunds (Sales, Refunds, Net), counted in the month the refund
+  completed.
+- The fraud AI never sees the fee.
+
 ## 2026-10-24: Refunds and corrections
 
 - **Ask for a fix.** Employees can ask for a correction on a cleared
