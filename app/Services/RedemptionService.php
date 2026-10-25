@@ -10,6 +10,7 @@ use App\Services\Fraud\RedemptionFraudDetector;
 use App\Services\Fraud\SignalCalculator;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
+use App\Support\MerchantFee;
 use App\Support\TaxBreakdown;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -46,11 +47,19 @@ class RedemptionService
      * total with any tax already in it. The tax is display only and never
      * reaches the signals or the AI.
      *
+     * $fee (ADR 0029) is the Local Goods merchant fee, the current setting
+     * unless the caller passes the one the merchant was shown (a pay code).
+     * It is snapshotted on the row (rate and cents), so a later change to
+     * the setting never changes this redemption. It is charged only when
+     * the redemption clears (CreditLedger::creditMerchant) and, like the
+     * tax, never reaches the signals or the AI.
+     *
      * @param  list<array{merchant_product_id: ?int, name: string, unit_price_cents: int, quantity: int, tax_category?: ?string, tax_rate_bps?: ?int}>  $items
      */
-    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], string $channel = Redemption::CHANNEL_TO_GO, ?TaxBreakdown $tax = null): Redemption
+    public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], string $channel = Redemption::CHANNEL_TO_GO, ?TaxBreakdown $tax = null, ?MerchantFee $fee = null): Redemption
     {
         $tax ??= TaxBreakdown::included($amountCents);
+        $fee ??= MerchantFee::current();
 
         if ($tax->totalCents !== $amountCents
             || ($items !== [] && array_sum(array_map(fn ($i) => $i['unit_price_cents'] * $i['quantity'], $items)) + ($tax->taxCents ?? 0) !== $amountCents)) {
@@ -64,7 +73,7 @@ class RedemptionService
         // The AI call happens outside the transaction so the database is never locked while we wait.
         $verdict = $this->detector->score($signals);
 
-        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $channel, $tax, $signals, $verdict) {
+        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $channel, $tax, $fee, $signals, $verdict) {
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.
@@ -85,6 +94,7 @@ class RedemptionService
                 'scored_by' => $verdict->scoredBy,
                 'channel' => $channel,
                 ...$tax->columns(),
+                ...$fee->columns($amountCents),
             ]);
 
             foreach ($items as $item) {

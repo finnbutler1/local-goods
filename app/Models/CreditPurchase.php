@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The employer bought credits. A pending purchase is only a request: it has
@@ -81,10 +82,13 @@ class CreditPurchase extends Model
      * or refunded to the employer (ADR 0028). Credits only: the platform fee
      * never funds a transfer. A reversed transfer keeps its claim: a person
      * decides what happens next. With no refunds, exactly as before.
+     * A payout claims its whole sale: the transfer plus the Local Goods
+     * merchant fee held back from it (ADR 0029), which stays the platform's
+     * and so can never fund another transfer or go back to the card.
      */
     public function unclaimedCents(): int
     {
-        return $this->amount_cents - (int) $this->fundedPayouts()->sum('amount_cents') - $this->refundedCents();
+        return $this->amount_cents - (int) $this->fundedPayouts()->sum(DB::raw('amount_cents + fee_cents')) - $this->refundedCents();
     }
 
     /**

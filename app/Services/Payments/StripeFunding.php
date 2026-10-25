@@ -16,6 +16,12 @@ use App\Support\StripeMode;
  * actually received. Anything else (seeded history, simulated purchases,
  * fallback mode) stays simulated and is never sent to Stripe.
  *
+ * The row is for the sale less the Local Goods merchant fee snapshotted on
+ * it (ADR 0029): that is what is transferred, and the fee stays in the
+ * platform's balance. The purchase is matched on the whole sale, the
+ * credits actually spent. A sale whose fee is all of it has nothing to
+ * transfer, so it gets no row.
+ *
  * Call inside the transaction that clears the redemption.
  */
 class StripeFunding
@@ -46,9 +52,16 @@ class StripeFunding
             return null;
         }
 
+        $fee = (int) $redemption->merchant_fee_cents;
+
+        if ($redemption->amount_cents - $fee <= 0) {
+            return null;
+        }
+
         return MerchantPayout::create([
             'merchant_id' => $redemption->merchant_id,
-            'amount_cents' => $redemption->amount_cents,
+            'amount_cents' => $redemption->amount_cents - $fee,
+            'fee_cents' => $fee,
             'status' => MerchantPayout::STATUS_OWED,
             'redemption_id' => $redemption->id,
             'credit_purchase_id' => $purchase->id,

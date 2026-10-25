@@ -88,6 +88,7 @@
                 <div class="mt-4 grid gap-2 sm:grid-cols-2">
                     <form method="POST" action="{{ route('merchant.pay-code.confirm', $lookedUp) }}" data-busy="Checking with Redemption Fraud Detection…">
                         @csrf
+                        <input type="hidden" name="fee_change" value="{{ $fee->changeId }}">
                         <x-button type="submit" variant="accent" size="lg" class="w-full">Confirm payment</x-button>
                     </form>
                     <form method="POST" action="{{ route('merchant.pay-code.decline', $lookedUp) }}" data-busy="Declining…">

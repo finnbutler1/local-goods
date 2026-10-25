@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\PayCode;
 use App\Models\Redemption;
+use App\Support\MerchantFee;
 use App\Support\TaxBreakdown;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
@@ -145,7 +146,7 @@ class PayCodes
      * can never make two redemptions. Then the redemption is made exactly
      * like ordering to go; only the channel differs, and that is display only.
      */
-    public function confirm(PayCode $payCode, Merchant $merchant): Redemption
+    public function confirm(PayCode $payCode, Merchant $merchant, ?MerchantFee $fee = null): Redemption
     {
         $claimed = PayCode::whereKey($payCode->id)
             ->where('merchant_id', $merchant->id)
@@ -162,7 +163,7 @@ class PayCodes
         try {
             $redemption = $this->redemptions->redeem(
                 $payCode->employee, $merchant, $payCode->amount_cents, $payCode->items ?? [], Redemption::CHANNEL_IN_PERSON,
-                $payCode->taxBreakdown(),
+                $payCode->taxBreakdown(), $fee,
             );
         } catch (ValidationException) {
             // The balance check: they spent the credits since getting the code.
