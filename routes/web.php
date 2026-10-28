@@ -18,6 +18,7 @@ use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\CorrectionRequestController;
+use App\Http\Controllers\Districts\DistrictMapController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\Employee\PayCodeController;
 use App\Http\Controllers\Employer\EmployerDashboardController;
@@ -46,6 +47,8 @@ Route::get('/eval', [FraudEvalController::class, 'public'])->name('eval');
 Route::get('/eval/merchants', MerchantEvalController::class)->name('eval.merchants');
 // Public: district numbers only, labelled "Projection, not results" (ADR 0030).
 Route::get('/projection', ProjectionController::class)->name('projection');
+// The district map and address checker (ADR 0031). Checking an address is throttled; the map alone is not.
+Route::get('/district', DistrictMapController::class)->middleware('throttle:district-check')->name('district');
 
 // The pre-login demo pages now live behind login. Old links go to Log in.
 Route::redirect('/demo/{any?}', '/login')->where('any', '.*');

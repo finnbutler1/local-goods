@@ -25,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
 
     public const PUBLIC_FEEDBACK_PER_DAY = 20;
 
+    public const DISTRICT_CHECKS_PER_MINUTE = 20;
+
     public const REDEEM_PER_MINUTE = 10;
 
     /**
@@ -89,6 +91,10 @@ class AppServiceProvider extends ServiceProvider
             : Limit::perMinute(10)->by('feedback|'.($request->user()?->id ?: $request->ip())));
 
         // Each redemption is one Redemption Fraud Detection call to Claude.
+        // Each address check asks DC's address service; looking at the map asks nothing (ADR 0031).
+        RateLimiter::for('district-check', fn (Request $request) => $request->filled('address')
+            ? Limit::perMinute(self::DISTRICT_CHECKS_PER_MINUTE)->by('district-check|'.$request->ip())
+            : Limit::none());
         RateLimiter::for('redeem', fn (Request $request) => Limit::perMinute(self::REDEEM_PER_MINUTE)->by('redeem|'.($request->user()?->id ?: $request->ip())));
 
         // "What's new since your last visit" compares against previous_visit_at.
