@@ -14,7 +14,7 @@
             @foreach (config('projections.scenarios') as $s)
                 <tr>
                     <th scope="row" data-primary class="px-4 py-3 font-semibold">{{ $s['name'] }}</th>
-                    @foreach ($s['bids_by_year_end'] as $i => $bids)<td data-label="End of year {{ $i + 1 }}" class="px-4 py-3 text-right">{{ $bids }} {{ Str::plural('BID', $bids) }}</td>@endforeach
+                    @foreach ($s['bids_by_year_end'] as $i => $bids)<td data-label="End of year {{ $i + 1 }}" class="px-4 py-3 text-right">{{ $bids }} {{ ($bids === 1 ? 'BID' : 'BIDs') }}</td>@endforeach
                     <td data-label="Source" class="px-4 py-3">
                         @if ($s['source_url'])<a href="{{ $s['source_url'] }}" class="{{ $link }}" rel="noopener">{{ $s['source'] }}</a>@else<span class="font-semibold">{{ $s['source'] }}</span>@endif
                         <span class="mt-1 block text-muted">{{ $s['note'] }}</span>
