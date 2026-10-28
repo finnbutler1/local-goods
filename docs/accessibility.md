@@ -501,3 +501,45 @@ refund) and the reconciliation page.
 Static checks (`AccessibilityTest`, `ResponsiveTablesTest`,
 `EmployeeNamePrivacyTest`) sweep the new page and the changed ones
 automatically. Not checked: a screen reader, a real phone, WebKit.
+
+## Business model and impact projection (2026-10-28)
+
+**How it was checked.** puppeteer-core 24.43.1 with axe-core 4.14.0 (in a
+scratch folder, not in `package.json`) drove headless Chrome against `php -S`
+on a scratch SQLite database with the demo data. Pages checked:
+- `/projection` signed out (Golden Triangle base, and National high);
+- the landing page;
+- `/business-model` as the BID admin (DC-wide base, Golden Triangle low,
+  National high);
+- `/bid-admin/impact`;
+- `/admin` and `/business-model` as the platform admin.
+
+Each at 320px, 375px and 1280px, in light and dark mode (the admin pages at
+375px and 1280px, light).
+
+- **axe** (WCAG 2.0, 2.1 and 2.2 A and AA, plus best practice): no
+  violations on any of them, with every `<details>` opened.
+- **Layout:** no sideways scroll at any width, and headings never skip a
+  level.
+- **Charts:** the bars are hidden from screen readers. Every number is in a
+  text table next to them (`x-rtable`, cards on phones), and each bar's
+  value is also printed under it.
+- **Keyboard:** the scenario and case pickers are plain links in two
+  labelled `nav`s, with `aria-current` on the chosen one, and work without
+  JavaScript.
+  - Tab reached the first one after the skip link, header and menu (6 stops
+    on `/projection` at 375px), with a visible 3px outline.
+  - Enter on "DC-wide" opened `?scenario=b&case=base`.
+- **Phones:** "Projection, not results" is visible at every width.
+- **Screenshots looked at:** sections of the 375px screenshots of both
+  pages, light and dark, and the 1280px P&L.
+  - This found "100 BIDS" (`Str::plural`) and margins shown to two decimals,
+    both fixed.
+- **Access:** the employee got 403 on `/business-model`, and a signed-out
+  visit went to Log in. The CSV came back as `text/csv` with "Projection,
+  not results" on its first line.
+
+Static checks (`AccessibilityTest`, `ResponsiveTablesTest`, `EmptyStatesTest`,
+`EmployeeNamePrivacyTest`, `PhoneLayoutTest`, `PublicClaimsTest`) sweep both
+pages automatically. Not checked: a screen reader, a real phone, WebKit, the
+judge's own login in a browser (covered by the feature tests).

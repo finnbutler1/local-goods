@@ -725,6 +725,31 @@ results would be measured in a pilot. Nothing says Local Goods creates the
 effect, and a test fails if the line appears without its label and source
 ([ADR 0024](docs/adr/0024-mission-framing-and-the-labelled-3x-line.md)).
 
+### Business model projections
+
+The Business model page, the public Impact projection page, the README's
+Business model section and
+[docs/finance/MODEL.md](docs/finance/MODEL.md) show projections, never
+results, and each says "Projection, not results"
+([ADR 0030](docs/adr/0030-business-model-projections.md)).
+
+- **Where the numbers come from.** Every figure comes from
+  `config/projections.php`. Each assumption has a public source, checked on
+  2026-10-28, or is labelled "Assumption: to validate in customer
+  discovery". The calculator never reads the live fee settings, the ledger
+  or Stripe.
+- **Customer money is not revenue.** The credits employers buy are customer
+  funds, and so are the payouts owed to merchants. Unspent credits stay the
+  employer's money, and breakage is never counted as revenue. A test checks
+  that revenue doesn't change with how much employees spend.
+- **Who sees which figures.** Logged-out visitors see district numbers only.
+  Fee, revenue and profit figures appear only on the signed-in Business
+  model page and in the README section, each with the label and a link to
+  the assumptions (`PublicClaimsTest`).
+- **The reference model.** The model was shaped with a 2013 prepaid-card
+  model shared by a mentor, used as a guideline. Its numbers are not used
+  unless an assumption says so, and it is not named or included.
+
 ### Accessibility
 
 Every page was checked with keyboard only, at phone width and with the axe
