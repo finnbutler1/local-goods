@@ -39,7 +39,8 @@ class EmployeeWalletController extends Controller
             ];
         }
 
-        $merchants = Merchant::orderBy('name')->get();
+        // Only shops these credits can be spent at (the district rule, ADR 0031).
+        $merchants = Merchant::redeemableFor($employee)->orderBy('name')->get();
         // Step 2 of the redeem form: the chosen merchant's menu (ADR 0023). A form sent back with errors keeps its merchant.
         $menuMerchant = $merchants->firstWhere('id', (int) $request->old('merchant_id', $prefill['merchant_id']));
         $menu = $menuMerchant?->products()->available()->get() ?? collect();

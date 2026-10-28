@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\PayCode;
 use App\Models\Redemption;
+use App\Services\Districts\DistrictRules;
 use App\Support\MerchantFee;
 use App\Support\TaxBreakdown;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,9 @@ class PayCodes
         if ($tax->totalCents !== $amountCents) {
             throw new LogicException('The tax must add up to the pay code amount.');
         }
+
+        // The district rule (ADR 0031), checked here too so a code is never issued for a shop the credits can't be spent at.
+        DistrictRules::ensureRedeemable($employee, $merchant, 'pay_merchant_id');
 
         return DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $tax) {
             Employee::whereKey($employee->id)->lockForUpdate()->first();
@@ -148,6 +152,9 @@ class PayCodes
      */
     public function confirm(PayCode $payCode, Merchant $merchant, ?MerchantFee $fee = null): Redemption
     {
+        // Checked before the claim: redeem() would refuse too, but its refusal would be taken for a balance one below.
+        DistrictRules::ensureRedeemable($payCode->employee, $merchant, 'pay_code');
+
         $claimed = PayCode::whereKey($payCode->id)
             ->where('merchant_id', $merchant->id)
             ->where('status', PayCode::STATUS_ACTIVE)

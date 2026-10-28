@@ -16,6 +16,7 @@ use App\Support\Money;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Fakes\FakeClaudeClient;
+use Tests\Concerns\PlacesMerchantsInTheDistrict;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,7 @@ use Tests\TestCase;
  */
 class MerchantDashboardTest extends TestCase
 {
+    use PlacesMerchantsInTheDistrict;
     use RefreshDatabase;
 
     private Merchant $merchant;
@@ -113,7 +115,7 @@ class MerchantDashboardTest extends TestCase
     public function test_no_show_all_link_with_ten_or_fewer(): void
     {
         $owner = User::factory()->role(Role::Merchant)->create();
-        $this->merchant = Merchant::create(['bid_id' => $this->merchant->bid_id, 'name' => 'Test Bakery', 'category' => 'cafe', 'address' => '1 Test St NW', 'user_id' => $owner->id]);
+        $this->merchant = Merchant::create(['bid_id' => $this->merchant->bid_id, 'name' => 'Test Bakery', 'category' => 'cafe', 'address' => '1 Test St NW', 'user_id' => $owner->id, ...$this->inTheDistrict()]);
         $this->actingAs($owner);
         foreach ([300, 400, 500] as $cents) {
             $this->redeem($cents, 'clear');

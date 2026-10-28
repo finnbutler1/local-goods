@@ -6,6 +6,7 @@ use App\Models\CreditLedgerEntry;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\Redemption;
+use App\Services\Districts\DistrictRules;
 use App\Services\Fraud\RedemptionFraudDetector;
 use App\Services\Fraud\SignalCalculator;
 use App\Services\Payments\MerchantPayouts;
@@ -58,6 +59,11 @@ class RedemptionService
      */
     public function redeem(Employee $employee, Merchant $merchant, int $amountCents, array $items = [], string $channel = Redemption::CHANNEL_TO_GO, ?TaxBreakdown $tax = null, ?MerchantFee $fee = null): Redemption
     {
+        // District rule (ADR 0031): credits from a district program are spent only at
+        // approved, live merchants in that district. Refuses before scoring, so a
+        // refused shop never reaches the AI or the ledger.
+        DistrictRules::ensureRedeemable($employee, $merchant);
+
         $tax ??= TaxBreakdown::included($amountCents);
         $fee ??= MerchantFee::current();
 
