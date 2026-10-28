@@ -28,6 +28,7 @@ use Database\Seeders\DemoHistorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use RuntimeException;
+use Tests\Concerns\SeedsOnAFixedDate;
 use Tests\Concerns\UsesFakeStripe;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
@@ -41,6 +42,7 @@ use Tests\TestCase;
 class FraudGateTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsOnAFixedDate;
     use UsesFakeStripe;
 
     private Employer $employer;
@@ -52,6 +54,7 @@ class FraudGateTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedOnAFixedDate();
         $this->seed(DatabaseSeeder::class);
         $this->fakeStripe();
         $this->employer = Employer::firstOrFail();

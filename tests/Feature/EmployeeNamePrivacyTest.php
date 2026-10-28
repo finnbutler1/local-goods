@@ -20,6 +20,7 @@ use App\Support\ViewAs;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoHistorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SeedsOnAFixedDate;
 use Tests\Concerns\SweepsPages;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
@@ -34,6 +35,7 @@ use Tests\TestCase;
 class EmployeeNamePrivacyTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsOnAFixedDate;
     use SweepsPages;
 
     /** @return list<string> */
@@ -45,6 +47,7 @@ class EmployeeNamePrivacyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedOnAFixedDate();
         $this->seed(DatabaseSeeder::class);
 
         // Fresh AI-scored redemptions (held, approved after review, rejected)
