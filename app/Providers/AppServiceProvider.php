@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Enums\Role;
 use App\Models\User;
 use App\Services\Payments\NoticeSafeStripeGateway;
+use App\Services\Geo\DcMarGeocoder;
+use App\Services\Geo\Geocoder;
 use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeSdkGateway;
 use App\Support\AppUrl;
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
         // Only ever reached in Stripe test mode; tests bind a fake (ADR 0015).
         // Wrapped so a Stripe notice can never crash a request (StripeNotices).
         $this->app->singleton(StripeGateway::class, fn ($app) => new NoticeSafeStripeGateway($app->make(StripeSdkGateway::class)));
+        // DC's Master Address Repository (ADR 0031); tests fake its HTTP answers.
+        $this->app->bind(Geocoder::class, DcMarGeocoder::class);
     }
 
     /**
