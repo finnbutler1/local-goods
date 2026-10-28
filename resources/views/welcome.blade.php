@@ -268,6 +268,9 @@
                 That is <strong class="font-semibold">$1.2M a year spent at independent district businesses</strong>,
                 because credits can't be spent anywhere else.
             </p>
+            <p class="mt-4">
+                <a href="{{ route('projection') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">See the impact projection for one district, DC and nationally</a>
+            </p>
         </div>
     </section>
 
