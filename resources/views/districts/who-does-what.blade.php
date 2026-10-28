@@ -54,7 +54,7 @@
                                 </div>
                             </dl>
                             <p class="mt-4">
-                                <a href="{{ route($s['route']) }}" class="tap-target {{ $link }}">Open the {{ $s['screen'] }} <span aria-hidden="true">→</span></a>
+                                <a href="{{ route($s['route']) }}" class="tap-target {{ $link }}">Open {{ $s['screen'] }} <span aria-hidden="true">→</span></a>
                                 <span class="block text-sm text-muted">Who can open it: {{ $s['access'] }}.</span>
                             </p>
                         </x-card>
