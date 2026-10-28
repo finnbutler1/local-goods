@@ -111,10 +111,10 @@ low and high cases on the Business model page.
    Ordering from a menu shows the DC sales tax before paying (subtotal, tax,
    total), and the merchant sees the tax it collected for its own records;
    it's a display at DC's published rates, not tax advice
-   ([ADR 0027](docs/adr/0027-dc-sales-tax-shown-at-redemption.md)). *Today: employees can only redeem at merchants in the demo's
-   hand-seeded list. Merchant Eligibility Matching assesses real businesses in
-   the BID for the BID admin to approve or reject. Turning an approved business
-   into a participant is planned.*
+   ([ADR 0027](docs/adr/0027-dc-sales-tax-shown-at-redemption.md)). *Today: employees can only redeem at approved, live merchants
+   inside the district: the demo's fictional merchants, plus any shop that
+   joins through Apply to join (step 6). Merchant Eligibility Matching also
+   assesses real businesses in the BID for the BID admin to review.*
 3. **AI checks every redemption.** *Live: suspicious redemptions are held and
    shown on the BID admin view, where a person approves or denies them, with a reason.
    Merchants are owed a redemption only once it clears; a cleared redemption
@@ -135,6 +135,17 @@ low and high cases on the Business model page.
    reconciliation checks it all. Only the platform admin can change it, and
    every change is logged
    ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)).
+6. **Shops join, and the district boundary is enforced.** An independent
+   shop applies at [/apply](https://d4ghrpm72uczx.cloudfront.net/apply)
+   (no account) and follows a private status link. Local Goods checks the
+   address against the BID boundary DC publishes and asks Merchant
+   Eligibility Matching for a suggestion; a BID admin approves or declines
+   with a reason. The shop then sets up Stripe payouts and goes live.
+   Credits can only be spent at approved, live merchants inside the
+   district, and a district can have only one active exclusive BID
+   partnership. See the [district map](https://d4ghrpm72uczx.cloudfront.net/district)
+   and [who does what](https://d4ghrpm72uczx.cloudfront.net/who-does-what)
+   ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)).
 
 **Try it:** [log in](https://d4ghrpm72uczx.cloudfront.net/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,

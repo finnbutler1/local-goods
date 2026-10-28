@@ -694,6 +694,57 @@ shared, generic reviewer account.
   Feedback from the public link is anonymous, labeled "Public judge access",
   and limited to a few notes a minute so one visitor can't flood the inbox.
 
+### Districts, addresses and applications
+
+How the district rules work, what the address checker and the Apply to
+join form keep, and where the AI fits
+([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)).
+
+- **The boundary.** The Golden Triangle BID boundary is the polygon DC
+  publishes (DC GIS, Business Improvement Districts; edited by DC on
+  2026-02-17, downloaded 2026-10-14). It is stored in our database and
+  never fetched while the site runs. A merchant is approved only if its
+  location is inside it, and the employer's credits can be spent only at
+  merchants approved and live in the district.
+- **Address lookups.** Addresses are looked up in DC's Master Address
+  Repository, through the address points layer DC GIS publishes. Only the
+  address text is sent: no cookies, nothing about who you are. The map is
+  drawn from our own copy of the boundary, with no map service or tracker.
+- **The public address checker keeps no typed address.** It stores only a
+  fingerprint (SHA-256) of the address and the answer: found or not, the
+  matched address and its coordinates. Those are deleted after 30 days.
+  The checker uses the same lookup and the same inside/outside check as
+  approval.
+- **Apply to join.** The form says, before any field, that Local Goods is
+  a student prototype in Stripe test mode and that applying enrolls no
+  business in a real program; applicants must tick "I understand this is
+  a prototype". We store what they type: business name, address,
+  category, contact email and their answer about independence.
+  - The name, address and category go to Claude for an eligibility
+    suggestion. The email and the applicant's own answer never do.
+  - Nothing is shared or sold.
+  - Applications are deleted on request, or after 2026-12-31, with
+    `php artisan applications:purge --before=…` (run by hand; sample
+    applications are kept). Reset demo also deletes them.
+  - No email is sent. The applicant's private status link is shown once;
+    we keep only a fingerprint of it, and its secret part never reaches
+    our server logs.
+- **The AI only suggests.** Merchant Eligibility Matching gives a
+  classification, a confidence and its reasoning, with the same frozen
+  prompt as for candidates. Whatever it says, the application waits for a
+  BID admin, who approves (inside the district only) or declines with a
+  reason the shop sees. A failed AI call becomes "undetermined" for a
+  person. Suggestions for applications were not measured: the prompt
+  expects license facts, and an application has self-reported ones with no
+  license activity.
+- **Partnerships.** The demo partnership is labelled "Demo partnership —
+  not an actual agreement". Only the platform admin changes a partnership,
+  and every change is logged with who, when and why. Any revenue share is
+  worked out for display only; no money goes to a BID. Judges see it in
+  words, without amounts.
+- **Reviewers** can see the applications queue with each contact email
+  masked, and can't change anything.
+
 ### Synthetic data
 
 Every person, business and transaction in the demo is fictional. No real

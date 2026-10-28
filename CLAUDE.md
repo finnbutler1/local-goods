@@ -5,6 +5,62 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Districts, partnerships and merchant joining — done (2026-10-28, ADR
+0031).** Three additive migrations (`2026_10_30_000001…000003`, snapshot
+`before-districts`). Fraud prompt (`8d5e1e70`), eligibility prompt
+(`458e8c2d`), signals, AI inputs, eval data and locks unchanged.
+
+- `districts`: the Golden Triangle row, copied from
+  `data/sources/golden_triangle_bid.geojson` (hash, source, dates;
+  `config/districts.php`). Never fetched at runtime. Merchants have
+  `district_id`, `latitude`/`longitude`, `district_approved_at`, `live_at`;
+  employers have `district_id` (program district). Demo points:
+  `DatabaseSeeder::DEMO_COORDINATES` (all inside; two demo addresses moved).
+- `App\Services\Districts\DistrictRules` is the one place for the rules:
+  approve only inside (`approveMerchant` + `Merchant` saving hook);
+  `ensureRedeemable` is the one line at the top of `RedemptionService::redeem`
+  (refuses before scoring; employers with no district are unrestricted);
+  `PayCodes` checks before issue and before the claim; wallet lists
+  `Merchant::redeemableFor`. Never pass district fields to signals or the
+  AI (`FraudInputDistrictTest`). Test merchants for the seeded employee use
+  `Tests\Concerns\PlacesMerchantsInTheDistrict`.
+- Partnerships: `PartnershipSettings` only (platform admin, reason,
+  reviewed change id, status forward only), append-only
+  `partnership_changes`; unique `exclusive_active_key` (set by the model)
+  = one active exclusive per district. `PartnershipRevenueShare` reads
+  platform ledger lines, display only. `/bid-admin/partnership`: judges see
+  words, no figures.
+- Addresses: `DcMarGeocoder` (MAR address points layer on DC GIS, keyless;
+  citizenatlas is retired, MAR 2 needs a key) → `AddressLookup`
+  (`address_lookups`; checker rows keep no typed text) → `DistrictCheck`
+  (same `isInside` as approval). Tests: `Tests\Concerns\FakesDcAddresses`
+  (prevents stray HTTP).
+- Joining: `/apply` (prototype notice first, "I understand this is a
+  prototype", privacy note, honeypot `website`, 3 per 10 min per IP; no
+  outside calls). `MerchantApplications` is the only status changer
+  (applied → eligibility_checked → bid_approved | declined →
+  stripe_onboarding → live; conditional UPDATE + append-only event). Status
+  link `/apply/status#<id>.<token>` (hash only; JS `form[data-status-link]`).
+  The AI only suggests (name, address, category, empty activity; never the
+  answer or email). Queue `/bid-admin/applications` (`decide-merchant-applications`;
+  judges: masked email, disabled). Go live: one line in
+  `StripeOnboarding::apply` → `goLiveIfReady`. `applications:purge
+  --before=YYYY-MM-DD` (run by hand 2027-01-01; also checker lookups > 30
+  days). Test helper `Tests\Concerns\MakesApplications`.
+- Demo: one demo partnership and two `is_sample` applications, all
+  labelled; partnership and application tables are in `DEMO_TABLES` and
+  `DemoResetter::DISTRICT_TABLES` (seed-if-empty adds just them).
+- Pages: `/district` (SVG from the stored polygon, `<x-district-map>`,
+  group with linked pins, text alternative, checker), `/who-does-what`
+  (8 steps, `[data-tabs]`), `/bid-admin/impact.csv` (aggregates only).
+- Tests: `DistrictBoundaryTest`, `DistrictRulesTest`, `FraudInputDistrictTest`,
+  `DistrictCheckTest`, `DistrictMapPageTest`, `PartnershipTest`,
+  `PartnershipPageTest`, `PartnershipRevenueShareTest`,
+  `MerchantApplicationPipelineTest`, `ApplicationEligibilitySuggestionTest`,
+  `ApplyFormTest`, `ApplicationStatusLinkTest`, `ApplicationQueueTest`,
+  `PurgeApplicationsTest`, `MerchantJoinOnboardingTest`, `DistrictsDemoTest`,
+  `WhoDoesWhatPageTest`, `ImpactExportTest`, `DistrictsMigrationSafetyTest`.
+
 **Business model and projections — done (2026-10-28, ADR 0030).** No
 migration; money logic, ledger, Stripe, fee settings, fraud prompt, AI
 input, eval data and locks unchanged.
@@ -585,8 +641,9 @@ accounts for the demo merchants (ADR 0022), display-only product menus
 brand with button states and menus (ADR 0025), paying in person with
 pay codes (ADR 0026), the phone-first pass, DC sales tax at
 redemption (ADR 0027), refunds and corrections (ADR 0028), the
-merchant fee, ready but at 0 (ADR 0029) and the business model with
-impact projections (ADR 0030).
+merchant fee, ready but at 0 (ADR 0029), the business model with
+impact projections (ADR 0030) and districts, partnerships and merchant
+joining (ADR 0031).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
