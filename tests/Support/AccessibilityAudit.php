@@ -104,10 +104,12 @@ class AccessibilityAudit
             if ($this->insideHidden($svg)) {
                 continue;
             }
-            $named = $svg->getAttribute('role') === 'img'
-                && ($svg->getAttribute('aria-label') !== '' || $svg->hasAttribute('aria-labelledby') || $this->first('./title', $svg));
+            $hasName = $svg->getAttribute('aria-label') !== '' || $svg->hasAttribute('aria-labelledby') || $this->first('./title', $svg);
+            // A drawing that holds links (the district map's pins) is a named group: an image can't contain links.
+            $named = $hasName && ($svg->getAttribute('role') === 'img'
+                || ($svg->getAttribute('role') === 'group' && $this->first('.//a[@href]', $svg)));
             if (! $named) {
-                $add('<svg> is neither aria-hidden nor a named role="img"', $svg);
+                $add('<svg> is neither aria-hidden nor a named role="img" (or a named role="group" holding links)', $svg);
             }
         }
 

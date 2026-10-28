@@ -7,7 +7,10 @@
 --}}
 @props(['map', 'pins' => [], 'labelledBy', 'describedBy' => null])
 
-<svg viewBox="{{ $map->viewBox() }}" role="img" aria-labelledby="{{ $labelledBy }}" @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
+{{-- With linked pins it is a labelled group (an image can't hold links); without, one image. --}}
+@php($linked = collect($pins)->contains(fn ($pin) => filled($pin['href'] ?? null)))
+
+<svg viewBox="{{ $map->viewBox() }}" role="{{ $linked ? 'group' : 'img' }}" aria-labelledby="{{ $labelledBy }}" @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
      class="block h-auto w-full max-h-[70vh] rounded-2xl bg-band" preserveAspectRatio="xMidYMid meet" data-district-map>
     <path d="{{ $map->path() }}" class="fill-primary-tint stroke-primary" stroke-width="4" stroke-linejoin="round" />
     @foreach ($pins as $pin)

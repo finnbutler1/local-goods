@@ -33,7 +33,7 @@ class DistrictMapPageTest extends TestCase
     {
         $html = $this->get('/district')->assertOk()
             ->assertSee('Golden Triangle BID')
-            ->assertSee('role="img"', false)
+            ->assertSee('role="group" aria-labelledby="map-title"', false)
             ->assertSee('aria-labelledby="map-title"', false)
             ->assertSee('Merchants on the map')
             ->assertSee('Demo data: these businesses are fictional')
