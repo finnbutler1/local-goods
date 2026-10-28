@@ -3,6 +3,36 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-28: Districts, partnerships and joining
+
+- **The district boundary is a rule now.** The Golden Triangle BID
+  boundary DC publishes is stored with its source and dates. A merchant is
+  approved only if its address is inside it, and the employer's credits
+  can be spent only at merchants approved and live in the district
+  ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)).
+- **District map** (public): the boundary drawn from that data with the
+  demo merchants, and "Check an address", which asks DC's Master Address
+  Repository and runs the same check as approval. The typed address is
+  not stored.
+- **BID partnership page**: exclusive or not, dates, revenue share (0 for
+  now, display only), data terms and every change. The platform admin
+  changes it in two steps. A district can have only one active exclusive
+  partnership; the database refuses a second. The demo one is labelled
+  as not an actual agreement.
+- **Apply to join** (public, no account): independent shops apply and
+  follow a private status link ("Step 3 of 5: waiting for BID approval").
+  The BID admin's Applications queue shows where the shop is on the map
+  and an AI suggestion; a person approves or declines with a reason.
+  Approved shops sign in, set up Stripe payouts (test mode) and go live.
+  The form says clearly it is a student prototype and what happens to the
+  information; `applications:purge` deletes it.
+- **Who does what** (public, linked from the landing page): the eight
+  steps from applying to the BID's report, who handles each and what the
+  BID does. The BID can download its district's aggregate data as a CSV.
+- Two fictional demo merchants moved to blocks inside the boundary. The
+  fraud and eligibility prompts, AI inputs, eval data and locks are
+  unchanged.
+
 ## 2026-10-28: A business model, and what it could mean for the district
 
 - **How Local Goods could pay for itself.** A month-by-month model for

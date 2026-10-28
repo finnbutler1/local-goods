@@ -543,3 +543,66 @@ Static checks (`AccessibilityTest`, `ResponsiveTablesTest`, `EmptyStatesTest`,
 `EmployeeNamePrivacyTest`, `PhoneLayoutTest`, `PublicClaimsTest`) sweep both
 pages automatically. Not checked: a screen reader, a real phone, WebKit, the
 judge's own login in a browser (covered by the feature tests).
+
+## Districts, partnerships and joining (2026-10-28)
+
+**How it was checked.** puppeteer-core 24.43.1 with axe-core 4.14.0 (in a
+scratch folder, not in `package.json`) drove headless Chrome against
+`php -S` on a scratch SQLite database with the demo data. The AI key was
+empty, so the eligibility check failed closed. Address lookups went to
+DC's real address service.
+
+Pages checked at 320px, 375px and 1280px, in light and dark:
+
+- `/district`, plus checks of an address inside, one outside and one with
+  no quadrant;
+- `/apply` and `/apply/status`;
+- `/who-does-what`, and with `?step=reconcile`;
+- the landing page.
+
+Also checked:
+
+- the queue and each application, as the BID admin, at 375px and 1280px;
+- the partnership page, as the BID admin and as the platform admin;
+- the partnership review step, as the platform admin, at 375px;
+- `/bid-admin/impact`.
+
+Results:
+
+- **axe** (WCAG 2.0, 2.1 and 2.2 A and AA, plus best practice):
+  - One finding, now fixed. The map was a `role="img"` holding links
+    (nested-interactive); with linked pins it is now a labelled
+    `role="group"`.
+  - After the fix, no violations on any page checked, with every
+    `<details>` opened.
+- **Layout:** no sideways scroll at any width, and no skipped heading
+  levels.
+- **Keyboard:**
+  - On `/district` at 375px, Tab reached the first map pin after 7 stops.
+    Enter jumped to that merchant in the text list.
+  - On `/who-does-what`, ArrowRight twice from "Apply" selected "Approve"
+    and showed its panel.
+  - The steps are plain `?step=` links without JavaScript.
+- **Flow:**
+  - Filling in and sending `/apply` showed the link once.
+  - Opening that link moved the token from the `#` into the form and
+    showed "Step 2 of 5: waiting for the eligibility check."
+  - As the BID admin, Run the check found "1700 K STREET NW" inside the
+    district. With no AI key, the suggestion was "Undetermined".
+- **Screenshots looked at:** the map with an address checked (375px,
+  light), Who does what (375px, dark) and the checked application
+  (375px, dark). This changed "Open the Apply to join" to "Open Apply to
+  join".
+
+Static checks (`AccessibilityTest`, `ResponsiveTablesTest`,
+`PhoneHonestyTest`, `EmployeeNamePrivacyTest`, `PublicClaimsTest`,
+`JudgeReadOnlyTest`) sweep every new page automatically. The prototype
+notice is checked to be visible on phones. The static audit now accepts a
+named `role="group"` SVG, but only when it holds links.
+
+Not checked:
+
+- a screen reader, a real phone or WebKit;
+- signing in after approval and Stripe onboarding in a browser (covered by
+  `MerchantJoinOnboardingTest` with fake Stripe);
+- a judge's login in a browser.
