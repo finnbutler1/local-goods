@@ -23,6 +23,7 @@
                 Local Goods credits work only at approved independent merchants inside this boundary. The line is the one
                 DC publishes for the Business Improvement District, and the same line decides whether a merchant can join.
             </p>
+            <p class="mt-3"><a href="{{ route('apply') }}" class="{{ $link }}">Run an independent shop here? Apply to join <span aria-hidden="true">→</span></a></p>
         </header>
 
         <div class="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
