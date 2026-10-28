@@ -147,14 +147,21 @@
             </article>
 
             @foreach ([
-                ['gain-merchants', 'For independents', 'Merchants', 'A large, steady workforce audience on your doorstep, and a reason for them to come back. No new hardware: customers show the app at the counter. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.'],
-                ['gain-employees', 'For staff', 'Employees', 'A perk that makes the workday better: lunch, coffee, errands. And a reason to discover the neighborhood you already spend most of your week in.'],
-                ['gain-bid', 'For the Golden Triangle', 'The BID', 'A measurable, privacy-respecting way to support the district\'s independent businesses. Spending and participation are counted from the ledger; employees are never named.'],
-            ] as [$id, $eyebrow, $title, $body])
+                ['gain-merchants', 'For independents', 'Merchants', 'A large, steady workforce audience on your doorstep, and a reason for them to come back. No new hardware: customers show the app at the counter. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.', [['apply', 'Apply to join']]],
+                ['gain-employees', 'For staff', 'Employees', 'A perk that makes the workday better: lunch, coffee, errands. And a reason to discover the neighborhood you already spend most of your week in.', []],
+                ['gain-bid', 'For the Golden Triangle', 'The BID', 'A measurable, privacy-respecting way to support the district\'s independent businesses. Spending and participation are counted from the ledger; employees are never named.', [['who-does-what', 'Who does what'], ['district', 'The district map']]],
+            ] as [$id, $eyebrow, $title, $body, $links])
                 <x-card as="article" aria-labelledby="{{ $id }}" class="lg:col-span-2" padding="p-8">
                     <p class="text-sm font-semibold uppercase tracking-widest text-muted">{{ $eyebrow }}</p>
                     <h3 id="{{ $id }}" class="mt-2 text-3xl font-semibold text-primary">{{ $title }}</h3>
                     <p class="mt-3 text-muted">{{ $body }}</p>
+                    @if ($links !== [])
+                        <p class="mt-4 flex flex-wrap gap-x-5 gap-y-1">
+                            @foreach ($links as [$route, $text])
+                                <a href="{{ route($route) }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">{{ $text }} <span aria-hidden="true">→</span></a>
+                            @endforeach
+                        </p>
+                    @endif
                 </x-card>
             @endforeach
         </div>

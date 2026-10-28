@@ -58,7 +58,10 @@
                 <dt class="text-muted">Dates</dt><dd>{{ $partnership->starts_on->format('M j, Y') }} to {{ $partnership->ends_on?->format('M j, Y') ?? 'no end date' }}</dd>
                 <dt class="text-muted">Revenue share</dt>
                 <dd data-revenue-share>{{ $figures ? Partnership::percent($partnership->revenue_share_bps).' of what Local Goods earns in the district' : $partnership->revenueShareWords() }}</dd>
-                <dt class="text-muted">Data terms</dt><dd class="max-w-prose">{{ $partnership->data_terms }}</dd>
+                <dt class="text-muted">Data terms</dt>
+                <dd class="max-w-prose">{{ $partnership->data_terms }}
+                    <a href="{{ route('bid-admin.impact.csv') }}" class="tap-target block font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Download the aggregate data (CSV)</a>
+                </dd>
             </dl>
         </x-card>
 

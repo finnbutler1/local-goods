@@ -26,6 +26,10 @@
             <a href="{{ route('business-model') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">business model</a>
             behind it (both projections, not results).
         </p>
+        <p class="mt-3 text-sm">
+            <a href="{{ route('bid-admin.impact.csv') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Download the district's aggregate data (CSV)</a>:
+            counts and totals only, no names. The BID can export it at any time.
+        </p>
     </header>
 
     @if (! $impact['has_activity'])
