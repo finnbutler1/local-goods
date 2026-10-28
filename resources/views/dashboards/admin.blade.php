@@ -14,6 +14,7 @@
                 <a href="{{ route('admin.reconciliation') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Stripe reconciliation</a>
                 <a href="{{ route('bid-admin.corrections') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Corrections</a>
                 <a href="{{ route('bid-admin.fees') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Fee settings</a>
+                <a href="{{ route('bid-admin.applications') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Merchant applications</a>
                 <a href="{{ route('bid-admin.partnership') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID partnership</a>
                 <a href="{{ route('bid-admin.impact') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
                 <a href="{{ route('business-model') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business model</a>

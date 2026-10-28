@@ -101,5 +101,9 @@ class ApplicationQueueTest extends TestCase
         }
         $this->signIn(Role::PlatformAdmin);
         $this->get('/bid-admin/applications')->assertOk();
+        // The platform admin's own menu has no Applications item: it is linked from both dashboards.
+        $this->get('/admin')->assertSee('href="'.route('bid-admin.applications').'"', false);
+        $this->get('/bid-admin')->assertSee('href="'.route('bid-admin.applications').'"', false)
+            ->assertSee('href="'.route('bid-admin.partnership').'"', false);
     }
 }
