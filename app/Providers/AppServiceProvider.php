@@ -61,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
         // Admins only: one real AI call per press (ADR 0016). Judges never see or use it.
         Gate::define('run-collusion-example', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('decide-merchant-eligibility', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
+        // Merchant applications (ADR 0031): a person at the BID decides; the AI only suggests.
+        Gate::define('decide-merchant-applications', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('redeem', fn (User $user) => $user->hasRole(Role::Employee));
         // The merchant's own login confirms pay codes at the counter (ADR 0026).
         Gate::define('take-payments', fn (User $user) => $user->hasRole(Role::Merchant));
