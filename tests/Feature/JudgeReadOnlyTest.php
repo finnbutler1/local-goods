@@ -10,6 +10,7 @@ use App\Models\CreditPurchase;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
+use App\Models\MerchantApplication;
 use App\Models\MerchantProduct;
 use App\Models\PayCode;
 use App\Models\Redemption;
@@ -18,6 +19,7 @@ use App\Policies\RedemptionPolicy;
 use App\Services\Adjudication\AdjudicationSetBuilder;
 use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
+use App\Services\Districts\MerchantApplications;
 use App\Services\PayCodes;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -73,6 +75,10 @@ class JudgeReadOnlyTest extends TestCase
 
         // A pending credit purchase, so "Pay now" has something it could pay.
         app(CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 10000, 'MPG-TEST-1');
+
+        // A merchant application (ADR 0031), so check, approve and decline have one to change.
+        app(MerchantApplications::class)->submit(['business_name' => 'Test Shop', 'address' => '1700 K St NW', 'category' => 'cafe',
+            'contact_email' => 'shop@example.com', 'independence_answer' => 'One shop, locally owned, no franchise.']);
 
         $this->judge = $this->signIn(Role::Judge);
     }
@@ -135,7 +141,7 @@ class JudgeReadOnlyTest extends TestCase
 
     public function test_policies_and_gates_refuse_a_judge_on_their_own(): void
     {
-        foreach (['reset-demo', 'decide-merchant-eligibility', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
+        foreach (['reset-demo', 'decide-merchant-eligibility', 'decide-merchant-applications', 'change-partnership', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
             $this->assertTrue(Gate::forUser($this->judge)->denies($ability), "Gate {$ability} let a judge through.");
         }
 
@@ -203,6 +209,7 @@ class JudgeReadOnlyTest extends TestCase
             // Ids don't restart at 1 on MySQL, so a guess would 404 before the 403.
             'product' => MerchantProduct::value('id'),
             'payCode' => $this->payCode->id,
+            'application' => MerchantApplication::value('id'),
         ];
 
         return preg_replace_callback('/\{(\w+)\??\}/', function ($m) use ($ids) {

@@ -12,6 +12,7 @@ use App\Http\Controllers\BidAdmin\CollusionExampleController;
 use App\Http\Controllers\BidAdmin\CorrectionsController;
 use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
+use App\Http\Controllers\BidAdmin\ApplicationController;
 use App\Http\Controllers\BidAdmin\MerchantFeeController;
 use App\Http\Controllers\BidAdmin\PartnershipController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
@@ -125,6 +126,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/fees', [MerchantFeeController::class, 'index'])->name('fees');
         Route::post('/fees/review', [MerchantFeeController::class, 'review'])->middleware('throttle:20,1,bid-admin.fees.review')->name('fees.review');
         Route::post('/fees', [MerchantFeeController::class, 'store'])->middleware('throttle:10,1,bid-admin.fees.store')->name('fees.store');
+        // Merchant applications (ADR 0031). The check asks the AI for a suggestion; a person decides.
+        Route::get('/applications', [ApplicationController::class, 'index'])->name('applications');
+        Route::get('/applications/{application}', [ApplicationController::class, 'show'])->whereNumber('application')->name('applications.show');
+        Route::post('/applications/{application}/check', [ApplicationController::class, 'check'])->whereNumber('application')->middleware('throttle:10,1,bid-admin.applications.check')->name('applications.check');
+        Route::post('/applications/{application}/approve', [ApplicationController::class, 'approve'])->whereNumber('application')->middleware('throttle:30,1,bid-admin.applications.approve')->name('applications.approve');
+        Route::post('/applications/{application}/decline', [ApplicationController::class, 'decline'])->whereNumber('application')->middleware('throttle:30,1,bid-admin.applications.decline')->name('applications.decline');
         // The BID partnership (ADR 0031): BID admin and judges read it, the platform admin changes it in two steps.
         Route::get('/partnership', [PartnershipController::class, 'index'])->name('partnership');
         Route::post('/partnership/review', [PartnershipController::class, 'review'])->middleware('throttle:20,1,bid-admin.partnership.review')->name('partnership.review');
