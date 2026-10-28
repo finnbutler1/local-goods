@@ -64,6 +64,8 @@ enum Role: string
         $trend = 'M3.75 17.25 9 12l3.75 3.75 7.5-7.5M15 8.25h5.25v5.25';
         $impact = ['label' => 'Impact', 'short' => 'Impact', 'route' => 'bid-admin.impact', 'icon' => $trend];
         $dashboard = ['label' => 'Dashboard', 'short' => 'Home', 'route' => $this->dashboardRoute(), 'icon' => $home];
+        $ledger = 'M3.75 4.5h16.5v15H3.75v-15ZM3.75 9h16.5M9 9v10.5M12.75 12.75h4.5M12.75 15.75h4.5';
+        $businessModel = ['label' => 'Business model', 'short' => 'Model', 'route' => 'business-model', 'icon' => $ledger];
 
         return match ($this) {
             self::PlatformAdmin => [
@@ -73,11 +75,13 @@ enum Role: string
                 'reviewers' => ['label' => 'Reviewers', 'short' => 'Reviewers', 'route' => 'admin.reviewers.index', 'icon' => $people],
                 'feedback' => ['label' => 'Feedback', 'short' => 'Feedback', 'route' => 'admin.feedback.index', 'icon' => $inbox],
                 'adjudication' => ['label' => 'Adjudication', 'short' => 'Votes', 'route' => 'admin.adjudication.index', 'icon' => $scales],
+                'business-model' => $businessModel,
             ],
             self::BidAdmin => ['bid-admin' => $fraudReview, 'impact' => $impact, 'participation' => $participation, 'merchants' => $merchants, 'eval' => $eval],
             self::Employee => ['wallet' => ['label' => 'My wallet', 'short' => 'Wallet', 'route' => 'employee.wallet', 'icon' => $wallet]],
             self::Merchant => ['dashboard' => $dashboard, 'menu' => ['label' => 'Menu', 'short' => 'Menu', 'route' => 'merchant.menu', 'icon' => $store]],
-            self::EmployerAdmin, self::Judge => ['dashboard' => $dashboard],
+            self::Judge => ['dashboard' => $dashboard, 'business-model' => $businessModel],
+            self::EmployerAdmin => ['dashboard' => $dashboard],
         };
     }
 }

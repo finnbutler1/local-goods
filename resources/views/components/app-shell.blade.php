@@ -34,7 +34,7 @@
     // order, and the rest go into a More menu. Feedback stays visible for the platform admin;
     // Merchants (Merchant Eligibility Matching, a named AI function) for the
     // BID admin. Role::navigation() itself is unchanged.
-    $priority = ['dashboard', 'wallet', 'judge-home', 'bid-admin', 'merchants', 'feedback', 'impact', 'eval', 'participation', 'menu', 'reviewers', 'adjudication'];
+    $priority = ['dashboard', 'wallet', 'judge-home', 'bid-admin', 'merchants', 'feedback', 'impact', 'eval', 'participation', 'menu', 'reviewers', 'adjudication', 'business-model'];
     $split = function (array $items, int $max) use ($priority): array {
         if (count($items) <= $max) {
             return [$items, []];

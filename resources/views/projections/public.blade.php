@@ -91,30 +91,7 @@
                 “{{ $config['assumption_label'] }}”: Local Goods hasn't run a pilot yet, so these are what a pilot has to check.
             </p>
             @include('projections.partials.assumptions', ['keys' => $publicKeys])
-            <x-rtable class="mt-4" label="BIDs by scenario">
-                <table data-rtable="stack" class="w-full min-w-2xl text-left text-sm">
-                    <caption class="sr-only">BIDs taking part at the end of each year, by scenario</caption>
-                    <thead class="border-b border-line/70 text-muted">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 font-semibold">Scenario</th>
-                            @foreach ([1, 2, 3, 4] as $y)<th scope="col" class="px-4 py-3 text-right font-semibold">End of year {{ $y }}</th>@endforeach
-                            <th scope="col" class="px-4 py-3 font-semibold">Source</th>
-                        </tr>
-                    </thead>
-                    <tbody class="tabular divide-y divide-line/70">
-                        @foreach ($config['scenarios'] as $s)
-                            <tr>
-                                <th scope="row" data-primary class="px-4 py-3 font-semibold">{{ $s['name'] }}</th>
-                                @foreach ($s['bids_by_year_end'] as $i => $bids)<td data-label="End of year {{ $i + 1 }}" class="px-4 py-3 text-right">{{ $bids }} {{ Str::plural('BID', $bids) }}</td>@endforeach
-                                <td data-label="Source" class="px-4 py-3">
-                                    @if ($s['source_url'])<a href="{{ $s['source_url'] }}" class="{{ $link }}" rel="noopener">{{ $s['source'] }}</a>@else<span class="font-semibold">{{ $s['source'] }}</span>@endif
-                                    <span class="mt-1 block text-muted">{{ $s['note'] }}</span>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </x-rtable>
+            @include('projections.partials.scenarios')
             <p class="mt-4 text-sm text-muted">
                 How it is worked out: each BID launches in a month set by its scenario, then enrolls its employers and merchants in a straight line.
                 Spending is participating employees × monthly credit × the share of credits spent; visits are spending ÷ the average purchase.

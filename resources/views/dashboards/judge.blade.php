@@ -48,6 +48,16 @@
             </x-card>
         @endif
 
+        <x-card as="section" aria-labelledby="model-heading" class="max-w-3xl">
+            <h2 id="model-heading" class="text-2xl font-semibold text-primary">
+                <a href="{{ route('business-model') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business model</a>
+            </h2>
+            <p class="mt-2">
+                How Local Goods could pay for itself in the Golden Triangle, DC-wide and nationally: a projected P&amp;L, what one district needs
+                to break even, and every assumption with its source. A projection, not results.
+            </p>
+        </x-card>
+
         <section aria-labelledby="new-heading" class="max-w-3xl">
             <h2 id="new-heading" class="text-2xl font-semibold text-primary">
                 What's new {{ $since ? 'since your last visit' : 'lately' }}

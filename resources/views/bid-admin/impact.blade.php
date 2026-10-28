@@ -22,7 +22,9 @@
         <p class="mt-3 text-sm">
             Looking ahead:
             <a href="{{ route('projection') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">the impact projection</a>
-            for this district, DC and nationally (a projection, not results).
+            for this district, DC and nationally, and the
+            <a href="{{ route('business-model') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">business model</a>
+            behind it (both projections, not results).
         </p>
     </header>
 
