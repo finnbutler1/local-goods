@@ -39,6 +39,55 @@ class BidBoundaryTest extends TestCase
         $this->assertFalse($boundary->contains(3, 3));
     }
 
+    /** An L shape: the notch (top right) is outside although it is inside the bounding box. */
+    private function concave(): BidBoundary
+    {
+        return new BidBoundary([[[[0, 0], [10, 0], [10, 4], [4, 4], [4, 10], [0, 10], [0, 0]]]]);
+    }
+
+    public function test_a_concave_notch_is_outside(): void
+    {
+        $this->assertTrue($this->concave()->contains(2, 8), 'in the upright of the L');
+        $this->assertTrue($this->concave()->contains(2, 2), 'in the corner');
+        $this->assertFalse($this->concave()->contains(8, 8), 'in the notch');
+    }
+
+    public function test_points_just_either_side_of_an_edge(): void
+    {
+        $this->assertTrue($this->square()->contains(5, 9.999999));
+        $this->assertFalse($this->square()->contains(5, 10.000001));
+        $this->assertTrue($this->square()->contains(0.000001, 5));
+        $this->assertFalse($this->square()->contains(-0.000001, 5));
+    }
+
+    public function test_a_ray_through_a_vertex_counts_once(): void
+    {
+        // A diamond: a ray east from (y=5) passes exactly through the right-hand vertex (10, 5).
+        $diamond = new BidBoundary([[[[5, 0], [10, 5], [5, 10], [0, 5], [5, 0]]]]);
+
+        $this->assertTrue($diamond->contains(5, 5));
+        $this->assertTrue($diamond->contains(5, 1));
+        $this->assertFalse($diamond->contains(5, -1));
+        $this->assertFalse($diamond->contains(9.5, 9.5), 'beside the top vertex');
+    }
+
+    public function test_impossible_coordinates_are_never_inside(): void
+    {
+        $world = new BidBoundary([[[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]]]);
+
+        $this->assertTrue($world->contains(0, 0));
+        $this->assertFalse($world->contains(NAN, 0));
+        $this->assertFalse($world->contains(0, INF));
+        $this->assertFalse($world->contains(91, 0));
+        $this->assertFalse($world->contains(0, -181));
+    }
+
+    public function test_an_empty_boundary_or_a_point_geometry_is_refused(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        BidBoundary::fromGeoJson(json_encode(['type' => 'Point', 'coordinates' => [0, 0]]));
+    }
+
     /**
      * Landmarks around the real Golden Triangle BID boundary in
      * data/sources/golden_triangle_bid.geojson.

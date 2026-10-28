@@ -11,13 +11,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Employer extends Model
 {
     protected $fillable = [
-        'bid_id', 'name', 'monthly_allowance_cents', 'staff_count',
+        'bid_id', 'district_id', 'name', 'monthly_allowance_cents', 'staff_count',
         'monthly_budget_cents', 'welcome_cents', 'birthday_cents', 'recognition_cents',
     ];
 
     public function bid(): BelongsTo
     {
         return $this->belongsTo(Bid::class);
+    }
+
+    /** The district its credit program runs in (ADR 0031): credits are spent only at approved, live merchants there. */
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
     }
 
     public function employees(): HasMany

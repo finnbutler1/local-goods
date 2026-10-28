@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Bid;
 use App\Models\CreditLedgerEntry;
+use App\Models\District;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
@@ -47,12 +48,30 @@ class DatabaseSeeder extends Seeder
     public const DEMO_MERCHANTS = [
         'cafe' => ['Farragut Grind', 'cafe', '1600 block of K St NW'],
         'kitchen' => ['Seventeenth Street Kitchen', 'restaurant', '1100 block of 17th St NW'],
-        'noodle' => ['Connecticut Noodle Bar', 'restaurant', '1700 block of Connecticut Ave NW'],
+        'noodle' => ['Connecticut Noodle Bar', 'restaurant', '1100 block of Connecticut Ave NW'],
         'deli' => ['Press Room Deli', 'restaurant', '1900 block of I St NW'],
         'salon' => ['K Street Cuts', 'salon', '1800 block of K St NW'],
-        'cycle' => ['Lafayette Cycle Studio', 'fitness', '1500 block of H St NW'],
+        'cycle' => ['Lafayette Cycle Studio', 'fitness', '1700 block of H St NW'],
         'florist' => ['Triangle Stems', 'retail', '1200 block of 19th St NW'],
         'books' => ['Page & Quill Books', 'retail', '2000 block of L St NW'],
+    ];
+
+    /**
+     * Where each demo merchant is (ADR 0031): latitude and longitude of a DC
+     * Master Address Repository address point on its block. The businesses
+     * are fictional, so this is a point on the block, not a real shop. Every
+     * one is inside the Golden Triangle boundary (DistrictBoundaryTest); the
+     * districts migration copies the same values onto existing rows.
+     */
+    public const DEMO_COORDINATES = [
+        'cafe' => [38.902184, -77.037528],
+        'kitchen' => [38.904107, -77.038752],
+        'noodle' => [38.904105, -77.039919],
+        'deli' => [38.901178, -77.043744],
+        'salon' => [38.902224, -77.042408],
+        'cycle' => [38.900494, -77.040595],
+        'florist' => [38.906107, -77.043869],
+        'books' => [38.903408, -77.045785],
     ];
 
     /**
@@ -131,9 +150,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $bid = Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);
+        // The district row comes from the districts migration, never from the seed.
+        $district = District::default();
 
         $employer = Employer::create([
             'bid_id' => $bid->id,
+            'district_id' => $district->id,
             'name' => 'Meridian Policy Group',
             'monthly_allowance_cents' => 15000,
             'staff_count' => 120,
@@ -150,8 +172,12 @@ class DatabaseSeeder extends Seeder
             'display_name' => 'Jordan Rivera (demo)',
         ]);
 
-        $merchants = collect(self::DEMO_MERCHANTS)->map(fn ($m) => Merchant::create([
+        // Placed, approved and live in the district (ADR 0031), as if each had
+        // gone through the joining pipeline before the demo starts.
+        $merchants = collect(self::DEMO_MERCHANTS)->map(fn ($m, $key) => Merchant::create([
             'bid_id' => $bid->id, 'name' => $m[0], 'category' => $m[1], 'address' => $m[2],
+            'district_id' => $district->id, 'latitude' => self::DEMO_COORDINATES[$key][0], 'longitude' => self::DEMO_COORDINATES[$key][1],
+            'district_approved_at' => now(), 'live_at' => now(),
         ]));
 
         self::seedMenus($merchants);
