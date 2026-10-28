@@ -16,6 +16,7 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Tests\Concerns\MakesCorrections;
+use Tests\Concerns\SeedsOnAFixedDate;
 use Tests\Concerns\UsesFakeStripe;
 use Tests\TestCase;
 
@@ -31,6 +32,7 @@ class EmployerRefundTest extends TestCase
 {
     use MakesCorrections;
     use RefreshDatabase;
+    use SeedsOnAFixedDate;
     use UsesFakeStripe;
 
     private Employer $employer;
@@ -38,6 +40,7 @@ class EmployerRefundTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedOnAFixedDate();
         $this->seed(DatabaseSeeder::class);
         $this->withoutSeededCorrections();
         $this->employer = Employer::firstOrFail();

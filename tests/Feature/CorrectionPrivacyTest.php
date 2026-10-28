@@ -9,6 +9,7 @@ use App\Services\Corrections\CorrectionDecisions;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\MakesCorrections;
+use Tests\Concerns\SeedsOnAFixedDate;
 use Tests\TestCase;
 
 /**
@@ -21,10 +22,12 @@ class CorrectionPrivacyTest extends TestCase
 {
     use MakesCorrections;
     use RefreshDatabase;
+    use SeedsOnAFixedDate;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedOnAFixedDate();
         $this->seed(DatabaseSeeder::class);
     }
 
