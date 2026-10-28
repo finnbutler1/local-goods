@@ -3,6 +3,27 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-28: A business model, and what it could mean for the district
+
+- **How Local Goods could pay for itself.** A month-by-month model for
+  three ways to grow: the Golden Triangle only, DC-wide and a national
+  rollout, each in a low, base and high case. Every number comes from an
+  assumption with a source, or one labelled as something to check with
+  customers ([ADR 0030](docs/adr/0030-business-model-projections.md)).
+  Always labelled "Projection, not results".
+- **Business model page** (reviewers and admins): the projected P&L,
+  break-even and peak cash, "What it takes" for one district to break
+  even, customer funds (never revenue), the assumptions with their
+  sources, lessons from a 2013 prepaid-card model, and a CSV.
+- **Impact projection page** (public): spending at independent merchants,
+  visits and the average per merchant by scenario, with no fee or revenue
+  figures. Linked from the landing page and the BID impact page.
+- **Docs:** [docs/finance/MODEL.md](docs/finance/MODEL.md) explains the
+  method and what customer discovery must check. The README has a short
+  Business model section.
+- Nothing about money changed: no ledger, Stripe, fee setting or AI
+  change.
+
 ## 2026-10-24: A merchant fee, ready but at 0
 
 - **How Local Goods would earn money.** A fee on each merchant sale is now

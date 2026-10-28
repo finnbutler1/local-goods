@@ -5,6 +5,36 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Business model and projections — done (2026-10-28, ADR 0030).** No
+migration; money logic, ledger, Stripe, fee settings, fraud prompt, AI
+input, eval data and locks unchanged.
+
+- One source: `config/projections.php` (each assumption: low/base/high,
+  unit, `source_url` or exactly "Assumption: to validate in customer
+  discovery", note, `verified_on`). Only `demand`/`revenue` groups vary
+  by case. Scenarios a/b/c (`bids_by_year_end`); card issuing off.
+  Go-to-market keys under review: `account_manager_bids_per_manager`,
+  `sales_cost_per_new_employer`, `bid_launch_cost`.
+- `App\Support\Projections\BusinessModel` (pure, 72 months, P&L 48;
+  never reads MerchantFee/PlatformFee/ledger/Stripe, nothing in
+  `app/Services` calls it), `Projection`, `WhatItTakes` (scenario A, one
+  BID at full ramp, searched), `Figures`, `ProjectionDocs`. Customer funds
+  and breakage are never revenue.
+- Pages: `/projection` public, district numbers only; `/business-model` and
+  `/business-model.csv` for judge, BID admin, platform admin (personal
+  contacts refused by their middleware). "Projection, not results" on
+  every screen. Fee/revenue/profit figures only there and in the README
+  `## Business model` section (`PublicClaimsTest`).
+- **After changing an assumption run `php artisan projections:docs`**
+  (rewrites the marked blocks in README and `docs/finance/MODEL.md`;
+  `BusinessModelDocsTest` fails until you do).
+- Tests: `BusinessModelTest`, `ProjectionsConfigTest`,
+  `ProjectionFiguresTest`, `ProjectionPageTest`, `BusinessModelPageTest`,
+  `BusinessModelDocsTest`.
+- Tests that spend seeded balances seed on a fixed date
+  (`Tests\Concerns\SeedsOnAFixedDate`, 2026-10-24): the seed's 8-week
+  window gives one allowance fewer once its start crosses a month.
+
 **Merchant fee, ready but at 0 — done (2026-10-24, ADR 0029).** One
 migration (additive: `merchant_fee_changes`, redemption fee snapshot
 columns, `merchant_payouts.fee_cents`, `corrections.fee_cents`, all 0).
@@ -554,8 +584,9 @@ accounts for the demo merchants (ADR 0022), display-only product menus
 (ADR 0023), mission-first messaging (ADR 0024), the Transit lines
 brand with button states and menus (ADR 0025), paying in person with
 pay codes (ADR 0026), the phone-first pass, DC sales tax at
-redemption (ADR 0027), refunds and corrections (ADR 0028) and the
-merchant fee, ready but at 0 (ADR 0029).
+redemption (ADR 0027), refunds and corrections (ADR 0028), the
+merchant fee, ready but at 0 (ADR 0029) and the business model with
+impact projections (ADR 0030).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
