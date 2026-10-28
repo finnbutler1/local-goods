@@ -60,6 +60,19 @@ class ApplicationStatusLinkTest extends TestCase
         $this->assertStringNotContainsString($token, $html, 'the token never appears in the page');
     }
 
+    public function test_opening_a_second_link_switches_to_that_application(): void
+    {
+        [$first, $firstToken] = $this->apply();
+        [$second, $secondToken] = $this->apply(['business_name' => 'Second Shop', 'contact_email' => 'second@example.com']);
+        $this->post('/apply/status', ['link' => "{$first->id}.{$firstToken}"]);
+
+        // The page showing the first one still has the form the link's # part goes into.
+        $this->get('/apply/status')->assertSee('Kettle &amp; Crumb', false)->assertSee('data-status-link', false)->assertSee('Follow a different application');
+
+        $this->post('/apply/status', ['link' => "{$second->id}.{$secondToken}"])->assertRedirect('/apply/status');
+        $this->get('/apply/status')->assertSee('Second Shop')->assertDontSee('Kettle');
+    }
+
     public function test_a_whole_pasted_link_works_too(): void
     {
         [$application, $token] = $this->apply();
