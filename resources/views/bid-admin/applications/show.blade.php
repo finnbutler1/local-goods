@@ -65,7 +65,7 @@
                 <dt class="text-muted">Suggestion</dt><dd class="font-semibold">{{ str_replace('_', ' ', ucfirst($a->ai_classification)) }}{{ $a->ai_eligible ? ' (looks eligible)' : ' (does not look eligible)' }}</dd>
                 <dt class="text-muted">Confidence</dt><dd class="tabular">{{ round(100 * $a->ai_confidence) }}% ({{ $confidenceWords($a->ai_confidence) }}){{ $a->ai_needs_review ? ' · flagged for a closer look' : '' }}</dd>
                 <dt class="text-muted">Reasoning</dt><dd class="max-w-prose">{{ $a->ai_reasoning }}</dd>
-                <dt class="text-muted">Prompt</dt><dd class="tabular">{{ $a->ai_prompt_version }} · {{ $a->ai_model }}</dd>
+                <dt class="text-muted">Source</dt><dd class="tabular">{{ $a->ai_model === \Database\Seeders\DatabaseSeeder::SEEDED_SUGGESTION ? 'Seeded example, not an AI answer' : 'Prompt '.$a->ai_prompt_version.' · '.$a->ai_model }}</dd>
             </dl>
             <p class="mt-3 rounded-2xl bg-primary-tint p-4 text-sm">
                 <span class="font-semibold">Suggestion only: a BID admin decides.</span> The AI saw only the name, address and category the shop gave

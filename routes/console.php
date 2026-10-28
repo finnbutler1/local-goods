@@ -36,7 +36,7 @@ Artisan::command('demo:seed-if-empty', function () {
     $districtless = array_diff($seeded, DemoResetter::DISTRICT_TABLES);
     if (array_intersect(DemoResetter::DISTRICT_TABLES, $filled) === [] && count($filled) === count($districtless)) {
         DB::transaction(fn () => DatabaseSeeder::seedDistrictExtras(Bid::firstOrFail(), District::default()));
-        $this->info('Added the demo partnership; nothing else changed.');
+        $this->info('Added the demo partnership and the two sample applications; nothing else changed.');
 
         return;
     }
