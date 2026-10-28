@@ -18,15 +18,7 @@
                 <p class="mt-2 text-muted" id="status-link-intro">
                     Open the private link you saved after applying. If it doesn't open by itself, paste the whole link here.
                 </p>
-                {{-- resources/js/app.js moves the part of the link after # into this field and sends it, so it never reaches a server log. --}}
-                <form method="POST" action="{{ route('apply.status.open') }}" data-status-link data-busy="Opening…" class="mt-4 space-y-3">
-                    @csrf
-                    <x-field name="link" id="status-link" label="Your status link">
-                        <input id="status-link" name="link" type="text" required maxlength="500" autocomplete="off" value="" class="block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2 font-mono"
-                               @error('link') aria-invalid="true" aria-describedby="status-link-error" @enderror>
-                    </x-field>
-                    <x-button type="submit">Open</x-button>
-                </form>
+                @include('apply.partials.status-link-form')
             </x-card>
         @else
             <header>
@@ -98,6 +90,12 @@
                     @endforeach
                 </ol>
             </section>
+
+            {{-- Opening another application's link here switches to it (the form also picks up a link's # part). --}}
+            <details class="rounded-2xl bg-band p-4" @if ($errors->has('link')) open @endif>
+                <summary class="cursor-pointer font-semibold text-primary">Follow a different application</summary>
+                @include('apply.partials.status-link-form')
+            </details>
         @endif
     </div>
 @endsection
