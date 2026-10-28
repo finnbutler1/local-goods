@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Services\Districts\DistrictRules;
 use App\Services\Eligibility\MerchantCandidates;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,6 +30,21 @@ class Merchant extends Model
             'district_approved_at' => 'datetime',
             'live_at' => 'datetime',
         ];
+    }
+
+    /** An approved merchant's location must be inside its district, however it is saved (ADR 0031). */
+    protected static function booted(): void
+    {
+        static::saving(fn (Merchant $merchant) => DistrictRules::guardSave($merchant));
+    }
+
+    /** Merchants where this employee's credits may be spent (DistrictRules::mayRedeem). */
+    public function scopeRedeemableFor(Builder $query, Employee $employee): void
+    {
+        $districtId = DistrictRules::programDistrictId($employee);
+
+        $query->when($districtId !== null, fn (Builder $q) => $q->where('district_id', $districtId)
+            ->whereNotNull('district_approved_at')->whereNotNull('live_at'));
     }
 
     public function bid(): BelongsTo
