@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
+use App\Models\MerchantApplication;
 use App\Models\PayCode;
 use App\Models\Redemption;
 use App\Services\CompletedRefunds;
@@ -49,6 +50,8 @@ class MerchantDashboardController extends Controller
 
         return view('dashboards.merchant', [
             'merchant' => $merchant,
+            // A shop that joined through an application and isn't live yet (ADR 0031).
+            'joining' => MerchantApplication::where('merchant_id', $merchant->id)->where('status', '!=', MerchantApplication::LIVE)->first(),
             'lookedUp' => $lookedUp,
             // The Local Goods merchant fee now (ADR 0029); each redemption shows its own snapshot.
             'fee' => MerchantFee::current(),

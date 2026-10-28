@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Merchant;
+use App\Services\Districts\MerchantApplications;
 use App\Support\StripeEnvironment;
 use Illuminate\Support\Str;
 
@@ -76,6 +77,8 @@ class StripeOnboarding
             ];
 
         $merchant->forceFill(['stripe_account_id' => $account['id'], 'stripe_synced_at' => now()] + $status)->save();
+        // A shop that joined through an application goes live once Stripe can pay it (ADR 0031); others are untouched.
+        app(MerchantApplications::class)->goLiveIfReady($merchant);
 
         return ! $was && $merchant->isStripeOnboarded();
     }

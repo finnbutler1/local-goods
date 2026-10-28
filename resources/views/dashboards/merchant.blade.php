@@ -9,6 +9,15 @@
     </x-card>
 @else
 <div class="space-y-10">
+    @if ($joining)
+        <div class="max-w-3xl space-y-3" data-joining>
+            @include('apply.partials.prototype-notice')
+            <p class="rounded-2xl bg-band p-4">
+                <span class="font-semibold">Not live yet.</span> The BID approved {{ $merchant->name }}. Employees can spend credits here
+                once Stripe confirms your payouts account below.
+            </p>
+        </div>
+    @endif
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Merchant dashboard · {{ $merchant->name }}</x-eyebrow>
         <h1 class="mt-1 text-title font-semibold text-primary">Your Local Goods sales</h1>
