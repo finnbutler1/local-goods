@@ -27,11 +27,13 @@ class PublicClaimsTest extends TestCase
     private const OVERCLAIM = '/local goods\W+(?:\w+\W+){0,3}?(delivers|creates|produces|generates|achieves|causes)\b[^.]{0,40}(\b3\s?x\b|3×|three times|multiplier)|guarantee/i';
 
     /**
-     * A fee, revenue, interchange, margin or take-rate word within a sentence
-     * of a dollar amount or a percentage. Words must stand alone (not inside
-     * an ID like 3fee0b1c or a word like "marginal"), and so must the number.
+     * A fee, revenue, profit, EBITDA, interchange, margin or take-rate word
+     * within a sentence of a dollar amount or a percentage. Words must stand
+     * alone (not inside an ID like 3fee0b1c or a word like "marginal"), and
+     * so must the number. "Their revenue" is the outside study's merchants
+     * (52.3% of their revenue recirculated), not Local Goods'.
      */
-    private const BUSINESS_MODEL_NUMBER = '/(?<![a-z0-9])(fees?|platform fees?|merchant fees?|employer fees?|service fees?|transaction fees?|interchange|margins?|take rates?|our revenue|Local Goods(?:\'s|’s)? revenue)(?![a-z0-9])[^.]{0,40}(\$\s?\d|(?<![a-z0-9.])\d+(\.\d+)?\s?%)|(\$\s?\d|(?<![a-z0-9.])\d+(\.\d+)?\s?%)[^.]{0,20}(?<![a-z0-9])(fees?|interchange|take rates?|margins?)(?![a-z0-9])/i';
+    public const BUSINESS_MODEL_NUMBER = '/(?<![a-z0-9])(fees?|platform fees?|merchant fees?|employer fees?|service fees?|transaction fees?|interchange|margins?|take rates?|(?<!their )revenues?|profits?|EBITDA|Local Goods(?:\'s|’s)? revenue)(?![a-z0-9])[^.]{0,40}(\$\s?\d|(?<![a-z0-9.])\d+(\.\d+)?\s?%)|(\$\s?\d|(?<![a-z0-9.])\d+(\.\d+)?\s?%)[^.]{0,20}(?<![a-z0-9])(fees?|interchange|take rates?|margins?|(?<!their )revenues?|profits?|EBITDA)(?![a-z0-9])/i';
 
     private const STRIPE_MISSING_OR_LIVE = '/later build|not built yet|isn\'t built|coming soon[^.]*stripe|stripe[^.]*coming soon|live mode|live payments|real money moves/i';
 
@@ -179,5 +181,10 @@ class PublicClaimsTest extends TestCase
         $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Purchase 3fee0b1c-0fee-4a2b-8c3d-9e8f7a6b5fee paid $250.00.');
         $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Token cs_test_a1fee9 for 15% of the balance.');
         $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'A marginal note about $5 lunches.');
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Revenue $28k in year 1.');
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'EBITDA −$198k');
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'A profit of $4.02M.');
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Our revenue is $1.2M.');
+        $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Independent retailers recirculated 52.3% of their revenue locally, against 15.8% for chains.');
     }
 }

@@ -31,6 +31,7 @@ use App\Http\Controllers\Merchant\PayCodeController as MerchantPayCodeController
 use App\Http\Controllers\Merchant\RedemptionsExportController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\MerchantEvalController;
+use App\Http\Controllers\Projections\ProjectionController;
 use App\Http\Controllers\StyleguideController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,8 @@ Route::get('/', LandingController::class)->name('home');
 Route::get('/eval', [FraudEvalController::class, 'public'])->name('eval');
 // Public, but business names only for named reviewers and admins (see the controller).
 Route::get('/eval/merchants', MerchantEvalController::class)->name('eval.merchants');
+// Public: district numbers only, labelled "Projection, not results" (ADR 0030).
+Route::get('/projection', ProjectionController::class)->name('projection');
 
 // The pre-login demo pages now live behind login. Old links go to Log in.
 Route::redirect('/demo/{any?}', '/login')->where('any', '.*');
