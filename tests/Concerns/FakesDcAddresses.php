@@ -19,12 +19,23 @@ trait FakesDcAddresses
         '50 MASSACHUSETTS AVENUE NE' => [38.89761945, -77.00617579], // Union Station, outside
     ];
 
+    /** Set by fakeDcAddresses(down: true); a later call changes it, since the first fake stays registered. */
+    protected bool $dcAddressesDown = false;
+
+    protected bool $dcAddressesFaked = false;
+
     protected function fakeDcAddresses(bool $down = false): void
     {
+        $this->dcAddressesDown = $down;
+        if ($this->dcAddressesFaked) {
+            return;
+        }
+        $this->dcAddressesFaked = true;
+
         Http::preventStrayRequests();
         Http::fake([
-            parse_url(config('districts.mar_address_points_url'), PHP_URL_HOST).'/*' => function (Request $request) use ($down) {
-                if ($down) {
+            parse_url(config('districts.mar_address_points_url'), PHP_URL_HOST).'/*' => function (Request $request) {
+                if ($this->dcAddressesDown) {
                     return Http::response('Service Unavailable', 503);
                 }
 
