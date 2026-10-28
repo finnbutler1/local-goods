@@ -738,8 +738,8 @@ join form keep, and where the AI fits
   expects license facts, and an application has self-reported ones with no
   license activity.
 - **Partnerships.** The demo partnership is labelled "Demo partnership —
-  not an actual agreement". Only the platform admin changes a partnership,
-  and every change is logged with who, when and why. Any revenue share is
+  not an actual agreement". Only a BID admin or the platform admin changes a
+  partnership, and every change is logged with who, when and why. Any revenue share is
   worked out for display only; no money goes to a BID. Judges see it in
   words, without amounts.
 - **Reviewers** can see the applications queue with each contact email

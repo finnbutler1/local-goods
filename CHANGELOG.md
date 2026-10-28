@@ -15,8 +15,8 @@ commit history.
   Repository and runs the same check as approval. The typed address is
   not stored.
 - **BID partnership page**: exclusive or not, dates, revenue share (0 for
-  now, display only), data terms and every change. The platform admin
-  changes it in two steps. A district can have only one active exclusive
+  now, display only), data terms and every change. A BID admin or
+  the platform admin changes it in two steps. A district can have only one active exclusive
   partnership; the database refuses a second. The demo one is labelled
   as not an actual agreement.
 - **Apply to join** (public, no account): independent shops apply and

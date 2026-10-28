@@ -138,7 +138,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/applications/{application}/check', [ApplicationController::class, 'check'])->whereNumber('application')->middleware('throttle:10,1,bid-admin.applications.check')->name('applications.check');
         Route::post('/applications/{application}/approve', [ApplicationController::class, 'approve'])->whereNumber('application')->middleware('throttle:30,1,bid-admin.applications.approve')->name('applications.approve');
         Route::post('/applications/{application}/decline', [ApplicationController::class, 'decline'])->whereNumber('application')->middleware('throttle:30,1,bid-admin.applications.decline')->name('applications.decline');
-        // The BID partnership (ADR 0031): BID admin and judges read it, the platform admin changes it in two steps.
+        // The BID partnership (ADR 0031): judges read it; a BID admin or the platform admin changes it in two steps.
         Route::get('/partnership', [PartnershipController::class, 'index'])->name('partnership');
         Route::post('/partnership/review', [PartnershipController::class, 'review'])->middleware('throttle:20,1,bid-admin.partnership.review')->name('partnership.review');
         Route::post('/partnership', [PartnershipController::class, 'store'])->middleware('throttle:10,1,bid-admin.partnership.store')->name('partnership.store');
