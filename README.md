@@ -66,6 +66,34 @@ Money spent at independent local businesses tends to recirculate roughly 3x
 more in the local economy than money spent at chains, an effect often called
 the local multiplier. An estimate from an outside study, not measured by Local Goods: the Civic Economics / American Booksellers Association [Indie Impact study](https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html) found independent retailers and restaurants recirculated 52.3% of their revenue locally, against 15.8% for chains, about 3.3 times as much (data from 2011–2012, 134 businesses in 10 U.S. communities, none in DC). Real results here will be measured in a pilot.
 
+## Business model
+
+**Projection, not results.** Employers pay a monthly platform fee for each
+participating employee, on top of the credits they buy. The BID, which
+introduces us to employers, gets a share of that fee. Merchants may pay a
+small fee per sale; it is zero in the product today. The credits themselves
+pass through Stripe to merchants and are never Local Goods revenue, and credits
+employees don't spend stay the employer's money.
+
+The model is worked out month by month from stated assumptions, each with a
+public source or labelled an assumption to check in customer discovery. On the
+assumptions as of October 2026, the Golden Triangle alone is a pilot rather
+than a business; the model depends on growing to more districts and on the
+employer fee. Method, every assumption and what we still have to learn:
+[docs/finance/MODEL.md](docs/finance/MODEL.md). Signed-in reviewers can explore
+low and high cases on the Business model page.
+
+<!-- projection:readme-table:start -->
+| Base case | Year 1 | Year 2 | Year 3 | Year 4 |
+|---|---|---|---|---|
+| Golden Triangle only: revenue | $28k | $74k | $96k | $96k |
+| Golden Triangle only: EBITDA | −$198k | −$129k | −$97k | −$97k |
+| DC-wide: revenue | $31k | $145k | $405k | $748k |
+| DC-wide: EBITDA | −$216k | −$310k | −$407k | −$173k |
+| National rollout: revenue | $56k | $453k | $1.83M | $4.52M |
+| National rollout: EBITDA | −$315k | −$809k | −$1.29M | −$1.04M |
+<!-- projection:readme-table:end -->
+
 ## How it works
 
 1. **The employer buys credits** for its employees through its local BID (the

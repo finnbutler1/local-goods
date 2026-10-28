@@ -262,7 +262,7 @@ class BusinessModelTest extends TestCase
         foreach (glob($root.'app/Support/Projections/*.php') as $file) {
             $source = file_get_contents($file);
             preg_match_all('/^use (.+);$/m', $source, $imports);
-            $this->assertSame([], array_diff($imports[1], ['InvalidArgumentException']), basename($file).' imports only plain PHP.');
+            $this->assertSame([], array_diff($imports[1], ['InvalidArgumentException', 'RuntimeException']), basename($file).' imports only plain PHP.');
             $this->assertDoesNotMatchRegularExpression('/\\\\?App\\\\(?!Support\\\\Projections)|DB::|Http::|Cache::/', preg_replace('/^namespace .+$/m', '', $source), basename($file));
         }
 
