@@ -24,6 +24,7 @@ class DistrictsMigrationSafetyTest extends TestCase
 
     /** Newest first, the order a rollback undoes them. */
     public const MIGRATIONS = [
+        'database/migrations/2026_10_30_000003_add_merchant_joining.php',
         'database/migrations/2026_10_30_000002_add_partnerships.php',
         'database/migrations/2026_10_30_000001_add_districts.php',
     ];
