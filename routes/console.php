@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Bid;
+use App\Models\District;
 use App\Models\Merchant;
 use App\Services\DemoResetter;
 use App\Support\RetiredDemoAccounts;
@@ -26,6 +28,15 @@ Artisan::command('demo:seed-if-empty', function () {
         DB::transaction(fn () => DatabaseSeeder::seedMenus(collect(DatabaseSeeder::DEMO_MERCHANTS)
             ->map(fn ($m) => Merchant::where('name', $m[0])->firstOrFail())));
         $this->info('Added the demo merchants\' product menus; nothing else changed.');
+
+        return;
+    }
+
+    // Partnerships came after the live demo was seeded: add only the demo one (ADR 0031).
+    $districtless = array_diff($seeded, DemoResetter::DISTRICT_TABLES);
+    if (array_intersect(DemoResetter::DISTRICT_TABLES, $filled) === [] && count($filled) === count($districtless)) {
+        DB::transaction(fn () => DatabaseSeeder::seedDistrictExtras(Bid::firstOrFail(), District::default()));
+        $this->info('Added the demo partnership; nothing else changed.');
 
         return;
     }

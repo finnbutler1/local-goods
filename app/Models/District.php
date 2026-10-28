@@ -54,4 +54,9 @@ class District extends Model
     {
         return $this->hasMany(Merchant::class);
     }
+
+    public function partnerships(): HasMany
+    {
+        return $this->hasMany(Partnership::class);
+    }
 }
