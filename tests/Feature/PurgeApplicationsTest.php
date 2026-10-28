@@ -59,11 +59,11 @@ class PurgeApplicationsTest extends TestCase
         $this->apply();
 
         $this->artisan('applications:purge', ['--before' => '2099-01-01', '--dry-run' => true])->expectsOutputToContain('Would delete 1 application(s)')->assertSuccessful();
-        $this->assertSame(1, MerchantApplication::count());
+        $this->assertSame(1, MerchantApplication::where('is_sample', false)->count());
 
         $this->artisan('applications:purge')->assertFailed();
         $this->artisan('applications:purge', ['--before' => 'tomorrow'])->assertFailed();
-        $this->assertSame(1, MerchantApplication::count());
+        $this->assertSame(1, MerchantApplication::where('is_sample', false)->count());
     }
 
     public function test_checker_lookups_older_than_thirty_days_go_application_lookups_stay(): void

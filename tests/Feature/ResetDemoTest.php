@@ -77,9 +77,10 @@ class ResetDemoTest extends TestCase
         // demo delete real data. Change this list only on purpose. The
         // correction tables (ADR 0028) are demo data like the ledger. The
         // partnership tables (ADR 0031) point at bids, which a reset clears,
-        // so the demo partnership is reset with them.
+        // so the demo partnership is reset with them. Applications point at
+        // merchants: Reset demo clears them too and restores the two samples.
         $this->assertSame(
-            ['partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
+            ['merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
     }

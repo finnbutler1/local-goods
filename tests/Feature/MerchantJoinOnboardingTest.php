@@ -43,7 +43,7 @@ class MerchantJoinOnboardingTest extends TestCase
         $html = $this->post('/apply', [...$this->applicationData(), 'prototype' => '1'])->assertOk()->getContent();
         preg_match('#/apply/status\#(\d+\.[A-Za-z0-9]{40})"#', $html, $m);
         $key = $m[1];
-        $application = MerchantApplication::sole();
+        $application = MerchantApplication::where('is_sample', false)->sole();
 
         // 2–3. The BID admin checks and approves.
         $this->eligibilityReply();

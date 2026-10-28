@@ -8,11 +8,14 @@ use App\Models\District;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
+use App\Models\MerchantApplication;
+use App\Models\MerchantApplicationEvent;
 use App\Models\MerchantPayout;
 use App\Models\MerchantProduct;
 use App\Models\Partnership;
 use App\Models\Redemption;
 use App\Services\CreditLedger;
+use App\Services\Districts\MerchantApplications;
 use App\Services\Districts\PartnershipSettings;
 use App\Support\SalesTax;
 use App\Support\TaxBreakdown;
@@ -154,7 +157,7 @@ class DatabaseSeeder extends Seeder
         $bid = Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);
         // The district row comes from the districts migration, never from the seed.
         $district = District::default();
-        self::seedPartnership($bid, $district);
+        self::seedDistrictExtras($bid, $district);
 
         $employer = Employer::create([
             'bid_id' => $bid->id,
@@ -257,7 +260,55 @@ class DatabaseSeeder extends Seeder
     public static function seedDistrictExtras(Bid $bid, District $district): void
     {
         self::seedPartnership($bid, $district);
+        self::seedSampleApplications();
     }
+
+    /**
+     * Two fictional sample applications (ADR 0031), labelled as such: one
+     * approved (waiting for the shop to set up Stripe payouts) and one
+     * waiting for the BID. Their eligibility suggestions are written here,
+     * not asked of the AI, and say so. No merchant row: neither shop is a
+     * participant. Their status links are thrown away.
+     */
+    public static function seedSampleApplications(): void
+    {
+        $samples = [
+            [MerchantApplication::BID_APPROVED, [
+                'business_name' => 'Nineteenth Street Tea House', 'address' => '1100 block of 18th St NW', 'category' => 'cafe',
+                'contact_email' => 'tea-house@example.com',
+                'independence_answer' => 'Fictional sample: one tea room, owned by a family in Takoma, no franchise or parent company.',
+            ], [38.904439, -77.041331], 6],
+            [MerchantApplication::ELIGIBILITY_CHECKED, [
+                'business_name' => 'Desk & Dumpling', 'address' => '1900 block of L St NW', 'category' => 'restaurant',
+                'contact_email' => 'desk-and-dumpling@example.com',
+                'independence_answer' => 'Fictional sample: a single lunch counter run by its two cooks, who own it outright.',
+            ], [38.903587, -77.044017], 2],
+        ];
+
+        foreach ($samples as [$status, $data, [$latitude, $longitude], $daysAgo]) {
+            $at = now()->subDays($daysAgo);
+            [$application] = app(MerchantApplications::class)->submit($data, isSample: true);
+            $application->forceFill([
+                'status' => $status, 'matched_address' => mb_strtoupper($data['address']), 'latitude' => $latitude, 'longitude' => $longitude,
+                'inside_district' => true, 'ai_eligible' => true, 'ai_classification' => 'independent', 'ai_confidence' => 0.75,
+                'ai_reasoning' => 'Seeded example, not an AI answer: a fictional single-location shop, so the rule would treat it as independent if that is true.',
+                'ai_needs_review' => false, 'ai_prompt_version' => null, 'ai_model' => self::SEEDED_SUGGESTION,
+                'created_at' => $at, 'updated_at' => $at,
+            ])->save();
+            MerchantApplicationEvent::where('merchant_application_id', $application->id)->update(['created_at' => $at]);
+            MerchantApplicationEvent::create(['merchant_application_id' => $application->id, 'from_status' => MerchantApplication::APPLIED,
+                'to_status' => MerchantApplication::ELIGIBILITY_CHECKED, 'actor' => MerchantApplicationEvent::ACTOR_SEED, 'created_at' => $at->copy()->addHours(3),
+                'reason' => 'Demo seed: address inside the district. The suggestion was written by the seed, not asked of the AI.']);
+            if ($status === MerchantApplication::BID_APPROVED) {
+                MerchantApplicationEvent::create(['merchant_application_id' => $application->id, 'from_status' => MerchantApplication::ELIGIBILITY_CHECKED,
+                    'to_status' => MerchantApplication::BID_APPROVED, 'actor' => MerchantApplicationEvent::ACTOR_SEED, 'created_at' => $at->copy()->addDay(),
+                    'reason' => 'Demo seed: approved as an example. A real approval is a BID admin\'s decision, with their reason.']);
+            }
+        }
+    }
+
+    /** ai_model on a seeded sample: the suggestion was written by the seed, never asked of the AI. */
+    public const SEEDED_SUGGESTION = 'seeded example';
 
     /**
      * The demo partnership (ADR 0031): the Golden Triangle BID, exclusive and

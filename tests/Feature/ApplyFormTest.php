@@ -65,7 +65,7 @@ class ApplyFormTest extends TestCase
             ->assertSee('Step 2 of 5: waiting for the eligibility check.')
             ->getContent();
 
-        $application = MerchantApplication::sole();
+        $application = MerchantApplication::where('is_sample', false)->sole();
         $this->assertSame(MerchantApplication::APPLIED, $application->status);
         $this->assertNotNull($application->prototype_acknowledged_at);
         $this->assertFalse($application->is_sample);
@@ -77,21 +77,21 @@ class ApplyFormTest extends TestCase
     {
         $this->from('/apply')->post('/apply', $this->form(['prototype' => '']))
             ->assertRedirect('/apply')->assertSessionHasErrors(['prototype' => 'Tick "I understand this is a prototype" to apply.']);
-        $this->assertSame(0, MerchantApplication::count());
+        $this->assertSame(0, MerchantApplication::where('is_sample', false)->count());
     }
 
     public function test_fields_are_checked(): void
     {
         $this->from('/apply')->post('/apply', $this->form(['contact_email' => 'not an email', 'category' => 'bank', 'independence_answer' => 'Short', 'business_name' => '']))
             ->assertSessionHasErrors(['contact_email', 'category', 'independence_answer', 'business_name']);
-        $this->assertSame(0, MerchantApplication::count());
+        $this->assertSame(0, MerchantApplication::where('is_sample', false)->count());
     }
 
     public function test_the_honeypot_stores_nothing_but_looks_the_same(): void
     {
         $this->post('/apply', $this->form(['website' => 'http://spam.example']))->assertOk()->assertSee('Application sent');
 
-        $this->assertSame(0, MerchantApplication::count());
+        $this->assertSame(0, MerchantApplication::where('is_sample', false)->count());
     }
 
     public function test_an_ip_may_send_three_applications_in_ten_minutes(): void
@@ -101,7 +101,7 @@ class ApplyFormTest extends TestCase
         }
         $this->post('/apply', $this->form(['contact_email' => 'owner4@example.com']))->assertStatus(429);
 
-        $this->assertSame(3, MerchantApplication::count());
+        $this->assertSame(3, MerchantApplication::where('is_sample', false)->count());
         $this->travel(11)->minutes();
         $this->post('/apply', $this->form(['contact_email' => 'owner5@example.com']))->assertOk();
     }
@@ -112,6 +112,6 @@ class ApplyFormTest extends TestCase
 
         $this->get('/apply')->assertOk()->assertSee('Read-only.');
         $this->post('/apply', $this->form())->assertForbidden();
-        $this->assertSame(0, MerchantApplication::count());
+        $this->assertSame(0, MerchantApplication::where('is_sample', false)->count());
     }
 }
