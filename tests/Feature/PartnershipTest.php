@@ -118,9 +118,9 @@ class PartnershipTest extends TestCase
         $this->assertSame(District::default()->id, $next->exclusive_active_key);
     }
 
-    public function test_only_the_platform_admin_changes_a_partnership(): void
+    public function test_only_a_bid_admin_or_the_platform_admin_changes_a_partnership(): void
     {
-        foreach ([Role::BidAdmin, Role::Judge, Role::EmployerAdmin] as $role) {
+        foreach ([Role::Judge, Role::EmployerAdmin, Role::Merchant, Role::Employee] as $role) {
             try {
                 $this->settings()->change(User::factory()->role($role)->create(), $this->demo(), $this->terms(['revenue_share_bps' => 100]), 'Try', $this->demo()->latestChangeId());
                 $this->fail("{$role->value} changed the partnership.");
@@ -129,6 +129,11 @@ class PartnershipTest extends TestCase
         }
 
         $this->assertSame(0, $this->demo()->fresh()->revenue_share_bps);
+
+        $bidAdmin = User::factory()->role(Role::BidAdmin)->create();
+        $change = $this->settings()->change($bidAdmin, $this->demo(), $this->terms(['revenue_share_bps' => 100]), 'Agreed at the board meeting', $this->demo()->latestChangeId());
+        $this->assertSame($bidAdmin->id, $change->changed_by_user_id);
+        $this->assertSame(100, $this->demo()->fresh()->revenue_share_bps);
     }
 
     public function test_a_change_against_an_older_version_is_refused(): void

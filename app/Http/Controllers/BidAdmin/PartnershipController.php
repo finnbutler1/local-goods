@@ -18,7 +18,7 @@ use InvalidArgumentException;
 
 /**
  * The BID partnership (ADR 0031): the record, its change log and what the
- * revenue share would come to. The BID admin and judges see it; only the
+ * revenue share would come to. Judges read it; a BID admin or the
  * platform admin changes it, in two steps (review writes nothing, then
  * confirm). Judges count as the public, so they see the revenue share in
  * words, without figures (as with fees, ADR 0029).

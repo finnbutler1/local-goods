@@ -93,15 +93,17 @@ Merchants gain `district_id`, `latitude`, `longitude`,
 - the data terms;
 - its status: draft, active or ended, forward only.
 
-**Who changes it.** `PartnershipSettings` is the only writer: platform
-admin only, with a reason, against the reviewed version. Each change is
+**Who changes it.** `PartnershipSettings` is the only writer: a BID
+admin or the platform admin, with a reason, against the reviewed version.
+(At first only the platform admin could; Finn widened it to the BID admin
+on 2026-10-28, since the BID is a party to the agreement.) Each change is
 one append-only `partnership_changes` row (who, when, why, before and
 after).
 
 **The page.** `/bid-admin/partnership` uses Review (writes nothing), then
-Confirm (a ticked box), the same pattern as fees in ADR 0029. The BID
-admin and judges read it. Judges see the revenue share in words only:
-they count as the public (ADR 0029).
+Confirm (a ticked box), the same pattern as fees in ADR 0029. Judges read
+it and see the revenue share in words only: they count as the public
+(ADR 0029).
 
 **Revenue share.** `PartnershipRevenueShare` multiplies the share rate by
 the platform's own district ledger lines:

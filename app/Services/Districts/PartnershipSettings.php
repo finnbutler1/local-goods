@@ -16,7 +16,7 @@ use LogicException;
 
 /**
  * The only place a BID partnership is created or changed (ADR 0031).
- * Platform admin only, always with a reason, only against the version the
+ * A BID admin or the platform admin (Finn's call, 2026-10-28), always with a reason, only against the version the
  * admin reviewed, and each change is one append-only partnership_changes
  * row. Status only moves forward (draft → active → ended). One active
  * exclusive partnership per district: checked here for a clear message and
@@ -42,7 +42,7 @@ class PartnershipSettings
     public function create(?User $by, Bid $bid, District $district, array $terms, string $reason, bool $isDemo = false): Partnership
     {
         if ($by !== null) {
-            $this->ensurePlatformAdmin($by);
+            $this->ensureMayChange($by);
         }
 
         $terms = $this->check($terms, Partnership::STATUS_DRAFT, $reason);
@@ -65,7 +65,7 @@ class PartnershipSettings
     /** @param  array<string, mixed>  $terms */
     public function change(User $by, Partnership $partnership, array $terms, string $reason, int $reviewedChangeId): PartnershipChange
     {
-        $this->ensurePlatformAdmin($by);
+        $this->ensureMayChange($by);
         $terms = $this->check($terms, $partnership->status, $reason);
 
         return DB::transaction(function () use ($by, $partnership, $terms, $reason, $reviewedChangeId) {
@@ -137,10 +137,10 @@ class PartnershipSettings
         ];
     }
 
-    private function ensurePlatformAdmin(User $by): void
+    private function ensureMayChange(User $by): void
     {
-        if (! $by->hasRole(Role::PlatformAdmin)) {
-            throw new LogicException('Only the platform admin changes a BID partnership.');
+        if (! $by->hasRole(Role::BidAdmin, Role::PlatformAdmin)) {
+            throw new LogicException('Only a BID admin or the platform admin changes a BID partnership.');
         }
     }
 

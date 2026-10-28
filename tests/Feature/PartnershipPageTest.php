@@ -33,20 +33,33 @@ class PartnershipPageTest extends TestCase
         ];
     }
 
-    public function test_the_bid_admin_reads_the_terms_the_share_and_the_log_but_cannot_change_it(): void
+    public function test_the_bid_admin_reads_the_terms_the_share_and_the_log_and_can_change_it(): void
     {
-        $this->signIn(Role::BidAdmin);
+        $user = $this->signIn(Role::BidAdmin);
 
         $this->get('/bid-admin/partnership')->assertOk()
             ->assertSee('Demo partnership — not an actual agreement.')
             ->assertSee('Exclusive')
             ->assertSee('0% of what Local Goods earns in the district')
             ->assertSee('$0.00')
-            ->assertSee('Read-only.')
             ->assertSee('Every change')
-            ->assertDontSee('Review the change');
+            ->assertSee('Review the change')
+            ->assertDontSee('Read-only.');
 
-        $this->post('/bid-admin/partnership/review', $this->form())->assertForbidden();
+        $this->post('/bid-admin/partnership/review', $this->form())->assertOk()->assertSee('Check the change');
+        $this->post('/bid-admin/partnership', [...$this->form(), 'revenue_share_bps' => 1000, 'reviewed_change_id' => Partnership::sole()->latestChangeId(), 'confirm' => '1'])
+            ->assertSessionHas('status');
+        $this->assertSame(1000, Partnership::sole()->revenue_share_bps);
+        $this->assertSame($user->id, PartnershipChange::latest('id')->first()->changed_by_user_id);
+    }
+
+    public function test_other_signed_in_roles_cannot_change_it(): void
+    {
+        foreach ([Role::EmployerAdmin, Role::Merchant, Role::Employee] as $role) {
+            $this->signIn($role);
+            $this->post('/bid-admin/partnership/review', $this->form())->assertForbidden();
+        }
+        $this->assertSame(0, Partnership::sole()->revenue_share_bps);
     }
 
     public function test_judges_see_it_in_words_without_figures(): void
@@ -55,6 +68,8 @@ class PartnershipPageTest extends TestCase
 
         $html = $this->get('/bid-admin/partnership')->assertOk()
             ->assertSee('Demo partnership — not an actual agreement.')
+            ->assertSee('Read-only.')
+            ->assertDontSee('Review the change')
             ->assertSee('No revenue share')
             ->assertSee('Judges see this page without amounts')
             ->getContent();

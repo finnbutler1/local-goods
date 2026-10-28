@@ -24,7 +24,7 @@ building, for whom, and the rules for working in this repo.
   `Merchant::redeemableFor`. Never pass district fields to signals or the
   AI (`FraudInputDistrictTest`). Test merchants for the seeded employee use
   `Tests\Concerns\PlacesMerchantsInTheDistrict`.
-- Partnerships: `PartnershipSettings` only (platform admin, reason,
+- Partnerships: `PartnershipSettings` only (BID or platform admin, reason,
   reviewed change id, status forward only), append-only
   `partnership_changes`; unique `exclusive_active_key` (set by the model)
   = one active exclusive per district. `PartnershipRevenueShare` reads

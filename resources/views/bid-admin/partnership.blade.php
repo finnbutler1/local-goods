@@ -33,7 +33,7 @@
             <li>The revenue share is worked out from activity in the district for display only. No money moves to the BID in this prototype.</li>
         </ul>
         @unless ($change)
-            <p id="partnership-read-only" class="mt-4 rounded-2xl bg-band p-4 text-sm"><span class="font-semibold">Read-only.</span> Only the Local Goods platform admin changes the partnership.</p>
+            <p id="partnership-read-only" class="mt-4 rounded-2xl bg-band p-4 text-sm"><span class="font-semibold">Read-only.</span> Only a BID admin or the Local Goods platform admin changes the partnership.</p>
         @endunless
     </header>
 
