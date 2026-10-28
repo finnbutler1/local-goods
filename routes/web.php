@@ -11,6 +11,7 @@ use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\CollusionExampleController;
 use App\Http\Controllers\BidAdmin\CorrectionsController;
 use App\Http\Controllers\BidAdmin\ImpactController;
+use App\Http\Controllers\BidAdmin\ImpactExportController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\ApplicationController;
 use App\Http\Controllers\BidAdmin\MerchantFeeController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\CorrectionRequestController;
 use App\Http\Controllers\Districts\ApplyController;
 use App\Http\Controllers\Districts\DistrictMapController;
+use App\Http\Controllers\Districts\WhoDoesWhatController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\Employee\PayCodeController;
 use App\Http\Controllers\Employer\EmployerDashboardController;
@@ -51,6 +53,8 @@ Route::get('/eval/merchants', MerchantEvalController::class)->name('eval.merchan
 Route::get('/projection', ProjectionController::class)->name('projection');
 // The district map and address checker (ADR 0031). Checking an address is throttled; the map alone is not.
 Route::get('/district', DistrictMapController::class)->middleware('throttle:district-check')->name('district');
+// Who does what, for BIDs (ADR 0031): public, linked from the landing page.
+Route::get('/who-does-what', WhoDoesWhatController::class)->name('who-does-what');
 // Apply to join (ADR 0031): no account needed. Sending is limited per IP and guarded by a honeypot.
 Route::get('/apply', [ApplyController::class, 'create'])->name('apply');
 Route::post('/apply', [ApplyController::class, 'store'])->middleware('throttle:'.config('applications.per_ten_minutes', 3).',10,apply.store')->name('apply.store');
@@ -109,6 +113,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/eval', [FraudEvalController::class, 'admin'])->name('eval');
         Route::get('/participation', ParticipationController::class)->name('participation');
         Route::get('/impact', ImpactController::class)->name('impact');
+        // The district's aggregate data, any time (ADR 0031: the partnership's data terms).
+        Route::get('/impact.csv', ImpactExportController::class)->middleware('throttle:30,1,bid-admin.impact.csv')->name('impact.csv');
         Route::post('/redemptions/{redemption}/approve', [ReviewRedemptionController::class, 'approve'])->middleware('throttle:30,1,bid-admin.approve')->name('approve');
         Route::post('/redemptions/{redemption}/deny', [ReviewRedemptionController::class, 'deny'])->middleware('throttle:30,1,bid-admin.deny')->name('deny');
         // Admins only, never judges: a fresh synthetic collusion example through the real AI check (ADR 0016).
