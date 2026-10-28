@@ -31,6 +31,7 @@ use App\Http\Controllers\Merchant\PayCodeController as MerchantPayCodeController
 use App\Http\Controllers\Merchant\RedemptionsExportController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\MerchantEvalController;
+use App\Http\Controllers\Projections\BusinessModelController;
 use App\Http\Controllers\Projections\ProjectionController;
 use App\Http\Controllers\StyleguideController;
 use Illuminate\Http\Request;
@@ -173,6 +174,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/adjudicate/more', [AdjudicateController::class, 'more'])->name('adjudication.more');
             Route::post('/adjudicate/finish', [AdjudicateController::class, 'finish'])->name('adjudication.finish');
         });
+    });
+    // The business model (ADR 0030): reviewers, BID admin and platform admin; never logged-out visitors.
+    // Personal contacts are kept to adjudication by KeepPersonalContactsToAdjudication.
+    Route::middleware('role:judge,bid_admin,platform_admin')->group(function () {
+        Route::get('/business-model', [BusinessModelController::class, 'show'])->name('business-model');
+        Route::get('/business-model.csv', [BusinessModelController::class, 'csv'])->middleware('throttle:30,1,business-model.csv')->name('business-model.csv');
     });
     Route::middleware('role:platform_admin')->group(function () {
         Route::get('/admin', AccountController::class)->name('admin.dashboard');

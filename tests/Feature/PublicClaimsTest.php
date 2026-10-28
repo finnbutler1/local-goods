@@ -12,8 +12,11 @@ use Tests\TestCase;
  * What public pages and the README say about money and impact. The "roughly
  * 3x" recirculation line is an outside study's figure, so it may appear only
  * with its label and source, never as something Local Goods creates
- * (ADR 0024, replacing ADR 0017's no-3x rule). No business-model numbers.
- * Stripe is described as test mode, neither missing ("a later build") nor live.
+ * (ADR 0024, replacing ADR 0017's no-3x rule). No business-model numbers,
+ * except on the signed-in Business model page and in the README's
+ * "Business model" section, and only next to "Projection, not results" and
+ * a link to the assumptions (ADR 0030). Stripe is described as test mode,
+ * neither missing ("a later build") nor live.
  */
 class PublicClaimsTest extends TestCase
 {
@@ -23,6 +26,14 @@ class PublicClaimsTest extends TestCase
     private const MULTIPLIER = '/\b3\s?x\b|3×|three times|multiplier/i';
 
     private const LABEL = 'Estimate from an outside study, not measured by Local Goods';
+
+    private const PROJECTION_LABEL = 'Projection, not results';
+
+    /** The only page that may show fee, revenue and profit figures, and only to signed-in reviewers and admins. */
+    private const BUSINESS_MODEL_PAGE = '/business-model as judge';
+
+    /** @var array<string, string> page => raw HTML, filled by publicPages() */
+    private array $html = [];
 
     private const OVERCLAIM = '/local goods\W+(?:\w+\W+){0,3}?(delivers|creates|produces|generates|achieves|causes)\b[^.]{0,40}(\b3\s?x\b|3×|three times|multiplier)|guarantee/i';
 
@@ -60,6 +71,7 @@ class PublicClaimsTest extends TestCase
         $pages = [];
         $this->sweepPages(function (string $html, string $where) use (&$pages) {
             $pages[$where] = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html)));
+            $this->html[$where] = $html;
         }, roles: [Role::Judge]);
 
         return $pages;
@@ -116,12 +128,39 @@ class PublicClaimsTest extends TestCase
         }
     }
 
-    public function test_no_business_model_numbers_on_public_pages_or_in_the_readme(): void
+    public function test_no_business_model_numbers_on_public_pages(): void
     {
-        foreach ($this->publicPages() as $where => $text) {
+        $pages = $this->publicPages();
+        $this->assertArrayNotHasKey('/business-model signed out', $pages, 'Logged-out visitors never see the business model.');
+        $this->assertArrayHasKey(self::BUSINESS_MODEL_PAGE, $pages, 'Reviewers can open the business model, so the exception below is checked.');
+
+        foreach ($pages as $where => $text) {
+            if ($where === self::BUSINESS_MODEL_PAGE) {
+                $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, $text, 'The business model page shows figures, so its label check is not empty.');
+                $this->assertStringContainsString(self::PROJECTION_LABEL, $text, $where);
+                $this->assertStringContainsString('href="#assumptions"', $this->html[$where], $where);
+                $this->assertStringContainsString('id="assumptions"', $this->html[$where], $where);
+
+                continue;
+            }
             $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, $text, $where);
         }
-        $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, file_get_contents(base_path('README.md')));
+    }
+
+    public function test_business_model_numbers_in_the_readme_only_in_its_labelled_business_model_section(): void
+    {
+        foreach ($this->docSections() as $where => $section) {
+            if (! str_starts_with($where, 'README.md')) {
+                continue;
+            }
+            if ($where === 'README.md › ## Business model') {
+                $this->assertStringContainsString(self::PROJECTION_LABEL, $section, $where);
+                $this->assertStringContainsString('docs/finance/MODEL.md', $section, $where);
+
+                continue;
+            }
+            $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, $section, $where);
+        }
     }
 
     public function test_the_old_what_local_goods_is_heading_is_gone(): void

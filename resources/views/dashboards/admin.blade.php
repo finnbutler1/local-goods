@@ -15,6 +15,7 @@
                 <a href="{{ route('bid-admin.corrections') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Corrections</a>
                 <a href="{{ route('bid-admin.fees') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Fee settings</a>
                 <a href="{{ route('bid-admin.impact') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
+                <a href="{{ route('business-model') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business model</a>
             </p>
         </header>
 
