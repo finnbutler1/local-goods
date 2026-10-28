@@ -32,6 +32,16 @@
                 Fee settings: the Local Goods fee on merchant sales <span aria-hidden="true">→</span>
             </a>
         </p>
+        <p class="mt-2">
+            <a href="{{ route('bid-admin.applications') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                Merchant applications: shops asking to join <span aria-hidden="true">→</span>
+            </a>
+        </p>
+        <p class="mt-2">
+            <a href="{{ route('bid-admin.partnership') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                The BID partnership: exclusivity, dates and data terms <span aria-hidden="true">→</span>
+            </a>
+        </p>
     </header>
 
     <div aria-live="polite">

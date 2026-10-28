@@ -27,6 +27,8 @@ class DistrictMapPageTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         $this->fakeDcAddresses();
+        // Our own CSS and JS (the Vite dev server when `composer dev` runs) aren't what "no outside requests" is about.
+        $this->withoutVite();
     }
 
     public function test_the_map_draws_the_boundary_and_pins_with_a_text_alternative_and_no_outside_requests(): void
