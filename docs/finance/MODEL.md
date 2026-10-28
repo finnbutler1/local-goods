@@ -99,7 +99,7 @@ change with the share spent.
 | Spent at independent merchants | $166k | $472k | $612k | $612k |
 | Visits | 11,839 | 33,696 | 43,714 | 43,714 |
 | Customer funds held at year end (not revenue) | $18k | $38k | $39k | $39k |
-| Gross margin | 73.79% | 77.61% | 78.72% | 78.72% |
+| Gross margin | 74% | 78% | 79% | 79% |
 
 **DC-wide** (base case)
 
@@ -118,7 +118,7 @@ change with the share spent.
 | Spent at independent merchants | $168k | $863k | $2.53M | $4.76M |
 | Visits | 11,991 | 61,625 | 180,777 | 339,848 |
 | Customer funds held at year end (not revenue) | $19k | $89k | $218k | $353k |
-| Gross margin | 75.87% | 79.32% | 79.68% | 80.02% |
+| Gross margin | 76% | 79% | 80% | 80% |
 
 **National rollout** (base case)
 
@@ -137,7 +137,7 @@ change with the share spent.
 | Spent at independent merchants | $295k | $2.58M | $11.13M | $28.32M |
 | Visits | 21,098 | 184,268 | 794,902 | 2,023,000 |
 | Customer funds held at year end (not revenue) | $40k | $300k | $1.07M | $2.34M |
-| Gross margin | 78.63% | 80.6% | 80.18% | 80.19% |
+| Gross margin | 79% | 81% | 80% | 80% |
 <!-- projection:base-case:end -->
 
 ## Break-even and peak cash, every scenario and case

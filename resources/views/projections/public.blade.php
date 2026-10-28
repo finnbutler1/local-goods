@@ -54,7 +54,7 @@
                 <x-card class="flex flex-col">
                     <dt class="text-sm font-semibold text-muted">Participating employees</dt>
                     <dd class="tabular mt-2 font-display text-4xl font-semibold text-primary">{{ Figures::count($last['employees']) }}</dd>
-                    <dd class="mt-1 text-sm text-muted">at {{ Figures::count($last['employers']) }} employers in {{ $last['bids'] }} {{ Str::plural('BID', $last['bids']) }}</dd>
+                    <dd class="mt-1 text-sm text-muted">at {{ Figures::count($last['employers']) }} employers in {{ $last['bids'] }} {{ ($last['bids'] === 1 ? 'BID' : 'BIDs') }}</dd>
                 </x-card>
                 <x-card class="flex flex-col">
                     <dt class="text-sm font-semibold text-muted">Average per merchant</dt>

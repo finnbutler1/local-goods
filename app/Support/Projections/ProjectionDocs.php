@@ -78,7 +78,7 @@ final class ProjectionDocs
                 $format = $line === 'visits' ? Figures::count(...) : Figures::dollars(...);
                 $out[] = '| '.trim($label).' | '.implode(' | ', array_map(fn ($y) => $format($y[$line]), $years)).' |';
             }
-            $out[] = '| Gross margin | '.implode(' | ', array_map(fn ($y) => Figures::percent($y['gross_margin']), $years)).' |';
+            $out[] = '| Gross margin | '.implode(' | ', array_map(fn ($y) => Figures::percent($y['gross_margin'], 0), $years)).' |';
             $out[] = '';
         }
 

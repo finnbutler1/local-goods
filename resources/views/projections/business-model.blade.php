@@ -60,7 +60,7 @@
             <x-card class="flex flex-col">
                 <dt class="text-sm font-semibold text-muted">Year 4 revenue</dt>
                 <dd class="tabular mt-2 font-display text-3xl font-semibold text-primary">{{ Figures::dollars($year4['revenue']) }}</dd>
-                <dd class="mt-1 text-sm text-muted">Gross margin {{ Figures::percent($year4['gross_margin']) }}</dd>
+                <dd class="mt-1 text-sm text-muted">Gross margin {{ Figures::percent($year4['gross_margin'], 0) }}</dd>
             </x-card>
             <x-card class="flex flex-col">
                 <dt class="text-sm font-semibold text-muted">Year 4 EBITDA</dt>
@@ -150,7 +150,7 @@
                         @if ($total === 'cost_of_revenue')
                             <tr class="bg-band">
                                 <th scope="row" data-primary class="px-4 py-2.5 font-semibold">Gross profit (margin)</th>
-                                @foreach ($years as $y)<td data-label="Year {{ $y['year'] }}" class="{{ $td }} font-semibold">{{ Figures::dollars($y['gross_profit']) }} <span class="font-normal text-muted">({{ Figures::percent($y['gross_margin']) }})</span></td>@endforeach
+                                @foreach ($years as $y)<td data-label="Year {{ $y['year'] }}" class="{{ $td }} font-semibold">{{ Figures::dollars($y['gross_profit']) }} <span class="font-normal text-muted">({{ Figures::percent($y['gross_margin'], 0) }})</span></td>@endforeach
                             </tr>
                         @endif
                     @endforeach

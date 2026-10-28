@@ -44,10 +44,15 @@ final class Figures
         return $value === null ? 'n/a' : number_format(round($value));
     }
 
-    /** "85%", "1.5%", "0.25%". */
-    public static function percent(?float $share): string
+    /** "85%", "1.5%", "0.25%"; pass 0 decimals for a margin ("80%"). */
+    public static function percent(?float $share, int $decimals = 2): string
     {
-        return $share === null ? 'n/a' : rtrim(rtrim(number_format(100 * $share, 2), '0'), '.').'%';
+        if ($share === null) {
+            return 'n/a';
+        }
+        $text = number_format(100 * $share, $decimals);
+
+        return ($decimals > 0 ? rtrim(rtrim($text, '0'), '.') : $text).'%';
     }
 
     /** One assumption's value for a case, written by its unit. @param array<string, mixed> $assumption */
