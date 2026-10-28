@@ -18,6 +18,7 @@ use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\CorrectionRequestController;
+use App\Http\Controllers\Districts\ApplyController;
 use App\Http\Controllers\Districts\DistrictMapController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\Employee\PayCodeController;
@@ -49,6 +50,12 @@ Route::get('/eval/merchants', MerchantEvalController::class)->name('eval.merchan
 Route::get('/projection', ProjectionController::class)->name('projection');
 // The district map and address checker (ADR 0031). Checking an address is throttled; the map alone is not.
 Route::get('/district', DistrictMapController::class)->middleware('throttle:district-check')->name('district');
+// Apply to join (ADR 0031): no account needed. Sending is limited per IP and guarded by a honeypot.
+Route::get('/apply', [ApplyController::class, 'create'])->name('apply');
+Route::post('/apply', [ApplyController::class, 'store'])->middleware('throttle:'.config('applications.per_ten_minutes', 3).',10,apply.store')->name('apply.store');
+Route::get('/apply/status', [ApplyController::class, 'status'])->name('apply.status');
+Route::post('/apply/status', [ApplyController::class, 'open'])->middleware('throttle:10,1,apply.status.open')->name('apply.status.open');
+Route::post('/apply/status/sign-in', [ApplyController::class, 'signIn'])->middleware('throttle:10,1,apply.status.sign-in')->name('apply.status.sign-in');
 
 // The pre-login demo pages now live behind login. Old links go to Log in.
 Route::redirect('/demo/{any?}', '/login')->where('any', '.*');

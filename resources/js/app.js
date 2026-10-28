@@ -247,6 +247,18 @@ if (magicLinkForm) {
     }
 }
 
+// Merchant application status links: /apply/status#<id>.<token> (ADR 0031).
+// Same idea as reviewer links: the part after # goes into the form body, never
+// a URL the server logs, and is cleared from the address bar. Without a #, or
+// without JavaScript, the applicant pastes the link into the field.
+const statusLinkForm = document.querySelector('form[data-status-link]');
+if (statusLinkForm && window.location.hash.length > 1) {
+    const key = window.location.hash.slice(1);
+    history.replaceState(null, '', window.location.pathname);
+    statusLinkForm.elements.link.value = key;
+    statusLinkForm.submit();
+}
+
 // Occasion pickers: <select data-fill-amount="#amount-input"> whose options carry
 // data-amount puts that option's amount in the field when it is chosen.
 document.addEventListener('change', (event) => {

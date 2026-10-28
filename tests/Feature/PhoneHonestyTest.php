@@ -53,6 +53,13 @@ class PhoneHonestyTest extends TestCase
         return false;
     }
 
+    public function test_the_applicant_pages_keep_the_prototype_notice(): void
+    {
+        foreach (['/apply', '/apply/status'] as $page) {
+            $this->assertVisibleOnPhones($this->get($page)->assertOk()->getContent(), 'Local Goods is a student prototype in a contest', $page);
+        }
+    }
+
     public function test_the_landing_page_keeps_its_demo_and_affiliation_lines_and_the_evidence_label(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
