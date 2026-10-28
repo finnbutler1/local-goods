@@ -86,7 +86,10 @@ class DropdownMenuTest extends TestCase
         foreach (['bid-admin.participation', 'bid-admin.eval'] as $route) {
             $this->assertStringContainsString('href="'.route($route).'"', $tabMore, "{$route} is in More");
         }
-        $this->assertStringNotContainsString('id="nav-more"', $html, 'Five pages fit in the sidebar: no More there.');
+        // Partnership (ADR 0031) is a sixth page, so the sidebar now has a More too, holding the lowest-priority pages.
+        $navMore = $this->menu($html, 'nav-more');
+        $this->assertStringContainsString('href="'.route('bid-admin.partnership').'"', $navMore, 'Partnership is in the sidebar\'s More');
+        $this->assertStringNotContainsString('href="'.route('bid-admin.merchants').'"', $navMore, 'Merchants stays in the sidebar');
     }
 
     public function test_roles_with_few_pages_have_no_more_menu(): void

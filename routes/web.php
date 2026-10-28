@@ -13,6 +13,7 @@ use App\Http\Controllers\BidAdmin\CorrectionsController;
 use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\MerchantFeeController;
+use App\Http\Controllers\BidAdmin\PartnershipController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
@@ -114,6 +115,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/fees', [MerchantFeeController::class, 'index'])->name('fees');
         Route::post('/fees/review', [MerchantFeeController::class, 'review'])->middleware('throttle:20,1,bid-admin.fees.review')->name('fees.review');
         Route::post('/fees', [MerchantFeeController::class, 'store'])->middleware('throttle:10,1,bid-admin.fees.store')->name('fees.store');
+        // The BID partnership (ADR 0031): BID admin and judges read it, the platform admin changes it in two steps.
+        Route::get('/partnership', [PartnershipController::class, 'index'])->name('partnership');
+        Route::post('/partnership/review', [PartnershipController::class, 'review'])->middleware('throttle:20,1,bid-admin.partnership.review')->name('partnership.review');
+        Route::post('/partnership', [PartnershipController::class, 'store'])->middleware('throttle:10,1,bid-admin.partnership.store')->name('partnership.store');
 
         // Merchant Eligibility Matching review queue: real candidates, never participants.
         Route::get('/merchants', [MerchantEligibilityController::class, 'index'])->name('merchants');
