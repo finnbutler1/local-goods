@@ -38,8 +38,17 @@ class BidBoundary
         return self::fromGeoJson((string) file_get_contents($path));
     }
 
+    /**
+     * Not-a-number, infinite or off-the-globe coordinates are never inside.
+     * A point exactly on an edge may land on either side (half-open ray
+     * casting); real addresses are never that precise.
+     */
     public function contains(float $latitude, float $longitude): bool
     {
+        if (! is_finite($latitude) || ! is_finite($longitude) || abs($latitude) > 90 || abs($longitude) > 180) {
+            return false;
+        }
+
         foreach ($this->polygons as $polygon) {
             if ($this->inRing($polygon[0], $longitude, $latitude)) {
                 foreach (array_slice($polygon, 1) as $hole) {
@@ -63,6 +72,16 @@ class BidBoundary
     public function rings(): array
     {
         return array_merge(...$this->polygons);
+    }
+
+    /**
+     * Each polygon's outer ring, without its holes (for drawing a map).
+     *
+     * @return list<list<array{0: float, 1: float}>>
+     */
+    public function outerRings(): array
+    {
+        return array_map(fn (array $polygon) => $polygon[0], $this->polygons);
     }
 
     /**
