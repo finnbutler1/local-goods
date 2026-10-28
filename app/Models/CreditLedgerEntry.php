@@ -132,6 +132,11 @@ class CreditLedgerEntry extends Model
         return $this->belongsTo(Redemption::class);
     }
 
+    public function creditPurchase(): BelongsTo
+    {
+        return $this->belongsTo(CreditPurchase::class);
+    }
+
     /** The correction (ADR 0028) this line belongs to, if any. */
     public function correction(): BelongsTo
     {

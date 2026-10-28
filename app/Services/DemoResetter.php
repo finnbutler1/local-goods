@@ -16,6 +16,8 @@ class DemoResetter
      * Children before parents, so foreign keys are never violated.
      */
     public const DEMO_TABLES = [
+        'partnership_changes',
+        'partnerships',
         'pay_codes',
         'credit_ledger_entries',
         'correction_actions',
@@ -49,6 +51,13 @@ class DemoResetter
      * is empty, demo:seed-if-empty adds the menus and nothing else.
      */
     public const MENUS_TABLE = 'merchant_products';
+
+    /**
+     * Added after the live demo was first seeded (ADR 0031): if only these
+     * are empty, demo:seed-if-empty adds the demo partnership (and the
+     * sample applications) and nothing else.
+     */
+    public const DISTRICT_TABLES = ['partnership_changes', 'partnerships'];
 
     /** Stripe connection columns kept across a reset, matched by merchant name (ADR 0015). */
     private const KEPT_STRIPE_COLUMNS = [

@@ -24,6 +24,7 @@ class DistrictsMigrationSafetyTest extends TestCase
 
     /** Newest first, the order a rollback undoes them. */
     public const MIGRATIONS = [
+        'database/migrations/2026_10_30_000002_add_partnerships.php',
         'database/migrations/2026_10_30_000001_add_districts.php',
     ];
 
@@ -32,12 +33,8 @@ class DistrictsMigrationSafetyTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $before = $this->snapshot();
 
-        foreach (self::MIGRATIONS as $migration) {
-            $this->artisan('migrate:rollback', ['--path' => $migration])->assertSuccessful();
-        }
-        foreach (array_reverse(self::MIGRATIONS) as $migration) {
-            $this->artisan('migrate', ['--path' => $migration])->assertSuccessful();
-        }
+        $this->rollBack();
+        $this->migrateAgain();
 
         $this->assertSame($before, $this->snapshot());
 
@@ -56,10 +53,10 @@ class DistrictsMigrationSafetyTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         DB::table('merchants')->where('name', 'Connecticut Noodle Bar')->update(['address' => '1700 block of Connecticut Ave NW']);
 
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATIONS[0]])->assertSuccessful();
+        $this->rollBack();
         $this->assertSame('1500 block of H St NW', DB::table('merchants')->where('name', 'Lafayette Cycle Studio')->value('address'));
 
-        $this->artisan('migrate', ['--path' => self::MIGRATIONS[0]])->assertSuccessful();
+        $this->migrateAgain();
         $this->assertSame('1100 block of Connecticut Ave NW', DB::table('merchants')->where('name', 'Connecticut Noodle Bar')->value('address'));
         $this->assertSame('1700 block of H St NW', DB::table('merchants')->where('name', 'Lafayette Cycle Studio')->value('address'));
     }
@@ -67,13 +64,27 @@ class DistrictsMigrationSafetyTest extends TestCase
     public function test_a_merchant_outside_the_demo_is_left_unplaced(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATIONS[0]])->assertSuccessful();
+        $this->rollBack();
         $other = DB::table('merchants')->insertGetId(['bid_id' => DB::table('bids')->value('id'), 'name' => 'Not In The Demo', 'category' => 'cafe', 'address' => '1 Test St NW']);
 
-        $this->artisan('migrate', ['--path' => self::MIGRATIONS[0]])->assertSuccessful();
+        $this->migrateAgain();
 
         $this->assertNull(Merchant::find($other)->district_id);
         $this->assertNull(Merchant::find($other)->live_at);
+    }
+
+    private function rollBack(): void
+    {
+        foreach (self::MIGRATIONS as $migration) {
+            $this->artisan('migrate:rollback', ['--path' => $migration])->assertSuccessful();
+        }
+    }
+
+    private function migrateAgain(): void
+    {
+        foreach (array_reverse(self::MIGRATIONS) as $migration) {
+            $this->artisan('migrate', ['--path' => $migration])->assertSuccessful();
+        }
     }
 
     private function key(Merchant $merchant): string

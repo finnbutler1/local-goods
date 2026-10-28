@@ -10,8 +10,10 @@ use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\MerchantProduct;
+use App\Models\Partnership;
 use App\Models\Redemption;
 use App\Services\CreditLedger;
+use App\Services\Districts\PartnershipSettings;
 use App\Support\SalesTax;
 use App\Support\TaxBreakdown;
 use Illuminate\Database\Seeder;
@@ -152,6 +154,7 @@ class DatabaseSeeder extends Seeder
         $bid = Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);
         // The district row comes from the districts migration, never from the seed.
         $district = District::default();
+        self::seedPartnership($bid, $district);
 
         $employer = Employer::create([
             'bid_id' => $bid->id,
@@ -248,6 +251,26 @@ class DatabaseSeeder extends Seeder
 
         DemoAccountSeeder::linkDemoEmployee();
         DemoAccountSeeder::linkDemoMerchant();
+    }
+
+    /** What ADR 0031 added to the demo, for demo:seed-if-empty on a demo seeded before it. */
+    public static function seedDistrictExtras(Bid $bid, District $district): void
+    {
+        self::seedPartnership($bid, $district);
+    }
+
+    /**
+     * The demo partnership (ADR 0031): the Golden Triangle BID, exclusive and
+     * active, no revenue share. Labelled everywhere as a demo, not an actual
+     * agreement. Also used by demo:seed-if-empty for a demo seeded before
+     * partnerships existed.
+     */
+    public static function seedPartnership(Bid $bid, District $district): Partnership
+    {
+        return app(PartnershipSettings::class)->create(null, $bid, $district, [
+            'status' => Partnership::STATUS_ACTIVE, 'exclusive' => true, 'starts_on' => '2026-10-01', 'ends_on' => null,
+            'revenue_share_bps' => 0, 'data_terms' => Partnership::DEFAULT_DATA_TERMS,
+        ], 'Demo partnership seeded with the demo data. Not an actual agreement with the Golden Triangle BID.', isDemo: true);
     }
 
     /**

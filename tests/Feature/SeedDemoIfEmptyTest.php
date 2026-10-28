@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\MerchantProduct;
+use App\Models\Partnership;
 use App\Models\Redemption;
 use App\Models\User;
+use App\Services\DemoResetter;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +72,23 @@ class SeedDemoIfEmptyTest extends TestCase
 
         $this->assertSame(collect(DatabaseSeeder::DEMO_MENUS)->flatten(1)->count(), MerchantProduct::count());
         $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents()]);
+        $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
+    }
+
+    public function test_adds_only_the_district_extras_to_a_demo_seeded_before_them(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        foreach (DemoResetter::DISTRICT_TABLES as $table) {
+            DB::table($table)->delete();
+        }
+        $before = [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents(), MerchantProduct::count()];
+
+        $this->artisan('demo:seed-if-empty')
+            ->expectsOutputToContain('Added the demo partnership')
+            ->assertSuccessful();
+
+        $this->assertTrue(Partnership::sole()->is_demo);
+        $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents(), MerchantProduct::count()]);
         $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
     }
 
