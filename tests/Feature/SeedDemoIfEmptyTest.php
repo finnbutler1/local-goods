@@ -92,6 +92,38 @@ class SeedDemoIfEmptyTest extends TestCase
         $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
     }
 
+    public function test_a_real_application_does_not_stop_the_demo_partnership_being_added(): void
+    {
+        // Finn's local demo (2026-10-28): migrated, then someone applied through /apply before seed-if-empty ran.
+        $this->seed(DatabaseSeeder::class);
+        foreach (DemoResetter::DISTRICT_TABLES as $table) {
+            DB::table($table)->delete();
+        }
+        app(\App\Services\Districts\MerchantApplications::class)->submit(['business_name' => 'K Street Gym', 'address' => '1700 K St NW',
+            'category' => 'fitness', 'contact_email' => 'gym@example.com', 'independence_answer' => 'One gym, owned by its two trainers.']);
+
+        $this->artisan('demo:seed-if-empty')
+            ->expectsOutputToContain('Added the demo partnership and the two sample applications; nothing else changed.')
+            ->assertSuccessful();
+
+        $this->assertTrue(Partnership::sole()->is_demo);
+        $this->assertSame(2, \App\Models\MerchantApplication::where('is_sample', true)->count());
+        $this->assertSame(1, \App\Models\MerchantApplication::where('is_sample', false)->count(), 'the real application is kept');
+        $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
+    }
+
+    public function test_only_the_missing_extra_is_added(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        DB::table('partnership_changes')->delete();
+        DB::table('partnerships')->delete();
+
+        $this->artisan('demo:seed-if-empty')->expectsOutputToContain('Added the demo partnership; nothing else changed.')->assertSuccessful();
+
+        $this->assertSame(1, Partnership::count());
+        $this->assertSame(2, \App\Models\MerchantApplication::where('is_sample', true)->count(), 'the samples are not added twice');
+    }
+
     public function test_leaves_a_partly_filled_database_alone(): void
     {
         Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);

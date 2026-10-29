@@ -7,6 +7,7 @@ use App\Models\Partnership;
 use App\Models\PartnershipChange;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -116,5 +117,85 @@ class PartnershipPageTest extends TestCase
 
         $this->post('/bid-admin/partnership/review', $this->form(['status' => 'draft']))
             ->assertSessionHasErrors(['terms' => "A partnership can't go from active back to draft. Start a new one instead."]);
+    }
+
+    private function withoutPartnership(): void
+    {
+        // Query builder on purpose: the change log refuses deletes through its model.
+        DB::table('partnership_changes')->delete();
+        DB::table('partnerships')->delete();
+    }
+
+    public function test_with_no_partnership_a_bid_admin_starts_a_draft_through_review_and_confirm(): void
+    {
+        $this->withoutPartnership();
+        $user = $this->signIn(Role::BidAdmin);
+
+        $this->get('/bid-admin/partnership')->assertOk()
+            ->assertSee('No partnership is recorded for this district yet.')
+            ->assertSee('Start a partnership')
+            ->assertSee('Review the new partnership')
+            ->assertDontSee('Read-only.');
+
+        // Review writes nothing, and a new partnership is always a draft whatever is posted.
+        $this->post('/bid-admin/partnership/review', $this->form(['status' => 'active', 'reason' => 'Signed the pilot letter']))->assertOk()
+            ->assertSee('Check the new partnership')
+            ->assertSee('Start this partnership as a draft');
+        $this->assertSame(0, Partnership::count());
+
+        $this->post('/bid-admin/partnership', [...$this->form(['status' => 'active', 'reason' => 'Signed the pilot letter']), 'revenue_share_bps' => 1000, 'reviewed_change_id' => 0, 'confirm' => '1'])
+            ->assertRedirect('/bid-admin/partnership')->assertSessionHas('status');
+
+        $partnership = Partnership::sole();
+        $this->assertSame(Partnership::STATUS_DRAFT, $partnership->status);
+        $this->assertNull($partnership->exclusive_active_key, 'a draft holds no exclusive key');
+        $this->assertFalse($partnership->is_demo);
+        $change = $partnership->changes()->sole();
+        $this->assertNull($change->before);
+        $this->assertSame($user->id, $change->changed_by_user_id);
+        $this->assertSame('Signed the pilot letter', $change->reason);
+        $this->get('/bid-admin/partnership')->assertSee('Change the partnership')->assertSee('Created');
+    }
+
+    public function test_starting_needs_the_box_and_is_refused_if_someone_started_one_meanwhile(): void
+    {
+        $this->withoutPartnership();
+        $this->signIn(Role::PlatformAdmin);
+        $confirm = [...$this->form(), 'revenue_share_bps' => 0, 'reviewed_change_id' => 0];
+
+        $this->post('/bid-admin/partnership', $confirm)->assertSessionHasErrors('confirm');
+        $this->assertSame(0, Partnership::count());
+
+        $this->post('/bid-admin/partnership', [...$confirm, 'confirm' => '1'])->assertSessionHas('status');
+        $this->post('/bid-admin/partnership', [...$confirm, 'confirm' => '1'])
+            ->assertSessionHas('error', \App\Http\Controllers\BidAdmin\PartnershipController::STARTED_MEANWHILE);
+        $this->assertSame(1, Partnership::count());
+    }
+
+    public function test_judges_and_other_roles_cannot_start_one_and_see_the_read_only_note(): void
+    {
+        $this->withoutPartnership();
+
+        $this->signIn(Role::Judge);
+        $this->get('/bid-admin/partnership')->assertOk()->assertSee('Read-only.')->assertDontSee('Start a partnership');
+        $this->post('/bid-admin/partnership', [...$this->form(), 'revenue_share_bps' => 0, 'reviewed_change_id' => 0, 'confirm' => '1'])->assertForbidden();
+
+        foreach ([Role::EmployerAdmin, Role::Merchant, Role::Employee] as $role) {
+            $this->signIn($role);
+            $this->post('/bid-admin/partnership/review', $this->form())->assertForbidden();
+            $this->post('/bid-admin/partnership', [...$this->form(), 'revenue_share_bps' => 0, 'reviewed_change_id' => 0, 'confirm' => '1'])->assertForbidden();
+        }
+        $this->assertSame(0, Partnership::count());
+    }
+
+    public function test_the_read_only_note_is_only_for_people_who_cannot_edit(): void
+    {
+        foreach ([Role::BidAdmin, Role::PlatformAdmin] as $role) {
+            $this->signIn($role);
+            $this->get('/bid-admin/partnership')->assertOk()->assertDontSee('Read-only.')->assertSee('Change the partnership');
+        }
+
+        $this->signIn(Role::Judge);
+        $this->get('/bid-admin/partnership')->assertOk()->assertSee('Read-only.')->assertDontSee('Change the partnership');
     }
 }

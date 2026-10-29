@@ -38,7 +38,7 @@
     </header>
 
     @if (! $partnership)
-        <x-card><p class="text-muted">No partnership is recorded for this district yet.</p></x-card>
+        <x-card><p class="text-muted" data-no-partnership>No partnership is recorded for this district yet.@if ($change) Start one below: it begins as a draft, and every step is logged with your initials.@endif</p></x-card>
     @else
         @if ($partnership->is_demo)
             <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold" data-demo-partnership>{{ Partnership::DEMO_LABEL }}</p>
@@ -94,12 +94,15 @@
                 <p class="mt-2 text-muted">Judges see this page without amounts, like every public page. The share is worked out from the district's activity and is display only.</p>
             @endif
         </x-card>
+    @endif
 
+    {{-- Start (no partnership yet) or change one: a BID admin or the platform admin, in two steps. --}}
+    @php($starting = $partnership === null)
         @if ($change)
             @if ($review)
                 @php($new = $review['terms'])
                 <x-card as="section" aria-labelledby="review-heading" data-partnership-review>
-                    <h2 id="review-heading" class="text-xl font-semibold text-primary">Check the change</h2>
+                    <h2 id="review-heading" class="text-xl font-semibold text-primary">{{ $starting ? 'Check the new partnership' : 'Check the change' }}</h2>
                     <x-rtable label="Partnership change table" class="mt-3">
                         <table data-rtable="stack" class="w-full text-left">
                             <caption class="sr-only">Each term now and after the change</caption>
@@ -108,10 +111,10 @@
                             </thead>
                             <tbody class="divide-y divide-line/70">
                                 @foreach (Partnership::TERMS as $term)
-                                    @php($now = $partnership->terms()[$term])
-                                    <tr @class(['font-semibold' => $now !== $new[$term]])>
-                                        <td data-primary class="px-4 py-2">{{ ucfirst(PartnershipController::TERM_LABELS[$term]) }}{{ $now !== $new[$term] ? ' (changes)' : '' }}</td>
-                                        <td data-label="Now" class="px-4 py-2">{{ $termText($term, $now) }}</td>
+                                    @php($now = $partnership?->terms()[$term])
+                                    <tr @class(['font-semibold' => ! $starting && $now !== $new[$term]])>
+                                        <td data-primary class="px-4 py-2">{{ ucfirst(PartnershipController::TERM_LABELS[$term]) }}{{ ! $starting && $now !== $new[$term] ? ' (changes)' : '' }}</td>
+                                        <td data-label="Now" class="px-4 py-2">{{ $starting ? '—' : $termText($term, $now) }}</td>
                                         <td data-label="After" class="px-4 py-2">{{ $termText($term, $new[$term]) }}</td>
                                     </tr>
                                 @endforeach
@@ -128,33 +131,40 @@
                         <input type="hidden" name="revenue_share_bps" value="{{ $new['revenue_share_bps'] }}">
                         <input type="hidden" name="data_terms" value="{{ $new['data_terms'] }}">
                         <input type="hidden" name="reason" value="{{ $review['reason'] }}">
-                        <input type="hidden" name="reviewed_change_id" value="{{ $partnership->latestChangeId() }}">
+                        <input type="hidden" name="reviewed_change_id" value="{{ $partnership?->latestChangeId() ?? 0 }}">
                         <label class="flex min-h-11 items-center gap-2">
                             <input type="checkbox" name="confirm" value="1" required class="size-5 accent-primary">
-                            Save these partnership terms
+                            {{ $starting ? 'Start this partnership as a draft' : 'Save these partnership terms' }}
                         </label>
                         <div class="flex flex-wrap gap-3">
-                            <x-button type="submit">Confirm the change</x-button>
+                            <x-button type="submit">{{ $starting ? 'Start the partnership' : 'Confirm the change' }}</x-button>
                             <a href="{{ route('bid-admin.partnership') }}" class="tap-target self-center font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Cancel</a>
                         </div>
                     </form>
                 </x-card>
             @else
-                @php($t = $partnership->terms())
-                <x-card as="section" aria-labelledby="change-heading">
-                    <h2 id="change-heading" class="text-xl font-semibold text-primary">Change the partnership</h2>
+                @php($t = $partnership?->terms() ?? [
+                    'status' => Partnership::STATUS_DRAFT, 'exclusive' => true, 'starts_on' => now(config('fraud.timezone'))->toDateString(),
+                    'ends_on' => null, 'revenue_share_bps' => 0, 'data_terms' => Partnership::DEFAULT_DATA_TERMS,
+                ])
+                <x-card as="section" aria-labelledby="change-heading" data-partnership-form="{{ $starting ? 'start' : 'change' }}">
+                    <h2 id="change-heading" class="text-xl font-semibold text-primary">{{ $starting ? 'Start a partnership' : 'Change the partnership' }}</h2>
                     @foreach (['confirm', 'terms'] as $key)
                         @error($key)<p class="mt-2 text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $message }}</p>@enderror
                     @endforeach
                     <form method="POST" action="{{ route('bid-admin.partnership.review') }}" data-busy="Checking…" class="mt-4 grid gap-4 sm:max-w-xl">
                         @csrf
-                        <x-field name="status" id="p-status" label="Status" hint="Draft, then active, then ended. It never goes back.">
-                            <select id="p-status" name="status" class="{{ $input }}" aria-describedby="p-status-hint{{ $errors->has('status') ? ' p-status-error' : '' }}" @error('status') aria-invalid="true" @enderror>
-                                @foreach (Partnership::STATUSES as $status)
-                                    <option value="{{ $status }}" @selected(old('status', $t['status']) === $status)>{{ ucfirst($status) }}</option>
-                                @endforeach
-                            </select>
-                        </x-field>
+                        @if ($starting)
+                            <p class="text-sm text-muted">It starts as a draft. Change its status to active once the BID and Local Goods agree; it never goes back.</p>
+                        @else
+                            <x-field name="status" id="p-status" label="Status" hint="Draft, then active, then ended. It never goes back.">
+                                <select id="p-status" name="status" class="{{ $input }}" aria-describedby="p-status-hint{{ $errors->has('status') ? ' p-status-error' : '' }}" @error('status') aria-invalid="true" @enderror>
+                                    @foreach (Partnership::STATUSES as $status)
+                                        <option value="{{ $status }}" @selected(old('status', $t['status']) === $status)>{{ ucfirst($status) }}</option>
+                                    @endforeach
+                                </select>
+                            </x-field>
+                        @endif
                         <div>
                             <input type="hidden" name="exclusive" value="0">
                             <label class="flex min-h-11 items-center gap-2 font-semibold">
@@ -182,12 +192,13 @@
                             <input id="p-reason" name="reason" type="text" required minlength="5" maxlength="500" value="{{ old('reason') }}" class="{{ $input }}"
                                    aria-describedby="p-reason-hint{{ $errors->has('reason') ? ' p-reason-error' : '' }}" @error('reason') aria-invalid="true" @enderror>
                         </x-field>
-                        <div><x-button type="submit">Review the change</x-button></div>
+                        <div><x-button type="submit">{{ $starting ? 'Review the new partnership' : 'Review the change' }}</x-button></div>
                     </form>
                 </x-card>
             @endif
         @endif
 
+    @if ($partnership)
         <section aria-labelledby="log-heading" class="space-y-3">
             <h2 id="log-heading" class="text-2xl font-semibold text-primary">Every change</h2>
             <x-rtable label="Partnership changes table">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\BidAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bid;
 use App\Models\District;
 use App\Models\Partnership;
 use App\Services\Districts\PartnershipRevenueShare;
@@ -30,15 +31,18 @@ class PartnershipController extends Controller
         return $this->page($share);
     }
 
-    /** Step 1: check the new terms and show what changes. Writes nothing. */
+    /**
+     * Step 1: check the new terms and show what changes. Writes nothing.
+     * With no partnership yet, it starts one: always as a draft.
+     */
     public function review(Request $request, PartnershipSettings $settings, PartnershipRevenueShare $share): View
     {
         Gate::authorize('change-partnership');
-        $partnership = $this->partnership();
-        [$terms, $reason] = $this->validated($request);
+        $partnership = Partnership::forDistrict(District::default());
+        [$terms, $reason] = $this->validated($request, start: $partnership === null);
 
         try {
-            $terms = $settings->check($terms, $partnership->status, $reason);
+            $terms = $settings->check($terms, $partnership?->status ?? Partnership::STATUS_DRAFT, $reason);
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['terms' => $e->getMessage()]);
         }
@@ -46,16 +50,36 @@ class PartnershipController extends Controller
         return $this->page($share, ['review' => ['terms' => $terms, 'reason' => $reason]]);
     }
 
-    /** Step 2: the confirmed change, against the version that was reviewed. */
+    /** Step 2: the confirmed change, against the version that was reviewed (0 = no partnership yet). */
     public function store(Request $request, PartnershipSettings $settings): RedirectResponse
     {
         Gate::authorize('change-partnership');
-        $partnership = $this->partnership();
+        $district = District::default();
+        $partnership = Partnership::forDistrict($district);
         $request->validate([
             'reviewed_change_id' => ['required', 'integer', 'min:0'],
             'confirm' => ['accepted'],
         ], ['confirm.accepted' => 'Tick the box to confirm the change.']);
-        [$terms, $reason] = $this->validated($request, bps: true);
+        $starting = $request->integer('reviewed_change_id') === 0;
+        [$terms, $reason] = $this->validated($request, bps: true, start: $starting);
+
+        if ($starting) {
+            if ($partnership !== null) {
+                return redirect()->route('bid-admin.partnership')->with('error', self::STARTED_MEANWHILE);
+            }
+
+            try {
+                $settings->create($request->user(), Bid::orderBy('id')->firstOrFail(), $district, $terms, $reason);
+            } catch (InvalidArgumentException $e) {
+                return redirect()->route('bid-admin.partnership')->with('error', $e->getMessage());
+            }
+
+            return redirect()->route('bid-admin.partnership')->with('status', 'Partnership started as a draft. Logged with your initials; make it active once it is agreed.');
+        }
+
+        if ($partnership === null) {
+            abort(404);
+        }
 
         try {
             $change = $settings->change($request->user(), $partnership, $terms, $reason, $request->integer('reviewed_change_id'));
@@ -68,14 +92,21 @@ class PartnershipController extends Controller
         return redirect()->route('bid-admin.partnership')->with('status', "Partnership updated: {$what}. Logged with your initials.");
     }
 
+    public const STARTED_MEANWHILE = 'Someone started a partnership for this district since you reviewed this, so nothing was saved. Review it below.';
+
     public const TERM_LABELS = [
         'status' => 'status', 'exclusive' => 'exclusivity', 'starts_on' => 'start date', 'ends_on' => 'end date',
         'revenue_share_bps' => 'revenue share', 'data_terms' => 'data terms',
     ];
 
     /** @return array{0: array<string, mixed>, 1: string} */
-    private function validated(Request $request, bool $bps = false): array
+    private function validated(Request $request, bool $bps = false, bool $start = false): array
     {
+        if ($start) {
+            // A new partnership always starts as a draft.
+            $request->merge(['status' => Partnership::STATUS_DRAFT]);
+        }
+
         $data = $request->validate([
             'status' => ['required', 'in:'.implode(',', Partnership::STATUSES)],
             'exclusive' => ['nullable', 'boolean'],
@@ -98,11 +129,6 @@ class PartnershipController extends Controller
         ], trim($data['reason'])];
     }
 
-    private function partnership(): Partnership
-    {
-        return Partnership::forDistrict(District::default()) ?? abort(404);
-    }
-
     private function page(PartnershipRevenueShare $share, array $extra = []): View
     {
         $district = District::default();
@@ -113,7 +139,8 @@ class PartnershipController extends Controller
             'district' => $district,
             'partnership' => $partnership?->load('bid'),
             'changes' => $partnership?->changes()->with('changedBy')->get() ?? collect(),
-            'change' => Gate::allows('change-partnership') && $partnership !== null,
+            // May this person change (or start) it? Only they get the form; everyone else gets the read-only note.
+            'change' => Gate::allows('change-partnership'),
             'figures' => $figures,
             'month' => $partnership && $figures ? $share->thisMonth($partnership) : null,
             'since' => $partnership && $figures ? $share->sinceStart($partnership) : null,
