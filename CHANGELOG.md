@@ -3,6 +3,18 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-29: Judge feedback (Prof. Yoest)
+
+- **Exact catch counts.** The README now says 17 of the 26 suspicious
+  redemptions were caught and 17 of the 19 holds were truly suspicious.
+  `FraudCatchCountsMatchLockTest` checks the README and `/eval` against the
+  locked results.
+- **Missed-fraud cap, proved.** The README's promise is stated more
+  precisely and links to `MissedFraudLossCapTest`, which covers every way
+  credits are spent and runs a concurrency case on MySQL in CI.
+- **How the name check works.** New TRANSPARENCY.md section on what
+  `MerchantOutputPrivacyTest` catches and misses.
+
 ## 2026-10-28: Districts, partnerships and joining
 
 - **The district boundary is a rule now.** The Golden Triangle BID

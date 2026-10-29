@@ -674,6 +674,53 @@ commits, and rewriting would break them. Commits before 2026-10-21 still
 contain the AI's original reasoning, the five candidates, the license numbers
 and the old link format.
 
+### How does the test recognize a named individual?
+
+`MerchantOutputPrivacyTest` is how we check that the AI's merchant answers
+don't name real people. It is a set of patterns, not a list of names and not
+an AI. It reads the committed merchant outputs (`data/merchant_assessments.json`
+and everything under `docs/evals/` for the merchant eval, nine files) and
+fails the build if any of these appear:
+
+- a role word (owner, founder, co-founder, chef, restaurateur, CEO,
+  president, husband, wife and a few more) followed by a capitalized name;
+- "founded", "started", "opened", "owned", "run", "created" or "led" "by"
+  followed by two or more capitalized words, unless the phrase contains a
+  company word such as Group, Inc, LLC, Capital or Holdings;
+- a description of someone as a military veteran.
+
+It does not remove anything. The names found in October 2026 were replaced
+by hand with "[name removed]" on 2026-10-21, each with a "redacted" note; the
+test only catches a new one.
+
+**What it can miss.** It only looks inside the phrases above, so it can
+miss:
+
+- a name with no trigger phrase ("the flagship of Pat Example") or after
+  another verb ("operated by", "backed by", "co-owned by");
+- a single first name ("founded by Pat"), a lowercase name, a nickname or a
+  misspelling that isn't inside a trigger phrase;
+- names that start with a non-English capital letter or are written in
+  another alphabet, and names with particles ("de la Cruz"), which end the
+  match early;
+- a name that contains a company word ("Pat Example Group"), because those
+  are treated as companies;
+- names that are also ordinary words (Rose, Grace, Hunter), which look like
+  any other capitalized word;
+- personal details other than veteran status (age, family, nationality,
+  religion, health);
+- files it does not scan: the hand-labeled `merchant_labels.csv`, the
+  candidate list and the older runs under `docs/evals/runs/`.
+
+**What a person checks by hand.** Whoever runs `merchant:eval` (Finn) reads
+the new answers before committing them and redacts anything the test flags
+or misses. BID admins read every candidate in the review queue. There is no
+written checklist beyond that, and git history from before 2026-10-21 still
+holds the names that were removed.
+
+This test lowers the chance that a name slips through. It doesn't prove none
+has.
+
 ### How reviewers get in
 
 Judges and other reviewers never create an account or choose a password. Finn
