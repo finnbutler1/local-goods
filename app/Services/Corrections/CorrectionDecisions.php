@@ -152,12 +152,16 @@ class CorrectionDecisions
         $this->checkType($correction, Correction::TYPE_EMPLOYER_REFUND);
 
         $correction = DB::transaction(function () use ($correction, $by, $reason, $amountCents) {
-            $this->claim($correction, $by, $reason);
-
-            // Lock the employer (as allocating credits does), then its purchases.
+            // Lock the employer (as allocating credits does), then its purchases,
+            // before anything is read with a plain SELECT. On MySQL a transaction's
+            // snapshot starts at its first plain SELECT (claim() refreshes the
+            // correction), so claiming first could leave the balance below read
+            // from before an allocation that committed while we waited for the lock.
             $employer = Employer::whereKey($correction->employer_id)->lockForUpdate()->firstOrFail();
             $purchases = CreditPurchase::where('employer_id', $employer->id)->whereIn('status', CreditPurchase::PAID_STATUSES)
                 ->orderByDesc('purchased_at')->orderByDesc('id')->lockForUpdate()->get();
+
+            $this->claim($correction, $by, $reason);
 
             if ($amountCents <= 0) {
                 throw new InvalidArgumentException('Enter an amount more than $0.00.');
