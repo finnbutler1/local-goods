@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\Correction;
+use App\Models\CreditLedgerEntry;
 use App\Models\Employer;
 use App\Services\Corrections\CorrectionDecisions;
-use App\Services\CreditLedger;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
@@ -17,20 +17,16 @@ use Tests\Concerns\UsesFakeStripe;
 use Tests\TestCase;
 
 /**
- * A probe, not a guarantee. Approving an employer refund reads the employer's
- * balance after a plain SELECT (Correction::refresh in claim()) and before
- * the employer row is locked. On MySQL's default REPEATABLE READ, a balance
- * read after that SELECT can use an older snapshot than a credit allocation
- * that committed in between, so a refund hold could be larger than what is
- * really left unallocated. This commits an allocation right after that
- * SELECT and checks the employer is not left with a negative balance.
- *
- * It protects the employer's money, not any employee's balance, so it is
- * outside the README promise that MissedFraudLossCapTest proves. If it
- * fails, the failure message says so: that is the finding, reported to
- * Finn, not fixed here. Runs only in the MySQL CI job.
+ * Approving an employer refund checks the employer's unallocated balance. On
+ * MySQL's default REPEATABLE READ a transaction's snapshot starts at its first
+ * plain SELECT, so the employer row (and its purchases) must be locked before
+ * anything else is read: an allocation that committed before we got the lock
+ * is then seen, and the refund is refused instead of held against a stale
+ * balance (which left the employer negative). Regression test for that
+ * ordering in CorrectionDecisions::approveEmployerRefund. It protects the
+ * employer's money, not an employee's balance. Runs only in the MySQL CI job.
  */
-class MysqlEmployerRefundSnapshotProbeTest extends TestCase
+class MysqlEmployerRefundSnapshotTest extends TestCase
 {
     use DatabaseMigrations;
     use MakesCorrections;
@@ -58,7 +54,7 @@ class MysqlEmployerRefundSnapshotProbeTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_an_allocation_committed_during_an_employer_refund_approval_does_not_leave_the_employer_negative(): void
+    public function test_an_allocation_committed_before_the_employer_lock_is_seen_and_the_refund_is_refused(): void
     {
         $employer = Employer::firstOrFail();
         $unallocated = $employer->balanceCents();
@@ -69,28 +65,31 @@ class MysqlEmployerRefundSnapshotProbeTest extends TestCase
             'open_key' => Correction::openKeyFor(Correction::TYPE_EMPLOYER_REFUND, $employer->id),
             'requested_by_role' => Role::EmployerAdmin->value, 'reason_category' => 'bought_too_much', 'employer_id' => $employer->id,
         ]);
+        $holds = fn () => CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_EMPLOYER_REFUND_HOLD)->count();
 
-        // Commit "an allocation of everything left" on another connection
-        // right after the approval's plain SELECT of the correction.
+        // Another request gives out everything left and commits just before
+        // the approval's lock on the employer is taken.
         $done = false;
-        DB::listen(function ($query) use (&$done, $employer, $unallocated) {
-            if (! $done && str_starts_with($query->sql, 'select') && str_contains($query->sql, '`corrections`')) {
+        DB::beforeExecuting(function (string $sql) use (&$done, $employer, $unallocated) {
+            if (! $done && str_contains($sql, 'from `employers`') && str_contains($sql, 'for update')) {
                 $done = true;
                 DB::connection('mysql_other')->table('credit_ledger_entries')->insert([
                     'employer_id' => $employer->id, 'amount_cents' => -$unallocated, 'type' => 'allocation_out',
-                    'description' => 'Probe: a concurrent allocation', 'created_at' => now(),
+                    'description' => 'A concurrent allocation', 'created_at' => now(),
                 ]);
             }
         });
 
         try {
             app(CorrectionDecisions::class)->approveEmployerRefund($request, $this->admin(), 'Unspent credits back.', $unallocated);
-        } catch (InvalidArgumentException) {
-            // Refused because the real balance was seen: the safe outcome.
+            $this->fail('The refund was approved against a balance that had already been given out.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('of unspent credits can be refunded', $e->getMessage());
         }
 
-        $this->assertTrue($done, 'the probe never fired');
-        $this->assertGreaterThanOrEqual(0, $employer->fresh()->balanceCents(),
-            'FINDING A reproduced: the refund hold was approved against a stale balance, leaving the employer negative. See CorrectionDecisions::approveEmployerRefund.');
+        $this->assertTrue($done, 'the concurrent allocation never ran');
+        $this->assertSame(0, $employer->fresh()->balanceCents());
+        $this->assertSame(0, $holds(), 'nothing was held');
+        $this->assertSame(Correction::STATUS_REQUESTED, $request->fresh()->status, 'the refused request is still open');
     }
 }
