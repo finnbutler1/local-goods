@@ -15,6 +15,21 @@ commit history.
 - **How the name check works.** New TRANSPARENCY.md section on what
   `MerchantOutputPrivacyTest` catches and misses.
 
+## 2026-10-29: What we chose not to build, who we built for, and what keeps it safe
+
+Words only: no money, prompt, eval, lock or migration change.
+
+- **Three README sections** gather decisions already in the record:
+  "What we chose not to build, and why", "Designed for the people in the
+  transaction" and "Safety and privacy from the start", each linking to the
+  decision record, test or code. The first table is also on the public
+  Who does what page, linked from the landing page's Trust and AI section,
+  which gains three short lines (initials only, neutral held wording,
+  honesty labels on phones).
+- **A decision recorded now:** we will not build a BID or employer
+  initiation fee into the product. It is already a lever in the projection
+  model, and a new money path adds risk before judging.
+
 ## 2026-10-28: Districts, partnerships and joining
 
 - **The district boundary is a rule now.** The Golden Triangle BID

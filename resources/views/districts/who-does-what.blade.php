@@ -110,6 +110,44 @@
             </x-card>
         </section>
 
+        <section aria-labelledby="not-built-heading" id="not-built" class="scroll-mt-24 space-y-3">
+            <h2 id="not-built-heading" class="text-2xl font-semibold text-primary">What we chose not to build, and why</h2>
+            <p class="max-w-3xl text-muted">Saying no was part of the design. Each decision below is already in our decision records, with the reason.</p>
+            @php
+                $notBuilt = [
+                    ['The merchant fee ships switched off. Nothing is charged, and a test stops any seed from turning it on.', "We haven't talked to merchants about pricing yet, so it stays off until customer discovery tells us what is fair."],
+                    ['A payout that was reversed in the Stripe dashboard is not re-sent by us. It is refused, and a person sorts it out in Stripe.', 'A second automatic money path on top of a reversal Stripe itself made is easy to get wrong, and we won\'t add one before judging.'],
+                    ['Unspent credits are never counted as revenue.', "They are the employer's money, and a test checks that revenue doesn't move with the share spent."],
+                    ['No issued card, so no interchange.', 'The MVP has no card program, and we could not verify the interchange rate, so the model keeps it off.'],
+                    ['No admin "Cancel" button on a held in-person payment.', 'The shop is the one who knows the customer paid another way, so only the shop can cancel. An admin\'s Deny already returns the credits.'],
+                    ['No gift cards in the product menus.', 'They would be cash.'],
+                    ['No email sending in the prototype.', "There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead."],
+                    ['The Merchant Eligibility Matching AI has no web search.', 'Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides.'],
+                    ['No BID or employer initiation fee in the product.', 'It is already a lever in the projection model, and a new money path adds risk before judging.'],
+                    ['No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source.', 'The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured.'],
+                ];
+            @endphp
+            <x-rtable label="What we chose not to build">
+                <table data-rtable="stack" class="w-full text-left">
+                    <caption class="sr-only">Each decision and the reason for it</caption>
+                    <thead class="border-b border-line/70 text-sm text-muted">
+                        <tr>
+                            <th scope="col" class="px-5 py-3 font-semibold sm:px-6">Decision</th>
+                            <th scope="col" class="px-5 py-3 font-semibold">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line/70">
+                        @foreach ($notBuilt as [$decision, $reason])
+                            <tr>
+                                <td data-primary class="px-5 py-3 font-semibold sm:px-6">{{ $decision }}</td>
+                                <td data-label="Reason" class="px-5 py-3">{{ $reason }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </x-rtable>
+        </section>
+
         <p class="text-sm text-muted">
             This is a student prototype. The Golden Triangle partnership in the demo is not an actual agreement.
             <a href="{{ route('district') }}" class="{{ $link }}">See the district map</a>.
