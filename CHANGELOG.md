@@ -3,6 +3,17 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-29: Never reset the live demo
+
+- **Deploy checklist corrected.** It used to say to press Reset demo after
+  a deploy. On the live site that would erase real examples made there (the
+  in-person payment, menu orders with tax, the completed correction and any
+  other live demo state), and in practice we always skipped it. The checklist
+  in `CLAUDE.md` now says never to press Reset demo on live; it is for local
+  use only.
+- "We don't reset the live demo for convenience" is a new row in "What we
+  chose not to build, and why" (README and Who does what).
+
 ## 2026-10-29: Judge feedback (Prof. Yoest)
 
 - **Exact catch counts.** The README now says 17 of the 26 suspicious

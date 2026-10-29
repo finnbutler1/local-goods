@@ -863,8 +863,10 @@ snapshot step by name when the build says the deploy includes migrations.
    the zip was built from in `.last-deploy-commit` (git-ignored).
 6. After deploy: open the CloudFront site and check that the raw
    `…elasticbeanstalk.com` address returns "Forbidden". Log in as each demo role, check
-   `/eval` and `/eval/merchants`, press Reset demo, then re-seed AI examples
-   as Jordan at Farragut Grind (2 normal, 1 suspicious left held).
+   `/eval` and `/eval/merchants`. **Never press Reset demo on the live site:**
+   it erases the real examples made there (the in-person payment, menu
+   orders with tax, the completed correction and any other live demo
+   state). Reset demo is for local use only.
    If any demo merchant shows "Not connected to Stripe" on
    `/admin/reconciliation`, press "Connect demo merchants to Stripe (test
    mode)" (Reset demo keeps existing accounts, so usually only once).
