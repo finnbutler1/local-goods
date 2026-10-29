@@ -20,6 +20,7 @@ use App\Support\ViewAs;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoHistorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Blade;
 use Tests\Concerns\SeedsOnAFixedDate;
 use Tests\Concerns\SweepsPages;
 use Tests\Fakes\FakeClaudeClient;
@@ -118,6 +119,39 @@ class EmployeeNamePrivacyTest extends TestCase
     }
 
     /**
+     * Does the page show this name as a name? The match is on whole words: the
+     * name must not touch a letter or digit on either side. Every page carries
+     * random CSRF tokens (40 letters and digits), and a short candidate such
+     * as "Ala" turns up inside one now and then (1 in 12,000 renders when
+     * tried), which failed the MySQL CI job once. No minimum length: a short
+     * name is exactly the one this must still catch when it is really shown.
+     */
+    public static function showsName(string $html, string $name): bool
+    {
+        return preg_match('/(?<![\p{L}\p{N}])'.preg_quote(e($name), '/').'(?![\p{L}\p{N}])/u', $html) === 1;
+    }
+
+    public function test_the_candidate_name_check_catches_a_shown_name_and_ignores_a_token(): void
+    {
+        $names = array_column(MerchantCandidates::load(), 'name');
+        $this->assertContains('Ala', $names, 'the short candidate that caused the false alarm');
+
+        // A real candidate name, as a page would show it (escaped by Blade).
+        foreach ([$names[0], 'Ala', 'Bully'] as $name) {
+            $page = Blade::render('<main><p>Try {{ $name }} for lunch.</p></main>', ['name' => $name]);
+            $this->assertTrue(self::showsName($page, $name), "{$name} was shown and must be caught.");
+        }
+        $this->assertTrue(self::showsName(Blade::render('<li>{{ $name }}</li>', ['name' => 'Ala']), 'Ala'), 'alone in a tag');
+        $this->assertTrue(self::showsName('<a title="Ala">x</a> and Ala, Inc', 'Ala'), 'beside punctuation');
+
+        // The real false alarm: "Ala" inside a random CSRF token, and inside ordinary words.
+        $token = '<input type="hidden" name="_token" value="vMSemJShUrhyZGP7QYDAlafQdstOOJKKXr3JtyMH">';
+        $this->assertStringContainsString('Ala', $token);
+        $this->assertFalse(self::showsName($token, 'Ala'));
+        $this->assertFalse(self::showsName('<p>Alabama, Alan and Salad</p>', 'Ala'));
+    }
+
+    /**
      * The shared "Public judge access" account is anyone with the README
      * link, so it gets the strictest view: no employee names, no real
      * candidate business names, and no names or emails of real reviewers or
@@ -144,7 +178,7 @@ class EmployeeNamePrivacyTest extends TestCase
             $html = str_replace('<wbr>', '', $html);
             $this->assertNoFullNames($html, $where);
             foreach ($candidates as $name) {
-                $this->assertStringNotContainsString(e($name), $html, "Candidate {$name} appears on {$where}.");
+                $this->assertFalse(self::showsName($html, $name), "Candidate {$name} appears on {$where}.");
             }
             foreach ($others as $user) {
                 $this->assertStringNotContainsString(e($user->email), $html, "An account email appears on {$where}.");

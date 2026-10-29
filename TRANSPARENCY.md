@@ -718,6 +718,13 @@ or misses. BID admins read every candidate in the review queue. There is no
 written checklist beyond that, and git history from before 2026-10-21 still
 holds the names that were removed.
 
+Going the other way, a very short name can match inside ordinary text. The
+page check for candidate business names once failed on "Ala", which turned
+up inside a random security token on the page. That check now counts a name
+only when it stands alone as a whole word (no letter or digit next to it on
+either side), with no minimum length, so a short name that is really shown
+is still caught.
+
 This test lowers the chance that a name slips through. It doesn't prove none
 has.
 
