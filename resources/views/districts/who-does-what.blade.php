@@ -123,6 +123,7 @@
                     ['No gift cards in the product menus.', 'They would be cash.'],
                     ['No email sending in the prototype.', "There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead."],
                     ['The Merchant Eligibility Matching AI has no web search.', 'Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides.'],
+                    ["We don't reset the live demo for convenience.", 'Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only.'],
                     ['No BID or employer initiation fee in the product.', 'It is already a lever in the projection model, and a new money path adds risk before judging.'],
                     ['No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source.', 'The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured.'],
                 ];
