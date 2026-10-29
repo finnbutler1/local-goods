@@ -264,6 +264,28 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
+     * For demo:seed-if-empty on a demo seeded before ADR 0031: the demo
+     * partnership if the district has none, and the sample applications if
+     * there are none, each on its own, so real applications never block it.
+     *
+     * @return list<string> what was added
+     */
+    public static function seedMissingDistrictExtras(Bid $bid, District $district): array
+    {
+        $added = [];
+        if (! Partnership::where('district_id', $district->id)->exists()) {
+            self::seedPartnership($bid, $district);
+            $added[] = 'the demo partnership';
+        }
+        if (! MerchantApplication::where('is_sample', true)->exists()) {
+            self::seedSampleApplications();
+            $added[] = 'the two sample applications';
+        }
+
+        return $added;
+    }
+
+    /**
      * Two fictional sample applications (ADR 0031), labelled as such: one
      * approved (waiting for the shop to set up Stripe payouts) and one
      * waiting for the BID. Their eligibility suggestions are written here,

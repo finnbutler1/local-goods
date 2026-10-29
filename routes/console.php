@@ -32,13 +32,17 @@ Artisan::command('demo:seed-if-empty', function () {
         return;
     }
 
-    // Partnerships came after the live demo was seeded: add only the demo one (ADR 0031).
+    // ADR 0031 came after the live demo was seeded: to a demo that is otherwise
+    // there, add the demo partnership and the sample applications, each only if
+    // missing. Real applications (sent through /apply) don't stop either.
     $districtless = array_diff($seeded, DemoResetter::DISTRICT_TABLES);
-    if (array_intersect(DemoResetter::DISTRICT_TABLES, $filled) === [] && count($filled) === count($districtless)) {
-        DB::transaction(fn () => DatabaseSeeder::seedDistrictExtras(Bid::firstOrFail(), District::default()));
-        $this->info('Added the demo partnership and the two sample applications; nothing else changed.');
+    if (count(array_intersect($districtless, $filled)) === count($districtless)) {
+        $added = DB::transaction(fn () => DatabaseSeeder::seedMissingDistrictExtras(Bid::firstOrFail(), District::default()));
+        if ($added !== []) {
+            $this->info('Added '.implode(' and ', $added).'; nothing else changed.');
 
-        return;
+            return;
+        }
     }
 
     if ($filled === []) {
