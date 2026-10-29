@@ -184,6 +184,9 @@
                         ['It fails closed.', 'If the AI check errors or gives an unusable answer, the redemption is held. It is never waved through.'],
                         ['The AI assists; people decide.', 'Redemption Fraud Detection and Merchant Eligibility Matching flag and explain. A held redemption is never approved automatically; it waits for review by the BID, and a person approves every new merchant.'],
                         ['No names go to the AI.', 'It sees only anonymous signals, like amount, time of day and visit history.'],
+                        ['Shops see initials, not names.', 'A shop needs to know a payment is real, not who the person is.'],
+                        ['Held payments use neutral words.', 'A held payment at a counter says it is held, with no fraud words, so nobody is accused.'],
+                        ['Honesty labels stay on phones.', 'Demo data, test mode and "not affiliated" notices are never hidden on a small screen.'],
                     ] as [$lead, $rest])
                         <li class="flex gap-3">
                             <span class="mt-2 size-2 shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
@@ -191,6 +194,9 @@
                         </li>
                     @endforeach
                 </ul>
+                <p class="mt-6">
+                    <a href="{{ route('who-does-what') }}#not-built" class="tap-target font-semibold text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-on-night">What we chose not to build, and why <span aria-hidden="true">→</span></a>
+                </p>
             </div>
 
             <figure class="self-center rounded-3xl bg-page p-8 text-ink sm:p-10">

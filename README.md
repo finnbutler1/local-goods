@@ -192,6 +192,23 @@ decided once. A held redemption never reaches Stripe; only a cleared one funded 
 its [tests](tests/Feature/RedemptionFraudDetectorTest.php) and
 [ADR 0003](docs/adr/0003-fail-closed-fraud-detection.md).
 
+## Safety and privacy from the start
+
+These were built in from the first version of each feature, not added afterwards. Each line links to where it lives.
+
+- **An append-only ledger in whole cents.** Every credit and payout is a ledger entry that is never edited, and money is stored as integer cents, so there are no rounding drifts ([ADR 0012](docs/adr/0012-one-ledger-three-account-kinds.md), [`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)).
+- **A cap on the loss from a missed fraud, and a test for it.** The most one missed fraud can move is the credits loaded onto one employee ([`MissedFraudLossCapTest`](tests/Feature/MissedFraudLossCapTest.php), [why](#which-error-we-chose-to-minimize)).
+- **The fraud gate and human review.** A held payment never reaches Stripe; a person approves or denies it, with a reason that is recorded ([ADR 0016](docs/adr/0016-fraud-detection-gates-stripe-transfers.md), [`FraudGateTest`](tests/Feature/FraudGateTest.php)).
+- **A privacy audit, and a name check with its limits.** Merchant data is public business information only, and a test scans every committed AI output for named individuals. [TRANSPARENCY.md](TRANSPARENCY.md#how-does-the-test-recognize-a-named-individual) says what that check can miss ([`MerchantOutputPrivacyTest`](tests/Feature/MerchantOutputPrivacyTest.php), [`EmployeeNamePrivacyTest`](tests/Feature/EmployeeNamePrivacyTest.php)).
+- **An origin lock.** The app answers only requests that came through CloudFront ([ADR 0018](docs/adr/0018-only-cloudfront-reaches-beanstalk.md)).
+- **Rate limits.** Every write route has its own limit, and a test fails if one that can reach Claude has none ([`RateLimitsTest`](tests/Feature/RateLimitsTest.php), [TRANSPARENCY.md](TRANSPARENCY.md#security)).
+- **Pay codes stored hashed and never logged.** Never in a URL, never shown back after a mistake ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md), [`PayCodes`](app/Services/PayCodes.php), [`PayCodeTest`](tests/Feature/PayCodeTest.php)).
+- **Idempotent webhooks.** Stripe events are verified by signature and each one is applied once ([`StripeWebhookHandler`](app/Services/Payments/StripeWebhookHandler.php), [docs/STRIPE.md](docs/STRIPE.md)).
+- **An over-refund guard.** Each refund is re-checked against what was paid, what was already refunded and the tax, before any money moves ([ADR 0028](docs/adr/0028-refunds-and-corrections.md), [`CorrectionLimits`](app/Services/Corrections/CorrectionLimits.php)).
+- **Blind adjudication.** Reviewers vote on the AI's disagreements with the labels hidden ([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md)).
+- **A locked eval set.** The held-out cases are fixed by a SHA-256 per row before the AI sees them, and CI fails if one changes ([`fraud_eval_lock.json`](data/fraud_eval_lock.json), [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it)).
+- **CI on two databases.** Every push runs the suite (1,376 tests as of 2026-10-29, of which 5 need MySQL and are skipped on a plain local run) on both SQLite and MySQL ([`ci.yml`](.github/workflows/ci.yml)).
+
 ## How it meets the judging criteria
 
 Only what exists today is claimed. Everything else is marked **planned**.
@@ -209,6 +226,35 @@ Only what exists today is claimed. Everything else is marked **planned**.
 ## Which error we chose to minimize
 
 Which error we chose to minimize, and why. Local Goods is tuned to avoid false holds, even though that lets some fraud through. On our locked held-out test it caught 17 of the 26 suspicious redemptions, and 17 of the 19 redemptions it held were truly suspicious. We accept that trade on purpose. A false hold falls on the person least able to absorb it: a salon owner or café waiting on money she has already earned, and a merchant who gets stuck once may quietly stop accepting the credits. That would empty the program from the inside. A missed fraud, by contrast, is capped: an employee can never spend more than the credits their employer has put in their wallet, their balance never goes below zero, and a merchant is paid only for credits an employee actually spent. So the most one missed fraud can move is the credits loaded onto that one employee ([how we test this](tests/Feature/MissedFraudLossCapTest.php)). It is paid by the employer, not the merchant, and repeat patterns get easier to spot over time. So we would rather miss a small, bounded loss than delay an honest merchant’s pay. If fraud turns out to be costlier than we expect, the threshold can be tightened, and we will measure any change on a fresh held-out set, never on the cases we have already seen.
+
+## Designed for the people in the transaction
+
+Choices we made for the people involved, each with the reason and where it lives.
+
+- **Merchants see employee initials, never names.** A shop needs to know a payment is real, not who the person is. Outside their own wallet, employees appear as initials ([ADR 0014](docs/adr/0014-employer-program-pending-purchases-and-initials.md), checked on every page by [`EmployeeNamePrivacyTest`](tests/Feature/EmployeeNamePrivacyTest.php)).
+- **A held payment uses neutral words.** A held in-person payment happens with the customer at the counter, and the AI's check can be wrong, so both screens say it is held in neutral words, with no fraud words, and nobody is accused ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md), [TRANSPARENCY.md](TRANSPARENCY.md#paying-in-person-what-the-ai-does-and-doesnt-see)).
+- **Refunds and corrections exist.** Before them, nothing could fix a money mistake once a payment had cleared: a wrong amount, a transfer that never arrived. Now there is a request, a person's decision with a written reason, and a real Stripe action behind it ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)). Why we also tune the fraud check to avoid false holds, which fall on a shop waiting on money it has already earned, is in [Which error we chose to minimize](#which-error-we-chose-to-minimize).
+- **The AI flags; a person decides.** A held payment waits for a BID or platform admin, and the merchant AI only recommends ([ADR 0016](docs/adr/0016-fraud-detection-gates-stripe-transfers.md), [ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)).
+- **The text font is Atkinson Hyperlegible Next.** It was designed for readability by people with low vision. (The decision record names the font, not our reason, so that is a fact about the font, not a study of ours.) Every text and background pair is tested for contrast in light and dark ([ADR 0025](docs/adr/0025-transit-lines-brand.md), [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)).
+- **Every page works at phone width.** Tables become cards, tap targets are 44px, and fields are at least 16px ([docs/accessibility.md](docs/accessibility.md), [`ResponsiveTablesTest`](tests/Feature/ResponsiveTablesTest.php)).
+- **Honesty labels are never hidden on small screens.** "Demo data", "Stripe test mode", "Not affiliated with the Golden Triangle BID" and the prototype notice stay visible on a phone ([`PhoneHonestyTest`](tests/Feature/PhoneHonestyTest.php)).
+
+## What we chose not to build, and why
+
+Saying no was part of the design. Each decision below is already in our decision records, with the reason. The same table is on the public [Who does what](https://d4ghrpm72uczx.cloudfront.net/who-does-what#not-built) page.
+
+| Decision | Reason |
+|---|---|
+| The merchant fee ships switched off. Nothing is charged, and a test stops any seed from turning it on ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)). | We haven't talked to merchants about pricing yet, so it stays off until customer discovery tells us what is fair. |
+| A payout that was reversed in the Stripe dashboard is not re-sent by us. It is refused, and a person sorts it out in Stripe ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)). | A second automatic money path on top of a reversal Stripe itself made is easy to get wrong, and we won't add one before judging. |
+| Unspent credits are never counted as revenue ([ADR 0030](docs/adr/0030-business-model-projections.md)). | They are the employer's money, and a test checks that revenue doesn't move with the share spent. |
+| No issued card, so no interchange ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md), [model](docs/finance/MODEL.md)). | The MVP has no card program, and we could not verify the interchange rate, so the model keeps it off. |
+| No admin "Cancel" button on a held in-person payment ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)). | The shop is the one who knows the customer paid another way, so only the shop can cancel. An admin's Deny already returns the credits. |
+| No gift cards in the product menus ([ADR 0023](docs/adr/0023-product-menus-are-display-only.md)). | They would be cash. |
+| No email sending in the prototype ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md), [ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)). | There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead. |
+| The Merchant Eligibility Matching AI has no web search ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)). | Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides. |
+| No BID or employer initiation fee in the product ([CHANGELOG](CHANGELOG.md)). | It is already a lever in the projection model, and a new money path adds risk before judging. |
+| No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source ([ADR 0024](docs/adr/README.md), [`PublicClaimsTest`](tests/Feature/PublicClaimsTest.php)). | The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured. |
 
 ## How I built it with Claude Code
 
