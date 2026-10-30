@@ -102,8 +102,16 @@ It refuses unless the secret key is a test key.
   request. The reason is recorded either way.
 - **The day stops** after 3 failed actions, or after two reconciliation
   mismatches in a row. Reconciliation is checked at the start of a tick
-  once something new was done; one mismatch can be a webhook still on its
-  way.
+  once something new was done or a transfer sent, and again at the end of
+  a tick that sent transfers, so the recorded result is never stale.
+- **A late webhook is not a mismatch.** The trial of 2026-10-30 showed a
+  paid purchase still pending (its webhook not processed) halting the day.
+  When every difference is only Stripe's webhook still on its way (a
+  purchase Stripe was paid for but still pending, a refund reversal or card
+  refund not recorded yet), the check records "waiting for Stripe's webhook"
+  and is not counted until the oldest has waited `webhook_grace_minutes`
+  (30). A webhook that never comes, or any other difference, counts as
+  before.
 - **Idempotent.**
   - `demo_activity_days.date` is unique.
   - Every slot is claimed with a unique (day, slot) row before it runs.

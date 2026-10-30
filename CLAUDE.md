@@ -26,7 +26,10 @@ unchanged; money logic unchanged apart from one gateway method.
   deploy file or seeder**, a test checks), `DEMO_ACTIVITY_ENDS_ON`
   (2026-11-30), test mode only, caps in `config/demo_activity.php`, queue
   caps (>5 held / >3 open refunds), day stops after 3 failures or two
-  reconciliation mismatches, unique (day, slot) claims, tick always exits 0.
+  reconciliation mismatches (a mismatch that is only webhooks on their way,
+  `only_awaiting_webhooks_since` in the report, isn't counted for
+  `webhook_grace_minutes`; re-checked after a tick sends transfers), unique
+  (day, slot) claims, tick always exits 0.
 - Marked: `isGeneratedDemoActivity()` on `Redemption`/`CreditPurchase`
   (eager-load `demoActivity`), `<x-demo-activity-badge>`; allowances aren't
   marked. `partials/waiting-for-a-person` (`WaitingForAPerson`) on the

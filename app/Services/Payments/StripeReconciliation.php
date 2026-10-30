@@ -45,6 +45,12 @@ use Illuminate\Support\Carbon;
  */
 class StripeReconciliation
 {
+    /** @var list<array{kind: string, line: string, since: Carbon}> differences that only wait for Stripe's webhook */
+    private array $awaiting = [];
+
+    /** @var list<array{kind: string, line: string}> total lines that such a wait also throws out */
+    private array $knockOn = [];
+
     public function __construct(private StripeGateway $stripe) {}
 
     public function report(): array
@@ -67,6 +73,9 @@ class StripeReconciliation
             'environment' => StripeEnvironment::label(),
             'error' => null,
             'mismatches' => [],
+            // Set when every mismatch is only a webhook not here yet (oldest first), for the demo
+            // activity generator, which waits a while before counting it (ADR 0032).
+            'only_awaiting_webhooks_since' => null,
             'notes' => [],
             'other' => ['payments' => 0, 'payment_cents' => 0, 'transfers' => 0, 'transfer_cents' => 0, 'refunds' => 0, 'refund_cents' => 0, 'lines' => []],
         ];
@@ -112,12 +121,13 @@ class StripeReconciliation
             'available_cents' => self::usd($balance['available'] ?? []),
         ];
 
+        [$this->awaiting, $this->knockOn] = [[], []];
         $report['mismatches'] = [...$this->comparePurchases($intents), ...$this->compareTransfers($transfers),
             ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds), ...$this->compareMerchantFees()];
 
         if ($local['purchase_cents'] !== $report['stripe']['purchase_cents']) {
-            $report['mismatches'][] = 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe'.self::feeSplit($local).'; Stripe received '
-                .Money::format($report['stripe']['purchase_cents']).'. Difference: '.Money::format($report['stripe']['purchase_cents'] - $local['purchase_cents']).'.';
+            $report['mismatches'][] = $this->knockOn('purchase', 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe'.self::feeSplit($local).'; Stripe received '
+                .Money::format($report['stripe']['purchase_cents']).'. Difference: '.Money::format($report['stripe']['purchase_cents'] - $local['purchase_cents']).'.');
         }
         // The fee's own ledger lines, on the platform account, must add up to the fees those purchases charged.
         if ($local['fee_cents'] !== $local['fee_line_cents']) {
@@ -125,14 +135,15 @@ class StripeReconciliation
                 .Money::format($local['fee_line_cents']).' for them.';
         }
         if ($local['transfer_cents'] !== $report['stripe']['transfer_cents']) {
-            $report['mismatches'][] = 'Transfers: the ledger counts '.Money::format($local['transfer_cents']).' sent to merchants through Stripe; Stripe shows '
-                .Money::format($report['stripe']['transfer_cents']).'. Difference: '.Money::format($report['stripe']['transfer_cents'] - $local['transfer_cents']).'.';
+            $report['mismatches'][] = $this->knockOn('reversal', 'Transfers: the ledger counts '.Money::format($local['transfer_cents']).' sent to merchants through Stripe; Stripe shows '
+                .Money::format($report['stripe']['transfer_cents']).'. Difference: '.Money::format($report['stripe']['transfer_cents'] - $local['transfer_cents']).'.');
         }
 
         if ($local['refund_cents'] !== $report['stripe']['refund_cents']) {
-            $report['mismatches'][] = 'Refunds to employers: the ledger counts '.Money::format($local['refund_cents']).' refunded to cards through Stripe; Stripe shows '
-                .Money::format($report['stripe']['refund_cents']).'. Difference: '.Money::format($report['stripe']['refund_cents'] - $local['refund_cents']).'.';
+            $report['mismatches'][] = $this->knockOn('refund', 'Refunds to employers: the ledger counts '.Money::format($local['refund_cents']).' refunded to cards through Stripe; Stripe shows '
+                .Money::format($report['stripe']['refund_cents']).'. Difference: '.Money::format($report['stripe']['refund_cents'] - $local['refund_cents']).'.');
         }
+        $report['only_awaiting_webhooks_since'] = $this->onlyAwaitingSince($report['mismatches']);
 
         $expected = $local['purchase_cents'] - $local['transfer_cents'] - $local['refund_cents'];
         $report['expected_balance_cents'] = $expected;
@@ -255,7 +266,7 @@ class StripeReconciliation
         foreach ($intents->except($known) as $pi) {
             $pending = CreditPurchase::where('payment_token', $pi['metadata']['lg_purchase_token'])->where('status', CreditPurchase::STATUS_PENDING)->first();
             $out[] = $pending
-                ? 'Stripe received '.Money::format($pi['amount_received'] ?? $pi['amount']).' for '.$pending->reference.' ('.$pi['id'].'), but Local Goods still shows it pending: the webhook has not arrived. Check the webhook endpoint in Stripe.'
+                ? $this->awaiting('purchase', $pending->updated_at, 'Stripe received '.Money::format($pi['amount_received'] ?? $pi['amount']).' for '.$pending->reference.' ('.$pi['id'].'), but Local Goods still shows it pending: the webhook has not arrived. Check the webhook endpoint in Stripe.')
                 : 'Stripe has a '.Money::format($pi['amount_received'] ?? $pi['amount']).' payment ('.$pi['id'].') that Local Goods has no ledger record of (for example a purchase paid twice). Check before refunding it in Stripe.';
         }
 
@@ -275,7 +286,7 @@ class StripeReconciliation
             } elseif ($tr['amount'] !== $row->amount_cents) {
                 $out[] = 'Transfer '.$tr['id'].' is '.Money::format($row->amount_cents).' in the ledger but '.Money::format($tr['amount']).' in Stripe.';
             } elseif (($tr['reversed'] ?? false) && $row->status === MerchantPayout::STATUS_SENT && self::refundReversedCents($row) !== $tr['amount']) {
-                $out[] = 'Stripe shows transfer '.$tr['id'].' to '.$row->merchant->name.' as reversed, but Local Goods still counts it as paid.';
+                $out[] = $this->knockOn('reversal', 'Stripe shows transfer '.$tr['id'].' to '.$row->merchant->name.' as reversed, but Local Goods still counts it as paid.');
             }
         }
 
@@ -320,8 +331,9 @@ class StripeReconciliation
 
         $byKey = $actions->keyBy('idempotency_key');
         foreach ($stripe->except($actions->where('status', CorrectionAction::STATUS_SUCCEEDED)->pluck('stripe_id')->all()) as $reversal) {
-            $out[] = $byKey->has($reversal['metadata']['lg_correction_key']) || $actions->firstWhere('stripe_id', $reversal['id'])
-                ? 'Stripe reversed '.Money::format($reversal['amount']).' of transfer '.$reversal['transfer'].' for a refund ('.$reversal['id'].'), but Local Goods hasn\'t recorded it yet: the webhook has not arrived. Check the webhook endpoint in Stripe.'
+            $action = $byKey->get($reversal['metadata']['lg_correction_key']) ?? $actions->firstWhere('stripe_id', $reversal['id']);
+            $out[] = $action
+                ? $this->awaiting('reversal', $action->updated_at, 'Stripe reversed '.Money::format($reversal['amount']).' of transfer '.$reversal['transfer'].' for a refund ('.$reversal['id'].'), but Local Goods hasn\'t recorded it yet: the webhook has not arrived. Check the webhook endpoint in Stripe.')
                 : 'Stripe has a '.Money::format($reversal['amount']).' refund reversal ('.$reversal['id'].') on transfer '.$reversal['transfer'].' that Local Goods has no record of.';
         }
 
@@ -351,12 +363,46 @@ class StripeReconciliation
 
         $byKey = $actions->keyBy('idempotency_key');
         foreach ($refunds->where('status', 'succeeded')->except($actions->where('status', CorrectionAction::STATUS_SUCCEEDED)->pluck('stripe_id')->all()) as $refund) {
-            $out[] = $byKey->has($refund['metadata']['lg_correction_key']) || $actions->firstWhere('stripe_id', $refund['id'])
-                ? 'Stripe refunded '.Money::format($refund['amount']).' ('.$refund['id'].'), but Local Goods hasn\'t recorded it yet: the webhook has not arrived. Check the webhook endpoint in Stripe.'
+            $action = $byKey->get($refund['metadata']['lg_correction_key']) ?? $actions->firstWhere('stripe_id', $refund['id']);
+            $out[] = $action
+                ? $this->awaiting('refund', $action->updated_at, 'Stripe refunded '.Money::format($refund['amount']).' ('.$refund['id'].'), but Local Goods hasn\'t recorded it yet: the webhook has not arrived. Check the webhook endpoint in Stripe.')
                 : 'Stripe has a '.Money::format($refund['amount']).' refund ('.$refund['id'].') that Local Goods has no record of.';
         }
 
         return $out;
+    }
+
+    private function awaiting(string $kind, $since, string $line): string
+    {
+        $this->awaiting[] = ['kind' => $kind, 'line' => $line, 'since' => Carbon::parse($since ?? now())];
+
+        return $line;
+    }
+
+    private function knockOn(string $kind, string $line): string
+    {
+        $this->knockOn[] = ['kind' => $kind, 'line' => $line];
+
+        return $line;
+    }
+
+    /**
+     * When the oldest webhook still on its way was sent, if waiting for
+     * webhooks is all that is wrong: every mismatch is one of them, or a
+     * total line of the same kind that they throw out. Anything else, or
+     * nothing waiting, gives null.
+     *
+     * @param  list<string>  $mismatches
+     */
+    private function onlyAwaitingSince(array $mismatches): ?Carbon
+    {
+        $waiting = collect($this->awaiting);
+        $explained = $waiting->pluck('line')
+            ->merge(collect($this->knockOn)->whereIn('kind', $waiting->pluck('kind')->unique()->all())->pluck('line'));
+
+        return $waiting->isNotEmpty() && collect($mismatches)->diff($explained)->isEmpty()
+            ? $waiting->pluck('since')->sort()->first()
+            : null;
     }
 
     /** " (credits $X + platform fees $Y)", or nothing while no Stripe-paid purchase has a fee. */

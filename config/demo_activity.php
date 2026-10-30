@@ -36,6 +36,11 @@ return [
         'reconciliation_misses' => 2,
     ],
 
+    // A mismatch that is only Stripe's webhook still on its way (a purchase
+    // paid but still pending, a refund not recorded yet) is not counted
+    // until the oldest has waited this long; then it counts as above.
+    'webhook_grace_minutes' => 30,
+
     // Never leave the queue looking neglected: with this many waiting for a
     // person, the generator makes no new redemptions (any could be held) or
     // refund requests that day.
