@@ -383,6 +383,22 @@ the merchant dashboard), where the Feedback button, the tab bar or a
 decorative element overlaps it; every text colour comes from a pair
 `ColorContrastTest` checks.
 
+## Demo activity page (2026-10-29)
+
+**How it was checked.** Only the static checks ran. `AccessibilityTest`,
+`ResponsiveTablesTest`, `EmployeeNamePrivacyTest`, `JudgeReadOnlyTest` and
+`PhoneHonestyTest` sweep `/bid-admin/demo-activity` as every role, and
+`DemoActivityPageTest` runs `AccessibilityAudit` on the page with a day of
+activity in it. No browser, axe or screen-reader pass was done for this page
+or the new "Demo activity" marker and "Waiting for a person" box.
+
+- Both tables use `<x-rtable>` with `data-label` on every cell, so they
+  stack into cards on phones.
+- The marker has visible text ("Demo activity") and screen-reader text
+  saying it was generated, not made by a person; it does not rely on colour.
+- The waiting box is a labelled section. Overdue items are said in words,
+  not only by the border colour.
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session

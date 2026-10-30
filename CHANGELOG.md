@@ -3,6 +3,26 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-29: Live demo activity in Stripe test mode (ADR 0032)
+
+- **A generator for real, dated history.** Each weekday until judging it
+  makes a small slice of lunch-weighted activity through the normal
+  services: credits paid with Stripe's test card and confirmed by the
+  webhook, allowances, orders to go and pay-in-person payments with menu
+  items and tax, the real fraud check on each, Stripe test transfers, and
+  about one refund request a week. Nothing is backdated.
+- **A person still decides.** It never approves, denies or decides a refund.
+  The admin homes, the corrections queue and the new page show what is
+  waiting for a person and how long the oldest has waited.
+- **Marked and limited.** A "Demo activity" marker on everything it made;
+  test mode only; off by default (`DEMO_ACTIVITY_ENABLED`); daily caps;
+  stops the day on repeated failures or reconciliation mismatches; ends
+  after judging.
+- **Scheduling.** Cron on the instance runs Laravel's scheduler; the hook
+  that installs it can never fail a deploy.
+- **See it.** `/bid-admin/demo-activity` (read-only, judges too) and
+  `php artisan demo-activity:status`.
+
 ## 2026-10-29: Never reset the live demo
 
 - **Deploy checklist corrected.** It used to say to press Reset demo after

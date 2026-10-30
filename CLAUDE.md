@@ -5,6 +5,47 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Live demo activity in Stripe test mode — done (2026-10-29, ADR 0032),
+off until Finn switches it on.** One additive migration
+(`2026_10_31_000001_add_demo_activity`, snapshot `before-demo-activity`).
+Fraud prompt, signals, AI input, eval data, locks and adjudication
+unchanged; money logic unchanged apart from one gateway method.
+
+- `App\Services\DemoActivity\ActivityGenerator` (tick every 5 min, weekdays
+  07:00–19:00 DC): normal services only (`requestPurchase` +
+  `StripeTestPayments`, `allocateMany`, `redeem`, `PayCodes`,
+  `CorrectionRequests` as the Farragut Grind login). **Never decides**
+  (no approve/deny/refund decision; a source scan checks). Never Jordan or
+  the collusion pattern members (`demo_activity.excluded_employees`).
+- `DayPlanner` is pure (same date, same plan); about every other day one
+  slot is "planned as unusual" (recorded, never told to the AI).
+- `StripeGateway::createTestPayment` (pm_card_visa, Checkout's metadata +
+  `lg_demo_activity`), only from `StripeTestPayments`; the webhook marks
+  the purchase paid. Restricted keys need PaymentIntents: Write.
+- Safety: `DEMO_ACTIVITY_ENABLED` (default false; **never set it in a
+  deploy file or seeder**, a test checks), `DEMO_ACTIVITY_ENDS_ON`
+  (2026-11-30), test mode only, caps in `config/demo_activity.php`, queue
+  caps (>5 held / >3 open refunds), day stops after 3 failures or two
+  reconciliation mismatches, unique (day, slot) claims, tick always exits 0.
+- Marked: `isGeneratedDemoActivity()` on `Redemption`/`CreditPurchase`
+  (eager-load `demoActivity`), `<x-demo-activity-badge>`; allowances aren't
+  marked. `partials/waiting-for-a-person` (`WaitingForAPerson`) on the
+  admin home, fraud review, corrections queue and the status page.
+- Status: `/bid-admin/demo-activity` (read-only, judges via View as),
+  `demo-activity:status`, `demo-activity:tick --dry-run`.
+- Scheduling: `.platform/hooks/predeploy/02_scheduler.sh` (+ confighook)
+  writes `/etc/cron.d/local-goods-scheduler` → `scripts/run-scheduler.sh`
+  (reads Beanstalk properties each minute, no PHP unless the switch is
+  true, `schedule:run` as webapp). **The hook must never fail a deploy**
+  (no `set -e`, ends `exit 0`; `DemoActivityScheduleTest`). Logs:
+  `storage/logs/scheduler.log`, `storage/logs/demo-activity.log`.
+- Tables in `DEMO_TABLES` (front) and `EMPTY_AFTER_SEED`.
+- Tests: `DemoActivityPlanTest`, `DemoActivityPurchaseTest`,
+  `DemoActivityTickTest`, `DemoActivitySafetyTest`,
+  `DemoActivityFraudInputTest`, `DemoActivityPageTest`,
+  `DemoActivityBadgeTest`, `DemoActivityScheduleTest`,
+  `DemoActivityMigrationSafetyTest`; helper `Tests\Concerns\RunsDemoActivity`.
+
 **Districts, partnerships and merchant joining — done (2026-10-28, ADR
 0031).** Three additive migrations (`2026_10_30_000001…000003`, snapshot
 `before-districts`). Fraud prompt (`8d5e1e70`), eligibility prompt
@@ -642,8 +683,8 @@ brand with button states and menus (ADR 0025), paying in person with
 pay codes (ADR 0026), the phone-first pass, DC sales tax at
 redemption (ADR 0027), refunds and corrections (ADR 0028), the
 merchant fee, ready but at 0 (ADR 0029), the business model with
-impact projections (ADR 0030) and districts, partnerships and merchant
-joining (ADR 0031).
+impact projections (ADR 0030), districts, partnerships and merchant
+joining (ADR 0031) and live demo activity in Stripe test mode (ADR 0032).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -870,6 +911,8 @@ snapshot step by name when the build says the deploy includes migrations.
    If any demo merchant shows "Not connected to Stripe" on
    `/admin/reconciliation`, press "Connect demo merchants to Stripe (test
    mode)" (Reset demo keeps existing accounts, so usually only once).
+   Open `/bid-admin/demo-activity`: it should say "Off" unless Finn has
+   switched the generator on (`DEMO_ACTIVITY_ENABLED`, Beanstalk only).
    With Stripe keys set: the employer page shows "Stripe test mode", and
    `/admin/reconciliation` says everything matches. As the BID admin, press
    "Run a collusion example" once (one AI call) and check its path line.

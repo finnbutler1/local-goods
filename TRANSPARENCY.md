@@ -799,6 +799,38 @@ join form keep, and where the AI fits
 - **Reviewers** can see the applications queue with each contact email
   masked, and can't change anything.
 
+### Generated demo activity
+
+Between late October and judging, a scheduled generator makes a little
+activity each weekday in Stripe test mode
+([ADR 0032](docs/adr/0032-live-demo-activity-in-stripe-test-mode.md)), so
+the live demo has weeks of real, dated history instead of a backdated one.
+
+- **Same path as a person.** It buys credits (Stripe's test card, paid by
+  the same signed webhook as Checkout), gives allowances, orders to go and
+  pays in person at the fictional demo merchants, and about once a week
+  files a refund request as the demo merchant. Redemption Fraud Detection
+  scores every payment on the usual anonymous signals; nothing tells it the
+  payment was generated (`DemoActivityFraudInputTest`).
+- **Unusual on purpose, and said so.** About every other day one payment is
+  planned to look unusual (a round amount far above a café's usual, at an
+  odd hour, most of someone's balance), so the AI has something real to
+  question. The AI is not told; the demo activity page shows which ones were
+  planned that way and how often the AI actually held them.
+- **A person decides.** It never approves, denies or decides a refund. Held
+  payments and refund requests wait for a person, and the admin pages show
+  how many are waiting and for how long. It stops making new ones while too
+  many are waiting.
+- **Marked.** Everything it made carries a **Demo activity** marker wherever
+  a person-made one would look the same. Decisions people make are not
+  marked. Monthly allowances it gives aren't marked on the employer page;
+  they are listed on the demo activity page.
+- **Limits.** Test mode only, off unless switched on, daily caps on actions
+  and amounts, the day stops after repeated failures or two reconciliation
+  mismatches in a row, and it ends by itself after judging. It never sends
+  email and never touches reviewers, applications, the eval data, locks or
+  adjudication (`DemoActivitySafetyTest`).
+
 ### Synthetic data
 
 Every person, business and transaction in the demo is fictional. No real

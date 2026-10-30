@@ -385,6 +385,19 @@ payouts, nothing sent to Stripe. Every page where money moves shows a
 row is labeled by how it was actually paid. A simulated payment is never
 shown as a Stripe one.
 
+## Generated demo activity (ADR 0032)
+
+The demo activity generator pays for credits without a browser:
+`StripeTestPayments` creates and confirms a PaymentIntent with the test card
+`pm_card_visa` (`StripeGateway::createTestPayment`). It carries Checkout's
+metadata (`lg_purchase_token`, reference, id, environment tag) plus
+`lg_demo_activity=1` and the description "Local Goods demo activity", so the
+same signed `payment_intent.succeeded` webhook marks the purchase paid and
+reconciliation counts it like any other. It refuses unless the secret key is
+a test key (`sk_test_` or `rk_test_`). A restricted key needs
+**PaymentIntents: Write** for this. Transfers, reversals and refunds go
+through the existing paths unchanged.
+
 ## Reconciliation
 
 `/admin/reconciliation` (platform admin) puts the ledger next to Stripe for
