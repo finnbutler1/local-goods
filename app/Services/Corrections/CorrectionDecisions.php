@@ -7,6 +7,7 @@ use App\Models\Correction;
 use App\Models\CorrectionAction;
 use App\Models\CreditPurchase;
 use App\Models\Employer;
+use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Models\User;
@@ -33,6 +34,9 @@ class CorrectionDecisions
     public const NOT_SENT_YET = 'The merchant hasn\'t been paid for this through Stripe yet. Send it first (Reconciliation → Retry owed transfers), then refund.';
 
     public const REVERSED_IN_DASHBOARD = 'This payment was reversed in the Stripe dashboard. Sort it out by hand in Stripe, then record a note.';
+
+    /** A simulated refund the merchant isn't owed enough to cover, with no simulated payout to pull it back from (ADR 0033). */
+    public const NOTHING_TO_PULL_BACK = 'The shop isn\'t owed enough to cover this refund and has no simulated payout to take it back from, so it would go below zero. Sort it out by hand.';
 
     public function __construct(private CreditLedger $ledger, private CorrectionProcessor $processor) {}
 
@@ -116,9 +120,13 @@ class CorrectionDecisions
                     'status' => CorrectionAction::STATUS_SUCCEEDED, 'completed_at' => now()]);
                 $this->complete($correction);
             } elseif ($payout === null) {
-                $this->ledger->refundRedemption($correction, $refund['amount_cents']);
+                // Simulated: deducted from what the merchant is still owed through simulated
+                // payouts; any part it was already paid is pulled back (simulated), so it never
+                // goes below zero (ADR 0033). Never from what waits for a Stripe transfer.
+                [$from, $pullBack] = $this->simulatedPullBack($redemption, $refund['amount_cents'] - $fee);
+                $this->ledger->refundRedemption($correction, $refund['amount_cents'], $from, pulledBackCents: $pullBack);
                 $correction->actions()->create(['kind' => CorrectionAction::KIND_SIMULATED, 'amount_cents' => $refund['amount_cents'],
-                    'status' => CorrectionAction::STATUS_SUCCEEDED, 'completed_at' => now()]);
+                    'merchant_payout_id' => $from?->id, 'status' => CorrectionAction::STATUS_SUCCEEDED, 'completed_at' => now()]);
                 $this->complete($correction);
             } else {
                 // Stripe reverses what the merchant received for this part: the refund less the fee share.
@@ -325,6 +333,31 @@ class CorrectionDecisions
         }
 
         $correction->refresh();
+    }
+
+    /**
+     * For a simulated refund: the merchant gives back $cents (the refund less
+     * its fee share). What it is still owed through simulated payouts covers
+     * that first; the rest, if any, was already paid out, so it comes back
+     * from its latest simulated payout. Returns [that payout, the part pulled
+     * back], or [null, null] when what it is owed covers it all.
+     *
+     * @return array{0: ?MerchantPayout, 1: ?int}
+     */
+    private function simulatedPullBack(Redemption $redemption, int $cents): array
+    {
+        $merchant = Merchant::whereKey($redemption->merchant_id)->lockForUpdate()->firstOrFail();
+        $short = $cents - max(0, $merchant->owedSimulatedCents());
+
+        if ($short <= 0) {
+            return [null, null];
+        }
+
+        $from = MerchantPayout::where('merchant_id', $merchant->id)->where('status', MerchantPayout::STATUS_SIMULATED)
+            ->orderByDesc('paid_at')->orderByDesc('id')->first()
+            ?? throw new InvalidArgumentException(self::NOTHING_TO_PULL_BACK);
+
+        return [$from, $short];
     }
 
     private function checkDecider(User $by, string $reason): string

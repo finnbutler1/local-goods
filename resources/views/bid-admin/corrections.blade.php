@@ -36,7 +36,7 @@
             the person who asked sees that reason. Nothing is edited or deleted: every fix is a new line in the ledger, linked to the request.
         </p>
         <ul class="mt-4 list-disc space-y-1 pl-5 text-muted">
-            <li><span class="font-semibold text-ink">Redemption refund:</span> credits back to the employee. Paid through Stripe, that part of the merchant's transfer is reversed; simulated, it is deducted from what the merchant is owed. Menu items are refunded with the tax charged on them.</li>
+            <li><span class="font-semibold text-ink">Redemption refund:</span> credits back to the employee. Paid through Stripe, that part of the merchant's transfer is reversed; simulated, it is deducted from what the merchant is still owed, and any part already paid out is pulled back from its last simulated payout (simulated, no real money), so a shop is never left owing. Menu items are refunded with the tax charged on them.</li>
             <li><span class="font-semibold text-ink">Merchant adjustment:</span> a Stripe transfer the merchant is owed but never got is sent, for exactly that amount, through the same payout path as every transfer.</li>
             <li><span class="font-semibold text-ink">Refund of unspent credits:</span> credits not yet given to employees go back to the employer's card as Stripe refunds, newest payment first.</li>
         </ul>

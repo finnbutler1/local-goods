@@ -391,9 +391,13 @@ class CreditLedger
      * With $reversedFrom, Stripe reversed that part of the merchant's
      * transfer, so the money that came back is its own merchant line and
      * the merchant nets to zero. Without it (simulated), the merchant simply
-     * has less owed: deducted from its next simulated payout, which can
-     * leave a merchant already paid out below zero until then. Every line
-     * links the redemption and the correction. Called inside the
+     * has less owed. When a simulated merchant has already been paid out and
+     * isn't owed enough to cover it, $reversedFrom is its latest simulated
+     * payout and $pulledBackCents the part not covered: a simulated
+     * pull-back (refund_reversal, no real money) that came back from that
+     * payout, so the merchant never goes below zero (ADR 0033; this
+     * replaces ADR 0028's "can dip below zero until its next payout").
+     * Every line links the redemption and the correction. Called inside the
      * transaction that marks the correction's action done, so it is
      * written once.
      *
@@ -403,16 +407,21 @@ class CreditLedger
      * only what it received: the reversal is the refund less that share.
      * With no fee, exactly as before.
      */
-    public function refundRedemption(Correction $correction, int $amountCents, ?MerchantPayout $reversedFrom = null, ?string $reversalId = null, ?Carbon $at = null): void
+    public function refundRedemption(Correction $correction, int $amountCents, ?MerchantPayout $reversedFrom = null, ?string $reversalId = null, ?Carbon $at = null, ?int $pulledBackCents = null): void
     {
         $this->ensurePositive($amountCents);
         $redemption = $correction->redemption;
         $at ??= now();
         $fee = min($amountCents, (int) $correction->fee_cents);
+        $simulatedPullBack = $reversedFrom !== null && $reversalId === null;
+        if ($simulatedPullBack && ($pulledBackCents === null || $pulledBackCents <= 0 || $pulledBackCents > $amountCents - $fee)) {
+            throw new InvalidArgumentException('A simulated pull-back is more than zero and at most what the merchant received for this part.');
+        }
         $how = match (true) {
+            $simulatedPullBack => 'simulated: '.Money::format($pulledBackCents).' pulled back from simulated payout #'.$reversedFrom->id.', the rest deducted from what the merchant is owed',
             $reversedFrom !== null => 'Stripe test mode, '.$reversalId,
             $fee === $amountCents => 'all of it was the Local Goods fee, so nothing to reverse',
-            default => 'simulated, deducted from the merchant\'s next payout',
+            default => 'simulated, deducted from what the merchant is owed',
         };
         $base = ['redemption_id' => $redemption->id, 'correction_id' => $correction->id, 'created_at' => $at];
 
@@ -445,7 +454,15 @@ class CreditLedger
             ]);
         }
 
-        if ($reversedFrom !== null) {
+        if ($simulatedPullBack) {
+            CreditLedgerEntry::create($base + [
+                'merchant_id' => $redemption->merchant_id,
+                'amount_cents' => $pulledBackCents,
+                'type' => CreditLedgerEntry::TYPE_REFUND_REVERSAL,
+                'merchant_payout_id' => $reversedFrom->id,
+                'description' => 'Simulated pull-back of '.Money::format($pulledBackCents).' from simulated payout #'.$reversedFrom->id.' for the refund (simulated, no real money)',
+            ]);
+        } elseif ($reversedFrom !== null) {
             CreditLedgerEntry::create($base + [
                 'merchant_id' => $redemption->merchant_id,
                 'amount_cents' => $amountCents - $fee,

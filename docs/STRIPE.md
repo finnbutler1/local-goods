@@ -357,7 +357,7 @@ attempts up only after a definite refusal) and metadata `lg_correction_key`,
 | Correction | Stripe call | Confirmed by | Ledger lines (when confirmed) |
 |---|---|---|---|
 | Refund of a redemption whose transfer was sent | `POST /v1/transfers/{tr}/reversals` for exactly the refund (less its merchant fee share, ADR 0029) | `transfer.reversed` (lists every reversal with its metadata; `amount_reversed` adds up) | employee `+r` `refund`, merchant `-r` `merchant_refunded`, merchant `+r` `refund_reversal` |
-| Refund of a simulated redemption | none | at once | employee `+r`, merchant `-r` (deducted from the next payout) |
+| Refund of a simulated redemption | none | at once | employee `+r`, merchant `-r` (deducted from what the merchant is owed through simulated payouts); any part it was already paid out is a simulated pull-back, merchant `+p` `refund_reversal` on its latest simulated payout, "simulated, no real money" (ADR 0033), so the merchant never goes below zero. Stripe reconciliation counts only reversals on sent transfers, so it ignores these |
 | Refund of unspent credits, Stripe payment | `POST /v1/refunds` on the purchase's PaymentIntent, credits only | `refund.created` / `refund.updated` (succeeded at once in test mode, even on pending funds), `refund.failed` | `employer_refund_hold -R` at approval, `employer_refunded 0` per payment when confirmed, `employer_refund_released +R` if closed |
 | Refund of unspent credits, simulated purchase | none | at once | hold, then `employer_refunded 0` |
 | Merchant adjustment ("I wasn't paid") | the existing `MerchantPayouts::send` for the owed row (the `TransferGate`, the row's own key) | Stripe's reply, `transfer.created` as backup | the payout's own `payout` line, with the correction's id |
