@@ -1,0 +1,82 @@
+{
+    "id": "fake_acct_1",
+    "object": "v2.core.account",
+    "applied_configurations": [
+        "recipient"
+    ],
+    "closed": false,
+    "configuration": {
+        "customer": null,
+        "merchant": null,
+        "recipient": {
+            "applied": true,
+            "capabilities": {
+                "stripe_balance": {
+                    "payouts": {
+                        "status": "restricted",
+                        "status_details": [
+                            {
+                                "code": "requirements_past_due",
+                                "resolution": "provide_info"
+                            }
+                        ]
+                    },
+                    "stripe_transfers": {
+                        "status": "active",
+                        "status_details": []
+                    }
+                }
+            }
+        }
+    },
+    "contact_email": "fake-removed",
+    "contact_phone": null,
+    "created": "2026-10-30T23:54:26.000Z",
+    "dashboard": "none",
+    "identity": null,
+    "defaults": null,
+    "display_name": "Local Goods Operating scratch trial operating-20261030-235421",
+    "future_requirements": null,
+    "metadata": {
+        "lg_instance": "operating-trial",
+        "lg_env": "scratch",
+        "lg_trial": "1",
+        "lg_trial_run": "fake-run"
+    },
+    "requirements": {
+        "entries": [
+            {
+                "awaiting_action_from": "user",
+                "description": "external_account",
+                "errors": [],
+                "impact": {
+                    "restricts_capabilities": [
+                        {
+                            "capability": "stripe_balance.payouts",
+                            "configuration": "recipient",
+                            "deadline": {
+                                "status": "past_due"
+                            }
+                        }
+                    ]
+                },
+                "minimum_deadline": {
+                    "status": "past_due"
+                },
+                "reference": null,
+                "requested_reasons": [
+                    {
+                        "code": "routine_onboarding"
+                    }
+                ]
+            }
+        ],
+        "summary": {
+            "minimum_deadline": {
+                "status": "past_due",
+                "time": null
+            }
+        }
+    },
+    "livemode": false
+}
