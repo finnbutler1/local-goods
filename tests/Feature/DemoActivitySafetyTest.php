@@ -144,19 +144,98 @@ class DemoActivitySafetyTest extends TestCase
         $this->assertStringContainsString('Something went wrong (fake).', DemoActivityAction::where('status', 'failed')->value('error'));
     }
 
-    public function test_two_reconciliation_mismatches_in_a_row_stop_the_day(): void
+    public function test_a_webhook_arriving_late_does_not_stop_the_day(): void
     {
-        // Stripe's webhook never arrives: Stripe has the payment, the ledger doesn't.
-        $generator = app(ActivityGenerator::class);
-        foreach (['12:00', '12:05', '12:10', '12:15'] as $time) {
-            \Illuminate\Support\Carbon::setTestNow(\Illuminate\Support\Carbon::parse('2026-10-26 '.$time, 'America/New_York'));
-            $generator->tick();
+        // The top-up is paid in Stripe at 07:00, but its webhook only arrives after 07:10.
+        $this->tickWithoutWebhooks('07:00');
+        $this->assertSame(1, DemoActivityAction::where('kind', 'purchase')->where('status', 'done')->count());
+
+        foreach (['07:05', '07:10'] as $time) {
+            $this->assertContains("Reconciliation is waiting for Stripe's webhook (not counted; checking again next tick).", $this->tickWithoutWebhooks($time), $time);
         }
+        $day = DemoActivityDay::firstOrFail();
+        $this->assertNull($day->halted_reason);
+        $this->assertSame(0, $day->reconciliation_misses);
+        $this->assertTrue($day->last_reconciliation['waiting_for_webhooks']);
+
+        $this->deliverPaymentWebhooks();
+        $this->assertContains('Reconciliation matches.', $this->tickWithoutWebhooks('07:15'));
+
+        $day->refresh();
+        $this->assertNull($day->halted_reason);
+        $this->assertTrue($day->last_reconciliation['matches']);
+    }
+
+    public function test_a_webhook_that_never_arrives_stops_the_day_once_the_grace_is_over(): void
+    {
+        // Stripe has the payment from 07:00; the ledger never hears of it.
+        foreach (['07:00', '07:05', '07:10', '07:15', '07:20', '07:25'] as $time) {
+            $this->tickWithoutWebhooks($time);
+        }
+        $this->assertNull(DemoActivityDay::firstOrFail()->halted_reason, 'Within the 30 minutes: still waiting');
+
+        // From 07:30 the wait counts as a mismatch, and two in a row stop the day.
+        $this->assertContains('Reconciliation did not match (once; checking again next tick).', $this->tickWithoutWebhooks('07:30'));
+        $this->tickWithoutWebhooks('07:35');
 
         $day = DemoActivityDay::firstOrFail();
         $this->assertStringContainsString('reconciliation did not match twice', $day->halted_reason);
         $this->assertFalse($day->last_reconciliation['matches']);
-        $this->assertSame(['Stopped for today: '.$day->halted_reason], $generator->tick());
+        $this->assertFalse($day->last_reconciliation['waiting_for_webhooks']);
+        $this->assertSame(['Stopped for today: '.$day->halted_reason], $this->tickWithoutWebhooks('07:40'));
+    }
+
+    public function test_a_real_mismatch_still_stops_the_day_on_the_second_check(): void
+    {
+        // Run to the first Stripe transfer, everything matching.
+        $t = \Carbon\CarbonImmutable::parse('2026-10-26 07:00', 'America/New_York');
+        while (! DB::table('merchant_payouts')->where('status', 'sent')->exists()) {
+            $this->tickAt($t->format('Y-m-d H:i'));
+            $t = $t->addMinutes(5);
+            $this->assertLessThan('19:00', $t->format('H:i'), 'No Stripe transfer was sent');
+        }
+        $this->assertTrue(DemoActivityDay::firstOrFail()->last_reconciliation['matches']);
+
+        // The ledger now disagrees with Stripe about that transfer: no webhook explains it.
+        DB::table('merchant_payouts')->where('status', 'sent')->orderBy('id')->limit(1)->update(['amount_cents' => DB::raw('amount_cents + 100')]);
+
+        $checks = [];
+        for (; $t->format('H:i') < '19:00' && DemoActivityDay::firstOrFail()->halted_reason === null; $t = $t->addMinutes(5)) {
+            $lines = $this->tickAt($t->format('Y-m-d H:i'));
+            $checks = [...$checks, ...array_values(array_filter($lines, fn ($l) => str_starts_with($l, 'Reconciliation')))];
+        }
+
+        $day = DemoActivityDay::firstOrFail();
+        $this->assertStringContainsString('reconciliation did not match twice', $day->halted_reason);
+        $this->assertSame(['Reconciliation did not match (once; checking again next tick).'], $checks, 'Halted on the second check, never waiting');
+        $this->assertFalse($day->last_reconciliation['waiting_for_webhooks']);
+    }
+
+    public function test_reconciliation_is_checked_again_after_a_tick_sends_transfers(): void
+    {
+        $t = \Carbon\CarbonImmutable::parse('2026-10-26 07:00', 'America/New_York');
+        do {
+            $sent = DB::table('merchant_payouts')->where('status', 'sent')->count();
+            $lines = $this->tickAt($t->format('Y-m-d H:i'));
+            $at = $t;
+            $t = $t->addMinutes(5);
+        } while (DB::table('merchant_payouts')->where('status', 'sent')->count() === $sent && $t->format('H:i') < '19:00');
+
+        $now = DB::table('merchant_payouts')->where('status', 'sent')->count();
+        $this->assertGreaterThan($sent, $now, 'A tick sent a transfer');
+        $this->assertSame('Reconciliation matches.', end($lines), 'Checked after the transfers went out');
+
+        $day = DemoActivityDay::firstOrFail();
+        $this->assertTrue($at->equalTo(\Carbon\CarbonImmutable::parse($day->last_reconciliation['at'])));
+        $this->assertStringEndsWith('/'.$now, $day->last_reconciliation['state'], 'The recorded result includes the new transfers');
+    }
+
+    /** One tick at this time on Monday 2026-10-26, with Stripe's webhooks held back. */
+    private function tickWithoutWebhooks(string $time): array
+    {
+        \Illuminate\Support\Carbon::setTestNow(\Illuminate\Support\Carbon::parse('2026-10-26 '.$time, 'America/New_York'));
+
+        return app(ActivityGenerator::class)->tick();
     }
 
     public function test_a_tick_that_breaks_never_throws(): void

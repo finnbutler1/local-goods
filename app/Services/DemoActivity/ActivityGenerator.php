@@ -76,14 +76,21 @@ class ActivityGenerator
                 return ['Stopped for today: '.$day->halted_reason];
             }
 
-            $this->reconcile($day);
+            $matched = $this->reconcile($day);
             $employer = Employer::orderBy('id')->first();
 
             if ($employer !== null && ! $day->isHalted()) {
+                $sent = $this->sentTransfers();
                 $this->topUp($day, $employer, $now);
                 $this->allowances($day, $employer, $now);
                 $this->dueSlots($day, $employer, $now);
                 $this->sendOwedPayouts();
+
+                // Check again once this tick's transfers are in Stripe, so the recorded result
+                // is not stale. Only after a match: after a mismatch the next tick re-checks.
+                if ($matched && $this->sentTransfers() !== $sent) {
+                    $this->reconcile($day);
+                }
             }
         } catch (Throwable $e) {
             Log::warning('Demo activity tick failed', ['error' => $e->getMessage()]);
@@ -111,33 +118,56 @@ class ActivityGenerator
     }
 
     /**
-     * Reconciliation after the last tick's webhooks have had time to arrive.
-     * Only when something was done since the last check. Two mismatches in a
-     * row stop the day (one can be a webhook still on its way).
+     * Reconciliation, when something changed since the last match: an action
+     * done or a transfer sent. Two mismatches in a row stop the day. A
+     * mismatch that is only Stripe's webhooks still on their way (a purchase
+     * paid but still pending, a refund not recorded yet) is not counted until
+     * the oldest has waited webhook_grace_minutes: it is checked again next
+     * tick, and a webhook that never comes still stops the day.
+     *
+     * @return bool whether it matches (or had nothing new to check)
      */
-    private function reconcile(DemoActivityDay $day): void
+    private function reconcile(DemoActivityDay $day): bool
     {
         $done = $day->actions()->where('status', DemoActivityAction::STATUS_DONE)->count();
-        if ($done === 0 || ($day->last_reconciliation['actions'] ?? null) === $done) {
-            return;
+        $state = $done.'/'.$this->sentTransfers();
+        if ($done === 0 || ($day->last_reconciliation['state'] ?? null) === $state) {
+            return true;
         }
 
         $report = $this->reconciliation->report();
         $mismatches = $report['error'] !== null ? [$report['error']] : $report['mismatches'];
-        $misses = $mismatches === [] ? 0 : $day->reconciliation_misses + 1;
+        $since = $report['error'] === null ? ($report['only_awaiting_webhooks_since'] ?? null) : null;
+        $waiting = $mismatches !== [] && $since !== null && $since->gt(now()->subMinutes((int) config('demo_activity.webhook_grace_minutes')));
+        $misses = match (true) {
+            $mismatches === [] => 0,
+            $waiting => $day->reconciliation_misses,
+            default => $day->reconciliation_misses + 1,
+        };
 
         $day->forceFill([
             'reconciliation_misses' => $misses,
-            'last_reconciliation' => ['at' => now()->toIso8601String(), 'actions' => $mismatches === [] ? $done : null, 'matches' => $mismatches === [], 'mismatches' => array_slice($mismatches, 0, 5)],
+            'last_reconciliation' => ['at' => now()->toIso8601String(), 'state' => $mismatches === [] ? $state : null, 'matches' => $mismatches === [],
+                'waiting_for_webhooks' => $waiting, 'mismatches' => array_slice($mismatches, 0, 5)],
         ])->save();
 
         if ($misses >= (int) config('demo_activity.caps.reconciliation_misses')) {
             $this->halt($day, 'reconciliation did not match twice in a row. Check /admin/reconciliation.');
+        } elseif ($waiting) {
+            $this->log[] = 'Reconciliation is waiting for Stripe\'s webhook (not counted; checking again next tick).';
         } elseif ($mismatches !== []) {
             $this->log[] = 'Reconciliation did not match (once; checking again next tick).';
         } else {
             $this->log[] = 'Reconciliation matches.';
         }
+
+        return $mismatches === [];
+    }
+
+    /** Transfers Local Goods has sent (or that were sent and later reversed), for noticing new ones. */
+    private function sentTransfers(): int
+    {
+        return MerchantPayout::whereIn('status', [MerchantPayout::STATUS_SENT, MerchantPayout::STATUS_REVERSED])->count();
     }
 
     /**

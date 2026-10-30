@@ -16,8 +16,8 @@ commit history.
   waiting for a person and how long the oldest has waited.
 - **Marked and limited.** A "Demo activity" marker on everything it made;
   test mode only; off by default (`DEMO_ACTIVITY_ENABLED`); daily caps;
-  stops the day on repeated failures or reconciliation mismatches; ends
-  after judging.
+  stops the day on repeated failures or reconciliation mismatches (a
+  webhook up to 30 minutes late is not one); ends after judging.
 - **Scheduling.** Cron on the instance runs Laravel's scheduler; the hook
   that installs it can never fail a deploy.
 - **See it.** `/bid-admin/demo-activity` (read-only, judges too) and
