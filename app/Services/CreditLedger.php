@@ -12,6 +12,7 @@ use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
+use App\Services\Solvency\SolvencyGuard;
 use App\Support\MerchantFee;
 use App\Support\Money;
 use App\Support\PlatformFee;
@@ -27,12 +28,15 @@ use InvalidArgumentException;
  */
 class CreditLedger
 {
+    /** Every operation here that we decide is checked against the solvency rule at its end (ADR 0033). */
+    public function __construct(private SolvencyGuard $solvency) {}
+
     public function purchase(Employer $employer, int $amountCents, string $reference, ?Carbon $at = null): CreditPurchase
     {
         $this->ensurePositive($amountCents);
         $at ??= now();
 
-        return DB::transaction(function () use ($employer, $amountCents, $reference, $at) {
+        return $this->solvency->transaction('buying credits', function () use ($employer, $amountCents, $reference, $at) {
             $purchase = CreditPurchase::create([
                 'employer_id' => $employer->id,
                 'amount_cents' => $amountCents,
@@ -84,7 +88,7 @@ class CreditLedger
     {
         $at ??= now();
 
-        return DB::transaction(function () use ($purchase, $at) {
+        return $this->solvency->transaction('paying for credits', function () use ($purchase, $at) {
             $changed = CreditPurchase::whereKey($purchase->id)
                 ->where('status', CreditPurchase::STATUS_PENDING)
                 ->update(['status' => CreditPurchase::STATUS_SIMULATED]);
@@ -127,7 +131,8 @@ class CreditLedger
 
         $at ??= now();
 
-        return DB::transaction(function () use ($purchase, $paymentIntentId, $chargeId, $at) {
+        // Stripe already has the money: recorded whatever the check finds, then checked (ADR 0033).
+        $paid = DB::transaction(function () use ($purchase, $paymentIntentId, $chargeId, $at) {
             $changed = CreditPurchase::whereKey($purchase->id)
                 ->where('status', CreditPurchase::STATUS_PENDING)
                 ->update([
@@ -156,6 +161,12 @@ class CreditLedger
 
             return true;
         });
+
+        if ($paid) {
+            $this->solvency->afterRecorded('a Stripe payment for '.$purchase->reference);
+        }
+
+        return $paid;
     }
 
     /**
@@ -199,7 +210,7 @@ class CreditLedger
         $at ??= now();
         $total = $amountCents * $employees->count();
 
-        return DB::transaction(function () use ($employer, $employees, $amountCents, $occasion, $at, $total) {
+        return $this->solvency->transaction('giving credits to employees', function () use ($employer, $employees, $amountCents, $occasion, $at, $total) {
             $employer = Employer::whereKey($employer->id)->lockForUpdate()->firstOrFail();
 
             if ($total > $employer->balanceCents()) {
@@ -232,7 +243,7 @@ class CreditLedger
 
         $at ??= now();
 
-        return DB::transaction(function () use ($employer, $employee, $amountCents, $at, $occasion) {
+        return $this->solvency->transaction('giving credits to an employee', function () use ($employer, $employee, $amountCents, $at, $occasion) {
             Employer::whereKey($employer->id)->lockForUpdate()->first();
 
             if ($amountCents > $employer->balanceCents()) {
@@ -325,7 +336,7 @@ class CreditLedger
     {
         $at ??= now();
 
-        return DB::transaction(function () use ($payout, $transferId, $at) {
+        $recorded = DB::transaction(function () use ($payout, $transferId, $at) {
             $changed = MerchantPayout::whereKey($payout->id)
                 ->where('status', MerchantPayout::STATUS_PENDING)
                 ->update(['status' => MerchantPayout::STATUS_SENT, 'stripe_transfer_id' => $transferId, 'paid_at' => $at, 'failure_reason' => null]);
@@ -350,6 +361,12 @@ class CreditLedger
 
             return true;
         });
+
+        if ($recorded) {
+            $this->solvency->afterRecorded('Stripe transfer '.$transferId);
+        }
+
+        return $recorded;
     }
 
     /**
@@ -361,7 +378,7 @@ class CreditLedger
     {
         $at ??= now();
 
-        return DB::transaction(function () use ($payout, $at) {
+        $recorded = DB::transaction(function () use ($payout, $at) {
             $changed = MerchantPayout::whereKey($payout->id)
                 ->where('status', MerchantPayout::STATUS_SENT)
                 ->update(['status' => MerchantPayout::STATUS_REVERSED, 'reversed_at' => $at, 'failure_reason' => 'Reversed in Stripe. Owed again; a person decides what happens next.']);
@@ -383,6 +400,12 @@ class CreditLedger
 
             return true;
         });
+
+        if ($recorded) {
+            $this->solvency->afterRecorded('a reversal of Stripe transfer '.$payout->stripe_transfer_id);
+        }
+
+        return $recorded;
     }
 
     /**
@@ -538,7 +561,7 @@ class CreditLedger
         $this->ensurePositive($amountCents);
         $at ??= now();
 
-        return DB::transaction(function () use ($merchant, $amountCents, $status, $at) {
+        return $this->solvency->transaction('a payout to '.$merchant->name, function () use ($merchant, $amountCents, $status, $at) {
             Merchant::whereKey($merchant->id)->lockForUpdate()->first();
 
             if ($amountCents > $merchant->payableCents()) {

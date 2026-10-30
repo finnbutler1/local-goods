@@ -12,6 +12,7 @@ use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Services\CreditLedger;
+use App\Services\Solvency\SolvencyGuard;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -38,7 +39,7 @@ class CorrectionDecisions
     /** A simulated refund the merchant isn't owed enough to cover, with no simulated payout to pull it back from (ADR 0033). */
     public const NOTHING_TO_PULL_BACK = 'The shop isn\'t owed enough to cover this refund and has no simulated payout to take it back from, so it would go below zero. Sort it out by hand.';
 
-    public function __construct(private CreditLedger $ledger, private CorrectionProcessor $processor) {}
+    public function __construct(private CreditLedger $ledger, private CorrectionProcessor $processor, private SolvencyGuard $solvency) {}
 
     public function reject(Correction $correction, User $by, string $reason): Correction
     {
@@ -74,7 +75,7 @@ class CorrectionDecisions
         $reason = $this->checkDecider($by, $reason);
         $this->checkType($correction, Correction::TYPE_REDEMPTION_REFUND);
 
-        $correction = DB::transaction(function () use ($correction, $by, $reason, $quantities, $amountCents) {
+        $correction = $this->solvency->transaction('this refund', function () use ($correction, $by, $reason, $quantities, $amountCents) {
             $this->claim($correction, $by, $reason);
 
             // Lock the redemption: a second approval on it waits here, then sees this one.
@@ -159,7 +160,7 @@ class CorrectionDecisions
         $reason = $this->checkDecider($by, $reason);
         $this->checkType($correction, Correction::TYPE_EMPLOYER_REFUND);
 
-        $correction = DB::transaction(function () use ($correction, $by, $reason, $amountCents) {
+        $correction = $this->solvency->transaction('this refund of unspent credits', function () use ($correction, $by, $reason, $amountCents) {
             // Lock the employer (as allocating credits does), then its purchases,
             // before anything is read with a plain SELECT. On MySQL a transaction's
             // snapshot starts at its first plain SELECT (claim() refreshes the
@@ -266,7 +267,7 @@ class CorrectionDecisions
     {
         $reason = $this->checkDecider($by, $reason);
 
-        return DB::transaction(function () use ($correction, $by, $reason) {
+        return $this->solvency->transaction('closing this correction', function () use ($correction, $by, $reason) {
             $changed = Correction::whereKey($correction->id)->where('status', Correction::STATUS_FAILED)
                 ->whereDoesntHave('actions', fn ($q) => $q->where('status', CorrectionAction::STATUS_PROCESSING))
                 ->update(['status' => Correction::STATUS_CLOSED, 'open_key' => null, 'decision_reason' => $reason, 'decided_by_user_id' => $by->id]);

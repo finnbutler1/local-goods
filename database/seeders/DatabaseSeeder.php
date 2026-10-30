@@ -17,11 +17,14 @@ use App\Models\Redemption;
 use App\Services\CreditLedger;
 use App\Services\Districts\MerchantApplications;
 use App\Services\Districts\PartnershipSettings;
+use App\Services\Solvency\SolvencyCheck;
+use App\Services\Solvency\SolvencyGuard;
 use App\Support\SalesTax;
 use App\Support\TaxBreakdown;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use RuntimeException;
 
 /**
  * Seeds the single-BID demo. Everything here is synthetic. Merchant names are
@@ -152,7 +155,23 @@ class DatabaseSeeder extends Seeder
         ],
     ];
 
+    /**
+     * The seed writes history out of time order, so the solvency guard is
+     * paused while it runs and the whole history is checked once at the end
+     * instead (ADR 0033): a seed that would ever leave a promise without
+     * money behind it fails here rather than reaching the demo.
+     */
     public function run(): void
+    {
+        app(SolvencyGuard::class)->paused(fn () => $this->seedDemo());
+
+        $history = app(SolvencyCheck::class)->history();
+        if (! $history->passed()) {
+            throw new RuntimeException('The demo seed breaks the solvency rule. '.$history->summary());
+        }
+    }
+
+    private function seedDemo(): void
     {
         $bid = Bid::create(['name' => 'Golden Triangle', 'city' => 'Washington, DC']);
         // The district row comes from the districts migration, never from the seed.

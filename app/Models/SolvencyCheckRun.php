@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Solvency\SolvencyGuard;
 use App\Services\Solvency\SolvencyHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -40,8 +41,10 @@ class SolvencyCheckRun extends Model
         ];
     }
 
+    /** Stores the result; its end position becomes the guard's "already known" baseline. */
     public static function record(SolvencyHistory $history, string $trigger): self
     {
+        SolvencyGuard::remember($history->final);
         $at = fn (?string $value) => $value === null ? null : Carbon::parse($value, 'UTC');
 
         return self::create([
