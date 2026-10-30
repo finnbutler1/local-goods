@@ -399,6 +399,23 @@ or the new "Demo activity" marker and "Waiting for a person" box.
 - The waiting box is a labelled section. Overdue items are said in words,
   not only by the border colour.
 
+## Where the money is (2026-10-30)
+
+**How it was checked.** Only the static checks ran. `AccessibilityTest`,
+`EmptyStatesTest`, `ResponsiveTablesTest`, `EmployeeNamePrivacyTest`,
+`PublicClaimsTest`, `JudgeReadOnlyTest` and `PhoneHonestyTest` sweep
+`/where-the-money-is` as every role, and `WhereTheMoneyIsPageTest` checks
+its pass, fail and not-run states. No browser, axe or screen-reader pass
+was done for this page.
+
+- Both tables use `<x-rtable>` with a screen-reader caption and
+  `data-label` on every cell, so they stack into cards on phones (the
+  sweep first failed on the missing captions; they were added).
+- Pass and fail are said in words ("Pass", "Fail") as well as by colour,
+  and a failed check is a `role="alert"` section listing each window.
+- "Run the check now" is the shared button with `data-busy`; its result is
+  a toast (`<x-flash>`).
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session

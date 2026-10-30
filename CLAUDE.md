@@ -5,6 +5,52 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Customer funds, operating funds and the solvency rule — done
+(2026-10-30, ADR 0033).** One additive migration
+(`2026_11_01_000001_add_solvency_checks`, snapshot `before-solvency`).
+Fraud prompt, signals, AI input, eval data, holdouts, locks and
+adjudication unchanged.
+
+- Tranches: `App\Services\Solvency\LedgerTranches` (a line's tranche is
+  its account; platform = operating, everything else = customer funds).
+  **A new entry type must be added to `ACCOUNT_OF_TYPE`**
+  (`LedgerTranchesTest`).
+- Rule: money in hand (paid purchases + platform fees − payouts +
+  reversals/refund reversals − employer refunds) ≥ promised (each
+  employee/employer/merchant account above zero only + held redemptions +
+  open refund holds + operating), at every moment; we expect exactly 0
+  (more = "not balanced"). Stripe floor: Stripe out ≤ Stripe in.
+  `SolvencyCheck::now()` (cheap), `history()` (replays by `created_at, id`,
+  one moment per timestamp), `recordsAgree()`.
+- Guard: `SolvencyGuard::transaction($what, fn)` around every money
+  operation we decide (CreditLedger purchase/payPurchase/allocate(Many)/
+  payout, `RedemptionService::redeem`, `RedemptionReviewService::decide`,
+  `CorrectionDecisions` refunds and close). It reads once, at the end,
+  inside the transaction (**never before the operation's locks**: MySQL
+  snapshot). It refuses a shortfall bigger than `SolvencyGuard::known()`
+  (the last stored run). `beforeTransfer` in `MerchantPayouts::sendOne`;
+  `afterRecorded` for Stripe-reported money (never refuses). The seed runs
+  `paused()` and must pass `history()`. Kill switch
+  `SOLVENCY_GUARD_ENABLED`; `config/solvency.php` `tick_check` (history
+  every tick, default, or current plus daily history).
+- `ledger:check-solvency [--trigger=deploy] [--no-record]` stores on
+  `solvency_checks` (in `DEMO_TABLES`/`EMPTY_AFTER_SEED`), exits 1 on
+  failure; the deploy hook runs it with `|| true`. The demo tick checks
+  before and after and halts the day on failure.
+- Simulated refund of a paid-out sale (supersedes part of ADR 0028):
+  covered by `owedSimulatedCents` first, the rest a simulated pull-back
+  (`refund_reversal` on the latest simulated payout, "simulated, no real
+  money"); never below zero, never from Stripe-owed money.
+- Seed: Pattern B $70 → $60 when it would overdraw (fixed-date seed
+  byte-identical; `DemoSeedSolvencyTest` covers known-bad dates).
+- Page `/where-the-money-is` (`money`; judges, BID admin, platform admin;
+  judges see no operating or money-in-hand figures), POST
+  `admin.solvency.run` (`run-solvency-check`, platform admin).
+- Tests: `LedgerTranchesTest`, `SolvencyRuleTest`, `SolvencyHistoryTest`,
+  `SolvencyGuardTest`, `SolvencySimulatedModeTest`,
+  `DemoActivitySolvencyTest`, `DemoSeedSolvencyTest`,
+  `WhereTheMoneyIsPageTest`, `SolvencyMigrationSafetyTest`.
+
 **Live demo activity in Stripe test mode — done (2026-10-29, ADR 0032),
 off until Finn switches it on.** One additive migration
 (`2026_10_31_000001_add_demo_activity`, snapshot `before-demo-activity`).
@@ -687,7 +733,8 @@ pay codes (ADR 0026), the phone-first pass, DC sales tax at
 redemption (ADR 0027), refunds and corrections (ADR 0028), the
 merchant fee, ready but at 0 (ADR 0029), the business model with
 impact projections (ADR 0030), districts, partnerships and merchant
-joining (ADR 0031) and live demo activity in Stripe test mode (ADR 0032).
+joining (ADR 0031), live demo activity in Stripe test mode (ADR 0032)
+and customer funds with the solvency rule (ADR 0033).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -916,6 +963,9 @@ snapshot step by name when the build says the deploy includes migrations.
    mode)" (Reset demo keeps existing accounts, so usually only once).
    Open `/bid-admin/demo-activity`: it should say "Off" unless Finn has
    switched the generator on (`DEMO_ACTIVITY_ENABLED`, Beanstalk only).
+   Open `/where-the-money-is`: the deploy recorded a solvency check. If it
+   says Fail, tell Finn the window, merchant and amount; never write a
+   fix to the ledger without his say-so.
    With Stripe keys set: the employer page shows "Stripe test mode", and
    `/admin/reconciliation` says everything matches. As the BID admin, press
    "Run a collusion example" once (one AI call) and check its path line.

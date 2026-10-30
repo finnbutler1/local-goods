@@ -53,6 +53,10 @@ class DeployHookTest extends TestCase
         $this->assertLessThan(strpos($script, 'demo:seed-accounts'), strpos($script, 'migrate --force'), 'migrate before creating logins');
         $this->assertStringContainsString('trap on_error ERR', $script);
         $this->assertStringContainsString('config:clear', $script);
+
+        // The solvency check (ADR 0033) is recorded after seeding and can never stop the deploy.
+        $this->assertStringContainsString("php artisan ledger:check-solvency --trigger=deploy --no-interaction || true\n", $script);
+        $this->assertLessThan(strpos($script, 'ledger:check-solvency'), strpos($script, 'demo:seed-if-empty'), 'checked after seeding');
     }
 
     /**

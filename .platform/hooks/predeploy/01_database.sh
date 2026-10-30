@@ -71,6 +71,11 @@ php artisan migrate --force --no-interaction
 php artisan demo:seed-accounts --no-interaction
 php artisan demo:seed-if-empty --no-interaction
 
+# Record the solvency check over the whole ledger (ADR 0033), so Where the
+# money is shows a result for this deploy. Reads the ledger only. Never
+# stops a deploy: a failure is shown on that page, not here.
+php artisan ledger:check-solvency --trigger=deploy --no-interaction || true
+
 # This script runs as root, but the web server runs as "webapp". Artisan may
 # have created root-owned log/cache files, so hand them back. SQLite also
 # needs write access to the file and its folder (for its journal files).

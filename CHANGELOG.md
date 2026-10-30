@@ -3,6 +3,30 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-10-30: Where the money is, and the solvency rule (ADR 0033)
+
+- **Two kinds of money, never mixed.** Every ledger line is either customer
+  funds held (a promise to pay: unspent employer credits, employee
+  balances, money owed to merchants, anything held for a person) or
+  operating funds (only what Local Goods has earned, nothing today).
+  Unspent credits always remain the employer's money.
+- **The solvency rule.** Money paid in, less what has been paid out and
+  refunded, must cover every open promise, each account counted on its own;
+  Stripe money out never above Stripe money in.
+  `php artisan ledger:check-solvency` checks it at every moment of the
+  ledger's history.
+- **Enforced.** Every money operation we decide is checked at its end, and
+  every Stripe transfer before it is sent; anything that would leave less
+  money than promised is refused. The demo activity generator checks every
+  tick and stops the day on a failure. The deploy records a check.
+- **Two gaps it found, fixed first.**
+  - A refund on a simulated sale that was already paid out now pulls the
+    paid part back (simulated), instead of leaving the merchant below zero
+    (reverses part of ADR 0028).
+  - The seeded collusion ring no longer overdraws on some seed dates.
+- **See it.** `/where-the-money-is` for reviewers and admins (judges see no
+  operating funds figure), linked from reconciliation and the admin homes.
+
 ## 2026-10-29: Live demo activity in Stripe test mode (ADR 0032)
 
 - **A generator for real, dated history.** Each weekday until judging it

@@ -264,7 +264,9 @@ Stripe's error in plain English and is retried safely or closed.
 - *Refund of a redemption:* the credits go back to the employee. If the
   merchant was paid through Stripe, Local Goods reverses exactly that part
   of the merchant's Stripe transfer. If it was simulated (all seeded
-  history), it is deducted from what the merchant is owed. Menu items are
+  history), it is deducted from what the merchant is still owed; any part
+  it was already paid out is pulled back, simulated, so a merchant is
+  never left below zero ([ADR 0033](docs/adr/0033-customer-funds-and-the-solvency-rule.md)). Menu items are
   refunded with the tax that was charged on them, from the receipt's own
   snapshot, and never more tax than was charged. A refund waits until the
   merchant's Stripe transfer has gone out; a transfer reversed by hand in
@@ -328,6 +330,54 @@ stays that way until we have talked with merchants about it.
   and the fee never changes whether a transfer is allowed.
 - **No figures in public.** Public pages, judge views and the README show
   no fee or revenue figures (`PublicClaimsTest`).
+
+### Where the money is: customer funds and the solvency rule
+
+Employers pay for credits before anyone spends them, so most of the money
+Local Goods holds is a promise, not ours
+([ADR 0033](docs/adr/0033-customer-funds-and-the-solvency-rule.md)).
+
+- **Two kinds of money, never mixed.**
+  - *Customer funds held:* employer credits not yet given out, employee
+    balances, money owed to merchants, and anything held waiting for a
+    person.
+  - *Operating funds:* only what Local Goods has earned. Today that is
+    nothing, because both fees are off.
+
+  Every line in the ledger belongs to one or the other, and a test checks
+  every line of the demo's history. **Unspent credits always remain the
+  employer's money, never ours:** they are never counted as income, spent
+  or invested, and an employer can ask for them back.
+- **The rule.** The money paid in, less what has been paid out to merchants
+  and refunded to employers, must always cover every open promise.
+  - Each account counts on its own, so one below zero never hides another.
+  - Separately, Stripe test-mode money out may never exceed Stripe money
+    in, so simulated money never pays for a Stripe transfer.
+- **Checked over the whole history.** `php artisan ledger:check-solvency`
+  replays every ledger entry in order and checks the rule after each one,
+  so a moment that went wrong in the past can't be hidden by a later
+  correction. It runs after every deploy, on every tick of the demo
+  activity generator (a failure stops that day) and when the platform
+  admin presses Run the check now.
+- **Enforced.** After every money operation Local Goods decides (giving out
+  credits, a redemption, a review decision, a refund, a payout) and before
+  every Stripe transfer, the position is checked. Anything that would leave
+  less money than has been promised is refused and nothing changes. Money
+  Stripe has already moved is recorded, then checked and flagged.
+- **What it doesn't cover.**
+  - Stripe's own balance (that is reconciliation).
+  - Stripe's processing costs, which Local Goods pays itself.
+  - Money still in flight between Stripe and its webhook.
+  - Simulated money is not real money.
+- **Found by it.** Two existing paths broke the rule, and both were fixed
+  before it was enforced:
+  - a refund on a simulated sale that had already been paid out left the
+    merchant below zero;
+  - on some seed dates, the planted collusion ring in the demo data
+    overdrew its members' credits.
+- **See it.** [Where the money is](https://d4ghrpm72uczx.cloudfront.net/where-the-money-is),
+  for signed-in reviewers. Judges see customer funds and the check, never
+  an operating funds figure.
 
 ### How we measure it
 
