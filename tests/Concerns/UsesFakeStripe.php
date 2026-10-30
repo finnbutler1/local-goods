@@ -40,7 +40,7 @@ trait UsesFakeStripe
             'id' => $id ?? 'evt_test_'.bin2hex(random_bytes(6)),
             'object' => 'event',
             'type' => $type,
-            'created' => time(),
+            'created' => now()->getTimestamp(),
             'livemode' => false,
             'account' => $account,
             'data' => ['object' => $object],
