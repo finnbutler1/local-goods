@@ -16,6 +16,7 @@ class DemoResetter
      * Children before parents, so foreign keys are never violated.
      */
     public const DEMO_TABLES = [
+        'solvency_checks',
         'demo_activity_actions',
         'demo_activity_days',
         'merchant_application_events',
@@ -49,7 +50,7 @@ class DemoResetter
      * corrections (ADR 0028): the live demo has none until someone asks.
      * The demo activity generator's tables (ADR 0032) fill only once it runs.
      */
-    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes', 'corrections', 'correction_items', 'correction_actions', 'demo_activity_days', 'demo_activity_actions'];
+    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes', 'corrections', 'correction_items', 'correction_actions', 'demo_activity_days', 'demo_activity_actions', 'solvency_checks'];
 
     /**
      * Added after the live demo was first seeded (ADR 0023): if only this

@@ -81,8 +81,9 @@ class ResetDemoTest extends TestCase
         // merchants: Reset demo clears them too and restores the two samples.
         // The demo activity generator's log (ADR 0032) points at redemptions
         // and purchases, so it goes with them (Reset demo is local only).
+        // Solvency check results (ADR 0033) describe the demo's ledger, so they go too.
         $this->assertSame(
-            ['demo_activity_actions', 'demo_activity_days', 'merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
+            ['solvency_checks', 'demo_activity_actions', 'demo_activity_days', 'merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
     }
