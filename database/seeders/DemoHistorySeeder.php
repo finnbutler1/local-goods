@@ -62,7 +62,11 @@ use Random\Randomizer;
  *    round $60 or $70 redemption at PATTERN_B_MERCHANT within ten minutes of
  *    each other, late on Thursday afternoons, on PATTERN_B_DAYS separate
  *    weeks. Each amount is normal for a salon; the same three people at the
- *    same place at the same minute, week after week, is not.
+ *    same place at the same minute, week after week, is not. When the
+ *    window holds only two allowances, a $70 that would take the balance
+ *    below zero is made $60 (PATTERN_B_LOWEST_CENTS), and one is left out
+ *    only if even $60 wouldn't fit: no seeded balance ever goes below zero,
+ *    whatever day the demo is seeded on (ADR 0033).
  */
 class DemoHistorySeeder
 {
@@ -79,6 +83,9 @@ class DemoHistorySeeder
     public const PATTERN_B_MERCHANT = 'K Street Cuts';
 
     public const PATTERN_B_DAYS = 5;
+
+    /** A planted Pattern B $70 may be made this much instead, so it never overdraws (ADR 0033). */
+    public const PATTERN_B_LOWEST_CENTS = 6000;
 
     /** Who may be the seeded in-person example (ADR 0026), in order: never Jordan, never a pattern member. */
     public const IN_PERSON_EMPLOYEES = ['Morgan Ellery', 'Avery Holloway', 'Riley Nakamura', 'Drew Okonkwo'];
@@ -322,30 +329,37 @@ class DemoHistorySeeder
     }
 
     /**
-     * Writes one employee's redemptions in time order. Planted ones always go
-     * in; an everyday one is skipped if it would leave too little for the
-     * planted ones still to come, so no balance ever goes below zero.
+     * Writes one employee's redemptions in time order. A planted one goes in
+     * at its amount if the balance, then and at every planted one still to
+     * come, stays at or above zero; otherwise at its lowest amount (Pattern
+     * B only), otherwise not at all. An everyday one is skipped if it would
+     * leave too little for the planted ones still to come. So no balance
+     * ever goes below zero (ADR 0033).
      *
-     * @param  list<array{0: Merchant, 1: int, 2: Carbon}>  $planted
+     * @param  list<array{0: Merchant, 1: int, 2: Carbon, 3?: int}>  $planted  3: the lowest amount it may be made
      * @param  list<array{0: Merchant, 1: int, 2: Carbon}>  $everyday
      * @param  list<Carbon>  $allowances
      */
     private function record(Employee $employee, array $planted, array $everyday, array $allowances, int $allowanceCents): void
     {
         $events = array_merge(
-            array_map(fn ($e) => [...$e, true], $planted),
-            array_map(fn ($e) => [...$e, false], $everyday),
+            array_map(fn ($e) => [$e[0], $e[1], $e[2], true, $e[3] ?? $e[1]], $planted),
+            array_map(fn ($e) => [$e[0], $e[1], $e[2], false, $e[1]], $everyday),
         );
         usort($events, fn ($a, $b) => $a[2] <=> $b[2]);
 
         $rows = [];
 
-        foreach ($events as $i => [$merchant, $cents, $at, $isPlanted]) {
+        foreach ($events as $i => [$merchant, $cents, $at, $isPlanted, $lowest]) {
             $balance = $allowanceCents * count(array_filter($allowances, fn ($a) => $a->lte($at)))
                 - array_sum(array_column($rows, 'amount_cents'));
             $plantedStillToCome = array_sum(array_map(fn ($e) => $e[3] ? $e[1] : 0, array_slice($events, $i + 1)));
 
             if (! $isPlanted && $cents > $balance - $plantedStillToCome) {
+                continue;
+            }
+
+            if ($isPlanted && ($cents = $this->plantedFits($events, $i, [$cents, $lowest], $rows, $allowances, $allowanceCents)) === null) {
                 continue;
             }
 
@@ -389,6 +403,43 @@ class DemoHistorySeeder
     }
 
     /**
+     * The first of $amounts that planted event $i can be without the
+     * balance going below zero, then or at any planted event still to come
+     * (each counted at its lowest amount); null if none fits.
+     *
+     * @param  list<array{0: Merchant, 1: int, 2: Carbon, 3: bool, 4: int}>  $events
+     * @param  list<int>  $amounts
+     * @param  list<array<string, mixed>>  $rows
+     * @param  list<Carbon>  $allowances
+     */
+    private function plantedFits(array $events, int $i, array $amounts, array $rows, array $allowances, int $allowanceCents): ?int
+    {
+        $spent = array_sum(array_column($rows, 'amount_cents'));
+
+        foreach (array_unique($amounts) as $cents) {
+            $taken = $spent + $cents;
+            $fits = true;
+
+            foreach (array_slice($events, $i, null, true) as $j => $event) {
+                if ($j > $i && ! $event[3]) {
+                    continue;
+                }
+                $taken += $j > $i ? $event[4] : 0;
+                if ($allowanceCents * count(array_filter($allowances, fn ($a) => $a->lte($event[2]))) < $taken) {
+                    $fits = false;
+                    break;
+                }
+            }
+
+            if ($fits) {
+                return $cents;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Pattern A: the day after each allowance, $80 then $60 at one merchant.
      *
      * @param  list<Carbon>  $allowances
@@ -426,7 +477,7 @@ class DemoHistorySeeder
 
         for ($week = 0; $week < self::PATTERN_B_DAYS; $week++) {
             $at = $thursday->copy()->subWeeks($week)->setTime(17, 40 + $offset + $this->random->getInt(0, 2));
-            $events[] = [$merchant, $this->random->getInt(0, 1) ? 6000 : 7000, $at];
+            $events[] = [$merchant, $this->random->getInt(0, 1) ? 6000 : 7000, $at, self::PATTERN_B_LOWEST_CENTS];
         }
 
         return $events;
