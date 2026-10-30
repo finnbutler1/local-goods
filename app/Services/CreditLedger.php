@@ -444,7 +444,7 @@ class CreditLedger
             $simulatedPullBack => 'simulated: '.Money::format($pulledBackCents).' pulled back from simulated payout #'.$reversedFrom->id.', the rest deducted from what the merchant is owed',
             $reversedFrom !== null => 'Stripe test mode, '.$reversalId,
             $fee === $amountCents => 'all of it was the Local Goods fee, so nothing to reverse',
-            default => 'simulated, deducted from what the merchant is owed',
+            default => 'simulated, deducted from the merchant\'s next payout',
         };
         $base = ['redemption_id' => $redemption->id, 'correction_id' => $correction->id, 'created_at' => $at];
 
