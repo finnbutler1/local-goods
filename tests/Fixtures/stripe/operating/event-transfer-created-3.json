@@ -1,0 +1,45 @@
+{
+    "id": "fake_evt_1",
+    "object": "event",
+    "api_version": "2026-09-30.endive",
+    "created": 1793404471,
+    "data": {
+        "object": {
+            "id": "fake_tr_1",
+            "object": "transfer",
+            "amount": 100,
+            "amount_reversed": 0,
+            "balance_transaction": "fake_txn_1",
+            "created": 1793404470,
+            "currency": "usd",
+            "description": "Local Goods scratch trial: sweep with source_transaction",
+            "destination": "fake_acct_1",
+            "destination_payment": "fake_py_1",
+            "livemode": false,
+            "metadata": {
+                "lg_env": "scratch",
+                "lg_instance": "operating-trial",
+                "lg_trial": "1",
+                "lg_trial_run": "fake-run"
+            },
+            "reversals": {
+                "object": "list",
+                "data": [],
+                "has_more": false,
+                "total_count": 0,
+                "url": "fake-removed"
+            },
+            "reversed": false,
+            "source_transaction": "fake_ch_1",
+            "source_type": "card",
+            "transfer_group": "fake-run"
+        }
+    },
+    "livemode": false,
+    "pending_webhooks": 0,
+    "request": {
+        "id": "fake_req_1",
+        "idempotency_key": "fake-removed"
+    },
+    "type": "transfer.created"
+}
