@@ -27,7 +27,8 @@ return [
     'caps' => [
         'actions_per_day' => 25,
         'spend_cents_per_day' => 40000,
-        'purchase_cents_per_day' => 200000,
+        // Enough for one month's allowances in one purchase, as HR would buy them.
+        'purchase_cents_per_day' => 750000,
         'refund_cents_per_day' => 5000,
         // A tick that fails this many actions in a day stops that day.
         'failures_per_day' => 3,
@@ -81,7 +82,7 @@ return [
     // Buy credits through Stripe test mode when the employer's Stripe-paid
     // money not yet used for payouts, or its paid balance, drops below this.
     'top_up' => [
-        'below_cents' => 150000,
+        'below_cents' => 50000,
         'amount_cents' => 150000,
     ],
 
