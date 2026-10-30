@@ -36,8 +36,9 @@ class DemoActivityFraudInputTest extends TestCase
 
         foreach ($actions as $i => $action) {
             $sent = json_decode($this->claude->calls[$i]['user'], true);
-            $this->assertSame($action->redemption->signals, $sent, $action->slot);
-            $this->assertSame(array_keys($usual), array_keys($sent), 'The same keys as any redemption, no more');
+            // The stored copy comes back from a JSON column, whose key order MySQL chooses.
+            $this->assertSameIgnoringKeyOrder($action->redemption->signals, $sent, $action->slot);
+            $this->assertEqualsCanonicalizing(array_keys($usual), array_keys($sent), 'The same keys as any redemption, no more');
             foreach (['demo', 'generat', 'unusual', 'slot', 'planned', 'activity'] as $word) {
                 $this->assertStringNotContainsStringIgnoringCase($word, $this->claude->calls[$i]['user'], $action->slot);
             }

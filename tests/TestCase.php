@@ -40,6 +40,32 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * assertSame, except the keys of an object may come in any order. MySQL's
+     * JSON columns (signals, tax_lines, plan) give an object's keys back in
+     * their own order (shorter keys first) while SQLite keeps ours. Values
+     * are still compared strictly, keys must match exactly, and lists keep
+     * their order.
+     */
+    protected function assertSameIgnoringKeyOrder(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        $this->assertSame(self::sortKeys($expected), self::sortKeys($actual), $message);
+    }
+
+    private static function sortKeys(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        $value = array_map(self::sortKeys(...), $value);
+        if (! array_is_list($value)) {
+            ksort($value, SORT_STRING);
+        }
+
+        return $value;
+    }
+
+    /**
      * Reviewers (judges) only ever sign in with their magic link, and their
      * session is ended unless it carries that link's fingerprint. Acting as a
      * judge in a test gives them a link and that fingerprint, like a real

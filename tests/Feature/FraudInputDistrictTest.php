@@ -56,7 +56,7 @@ class FraudInputDistrictTest extends TestCase
 
         $this->assertCount(2, $claude->calls);
         $this->assertSame($claude->calls[0]['user'], $claude->calls[1]['user']);
-        $this->assertSame($first->signals, $second->signals);
+        $this->assertSameIgnoringKeyOrder($first->signals, $second->signals);
 
         foreach (['district', 'latitude', 'longitude', 'live_at', 'approved', '38.90', '-77.0'] as $word) {
             $this->assertStringNotContainsString($word, $claude->calls[0]['user']);
