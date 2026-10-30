@@ -47,6 +47,11 @@ class StripeSdkGateway implements StripeGateway
         return $this->call('checkout.expire', fn () => $this->client()->checkout->sessions->expire($sessionId));
     }
 
+    public function createTestPayment(array $params, string $idempotencyKey): array
+    {
+        return $this->call('payment_intents.create', fn () => $this->client()->paymentIntents->create($params, ['idempotency_key' => $idempotencyKey]));
+    }
+
     /**
      * Accounts v2 with the Express dashboard. Stripe refuses new v1 Express
      * accounts for this platform ("Create connected accounts with POST

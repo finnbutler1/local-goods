@@ -60,6 +60,30 @@ class FakeStripeGateway implements StripeGateway
         });
     }
 
+    /** Next test payment fails with this (plain English), once: [message, definite = true]. */
+    public ?array $testPaymentFailure = null;
+
+    public function createTestPayment(array $params, string $idempotencyKey): array
+    {
+        return $this->remember($idempotencyKey, function () use ($params) {
+            $this->calls[] = ['test_payment', $params];
+
+            if ($this->testPaymentFailure !== null) {
+                [[$message, $definite], $this->testPaymentFailure] = [$this->testPaymentFailure + [1 => true], null];
+
+                throw new StripeGatewayException($message, definite: $definite);
+            }
+
+            $n = $this->next();
+
+            return $this->paymentIntents[] = [
+                'id' => 'pi_test_'.$n, 'object' => 'payment_intent', 'status' => 'succeeded', 'amount' => $params['amount'],
+                'amount_received' => $params['amount'], 'currency' => $params['currency'], 'latest_charge' => 'ch_test_'.$n,
+                'transfer_group' => $params['transfer_group'] ?? null, 'metadata' => $params['metadata'] ?? [], 'created' => time(),
+            ];
+        });
+    }
+
     /** @var array<string, array> Checkout Sessions made, by id, with their status. */
     public array $sessions = [];
 

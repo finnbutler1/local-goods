@@ -16,6 +16,11 @@ class NoticeSafeStripeGateway implements StripeGateway
         return StripeNotices::quietly('checkout.create', fn () => $this->inner->createCheckoutSession($params, $idempotencyKey));
     }
 
+    public function createTestPayment(array $params, string $idempotencyKey): array
+    {
+        return StripeNotices::quietly('payment_intents.create', fn () => $this->inner->createTestPayment($params, $idempotencyKey));
+    }
+
     public function retrieveCheckoutSession(string $sessionId): array
     {
         return StripeNotices::quietly('checkout.retrieve', fn () => $this->inner->retrieveCheckoutSession($sessionId));
