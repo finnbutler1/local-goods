@@ -147,6 +147,16 @@ low and high cases on the Business model page.
    and [who does what](https://d4ghrpm72uczx.cloudfront.net/who-does-what)
    ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)).
 
+**Live activity, not backdated.** From late October to judging, a scheduled
+generator makes a small slice of activity each weekday, busiest at lunch,
+through exactly the same steps a person's actions go through: the real fraud
+check on every payment, Stripe test-mode payments and transfers, and the
+occasional refund request. It never decides anything: held payments and
+refund requests wait for a person. Everything it made is marked **Demo
+activity**, its people and merchants are fictional, and it runs only in
+Stripe test mode. See what it has done on the BID admin's Demo activity page
+([ADR 0032](docs/adr/0032-live-demo-activity-in-stripe-test-mode.md)).
+
 **Try it:** [log in](https://d4ghrpm72uczx.cloudfront.net/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,
 then click **Try a suspicious redemption**. To see tax at checkout, order
