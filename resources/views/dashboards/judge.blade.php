@@ -48,6 +48,16 @@
             </x-card>
         @endif
 
+        <x-card as="section" aria-labelledby="money-heading" class="max-w-3xl">
+            <h2 id="money-heading" class="text-2xl font-semibold text-primary">
+                <a href="{{ route('money') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Where the money is</a>
+            </h2>
+            <p class="mt-2">
+                Employers' money held for their staff is kept apart from anything Local Goods earns, and a check over the whole ledger history
+                shows that every promise has always had money behind it.
+            </p>
+        </x-card>
+
         <x-card as="section" aria-labelledby="model-heading" class="max-w-3xl">
             <h2 id="model-heading" class="text-2xl font-semibold text-primary">
                 <a href="{{ route('business-model') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business model</a>

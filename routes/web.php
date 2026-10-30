@@ -38,6 +38,7 @@ use App\Http\Controllers\Merchant\PayCodeController as MerchantPayCodeController
 use App\Http\Controllers\Merchant\RedemptionsExportController;
 use App\Http\Controllers\Merchant\StripeOnboardingController;
 use App\Http\Controllers\MerchantEvalController;
+use App\Http\Controllers\Money\WhereTheMoneyIsController;
 use App\Http\Controllers\Projections\BusinessModelController;
 use App\Http\Controllers\Projections\ProjectionController;
 use App\Http\Controllers\StyleguideController;
@@ -211,6 +212,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:judge,bid_admin,platform_admin')->group(function () {
         Route::get('/business-model', [BusinessModelController::class, 'show'])->name('business-model');
         Route::get('/business-model.csv', [BusinessModelController::class, 'csv'])->middleware('throttle:30,1,business-model.csv')->name('business-model.csv');
+        // Customer funds, operating funds and the solvency check (ADR 0033). Read-only for judges and the BID admin.
+        Route::get('/where-the-money-is', [WhereTheMoneyIsController::class, 'show'])->name('money');
     });
     Route::middleware('role:platform_admin')->group(function () {
         Route::get('/admin', AccountController::class)->name('admin.dashboard');
@@ -225,6 +228,7 @@ Route::middleware('auth')->group(function () {
         // Ledger next to Stripe, Stripe-funded activity only (ADR 0015).
         Route::get('/admin/reconciliation', [ReconciliationController::class, 'index'])->name('admin.reconciliation');
         Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1,admin.reconciliation.retry')->name('admin.reconciliation.retry');
+        Route::post('/admin/solvency-check', [WhereTheMoneyIsController::class, 'run'])->middleware(['can:run-solvency-check', 'throttle:6,1,admin.solvency.run'])->name('admin.solvency.run');
         Route::post('/admin/stripe/demo-merchants', [ReconciliationController::class, 'connectDemoMerchants'])->middleware('throttle:30,1,admin.stripe.demo-merchants')->name('admin.stripe.demo-merchants');
 
         Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
