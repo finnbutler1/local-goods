@@ -11,9 +11,9 @@ use App\Services\Fraud\RedemptionFraudDetector;
 use App\Services\Fraud\SignalCalculator;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
+use App\Services\Solvency\SolvencyGuard;
 use App\Support\MerchantFee;
 use App\Support\TaxBreakdown;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use LogicException;
 
@@ -25,6 +25,7 @@ class RedemptionService
         private CreditLedger $ledger,
         private StripeFunding $funding,
         private MerchantPayouts $payouts,
+        private SolvencyGuard $solvency,
     ) {}
 
     /**
@@ -79,7 +80,7 @@ class RedemptionService
         // The AI call happens outside the transaction so the database is never locked while we wait.
         $verdict = $this->detector->score($signals);
 
-        $redemption = DB::transaction(function () use ($employee, $merchant, $amountCents, $items, $channel, $tax, $fee, $signals, $verdict) {
+        $redemption = $this->solvency->transaction('this redemption', function () use ($employee, $merchant, $amountCents, $items, $channel, $tax, $fee, $signals, $verdict) {
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.

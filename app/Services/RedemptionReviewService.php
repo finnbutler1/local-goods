@@ -11,8 +11,8 @@ use App\Models\RedemptionDecision;
 use App\Models\User;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeFunding;
+use App\Services\Solvency\SolvencyGuard;
 use App\Support\Money;
-use Illuminate\Support\Facades\DB;
 
 /**
  * A person's decision on a redemption that Redemption Fraud Detection held
@@ -33,6 +33,7 @@ class RedemptionReviewService
         private CreditLedger $ledger,
         private StripeFunding $funding,
         private MerchantPayouts $payouts,
+        private SolvencyGuard $solvency,
     ) {}
 
     public function approve(Redemption $redemption, User $reviewer, string $reason): Redemption
@@ -92,7 +93,7 @@ class RedemptionReviewService
         $approve = $kind === RedemptionDecision::APPROVE;
         $status = $approve ? Redemption::STATUS_APPROVED : Redemption::STATUS_REJECTED;
 
-        $redemption = DB::transaction(function () use ($redemption, $reviewer, $reason, $kind, $returnsTo, $shownAs, $approve, $status, $entry) {
+        $redemption = $this->solvency->transaction('this decision', function () use ($redemption, $reviewer, $reason, $kind, $returnsTo, $shownAs, $approve, $status, $entry) {
             $now = now();
 
             // Only flips a row that is still under review, so a second decision

@@ -5,6 +5,8 @@ namespace App\Services\Payments;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Services\CreditLedger;
+use App\Services\Solvency\SolvencyGuard;
+use App\Services\Solvency\SolvencyRefused;
 use App\Support\StripeEnvironment;
 use App\Support\StripeMode;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +27,7 @@ use Throwable;
  */
 class MerchantPayouts
 {
-    public function __construct(private StripeGateway $stripe, private CreditLedger $ledger, private TransferGate $gate) {}
+    public function __construct(private StripeGateway $stripe, private CreditLedger $ledger, private TransferGate $gate, private SolvencyGuard $solvency) {}
 
     /**
      * send(), but never throws: for callers that just cleared a redemption.
@@ -87,6 +89,16 @@ class MerchantPayouts
             $row->update(['status' => MerchantPayout::STATUS_FAILED, 'failure_reason' => 'The transfer gate no longer allows this redemption.']);
 
             return 'failed';
+        }
+
+        // The last line of defence before real money leaves (ADR 0033). Refused: the row is
+        // left as it was, still owed, with the reason; nothing is sent, the next send tries again.
+        try {
+            $this->solvency->beforeTransfer($merchant, $row->amount_cents);
+        } catch (SolvencyRefused $e) {
+            $row->update(['failure_reason' => $e->getMessage()]);
+
+            return 'waiting';
         }
 
         // Claim the row for this attempt. A row left pending by a call whose

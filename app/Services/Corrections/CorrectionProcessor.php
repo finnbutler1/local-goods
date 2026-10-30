@@ -9,6 +9,7 @@ use App\Services\CreditLedger;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeGatewayException;
+use App\Services\Solvency\SolvencyGuard;
 use App\Support\Money;
 use App\Support\StripeEnvironment;
 use App\Support\StripeMode;
@@ -29,7 +30,7 @@ use Throwable;
  */
 class CorrectionProcessor
 {
-    public function __construct(private StripeGateway $stripe, private CreditLedger $ledger, private MerchantPayouts $payouts) {}
+    public function __construct(private StripeGateway $stripe, private CreditLedger $ledger, private MerchantPayouts $payouts, private SolvencyGuard $solvency) {}
 
     /**
      * One key per action and attempt: this server, the correction, the
@@ -220,6 +221,7 @@ class CorrectionProcessor
         // The whole refund: the action is only the merchant's part, the refund less the fee share (ADR 0029).
         $this->ledger->refundRedemption($correction, $correction->amount_cents, $action->payout, $reversal['id'], $at);
         self::syncStatus($correction);
+        $this->solvency->afterRecorded('a refund reversal of '.$reversal['id']);
 
         return 'refund recorded: '.$reversal['id'];
     }
@@ -276,6 +278,7 @@ class CorrectionProcessor
 
         $this->ledger->completeEmployerRefund($action->correction, $action->creditPurchase, $action->amount_cents, $refund['id'], $at);
         self::syncStatus($action->correction);
+        $this->solvency->afterRecorded('a card refund '.$refund['id']);
 
         return 'card refund recorded: '.$refund['id'];
     }

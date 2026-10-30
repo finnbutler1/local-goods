@@ -133,8 +133,12 @@ class SolvencySimulatedModeTest extends TestCase
         app(CreditLedger::class)->payout($merchant, $merchant->owedSimulatedCents(), MerchantPayout::STATUS_SIMULATED);
         // $30.00 owed to the shop through Stripe, not sent yet.
         MerchantPayout::create(['merchant_id' => $merchant->id, 'amount_cents' => 3000, 'status' => MerchantPayout::STATUS_OWED]);
-        DB::table('credit_ledger_entries')->insert(['merchant_id' => $merchant->id, 'amount_cents' => 3000, 'type' => CreditLedgerEntry::TYPE_MERCHANT_EARNED, 'description' => 'Test: owed via Stripe', 'created_at' => now()]);
-        app(CreditLedger::class)->payPurchase(app(CreditLedger::class)->requestPurchase(Employer::firstOrFail(), 3000, 'Covers the test line'));
+        // Paid for from the employer's unspent credits, so the books still balance.
+        DB::table('credit_ledger_entries')->insert([
+            ['employer_id' => Employer::firstOrFail()->id, 'merchant_id' => null, 'amount_cents' => -3000, 'type' => CreditLedgerEntry::TYPE_ALLOCATION_OUT, 'description' => 'Test: spent', 'created_at' => now()],
+            ['employer_id' => null, 'merchant_id' => $merchant->id, 'amount_cents' => 3000, 'type' => CreditLedgerEntry::TYPE_MERCHANT_EARNED, 'description' => 'Test: owed via Stripe', 'created_at' => now()],
+        ]);
+        $this->assertTrue(app(SolvencyCheck::class)->now()->passes());
 
         $correction = app(CorrectionDecisions::class)->approveRedemptionRefund($this->refundRequest($redemption), $this->admin(), 'Never made.', amountCents: 1000);
 
