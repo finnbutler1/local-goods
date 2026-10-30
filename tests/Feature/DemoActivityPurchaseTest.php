@@ -63,6 +63,37 @@ class DemoActivityPurchaseTest extends TestCase
         $this->assertSame([], app(StripeReconciliation::class)->report()['mismatches']);
     }
 
+    /**
+     * The live failure of 2026-10-30: this API version (2026-09-30.endive)
+     * refuses payment_method_types on a PaymentIntent, the same 400 Checkout
+     * gave on 2026-10-16. The fake refuses it too, but this pins the exact
+     * request: only these fields, automatic methods without redirects (no
+     * return_url when confirming at once), the test card and confirm.
+     */
+    public function test_the_payment_intent_only_sends_fields_stripe_accepts(): void
+    {
+        app(StripeTestPayments::class)->pay($this->purchase);
+
+        [$params] = $this->stripe->callsOf('test_payment');
+        $this->assertSame(
+            ['amount', 'currency', 'payment_method', 'automatic_payment_methods', 'confirm', 'transfer_group', 'description', 'metadata'],
+            array_keys($params),
+        );
+        $this->assertArrayNotHasKey('payment_method_types', $params);
+        $this->assertSame(['enabled' => true, 'allow_redirects' => 'never'], $params['automatic_payment_methods']);
+        $this->assertSame(['pm_card_visa', true, 'usd'], [$params['payment_method'], $params['confirm'], $params['currency']]);
+    }
+
+    public function test_the_fake_refuses_what_the_live_api_refuses(): void
+    {
+        $refused = fn (array $params) => rescue(fn () => $this->stripe->createTestPayment($params, 'k-'.md5(json_encode($params))), fn ($e) => $e->getMessage(), false);
+        $base = ['amount' => 100, 'currency' => 'usd', 'payment_method' => 'pm_card_visa', 'confirm' => true];
+
+        $this->assertStringContainsString('payment_method_types', (string) $refused($base + ['payment_method_types' => ['card']]));
+        $this->assertStringContainsString('return_url', (string) $refused($base + ['automatic_payment_methods' => ['enabled' => true]]));
+        $this->assertIsArray($refused($base + ['automatic_payment_methods' => ['enabled' => true, 'allow_redirects' => 'never']]));
+    }
+
     public function test_a_paid_purchase_is_never_paid_again(): void
     {
         $payments = app(StripeTestPayments::class);

@@ -68,6 +68,15 @@ class FakeStripeGateway implements StripeGateway
         return $this->remember($idempotencyKey, function () use ($params) {
             $this->calls[] = ['test_payment', $params];
 
+            // Like the real API (2026-09-30): PaymentIntents refuse payment_method_types,
+            // and confirming with automatic methods needs a return_url or no redirects.
+            if (array_key_exists('payment_method_types', $params)) {
+                throw new StripeGatewayException('Stripe refused the request (InvalidRequestException). Stripe says: The `payment_method_types` parameter is no longer supported.');
+            }
+            if (($params['confirm'] ?? false) && ($params['automatic_payment_methods']['allow_redirects'] ?? null) !== 'never' && ! isset($params['return_url'])) {
+                throw new StripeGatewayException('Stripe refused the request (InvalidRequestException). Stripe says: a return_url is required when confirming with redirect-based payment methods.');
+            }
+
             if ($this->testPaymentFailure !== null) {
                 [[$message, $definite], $this->testPaymentFailure] = [$this->testPaymentFailure + [1 => true], null];
 

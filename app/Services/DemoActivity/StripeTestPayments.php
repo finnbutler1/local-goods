@@ -48,7 +48,10 @@ class StripeTestPayments
             'amount' => $purchase->totalCents(),
             'currency' => config('services.stripe.currency'),
             'payment_method' => self::TEST_CARD,
-            'payment_method_types' => ['card'],
+            // No payment_method_types: this API version (2026-09-30.endive) refuses
+            // it. Confirming at once with automatic methods needs either a
+            // return_url or no redirects; a test card never redirects.
+            'automatic_payment_methods' => ['enabled' => true, 'allow_redirects' => 'never'],
             'confirm' => true,
             'transfer_group' => $purchase->reference,
             'description' => 'Local Goods demo activity: credits '.$purchase->reference.' (test mode)',
