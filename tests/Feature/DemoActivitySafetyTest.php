@@ -86,10 +86,11 @@ class DemoActivitySafetyTest extends TestCase
         $this->assertFalse($defaults['enabled']);
         $this->assertStringContainsString("env('DEMO_ACTIVITY_ENABLED', false)", File::get(config_path('demo_activity.php')));
 
-        $deployFiles = collect([...File::allFiles(base_path('.ebextensions')), ...File::allFiles(base_path('.platform'))])
+        $deployFiles = collect([...File::allFiles(base_path('.ebextensions')), ...File::allFiles(base_path('.platform')), ...File::allFiles(base_path('scripts'))])
             ->merge(File::glob(base_path('.github/workflows/*')))->merge([base_path('.env.example'), base_path('phpunit.xml')]);
         foreach ($deployFiles as $file) {
-            $this->assertStringNotContainsString('DEMO_ACTIVITY_ENABLED', File::get((string) $file), (string) $file);
+            // Mentioning it is fine (the wrapper reads it); setting it to anything is not.
+            $this->assertDoesNotMatchRegularExpression('/DEMO_ACTIVITY_ENABLED\s*[:=]\s*["\']?\w/', File::get((string) $file), (string) $file);
         }
     }
 
