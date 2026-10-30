@@ -19,6 +19,14 @@ interface StripeGateway
     /** Expires an open Checkout Session, so it can never take a payment. Stripe refuses one that isn't open. */
     public function expireCheckoutSession(string $sessionId): array;
 
+    /**
+     * Creates and confirms a PaymentIntent with a Stripe test card, for the
+     * demo activity generator (ADR 0032) only. Test mode only.
+     *
+     * @return array<string, mixed> a PaymentIntent
+     */
+    public function createTestPayment(array $params, string $idempotencyKey): array;
+
     /** @return array<string, mixed> an Account */
     public function createExpressAccount(array $params, string $idempotencyKey): array;
 
