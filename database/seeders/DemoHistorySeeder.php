@@ -54,7 +54,7 @@ use Random\Randomizer;
  * Last, two corrections (ADR 0028), so the Corrections queue isn't empty
  * after Reset demo: a completed partial refund of REFUNDED_ITEM from the
  * newest taxed order (the item and its tax back to the employee, simulated,
- * deducted from the merchant's next payout), and a rejected request about
+ * deducted from what the merchant is owed before its next payout), and a rejected request about
  * the in-person payment. Both by seeded employees, never Jordan. The live
  * demo works without them: it is never reset.
  *
