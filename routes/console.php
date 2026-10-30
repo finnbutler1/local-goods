@@ -10,6 +10,7 @@ use Database\Seeders\DemoAccountSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -71,3 +72,15 @@ Artisan::command('demo:seed-accounts', function () {
             : "Skipped {$role}: DEMO_PASSWORD_".strtoupper($role).' is not set.');
     }
 })->purpose('Create or update the demo login for each role from DEMO_PASSWORD_* settings');
+
+// The demo activity generator (ADR 0032): every five minutes on weekdays,
+// 07:00–19:00 DC time. Cron on the instance runs the scheduler
+// (scripts/run-scheduler.sh); the tick itself does nothing unless
+// DEMO_ACTIVITY_ENABLED is true and Stripe is in test mode.
+Schedule::command('demo-activity:tick')
+    ->everyFiveMinutes()
+    ->weekdays()
+    ->timezone('America/New_York')
+    ->between('07:00', '19:00')
+    ->withoutOverlapping(15)
+    ->appendOutputTo(storage_path('logs/demo-activity.log'));
