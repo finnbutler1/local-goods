@@ -1,6 +1,6 @@
 # 0028. Refunds and corrections
 
-**Status:** Accepted, implemented.
+**Status:** Accepted, implemented. The simulated-refund netting below zero is superseded by [ADR 0033](0033-customer-funds-and-the-solvency-rule.md).
 
 ## Context
 
@@ -84,6 +84,13 @@ Close waits while any step's outcome at Stripe is unknown.
      from the merchant's next payout". A merchant already paid out can dip
      below zero until its next simulated payout covers it, which is how
      real processors net refunds.
+     **Superseded by [ADR 0033](0033-customer-funds-and-the-solvency-rule.md)
+     (2026-10-30):** going below zero hid a promise to the employee with no
+     money behind it, and on the live site the next simulated payout never
+     comes. Now what the merchant is still owed through simulated payouts
+     covers the refund, and any part already paid out is a simulated
+     pull-back (`refund_reversal` on its latest simulated payout, "simulated,
+     no real money"), so no merchant goes below zero.
    - **Its Stripe transfer hasn't gone out yet** (owed, sending, failed):
      refused until it is sent, so Stripe can never later send the full
      amount after a refund. **Reversed in the Stripe dashboard:** refused

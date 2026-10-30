@@ -202,6 +202,19 @@ decided once. A held redemption never reaches Stripe; only a cleared one funded 
 its [tests](tests/Feature/RedemptionFraudDetectorTest.php) and
 [ADR 0003](docs/adr/0003-fail-closed-fraud-detection.md).
 
+## Where the money is
+
+Employers pay for credits before anyone spends them, so most of the money Local Goods holds is a promise, not ours. Every line in the ledger is in one of two places, never both: **customer funds held** (employer credits not yet given out, employee balances, money owed to merchants, and anything held waiting for a person) or **operating funds** (only what Local Goods has earned, nothing today with both fees off). **Unspent credits always remain the employer's money, never ours.**
+
+The rule: the money paid in, less what has been paid out to merchants and refunded to employers, must always cover every open promise, with each account counted on its own so one below zero never hides another. Simulated money never pays for a Stripe test-mode transfer.
+
+- **Checked over the whole history.** [`ledger:check-solvency`](app/Console/Commands/CheckSolvency.php) replays every ledger entry in order and checks the rule after each one, so a past moment that went wrong can't be hidden by a later correction. It runs after every deploy and on every tick of the demo activity generator, which stops the day if it fails.
+- **Enforced.** Every money operation Local Goods decides is checked at its end, and every Stripe transfer before it is sent; anything that would leave less money than has been promised is refused and nothing changes ([`SolvencyGuard`](app/Services/Solvency/SolvencyGuard.php)).
+- **Found two real gaps first.** A refund on a simulated sale that was already paid out left the merchant below zero, and on some seed dates the planted collusion ring overdrew its credits. Both were fixed before the rule was enforced.
+- **What it doesn't cover:** Stripe's own balance (that is reconciliation), Stripe's processing costs, and money still in flight between Stripe and its webhook. Simulated money is not real money.
+
+See it on [Where the money is](https://d4ghrpm72uczx.cloudfront.net/where-the-money-is) (signed-in reviewers) and in [ADR 0033](docs/adr/0033-customer-funds-and-the-solvency-rule.md).
+
 ## Safety and privacy from the start
 
 These were built in from the first version of each feature, not added afterwards. Each line links to where it lives.
@@ -217,7 +230,7 @@ These were built in from the first version of each feature, not added afterwards
 - **An over-refund guard.** Each refund is re-checked against what was paid, what was already refunded and the tax, before any money moves ([ADR 0028](docs/adr/0028-refunds-and-corrections.md), [`CorrectionLimits`](app/Services/Corrections/CorrectionLimits.php)).
 - **Blind adjudication.** Reviewers vote on the AI's disagreements with the labels hidden ([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md)).
 - **A locked eval set.** The held-out cases are fixed by a SHA-256 per row before the AI sees them, and CI fails if one changes ([`fraud_eval_lock.json`](data/fraud_eval_lock.json), [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it)).
-- **CI on two databases.** Every push runs the suite (1,376 tests as of 2026-10-29, of which 5 need MySQL and are skipped on a plain local run) on both SQLite and MySQL ([`ci.yml`](.github/workflows/ci.yml)).
+- **CI on two databases.** Every push runs the suite (1,475 tests as of 2026-10-30, of which 5 need MySQL and are skipped on a plain local run) on both SQLite and MySQL ([`ci.yml`](.github/workflows/ci.yml)).
 
 ## How it meets the judging criteria
 
@@ -266,6 +279,7 @@ Saying no was part of the design. Each decision below is already in our decision
 | We don't reset the live demo for convenience ([CLAUDE.md](CLAUDE.md)). | Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only. |
 | No BID or employer initiation fee in the product ([CHANGELOG](CHANGELOG.md)). | It is already a lever in the projection model, and a new money path adds risk before judging. |
 | No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source ([ADR 0024](docs/adr/README.md), [`PublicClaimsTest`](tests/Feature/PublicClaimsTest.php)). | The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured. |
+| Customer money is never used for anything else: not invested, not lent, and new purchases never pay old promises ([ADR 0033](docs/adr/0033-customer-funds-and-the-solvency-rule.md)). | Unspent credits are the employer's money. A check over the whole ledger history, and a guard on every money operation, refuse anything that would leave less money than has been promised. |
 
 ## How I built it with Claude Code
 
