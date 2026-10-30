@@ -18,8 +18,11 @@
                 <a href="{{ route('bid-admin.partnership') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID partnership</a>
                 <a href="{{ route('bid-admin.impact') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">BID impact</a>
                 <a href="{{ route('business-model') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business model</a>
+                <a href="{{ route('bid-admin.demo-activity') }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Demo activity</a>
             </p>
         </header>
+
+        @include('partials.waiting-for-a-person')
 
         <section aria-labelledby="accounts-heading">
             <div class="flex flex-wrap items-baseline justify-between gap-3">

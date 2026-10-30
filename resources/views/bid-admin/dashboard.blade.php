@@ -42,7 +42,14 @@
                 The BID partnership: exclusivity, dates and data terms <span aria-hidden="true">→</span>
             </a>
         </p>
+        <p class="mt-2">
+            <a href="{{ route('bid-admin.demo-activity') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                Demo activity: what the scheduled generator has done in Stripe test mode <span aria-hidden="true">→</span>
+            </a>
+        </p>
     </header>
+
+    @include('partials.waiting-for-a-person')
 
     <div aria-live="polite">
         @if ($example = $exampleId ? $redemptions->firstWhere('id', $exampleId) : null)
@@ -121,6 +128,7 @@
                             @if ($redemption->risk_score !== null)
                                 <span class="tabular text-sm font-semibold">Risk {{ $redemption->risk_score }}/100</span>
                             @endif
+                            @if ($redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif
                             <x-status-badge :redemption="$redemption" />
                         </div>
                     </div>

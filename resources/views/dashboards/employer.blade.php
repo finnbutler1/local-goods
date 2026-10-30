@@ -335,14 +335,14 @@
                                             · {{ $r?->employee?->initials() }} · {{ $entry->created_at->setTimezone('America/New_York')->format('M j, Y') }}
                                         </p>
                                     </div>
-                                    <x-badge tone="neutral">Returned credit</x-badge>
+                                    <span class="flex flex-wrap gap-2">@if ($r?->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif<x-badge tone="neutral">Returned credit</x-badge></span>
                                 </li>
                                 @continue
                             @endif
                             @php $purchase = $item['purchase']; @endphp
                             <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
                                 <div class="min-w-0">
-                                    <p class="tabular font-semibold">{{ Money::format($purchase->amount_cents) }}</p>
+                                    <p class="tabular font-semibold">{{ Money::format($purchase->amount_cents) }} @if ($purchase->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</p>
                                     <p class="text-sm text-muted">{{ $purchase->reference }} · {{ $purchase->purchased_at->setTimezone('America/New_York')->format('M j, Y') }}</p>
                                     @if ($purchase->platform_fee_cents > 0)
                                         <p class="tabular text-sm text-muted">+ {{ Money::format($purchase->platform_fee_cents) }} platform fee</p>

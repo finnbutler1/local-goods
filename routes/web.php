@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ReviewerController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\CollusionExampleController;
 use App\Http\Controllers\BidAdmin\CorrectionsController;
+use App\Http\Controllers\BidAdmin\DemoActivityController;
 use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\ImpactExportController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
@@ -123,6 +124,8 @@ Route::middleware('auth')->group(function () {
 
         // Corrections (ADR 0028): the BID admin and judges look; only the platform admin decides (decide-corrections).
         Route::get('/corrections', [CorrectionsController::class, 'index'])->name('corrections');
+        // What the demo activity generator has done (ADR 0032). Read-only for everyone; no write routes.
+        Route::get('/demo-activity', DemoActivityController::class)->name('demo-activity');
         Route::post('/corrections/{correction}/approve', [CorrectionsController::class, 'approve'])->middleware('throttle:30,1,bid-admin.corrections.approve')->name('corrections.approve');
         Route::post('/corrections/{correction}/reject', [CorrectionsController::class, 'reject'])->middleware('throttle:30,1,bid-admin.corrections.reject')->name('corrections.reject');
         Route::post('/corrections/{correction}/retry', [CorrectionsController::class, 'retry'])->middleware('throttle:20,1,bid-admin.corrections.retry')->name('corrections.retry');
