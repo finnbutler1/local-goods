@@ -364,7 +364,18 @@ Local Goods holds is a promise, not ours
   every Stripe transfer, the position is checked. Anything that would leave
   less money than has been promised is refused and nothing changes. Money
   Stripe has already moved is recorded, then checked and flagged.
+- **One balance, kept apart by software.** The two kinds of money are an
+  accounting separation that Local Goods enforces in its ledger. They are
+  not two bank accounts: all of it sits in one Stripe test-mode balance,
+  and the seeded history is simulated. A deployment holding real employer
+  money would need customer funds kept in a separate account, for example
+  an FBO ("for benefit of") or trust account with a bank or a regulated
+  payments partner, and it may bring money-transmission rules into play.
+  What exactly is required depends on how the program is set up and where,
+  and needs legal advice, which we have not had.
 - **What it doesn't cover.**
+  - That customer money is held apart from Local Goods' own: both are in
+    one Stripe test-mode balance, separated only in the ledger.
   - Stripe's own balance (that is reconciliation).
   - Stripe's processing costs, which Local Goods pays itself.
   - Money still in flight between Stripe and its webhook.

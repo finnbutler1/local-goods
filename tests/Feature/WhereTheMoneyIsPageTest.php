@@ -60,7 +60,10 @@ class WhereTheMoneyIsPageTest extends TestCase
             ->assertSeeText('Unspent credits always remain the employer\'s money, never ours.')
             ->assertSee('data-operating-funds>$0.00', false)
             ->assertSee('data-in-hand>'.Money::format($now->inHandCents()), false)
-            ->assertSee('Demo data: all people and transactions are fictional.');
+            ->assertSee('Demo data: all people and transactions are fictional.')
+            ->assertSee('They are not two bank accounts:')
+            ->assertSee('all of it sits in one Stripe test-mode balance')
+            ->assertSee('needs legal advice, which we have not had.');
     }
 
     public function test_judges_see_customer_funds_and_the_check_but_never_operating_funds_or_money_in_hand(): void

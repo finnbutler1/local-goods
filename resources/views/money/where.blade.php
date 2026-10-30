@@ -189,6 +189,14 @@
             it is refused and nothing changes. The check replays the whole history in order, so a moment that went wrong in the past
             can't be hidden by a later correction.
         </p>
+        <p data-separation-note>
+            <span class="font-semibold">One balance, kept apart by software.</span>
+            The two kinds of money are an accounting separation that Local Goods enforces in its ledger. They are not two bank accounts:
+            all of it sits in one Stripe test-mode balance, and the seeded history is simulated.
+            A deployment holding real employer money would need customer funds kept in a separate account, for example an FBO
+            ("for benefit of") or trust account with a bank or a regulated payments partner, and it may bring money-transmission rules into play.
+            What exactly is required depends on how the program is set up and where, and needs legal advice, which we have not had.
+        </p>
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <h3 class="font-semibold">What it makes sure of</h3>
@@ -201,6 +209,7 @@
             <div>
                 <h3 class="font-semibold">What it doesn't cover</h3>
                 <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+                    <li>That customer money is held apart from Local Goods' own: both are in one Stripe test-mode balance, separated only in the ledger.</li>
                     <li>That Stripe's own balance matches: that is the reconciliation check, in Stripe test mode only.</li>
                     <li>Stripe's processing costs, which Local Goods pays from its own money, outside this ledger.</li>
                     <li>Money in flight between Stripe acting and telling us.</li>

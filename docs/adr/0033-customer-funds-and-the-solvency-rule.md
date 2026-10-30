@@ -107,6 +107,8 @@ with no money behind it, which is how the problem below was found.
 
 **What it doesn't cover:**
 
+- That customer money is held apart from Local Goods' own. Both are in one
+  Stripe test-mode balance; the tranches are separated only in the ledger.
 - Stripe's real balance. That is reconciliation, in Stripe test mode only.
 - Stripe's processing costs, which Local Goods pays outside the ledger.
 - Money in flight between Stripe acting and its webhook.
@@ -116,6 +118,19 @@ with no money behind it, which is how the problem below was found.
 - Two operations racing each other. The guard is a last line; the existing
   locks are the first.
 - That simulated money is real.
+
+### One balance, kept apart by software
+
+The two tranches are an accounting separation that Local Goods enforces in
+its ledger. They are not two bank accounts: all of it sits in one Stripe
+test-mode balance, and the seeded history is simulated. A deployment
+holding real employer money would need customer funds kept in a separate
+account, for example an FBO ("for benefit of") or trust account with a bank
+or a regulated payments partner, and it may bring money-transmission rules
+into play. What exactly is required depends on how the program is set up
+and where, and needs legal advice, which we have not had. This page and
+the guard show that the books are kept as if the money were separate; they
+don't make it separate.
 
 ### Checking it
 
