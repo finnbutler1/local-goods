@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -64,6 +65,18 @@ class CreditPurchase extends Model
     public function totalCents(): int
     {
         return $this->amount_cents + (int) $this->platform_fee_cents;
+    }
+
+    /** The demo activity generator's record, if it made this (ADR 0032). Eager-load it on lists. */
+    public function demoActivity(): HasOne
+    {
+        return $this->hasOne(DemoActivityAction::class)->where('status', DemoActivityAction::STATUS_DONE);
+    }
+
+    /** Made by the demo activity generator, not by a person (ADR 0032). */
+    public function isGeneratedDemoActivity(): bool
+    {
+        return $this->demoActivity !== null;
     }
 
     public function employer(): BelongsTo

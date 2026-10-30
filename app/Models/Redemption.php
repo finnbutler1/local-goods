@@ -80,6 +80,18 @@ class Redemption extends Model
         return $this->hasOne(RedemptionDecision::class);
     }
 
+    /** The demo activity generator's record, if it made this (ADR 0032). Eager-load it on lists. */
+    public function demoActivity(): HasOne
+    {
+        return $this->hasOne(DemoActivityAction::class)->where('status', DemoActivityAction::STATUS_DONE);
+    }
+
+    /** Made by the demo activity generator, not by a person (ADR 0032). */
+    public function isGeneratedDemoActivity(): bool
+    {
+        return $this->demoActivity !== null;
+    }
+
     /** Its Stripe-channel payout row, if it was Stripe-funded (ADR 0015). */
     public function stripePayout(): HasOne
     {

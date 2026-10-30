@@ -79,8 +79,10 @@ class ResetDemoTest extends TestCase
         // partnership tables (ADR 0031) point at bids, which a reset clears,
         // so the demo partnership is reset with them. Applications point at
         // merchants: Reset demo clears them too and restores the two samples.
+        // The demo activity generator's log (ADR 0032) points at redemptions
+        // and purchases, so it goes with them (Reset demo is local only).
         $this->assertSame(
-            ['merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
+            ['demo_activity_actions', 'demo_activity_days', 'merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
     }
