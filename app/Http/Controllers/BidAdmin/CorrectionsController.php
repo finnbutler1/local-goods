@@ -29,7 +29,7 @@ class CorrectionsController extends Controller
 
     public function index(): View
     {
-        $with = ['redemption.employee', 'redemption.merchant', 'redemption.items', 'redemption.stripePayout', 'payout.merchant',
+        $with = ['redemption.employee', 'redemption.merchant', 'redemption.items', 'redemption.stripePayout', 'redemption.demoActivity', 'payout.merchant',
             'employer', 'employee', 'merchant', 'items.redemptionItem', 'actions.creditPurchase', 'actions.payout', 'decidedBy'];
 
         $open = Correction::with($with)->whereIn('status', Correction::OPEN_STATUSES)->orderBy('id')->get();

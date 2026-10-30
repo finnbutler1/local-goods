@@ -214,7 +214,7 @@
                 @forelse ($received as $redemption)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
                         <div class="min-w-0">
-                            <p class="tabular font-semibold">{{ $redemption->employee->initials() }}</p>
+                            <p class="tabular font-semibold">{{ $redemption->employee->initials() }} @if ($redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</p>
                             @if ($for = $redemption->itemsSummary())
                                 <p class="text-sm break-words" data-items>{{ $for }}</p>
                             @endif

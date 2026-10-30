@@ -50,6 +50,8 @@
         @endunless
     </header>
 
+    @include('partials.waiting-for-a-person')
+
     <section aria-labelledby="open-heading" class="space-y-4">
         <h2 id="open-heading" class="text-2xl font-semibold text-primary">Open ({{ $open->count() }})</h2>
         @if ($open->isEmpty())
@@ -78,6 +80,7 @@
                                     @if ($c->type === Correction::TYPE_REDEMPTION_REFUND)
                                         {{ Money::format($c->redemption->amount_cents) }} at {{ $c->redemption->merchant->name }} by {{ $c->redemption->employee->initials() }},
                                         {{ $c->redemption->created_at->setTimezone('America/New_York')->format('M j') }} ({{ $c->redemption->reference() }})
+                                        @if ($c->redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif
                                         @if ($for = $c->redemption->itemsSummary())
                                             <span class="block break-words">{{ $for }}</span>
                                         @endif

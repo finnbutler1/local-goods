@@ -67,7 +67,7 @@ class EmployerDashboardController extends Controller
             'pendingCents' => EmployerProgram::pendingCents($employer),
             'allocatedThisMonth' => EmployerProgram::allocatedInMonthCents($employer),
             'remainingBudget' => EmployerProgram::remainingBudgetCents($employer),
-            'purchases' => $employer->creditPurchases()->latest('purchased_at')->latest('id')->take(8)->get(),
+            'purchases' => $employer->creditPurchases()->with('demoActivity')->latest('purchased_at')->latest('id')->take(8)->get(),
             'returned' => self::returnedCredit($employer),
             'allocationGroups' => self::recentAllocationGroups($employer),
             'employees' => $employees,
@@ -144,7 +144,7 @@ class EmployerDashboardController extends Controller
         return [
             'cents' => (int) $query()->sum('amount_cents'),
             'count' => $query()->count(),
-            'entries' => $query()->with(['redemption.employee', 'redemption.decision', 'redemption.items'])->latest('created_at')->latest('id')->take($recent)->get(),
+            'entries' => $query()->with(['redemption.employee', 'redemption.decision', 'redemption.items', 'redemption.demoActivity'])->latest('created_at')->latest('id')->take($recent)->get(),
         ];
     }
 
