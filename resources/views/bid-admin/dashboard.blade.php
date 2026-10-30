@@ -47,6 +47,11 @@
                 Demo activity: what the scheduled generator has done in Stripe test mode <span aria-hidden="true">→</span>
             </a>
         </p>
+        <p class="mt-2">
+            <a href="{{ route('money') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                Where the money is: customer funds held, and the check that every promise has money behind it <span aria-hidden="true">→</span>
+            </a>
+        </p>
     </header>
 
     @include('partials.waiting-for-a-person')

@@ -12,6 +12,10 @@
             Only this environment's Stripe objects are counted (<span class="font-mono text-base">{{ $report['environment'] }}</span>).
         </p>
         <x-money-mode class="mt-3" />
+        <p class="mt-3">
+            <a href="{{ route('money') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Where the money is</a>:
+            customer funds and operating funds, and the solvency check over the whole ledger, simulated money included.
+        </p>
     </header>
 
     @if (! $report['active'])
