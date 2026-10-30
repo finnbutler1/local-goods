@@ -6,9 +6,11 @@ use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -20,6 +22,7 @@ use Tests\TestCase;
 class DemoActivityMigrationSafetyTest extends TestCase
 {
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     private const MIGRATION = 'database/migrations/2026_10_31_000001_add_demo_activity.php';
 
@@ -28,11 +31,11 @@ class DemoActivityMigrationSafetyTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $before = $this->snapshot();
 
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->rollBackSince(self::MIGRATION);
         $this->assertFalse(Schema::hasTable('demo_activity_actions'));
         $this->assertFalse(Schema::hasTable('demo_activity_days'));
 
-        $this->artisan('migrate', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->migrateAgain();
 
         $this->assertSame($before, $this->snapshot());
         $this->assertSame(0, DB::table('demo_activity_days')->count());
@@ -45,7 +48,7 @@ class DemoActivityMigrationSafetyTest extends TestCase
         $row = ['day_id' => $day, 'slot' => 'r01', 'kind' => 'redemption', 'status' => 'claimed'];
         DB::table('demo_activity_actions')->insert($row);
 
-        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        $this->expectException(UniqueConstraintViolationException::class);
         DB::table('demo_activity_actions')->insert($row);
     }
 

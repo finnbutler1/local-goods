@@ -6,6 +6,7 @@ use App\Models\Employee;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -20,16 +21,17 @@ class LedgerMigrationSafetyTest extends TestCase
     // Real migrations (not RefreshDatabase's transaction): MySQL commits
     // schema changes immediately, so they can't be rolled back that way.
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     private const MIGRATION = 'database/migrations/2026_10_17_000002_add_accounts_to_credit_ledger_entries.php';
 
     public function test_existing_entries_and_every_employee_balance_are_unchanged(): void
     {
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->rollBackSince(self::MIGRATION);
         $employees = $this->legacyLedger();
 
         $before = $this->snapshot($employees);
-        $this->artisan('migrate', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->migrateAgain();
         $after = $this->snapshot($employees);
 
         $this->assertSame($before, $after);
@@ -49,7 +51,8 @@ class LedgerMigrationSafetyTest extends TestCase
         $this->app->detectEnvironment(fn () => 'production');
 
         try {
-            // Just this migration (later migrations in the batch are skipped), like the first test.
+            // Just this migration: its down() refuses before it drops anything,
+            // so nothing later needs unwinding (MigrationSafetyTestsTest allows this one).
             $this->app->make('migrator')->rollback([base_path(self::MIGRATION)]);
             $this->fail('The rollback was allowed.');
         } catch (RuntimeException $e) {

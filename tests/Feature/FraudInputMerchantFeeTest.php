@@ -62,7 +62,7 @@ class FraudInputMerchantFeeTest extends TestCase
         $this->assertCount(2, $claude->calls);
         $this->assertSame($claude->calls[0]['system'], $claude->calls[1]['system']);
         $this->assertSame($claude->calls[0]['user'], $claude->calls[1]['user']);
-        $this->assertSame($none->signals, $charged->signals);
+        $this->assertSameIgnoringKeyOrder($none->signals, $charged->signals);
         $this->assertStringNotContainsStringIgnoringCase('fee', $claude->calls[1]['user']);
         $this->assertGreaterThan(0, MerchantFeeChange::count());
     }

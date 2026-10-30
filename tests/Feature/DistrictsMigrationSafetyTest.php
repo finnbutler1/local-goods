@@ -9,6 +9,7 @@ use App\Models\Merchant;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,7 @@ use Tests\TestCase;
 class DistrictsMigrationSafetyTest extends TestCase
 {
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     /** Newest first, the order a rollback undoes them. */
     public const MIGRATIONS = [
@@ -74,18 +76,10 @@ class DistrictsMigrationSafetyTest extends TestCase
         $this->assertNull(Merchant::find($other)->live_at);
     }
 
+    /** Unwinds the three district migrations and everything after them. */
     private function rollBack(): void
     {
-        foreach (self::MIGRATIONS as $migration) {
-            $this->artisan('migrate:rollback', ['--path' => $migration])->assertSuccessful();
-        }
-    }
-
-    private function migrateAgain(): void
-    {
-        foreach (array_reverse(self::MIGRATIONS) as $migration) {
-            $this->artisan('migrate', ['--path' => $migration])->assertSuccessful();
-        }
+        $this->rollBackSince(self::MIGRATIONS[array_key_last(self::MIGRATIONS)]);
     }
 
     private function key(Merchant $merchant): string

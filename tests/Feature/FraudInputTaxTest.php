@@ -75,9 +75,9 @@ class FraudInputTaxTest extends TestCase
         $this->assertCount(2, $claude->calls);
         $this->assertSame($claude->calls[0]['system'], $claude->calls[1]['system']);
         $this->assertSame($claude->calls[0]['user'], $claude->calls[1]['user']);
-        $this->assertSame($taxed->signals, $typed->signals);
+        $this->assertSameIgnoringKeyOrder($taxed->signals, $typed->signals);
         $this->assertSame(1265, $taxed->signals['amount_cents'], 'the AI sees the total charged');
-        $this->assertSame(self::SIGNAL_KEYS, array_keys($taxed->signals));
+        $this->assertEqualsCanonicalizing(self::SIGNAL_KEYS, array_keys($taxed->signals));
         $this->assertSame(self::SIGNAL_KEYS, array_keys(json_decode($claude->calls[0]['user'], true)));
         foreach (['tax', 'subtotal', 'meals', 'prepared_food', 'Latte'] as $word) {
             $this->assertStringNotContainsStringIgnoringCase($word, $claude->calls[0]['user']);

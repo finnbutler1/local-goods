@@ -9,6 +9,7 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,7 @@ use Tests\TestCase;
 class CorrectionsMigrationSafetyTest extends TestCase
 {
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     private const MIGRATION = 'database/migrations/2026_10_28_000001_add_corrections.php';
 
@@ -29,8 +31,8 @@ class CorrectionsMigrationSafetyTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $before = $this->snapshot();
 
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
-        $this->artisan('migrate', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->rollBackSince(self::MIGRATION);
+        $this->migrateAgain();
 
         $this->assertSame($before, $this->snapshot());
         $this->assertSame(0, DB::table('corrections')->count());

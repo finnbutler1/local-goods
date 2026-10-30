@@ -8,6 +8,7 @@ use App\Models\Merchant;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,7 @@ use Tests\TestCase;
 class MenuMigrationSafetyTest extends TestCase
 {
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     private const MIGRATION = 'database/migrations/2026_10_25_000001_create_product_menu_tables.php';
 
@@ -26,8 +28,8 @@ class MenuMigrationSafetyTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $before = $this->snapshot();
 
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
-        $this->artisan('migrate', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->rollBackSince(self::MIGRATION);
+        $this->migrateAgain();
 
         $this->assertSame($before, $this->snapshot());
         $this->assertSame(0, DB::table('redemption_items')->count());

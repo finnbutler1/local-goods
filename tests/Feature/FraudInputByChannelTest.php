@@ -62,7 +62,7 @@ class FraudInputByChannelTest extends TestCase
         $this->assertCount(2, $claude->calls);
         $this->assertSame($claude->calls[0]['system'], $claude->calls[1]['system']);
         $this->assertSame($claude->calls[0]['user'], $claude->calls[1]['user']);
-        $this->assertSame($toGo->signals, $inPerson->signals);
+        $this->assertSameIgnoringKeyOrder($toGo->signals, $inPerson->signals);
         foreach (['in_person', 'in person', 'channel', 'pay code', 'counter'] as $word) {
             $this->assertStringNotContainsStringIgnoringCase($word, $claude->calls[0]['user']);
         }

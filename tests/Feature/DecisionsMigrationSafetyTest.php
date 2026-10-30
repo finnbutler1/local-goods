@@ -11,6 +11,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -22,13 +23,14 @@ use Tests\TestCase;
 class DecisionsMigrationSafetyTest extends TestCase
 {
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     private const MIGRATION = 'database/migrations/2026_10_21_000001_create_redemption_decisions_table.php';
 
     public function test_existing_rows_are_unchanged_and_past_decisions_are_backfilled(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->rollBackSince(self::MIGRATION);
 
         $reviewer = User::factory()->role(Role::BidAdmin)->create(['name' => 'Sam Taylor']);
         $employee = Employee::orderBy('id')->firstOrFail();
@@ -43,7 +45,7 @@ class DecisionsMigrationSafetyTest extends TestCase
         }
         $before = $this->snapshot();
 
-        $this->artisan('migrate', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->migrateAgain();
 
         $this->assertSame($before, $this->snapshot());
         $rows = DB::table('redemption_decisions')->orderBy('redemption_id')->get();

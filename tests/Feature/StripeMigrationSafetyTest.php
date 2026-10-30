@@ -10,6 +10,7 @@ use App\Models\MerchantPayout;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\RollsBackMigrations;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,7 @@ use Tests\TestCase;
 class StripeMigrationSafetyTest extends TestCase
 {
     use DatabaseMigrations;
+    use RollsBackMigrations;
 
     private const MIGRATION = 'database/migrations/2026_10_20_000001_add_stripe_connect_columns.php';
 
@@ -29,8 +31,8 @@ class StripeMigrationSafetyTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $before = $this->snapshot();
 
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
-        $this->artisan('migrate', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->rollBackSince(self::MIGRATION);
+        $this->migrateAgain();
 
         $this->assertSame($before, $this->snapshot());
         $this->assertSame(0, CreditPurchase::where('status', '!=', CreditPurchase::STATUS_SIMULATED)->count());

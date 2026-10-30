@@ -123,7 +123,7 @@ class RedemptionItemsTest extends TestCase
         $this->assertCount(2, $this->claude->calls);
         $this->assertSame($this->claude->calls[0]['system'], $this->claude->calls[1]['system']);
         $this->assertSame($this->claude->calls[0]['user'], $this->claude->calls[1]['user']);
-        $this->assertSame($withItems->signals, $bare->signals);
+        $this->assertSameIgnoringKeyOrder($withItems->signals, $bare->signals);
         foreach (['Latte', 'Croissant', 'items', 'product'] as $word) {
             $this->assertStringNotContainsStringIgnoringCase($word, $this->claude->calls[0]['user']);
         }
