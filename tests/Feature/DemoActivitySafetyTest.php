@@ -187,6 +187,9 @@ class DemoActivitySafetyTest extends TestCase
 
     public function test_a_real_mismatch_still_stops_the_day_on_the_second_check(): void
     {
+        // The full solvency history (ADR 0033) would stop the day at once on this tampered payout
+        // (its records cross-check, DemoActivitySolvencyTest); this test is about reconciliation's own rule.
+        config(['solvency.tick_check' => 'current', 'solvency.history_check_daily_at' => '23:00']);
         // Run to the first Stripe transfer, everything matching.
         $t = \Carbon\CarbonImmutable::parse('2026-10-26 07:00', 'America/New_York');
         while (! DB::table('merchant_payouts')->where('status', 'sent')->exists()) {
