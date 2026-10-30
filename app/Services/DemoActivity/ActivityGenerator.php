@@ -13,6 +13,7 @@ use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
+use App\Models\SolvencyCheckRun;
 use App\Models\User;
 use App\Services\Corrections\CorrectionRequests;
 use App\Services\CreditLedger;
@@ -23,6 +24,7 @@ use App\Services\Payments\StripeReconciliation;
 use App\Services\PayCodes;
 use App\Services\RedemptionBasket;
 use App\Services\RedemptionService;
+use App\Services\Solvency\SolvencyCheck;
 use App\Support\MerchantFee;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
@@ -58,6 +60,7 @@ class ActivityGenerator
         private MerchantPayouts $payouts,
         private StripeTestPayments $testPayments,
         private StripeReconciliation $reconciliation,
+        private SolvencyCheck $solvency,
     ) {}
 
     /** @return list<string> what happened, one line each */
@@ -76,6 +79,11 @@ class ActivityGenerator
                 return ['Stopped for today: '.$day->halted_reason];
             }
 
+            // Never act on a ledger that already breaks the solvency rule (ADR 0033).
+            if (! $this->solvent($day, $now, store: false)) {
+                return $this->log;
+            }
+
             $matched = $this->reconcile($day);
             $employer = Employer::orderBy('id')->first();
 
@@ -91,6 +99,8 @@ class ActivityGenerator
                 if ($matched && $this->sentTransfers() !== $sent) {
                     $this->reconcile($day);
                 }
+
+                $this->solvent($day, $now, store: true);
             }
         } catch (Throwable $e) {
             Log::warning('Demo activity tick failed', ['error' => $e->getMessage()]);
@@ -497,6 +507,44 @@ class ActivityGenerator
         $action->forceFill(['status' => DemoActivityAction::STATUS_SKIPPED, 'note' => $why])->save();
 
         return 'Skipped '.$action->slot.': '.$why;
+    }
+
+    /**
+     * The solvency rule (ADR 0033), as config('solvency.tick_check') says:
+     * the whole history every tick, or the current position with the whole
+     * history once a day. The check after the tick's actions is stored (it
+     * is "last run" on Where the money is); any failure is stored too and
+     * stops the day.
+     */
+    private function solvent(DemoActivityDay $day, CarbonImmutable $now, bool $store): bool
+    {
+        $full = config('solvency.tick_check') !== 'current' || ($store && $this->dailyHistoryDue($now));
+
+        if (! $full && $this->solvency->now()->passes()) {
+            return true;
+        }
+
+        $history = $this->solvency->history();
+        if ($store || ! $history->passed()) {
+            SolvencyCheckRun::record($history, SolvencyCheckRun::TRIGGER_DEMO_ACTIVITY);
+        }
+        if ($history->passed()) {
+            return true;
+        }
+
+        $first = $history->firstFailure();
+        $this->halt($day, 'the solvency check failed'.($first !== null ? ' from '.$first['from'].' UTC: '.$first['problem'] : ': '.rtrim(implode(' ', $history->mismatches), '.'))
+            .'. See /where-the-money-is.');
+
+        return false;
+    }
+
+    /** With tick_check "current": the first stored check after history_check_daily_at today replays the whole history. */
+    private function dailyHistoryDue(CarbonImmutable $now): bool
+    {
+        $from = $now->setTimeFromTimeString((string) config('solvency.history_check_daily_at'));
+
+        return $now->gte($from) && ! SolvencyCheckRun::where('trigger', SolvencyCheckRun::TRIGGER_DEMO_ACTIVITY)->where('created_at', '>=', $from->utc())->exists();
     }
 
     private function halt(DemoActivityDay $day, string $why): void
