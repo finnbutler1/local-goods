@@ -359,13 +359,23 @@ class FraudGateTest extends TestCase
         }
         sort($callers);
 
-        // The interface, the SDK wrapper and its notice guard only pass the call on; MerchantPayouts is the one caller.
+        // The interface, the SDK wrapper and its notice guard only pass the call on. MerchantPayouts is the one caller
+        // that pays merchants. OperatingSweeps (ADR 0034) is the only other: it sends earned money to Local Goods
+        // Operating and can never name a merchant as the destination (checked below and in OperatingSweepTest).
         $this->assertSame([
             'Services/Payments/MerchantPayouts.php',
             'Services/Payments/NoticeSafeStripeGateway.php',
+            'Services/Payments/OperatingSweeps.php',
             'Services/Payments/StripeGateway.php',
             'Services/Payments/StripeSdkGateway.php',
         ], $callers);
+
+        $sweeps = file_get_contents(app_path('Services/Payments/OperatingSweeps.php'));
+        $this->assertSame(1, substr_count($sweeps, '->createTransfer('));
+        $send = substr($sweeps, strpos($sweeps, 'public function send('));
+        $this->assertStringContainsString("'destination' => \$destination,", $send, 'A sweep is sent only to the destination the guard returned');
+        $this->assertLessThan(strpos($send, '->createTransfer('), strpos($send, '$destination = self::destination();'), 'The destination is checked before Stripe is called');
+        $this->assertStringNotContainsString('Merchant::', substr($send, 0, strpos($send, 'public static function idempotencyKey(')), 'A sweep never looks a merchant up to pay it');
 
         $source = file_get_contents(app_path('Services/Payments/MerchantPayouts.php'));
         $this->assertSame(1, substr_count($source, '->createTransfer('));
