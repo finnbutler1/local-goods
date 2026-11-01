@@ -25,6 +25,7 @@ class DemoResetter
         'partnerships',
         'pay_codes',
         'credit_ledger_entries',
+        'operating_sweeps',
         'correction_actions',
         'correction_items',
         'corrections',
@@ -49,8 +50,9 @@ class DemoResetter
      * seeded, so a demo seeded before them has none, and that is fine. So did
      * corrections (ADR 0028): the live demo has none until someone asks.
      * The demo activity generator's tables (ADR 0032) fill only once it runs.
+     * Sweeps (ADR 0034) exist only once a platform admin sweeps earned fees.
      */
-    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes', 'corrections', 'correction_items', 'correction_actions', 'demo_activity_days', 'demo_activity_actions', 'solvency_checks'];
+    public const EMPTY_AFTER_SEED = ['redemption_decisions', 'redemption_items', 'pay_codes', 'corrections', 'correction_items', 'correction_actions', 'demo_activity_days', 'demo_activity_actions', 'solvency_checks', 'operating_sweeps'];
 
     /**
      * Added after the live demo was first seeded (ADR 0023): if only this

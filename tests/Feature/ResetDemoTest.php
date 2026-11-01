@@ -82,10 +82,13 @@ class ResetDemoTest extends TestCase
         // The demo activity generator's log (ADR 0032) points at redemptions
         // and purchases, so it goes with them (Reset demo is local only).
         // Solvency check results (ADR 0033) describe the demo's ledger, so they go too.
+        // Sweeps (ADR 0034) have ledger lines, so they go with the ledger. The
+        // operating account record never does: like merchants' Stripe ids, it is kept.
         $this->assertSame(
-            ['solvency_checks', 'demo_activity_actions', 'demo_activity_days', 'merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
+            ['solvency_checks', 'demo_activity_actions', 'demo_activity_days', 'merchant_application_events', 'merchant_applications', 'partnership_changes', 'partnerships', 'pay_codes', 'credit_ledger_entries', 'operating_sweeps', 'correction_actions', 'correction_items', 'corrections', 'redemption_decisions', 'merchant_payouts', 'redemption_items', 'credit_allocations', 'credit_purchases', 'redemptions', 'merchant_products', 'merchants', 'employees', 'employers', 'bids'],
             DemoResetter::DEMO_TABLES,
         );
+        $this->assertNotContains('operating_accounts', DemoResetter::DEMO_TABLES);
     }
 
     public function test_admin_view_has_the_reset_button(): void
