@@ -87,7 +87,7 @@ class CreditLedgerEntry extends Model
     protected $fillable = [
         'employee_id', 'employer_id', 'merchant_id', 'amount_cents', 'type', 'redemption_id',
         'credit_purchase_id', 'credit_allocation_id', 'merchant_payout_id', 'description', 'decided_by', 'created_at', 'platform',
-        'correction_id',
+        'correction_id', 'operating_sweep_id',
     ];
 
     protected function casts(): array
