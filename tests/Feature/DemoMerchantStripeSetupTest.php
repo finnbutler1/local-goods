@@ -168,6 +168,39 @@ class DemoMerchantStripeSetupTest extends TestCase
         $this->assertSame(7, Merchant::whereNotNull('stripe_account_id')->distinct()->count('stripe_account_id'));
     }
 
+    public function test_a_press_minutes_after_a_lost_answer_gets_the_same_account_back(): void
+    {
+        $fake = new class extends FakeStripeGateway
+        {
+            public bool $cutOff = true;
+
+            public function createDemoAccount(array $params, string $idempotencyKey): array
+            {
+                $account = parent::createDemoAccount($params, $idempotencyKey);
+                if ($this->cutOff) {
+                    $this->cutOff = false;
+                    throw new StripeGatewayException('Could not reach Stripe. Nothing was lost; it will be tried again.', definite: false);
+                }
+
+                return $account;
+            }
+        };
+        $this->stripe = $fake;
+        $this->app->instance(StripeGateway::class, new NoticeSafeStripeGateway($fake));
+
+        $this->connect()->assertSessionHas('error');
+        $accepted = Merchant::where('name', 'Seventeenth Street Kitchen')->value('stripe_tos_accepted_at');
+        $this->assertNotNull($accepted, 'The terms date is kept with the key');
+
+        // Identical parameters (the terms date doesn't move), so Stripe replays instead of refusing.
+        $this->travel(2)->minutes();
+        $this->connect()->assertSessionHas('notice', '1 of 7 demo merchants connected, continuing…');
+
+        $this->assertCount(1, $fake->callsOf('demo_account'), 'No second account for the same merchant');
+        $this->assertSame(array_key_first($fake->accounts), Merchant::where('name', 'Seventeenth Street Kitchen')->value('stripe_account_id'));
+        $this->assertEquals($accepted, Merchant::where('name', 'Seventeenth Street Kitchen')->value('stripe_tos_accepted_at'));
+    }
+
     public function test_a_request_cut_off_before_the_bank_account_is_finished_by_the_next_press(): void
     {
         $fake = new class extends FakeStripeGateway

@@ -6,13 +6,16 @@ use App\Enums\Role;
 use App\Models\Merchant;
 use App\Models\OperatingAccount;
 use App\Services\DemoResetter;
+use App\Services\Payments\NoticeSafeStripeGateway;
 use App\Services\Payments\OperatingAccountSetup;
+use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeGatewayException;
 use App\Services\Payments\StripeWebhookHandler;
 use App\Support\StripeEnvironment;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\UsesFakeStripe;
+use Tests\Fakes\FakeStripeGateway;
 use Tests\TestCase;
 
 /**
@@ -67,6 +70,44 @@ class OperatingAccountSetupTest extends TestCase
 
         $this->assertSame(1, OperatingAccount::count());
         $this->assertSame('fake-setup-key-example', OperatingAccount::current()->setup_key);
+    }
+
+    public function test_a_retry_minutes_after_a_lost_answer_gets_the_same_account_back(): void
+    {
+        // Stripe creates the account, but the reply never arrives (a timeout).
+        $fake = new class extends FakeStripeGateway
+        {
+            public bool $cutOff = true;
+
+            public function createOperatingAccount(array $params, string $idempotencyKey): array
+            {
+                $account = parent::createOperatingAccount($params, $idempotencyKey);
+                if ($this->cutOff) {
+                    $this->cutOff = false;
+                    throw new StripeGatewayException('Could not reach Stripe.', definite: false);
+                }
+
+                return $account;
+            }
+        };
+        $this->fakeStripe();
+        $this->stripe = $fake;
+        $this->app->instance(StripeGateway::class, new NoticeSafeStripeGateway($fake));
+        $setup = app(OperatingAccountSetup::class);
+
+        try {
+            $setup->create('127.0.0.1');
+            $this->fail('The lost answer should surface.');
+        } catch (StripeGatewayException) {
+        }
+        $this->assertNull(OperatingAccount::current()->stripe_account_id);
+
+        // Identical parameters (the terms date doesn't move), so Stripe replays instead of refusing.
+        $this->travel(2)->minutes();
+        $record = $setup->create('127.0.0.1');
+
+        $this->assertSame(array_key_first($fake->accounts), $record->stripe_account_id);
+        $this->assertCount(1, $fake->callsOf('operating_account'), 'No second account');
     }
 
     public function test_refused_without_stripe_test_mode_and_nothing_is_saved(): void
