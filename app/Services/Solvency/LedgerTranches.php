@@ -13,6 +13,11 @@ use App\Models\CreditLedgerEntry as E;
  * Goods has actually earned: the platform account, today only fees, which
  * are 0. Unspent credits are always the employer's money, never ours.
  *
+ * Money in hand is the money in the customer funds account (the Stripe
+ * platform balance, ADR 0034). A sweep moves earned fees out of it to Local
+ * Goods Operating: the platform account goes down by the same amount, so
+ * what is swept is no longer promised to anyone and the rule is unchanged.
+ *
  * A line's tranche is decided by its account, and every line has exactly
  * one account (CreditLedgerEntry refuses anything else), so every cent is
  * in one tranche and only one. Each type lives on one account only; a new
@@ -66,12 +71,15 @@ final class LedgerTranches
         E::TYPE_PLATFORM_FEE => self::PLATFORM,
         E::TYPE_PLATFORM_MERCHANT_FEE => self::PLATFORM,
         E::TYPE_PLATFORM_MERCHANT_FEE_RETURNED => self::PLATFORM,
+        E::TYPE_OPERATING_SWEEP => self::PLATFORM,
+        E::TYPE_OPERATING_SWEEP_RETURNED => self::PLATFORM,
     ];
 
     /**
      * Lines that move money in hand, with their own amount: paid purchases
      * and platform fees come in, payouts go out, reversed transfers and
-     * refund reversals come back. The one other movement, an employer
+     * refund reversals come back, sweeps leave for Local Goods Operating
+     * (and a refused one comes back). The one other movement, an employer
      * refund going out, is an amount-0 employer_refunded line whose amount
      * is on its correction action.
      */
@@ -81,6 +89,14 @@ final class LedgerTranches
         E::TYPE_PAYOUT,
         E::TYPE_PAYOUT_REVERSED,
         E::TYPE_REFUND_REVERSAL,
+        E::TYPE_OPERATING_SWEEP,
+        E::TYPE_OPERATING_SWEEP_RETURNED,
+    ];
+
+    /** Lines that move earned fees between the customer funds account and Local Goods Operating (ADR 0034). */
+    public const SWEEP_TYPES = [
+        E::TYPE_OPERATING_SWEEP,
+        E::TYPE_OPERATING_SWEEP_RETURNED,
     ];
 
     /** A redemption's own line: its credits are held until one of the RESOLVES_HELD lines. */

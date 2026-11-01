@@ -79,6 +79,12 @@ class CreditLedgerEntry extends Model
     /** Employer account: a refund that won't happen (closed after a failure); the held credits come back. */
     public const TYPE_EMPLOYER_REFUND_RELEASED = 'employer_refund_released';
 
+    /** Platform account: earned fees swept out of the customer funds account to Local Goods Operating (ADR 0034). Negative. */
+    public const TYPE_OPERATING_SWEEP = 'operating_sweep';
+
+    /** Platform account: Stripe definitely refused a sweep, so its amount is back with the unswept fees (ADR 0034). With TYPE_OPERATING_SWEEP it adds up to zero. */
+    public const TYPE_OPERATING_SWEEP_RETURNED = 'operating_sweep_returned';
+
     /** "platform" is true on platform-account entries and null on every other one. */
     public const ACCOUNT_COLUMNS = ['employee_id', 'employer_id', 'merchant_id', 'platform'];
 
