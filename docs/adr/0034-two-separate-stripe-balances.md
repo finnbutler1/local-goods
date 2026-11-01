@@ -59,6 +59,12 @@ deleted afterwards; scrubbed responses in `tests/Fixtures/stripe/operating/`):
 - The platform can pull money back from the account by transfer reversal:
   both balances are controlled by Local Goods.
 
+`scripts/stripe-trial-small-sweep.php` ran once on 2026-11-01 under the same
+conditions, because the live sweep is $0.16: Stripe accepted a 16-cent and a
+1-cent transfer from the available balance (no `source_transaction`, as a
+sweep is sent) to an account with no bank account, and its balance then read
+exactly 17 cents.
+
 ## Live: where the operating balance comes from
 
 Local Goods charges nothing: the platform fee and the merchant fee are both
