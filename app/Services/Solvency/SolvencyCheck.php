@@ -10,6 +10,7 @@ use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
+use App\Models\OperatingSweep;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -67,6 +68,9 @@ class SolvencyCheck
             ->where('p.status', '!=', MerchantPayout::STATUS_SIMULATED)
             ->whereIn('e.type', [E::TYPE_PAYOUT, E::TYPE_PAYOUT_REVERSED, E::TYPE_REFUND_REVERSAL])
             ->groupBy('e.type')->selectRaw('e.type, SUM(e.amount_cents) as total')->pluck('total', 'type')->map(fn ($v) => (int) $v);
+        // Sweeps sent through Stripe (or reserved for it) are Stripe money out, like a transfer (ADR 0034).
+        $stripeSwept = -(int) DB::table('credit_ledger_entries as e')->join('operating_sweeps as s', 's.id', '=', 'e.operating_sweep_id')
+            ->where('s.channel', OperatingSweep::CHANNEL_STRIPE)->whereIn('e.type', LedgerTranches::SWEEP_TYPES)->sum('e.amount_cents');
         $stripeIn = (int) DB::table('credit_ledger_entries as e')->join('credit_purchases as c', 'c.id', '=', 'e.credit_purchase_id')
             ->where('c.status', CreditPurchase::STATUS_PAID)->whereIn('e.type', [E::TYPE_PURCHASE, E::TYPE_PLATFORM_FEE])->sum('e.amount_cents');
 
@@ -86,9 +90,10 @@ class SolvencyCheck
             refundedCents: array_sum(array_column($refunded, 'all')),
             stripeInCents: $stripeIn,
             stripeOutCents: -($stripeLines[E::TYPE_PAYOUT] ?? 0) - ($stripeLines[E::TYPE_PAYOUT_REVERSED] ?? 0)
-                - ($stripeLines[E::TYPE_REFUND_REVERSAL] ?? 0) + array_sum(array_column($refunded, 'stripe')),
+                - ($stripeLines[E::TYPE_REFUND_REVERSAL] ?? 0) + array_sum(array_column($refunded, 'stripe')) + $stripeSwept,
             negativeAccounts: $negatives,
             negativeCents: $negativeCents,
+            sweptCents: -$sum(...LedgerTranches::SWEEP_TYPES),
         );
     }
 
@@ -102,6 +107,7 @@ class SolvencyCheck
         $started = hrtime(true);
         $stripePurchases = array_flip(DB::table('credit_purchases')->where('status', CreditPurchase::STATUS_PAID)->pluck('id')->all());
         $simulatedPayouts = array_flip(DB::table('merchant_payouts')->where('status', MerchantPayout::STATUS_SIMULATED)->pluck('id')->all());
+        $stripeSweeps = array_flip(DB::table('operating_sweeps')->where('channel', OperatingSweep::CHANNEL_STRIPE)->pluck('id')->all());
         $refundActions = $this->refundActions();
 
         $balances = [];
@@ -111,7 +117,7 @@ class SolvencyCheck
         $heldCents = 0;
         $holdBy = [];
         $holdCents = 0;
-        $in = ['credits' => 0, 'fees' => 0, 'out' => 0, 'back' => 0, 'refunded' => 0, 'stripe_in' => 0, 'stripe_out' => 0];
+        $in = ['credits' => 0, 'fees' => 0, 'out' => 0, 'back' => 0, 'refunded' => 0, 'swept' => 0, 'stripe_in' => 0, 'stripe_out' => 0];
 
         $entries = 0;
         $moments = 0;
@@ -148,6 +154,7 @@ class SolvencyCheck
                 stripeOutCents: $in['stripe_out'],
                 negativeAccounts: array_keys($negatives),
                 negativeCents: array_sum($negatives),
+                sweptCents: $in['swept'],
             );
         };
 
@@ -172,7 +179,7 @@ class SolvencyCheck
 
         $lines = DB::table('credit_ledger_entries')->orderBy('created_at')->orderBy('id')
             ->select(['id', 'created_at', 'type', 'amount_cents', 'employee_id', 'employer_id', 'merchant_id', 'platform',
-                'redemption_id', 'correction_id', 'credit_purchase_id', 'merchant_payout_id'])->cursor();
+                'redemption_id', 'correction_id', 'credit_purchase_id', 'merchant_payout_id', 'operating_sweep_id'])->cursor();
 
         foreach ($lines as $line) {
             $at = (string) $line->created_at;
@@ -213,8 +220,12 @@ class SolvencyCheck
                 E::TYPE_PLATFORM_FEE => $in['fees'] += $amount,
                 E::TYPE_PAYOUT => $in['out'] -= $amount,
                 E::TYPE_PAYOUT_REVERSED, E::TYPE_REFUND_REVERSAL => $in['back'] += $amount,
+                E::TYPE_OPERATING_SWEEP, E::TYPE_OPERATING_SWEEP_RETURNED => $in['swept'] -= $amount,
                 default => null,
             };
+            if (in_array($type, LedgerTranches::SWEEP_TYPES, true) && isset($stripeSweeps[$line->operating_sweep_id])) {
+                $in['stripe_out'] -= $amount;
+            }
             if (in_array($type, [E::TYPE_PURCHASE, E::TYPE_PLATFORM_FEE], true) && isset($stripePurchases[$line->credit_purchase_id])) {
                 $in['stripe_in'] += $amount;
             }
@@ -276,6 +287,13 @@ class SolvencyCheck
         $payoutLines = -$line(E::TYPE_PAYOUT) - $line(E::TYPE_PAYOUT_REVERSED);
         if ($payouts !== $payoutLines) {
             $mismatches[] = 'Payouts sent or simulated come to '.$money($payouts).' but their ledger lines to '.$money($payoutLines).'.';
+        }
+
+        // A sweep's line is written when it is reserved; a refused one also has its returned line (ADR 0034).
+        $sweeps = (int) OperatingSweep::whereIn('status', [OperatingSweep::STATUS_PENDING, ...OperatingSweep::DONE_STATUSES])->sum('amount_cents');
+        $sweepLines = -$line(...LedgerTranches::SWEEP_TYPES);
+        if ($sweeps !== $sweepLines) {
+            $mismatches[] = 'Sweeps to Local Goods Operating come to '.$money($sweeps).' but their ledger lines to '.$money($sweepLines).'.';
         }
 
         $refunds = (int) CorrectionAction::where('status', CorrectionAction::STATUS_SUCCEEDED)->whereNotNull('credit_purchase_id')

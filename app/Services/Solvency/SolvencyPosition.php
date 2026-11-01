@@ -5,8 +5,10 @@ namespace App\Services\Solvency;
 /**
  * Where the money is at one moment (ADR 0033), in integer cents.
  *
- * Money in hand = paid in (credits and platform fees) − paid out to
- * merchants + pulled back from merchants − refunded to employers.
+ * Money in hand is the money in the customer funds account (ADR 0034) =
+ * paid in (credits and platform fees) − paid out to merchants + pulled
+ * back from merchants − refunded to employers − fees swept to Local Goods
+ * Operating. Swept money is Local Goods' own and nobody is promised it.
  * Promised = customer funds held + operating funds, each account counted
  * only above zero, so one account below zero never hides another's
  * promise. The rule: money in hand − promised ≥ 0. We expect exactly 0;
@@ -37,6 +39,7 @@ final readonly class SolvencyPosition
         public int $stripeOutCents,
         public array $negativeAccounts = [],
         public int $negativeCents = 0,
+        public int $sweptCents = 0,
     ) {}
 
     public function customerFundsCents(): int
@@ -56,7 +59,7 @@ final readonly class SolvencyPosition
 
     public function inHandCents(): int
     {
-        return $this->creditsPaidInCents + $this->feesPaidInCents - $this->paidOutCents + $this->pulledBackCents - $this->refundedCents;
+        return $this->creditsPaidInCents + $this->feesPaidInCents - $this->paidOutCents + $this->pulledBackCents - $this->refundedCents - $this->sweptCents;
     }
 
     /** How much more is promised than is in hand; 0 when solvent. */
