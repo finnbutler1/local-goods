@@ -142,8 +142,9 @@ class StripeCheckoutTest extends TestCase
         $session = $this->openCheckout();
 
         $this->assertArrayNotHasKey('payment_method_types', $session);
+        // custom_text: the customer funds sentence under the Pay button (ADR 0034); embedded Checkout accepts it (trial of 2026-10-30).
         $this->assertSame(
-            ['mode', 'ui_mode', 'client_reference_id', 'line_items', 'payment_intent_data', 'metadata', 'expires_at', 'return_url'],
+            ['mode', 'ui_mode', 'client_reference_id', 'line_items', 'payment_intent_data', 'metadata', 'custom_text', 'expires_at', 'return_url'],
             array_keys($session),
         );
         $this->assertSame('payment', $session['mode']);

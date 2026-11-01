@@ -233,6 +233,7 @@
                         <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
                         No real money moves. Stripe holds the money, not Local Goods.
                     </p>
+                    @include('partials.customer-funds-note', ['stripe' => true])
                     <div class="mt-4 w-full min-w-0 overflow-hidden rounded-xl" data-embedded-checkout aria-label="Stripe payment form, test mode"
                          role="region" aria-describedby="test-card-hint"
                          data-stripe-key="{{ config('services.stripe.key') }}"
@@ -274,6 +275,7 @@
                             Still waiting for Stripe. {{ $buying->reference }} will show as paid in Purchases once Stripe confirms; refresh this page later to check.
                         </p>
                     </div>
+                    @include('partials.customer-funds-note', ['stripe' => true])
                 @else
                     @if ($buy['state'] === 'cancelled')
                         <div class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm" data-buy-cancelled>
@@ -287,6 +289,7 @@
                             Stripe isn't connected on this server, so buying is simulated: the credits are added straight away with no real money.
                         @endif
                     </p>
+                    @include('partials.customer-funds-note', ['stripe' => $stripe])
                     @php
                         $feeHint = PlatformFee::enabled() ? ' A '.PlatformFee::label().' platform fee is added on top.' : '';
                         $prefill = old('purchase_amount', $buy['state'] === 'cancelled' ? Money::toDollars($buying->amount_cents) : null);
@@ -374,11 +377,13 @@
                                         <x-badge tone="ok">Paid</x-badge>
                                         <x-money-mode mode="stripe" :id="$purchase->stripe_payment_intent_id" />
                                     </div>
+                                    <p class="basis-full text-sm text-muted" data-held-in="customer-funds">Held in the customer funds account until your staff spend it.</p>
                                 @else
                                     <div class="flex flex-wrap items-center gap-2">
                                         <x-badge tone="ok">Paid (simulated)</x-badge>
                                         <x-money-mode mode="simulated" />
                                     </div>
+                                    <p class="basis-full text-sm text-muted" data-held-in="customer-funds">Recorded as customer funds until your staff spend it (simulated).</p>
                                 @endif
                             </li>
                         @endforeach
