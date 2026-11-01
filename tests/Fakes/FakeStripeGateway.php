@@ -38,7 +38,7 @@ class FakeStripeGateway implements StripeGateway
 
     public function createCheckoutSession(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['checkout', $params];
 
             // Like the real API (2026-09-30): Checkout refuses payment_method_types.
@@ -52,10 +52,12 @@ class FakeStripeGateway implements StripeGateway
                 throw new StripeGatewayException($message);
             }
             $id = 'cs_test_'.$this->next();
-            $this->sessions[$id] = ['id' => $id, 'object' => 'checkout.session', 'status' => 'open', 'ui_mode' => $params['ui_mode'] ?? 'hosted_page'];
+            // Like the real API, retrieving an embedded session returns its client secret too.
+            $this->sessions[$id] = ['id' => $id, 'object' => 'checkout.session', 'status' => 'open', 'ui_mode' => $params['ui_mode'] ?? 'hosted_page']
+                + (($params['ui_mode'] ?? null) === 'embedded_page' ? ['client_secret' => $id.'_secret_fake'] : []);
 
             return ($params['ui_mode'] ?? null) === 'embedded_page'
-                ? $this->sessions[$id] + ['client_secret' => $id.'_secret_fake']
+                ? $this->sessions[$id]
                 : $this->sessions[$id] + ['url' => 'https://checkout.stripe.test/'.$id];
         });
     }
@@ -65,7 +67,7 @@ class FakeStripeGateway implements StripeGateway
 
     public function createTestPayment(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['test_payment', $params];
 
             // Like the real API (2026-09-30): PaymentIntents refuse payment_method_types,
@@ -145,7 +147,7 @@ class FakeStripeGateway implements StripeGateway
 
     public function createExpressAccount(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['account', $params];
 
             if ($this->accountNotice !== null) {
@@ -160,7 +162,7 @@ class FakeStripeGateway implements StripeGateway
     /** Like Stripe: transfers active at once; payouts wait for a bank account. */
     public function createDemoAccount(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['demo_account', $params];
             $id = 'acct_test_'.$this->next();
 
@@ -176,7 +178,7 @@ class FakeStripeGateway implements StripeGateway
     /** Like Stripe (trial of 2026-10-30): with no bank account, transfers are active and payouts restricted. */
     public function createOperatingAccount(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['operating_account', $params];
             $id = 'acct_test_'.$this->next();
 
@@ -191,7 +193,7 @@ class FakeStripeGateway implements StripeGateway
 
     public function addTestBankAccount(string $accountId, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($accountId) {
+        return $this->remember($idempotencyKey, ['account' => $accountId], function () use ($accountId) {
             $this->calls[] = ['bank_account', ['account' => $accountId]];
             $this->accounts[$accountId] ?? throw new StripeGatewayException('No such account.');
             $this->accounts[$accountId] = ['dashboard' => 'none'] + self::v2Account($accountId, 'active', waitingOnMerchant: false);
@@ -239,7 +241,7 @@ class FakeStripeGateway implements StripeGateway
 
     public function createTransfer(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['transfer', $params];
 
             if ($this->transferFailures !== []) {
@@ -270,7 +272,7 @@ class FakeStripeGateway implements StripeGateway
      */
     public function reverseTransfer(string $transferId, array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($transferId, $params) {
+        return $this->remember($idempotencyKey, ['transfer' => $transferId] + $params, function () use ($transferId, $params) {
             $this->calls[] = ['reversal', ['transfer' => $transferId] + $params];
             $this->failIfTold($this->reversalFailures);
 
@@ -298,7 +300,7 @@ class FakeStripeGateway implements StripeGateway
 
     public function createRefund(array $params, string $idempotencyKey): array
     {
-        return $this->remember($idempotencyKey, function () use ($params) {
+        return $this->remember($idempotencyKey, $params, function () use ($params) {
             $this->calls[] = ['refund', $params];
             $this->failIfTold($this->refundFailures);
 
@@ -376,11 +378,26 @@ class FakeStripeGateway implements StripeGateway
     /** @var list<string> every idempotency key used, in order */
     public array $idempotencyKeys = [];
 
-    private function remember(string $key, callable $make): array
+    /** @var array<string, array> the params each key was first used with */
+    private array $paramsByIdempotencyKey = [];
+
+    /** Like Stripe: a reused key replays its answer, but only for exactly the same params. */
+    private function remember(string $key, array $params, callable $make): array
     {
         $this->idempotencyKeys[] = $key;
 
-        return $this->byIdempotencyKey[$key] ??= $make();
+        if (isset($this->byIdempotencyKey[$key])) {
+            if ($this->paramsByIdempotencyKey[$key] !== $params) {
+                throw new StripeGatewayException('Stripe refused the request (IdempotencyException). Stripe says: Keys for idempotent requests can only be used with the same parameters they were first used with.');
+            }
+
+            return $this->byIdempotencyKey[$key];
+        }
+
+        $answer = $make();
+        $this->paramsByIdempotencyKey[$key] = $params;
+
+        return $this->byIdempotencyKey[$key] = $answer;
     }
 
     private function next(): string

@@ -264,7 +264,7 @@ class BuyCreditsFlowTest extends TestCase
         $this->post("/employer/purchases/{$purchase->id}/cancel");
 
         $this->post("/employer/purchases/{$purchase->id}/pay")->assertSessionHas('error', "Nothing changed: {$purchase->reference} is cancelled.");
-        $this->postJson("/employer/purchases/{$purchase->id}/checkout")->assertStatus(422)->assertJson(['message' => "Payment didn't start: That purchase was cancelled. Nothing was charged."]);
+        $this->postJson("/employer/purchases/{$purchase->id}/checkout")->assertStatus(422)->assertJson(['message' => "Payment didn't start: That purchase was cancelled. No new charge was made."]);
         $this->get('/employer?pay='.$purchase->reference)->assertOk()->assertDontSee('data-embedded-checkout', false);
     }
 
