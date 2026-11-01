@@ -155,6 +155,21 @@
                 <x-badge tone="neutral">Not set up yet</x-badge>
             @endif
         </p>
+        @if (($operating = $report['operating'] ?? null) && $operating['set_up'])
+            <dl class="mt-4 grid gap-3 sm:grid-cols-3" data-operating-check="{{ $operating['matches'] === null ? 'unknown' : ($operating['matches'] ? 'yes' : 'no') }}">
+                <div><dt class="text-sm text-muted">Sweeps sent to it (ledger)</dt><dd class="tabular font-semibold">{{ Money::format($operating['expected_cents']) }}</dd></div>
+                <div><dt class="text-sm text-muted">Its balance in Stripe</dt><dd class="tabular font-semibold">{{ $operating['balance_cents'] === null ? 'Couldn\'t read it' : Money::format($operating['balance_cents']) }}</dd></div>
+                <div><dt class="text-sm text-muted">Match?</dt><dd>
+                    @if ($operating['matches'] === null)
+                        <x-badge tone="neutral">Not checked</x-badge>
+                    @elseif ($operating['matches'])
+                        <x-badge tone="ok">Matches</x-badge>
+                    @else
+                        <x-badge tone="hold">Doesn't match</x-badge>
+                    @endif
+                </dd></div>
+            </dl>
+        @endif
         @if ($report['active'] && ! $operatingAccount?->transfers_active)
             <form method="POST" action="{{ route('admin.stripe.operating-account') }}" data-busy="Setting up Local Goods Operating…" class="mt-4">
                 @csrf

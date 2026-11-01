@@ -8,6 +8,8 @@ use App\Models\CorrectionAction;
 use App\Models\CreditLedgerEntry;
 use App\Models\CreditPurchase;
 use App\Models\MerchantPayout;
+use App\Models\OperatingAccount;
+use App\Models\OperatingSweep;
 use App\Models\Redemption;
 use App\Support\Money;
 use App\Support\StripeEnvironment;
@@ -42,6 +44,15 @@ use Illuminate\Support\Carbon;
  * total, and the platform account's fee lines must add up to the fees on
  * cleared sales less what completed refunds gave back. With no fee (the
  * default) every number and sentence is as before.
+ *
+ * Two accounts (ADR 0034): the platform balance is the customer funds
+ * account, so the balance it should hold is also net of sweeps to Local
+ * Goods Operating. Each sweep is matched by id and amount to Stripe's
+ * transfer, both ways, and a sweep reversed in Stripe is a mismatch for a
+ * person to sort out. Local Goods Operating's own balance is checked too:
+ * only this environment sends to it and it is never paid out, so it must
+ * equal every sweep sent, unless sweeps were cleared by a Reset demo since
+ * it was made (then it is a note). With no sweeps every number is as before.
  */
 class StripeReconciliation
 {
@@ -77,6 +88,8 @@ class StripeReconciliation
             // activity generator, which waits a while before counting it (ADR 0032).
             'only_awaiting_webhooks_since' => null,
             'notes' => [],
+            // Local Goods Operating's check (ADR 0034); only in Stripe test mode.
+            'operating' => null,
             'other' => ['payments' => 0, 'payment_cents' => 0, 'transfers' => 0, 'transfer_cents' => 0, 'refunds' => 0, 'refund_cents' => 0, 'lines' => []],
         ];
 
@@ -91,9 +104,9 @@ class StripeReconciliation
             $intents = collect($this->stripe->listPaymentIntents($since->getTimestamp()))
                 ->filter(fn ($pi) => isset($pi['metadata']['lg_purchase_token']) && ($pi['status'] ?? null) === 'succeeded')
                 ->keyBy('id');
-            $transfers = collect($this->stripe->listTransfers($since->getTimestamp()))
-                ->filter(fn ($tr) => isset($tr['metadata']['lg_payout_key']))
-                ->keyBy('id');
+            $allTransfers = collect($this->stripe->listTransfers($since->getTimestamp()));
+            $transfers = $allTransfers->filter(fn ($tr) => isset($tr['metadata']['lg_payout_key']))->keyBy('id');
+            $sweepTransfers = $allTransfers->filter(fn ($tr) => isset($tr['metadata']['lg_sweep_key']))->keyBy('id');
             $refunds = collect($this->stripe->listRefunds($since->getTimestamp()))
                 ->filter(fn ($re) => isset($re['metadata']['lg_correction_key']))
                 ->keyBy('id');
@@ -107,7 +120,8 @@ class StripeReconciliation
         [$intents, $otherIntents] = $intents->partition(fn ($pi) => $this->ourPayment($pi));
         [$transfers, $otherTransfers] = $transfers->partition(fn ($tr) => $this->ourTransfer($tr));
         [$refunds, $otherRefunds] = $refunds->partition(fn ($re) => $this->ourRefund($re));
-        $report['other'] = $this->otherEnvironments($otherIntents, $otherTransfers, $otherRefunds);
+        [$sweepTransfers, $otherSweeps] = $sweepTransfers->partition(fn ($tr) => $this->ourSweep($tr));
+        $report['other'] = $this->otherEnvironments($otherIntents, $otherTransfers->merge($otherSweeps), $otherRefunds);
         $succeeded = $refunds->where('status', 'succeeded');
 
         $report['stripe'] = [
@@ -123,7 +137,7 @@ class StripeReconciliation
 
         [$this->awaiting, $this->knockOn] = [[], []];
         $report['mismatches'] = [...$this->comparePurchases($intents), ...$this->compareTransfers($transfers),
-            ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds), ...$this->compareMerchantFees()];
+            ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds), ...$this->compareMerchantFees(), ...$this->compareSweeps($sweepTransfers)];
 
         if ($local['purchase_cents'] !== $report['stripe']['purchase_cents']) {
             $report['mismatches'][] = $this->knockOn('purchase', 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe'.self::feeSplit($local).'; Stripe received '
@@ -143,13 +157,25 @@ class StripeReconciliation
             $report['mismatches'][] = $this->knockOn('refund', 'Refunds to employers: the ledger counts '.Money::format($local['refund_cents']).' refunded to cards through Stripe; Stripe shows '
                 .Money::format($report['stripe']['refund_cents']).'. Difference: '.Money::format($report['stripe']['refund_cents'] - $local['refund_cents']).'.');
         }
+        $report['operating'] = $this->operating($sweepTransfers, $since);
+        if ($report['operating']['mismatch'] !== null) {
+            $report['mismatches'][] = $report['operating']['mismatch'];
+        }
         $report['only_awaiting_webhooks_since'] = $this->onlyAwaitingSince($report['mismatches']);
 
-        $expected = $local['purchase_cents'] - $local['transfer_cents'] - $local['refund_cents'];
+        $expected = $local['purchase_cents'] - $local['transfer_cents'] - $local['refund_cents'] - $local['sweep_cents'];
         $report['expected_balance_cents'] = $expected;
         if ($report['stripe']['balance_cents'] !== $expected) {
-            $report['notes'][] = 'Stripe\'s platform balance ('.Money::format($report['stripe']['balance_cents']).') differs from Stripe-paid purchases minus transfers'.($local['refund_cents'] > 0 ? ' and refunds' : '').' ('
-                .Money::format($expected).') by '.Money::format($report['stripe']['balance_cents'] - $expected).'. That is expected: Stripe keeps its card fees, and the balance also holds test activity from before the last Reset demo and from other environments sharing this Stripe account. Not counted as a mismatch.';
+            $report['notes'][] = 'Stripe\'s platform balance, the customer funds account ('.Money::format($report['stripe']['balance_cents']).'), differs from Stripe-paid purchases minus transfers'.($local['refund_cents'] > 0 ? ', refunds' : '')
+                .($local['sweep_cents'] > 0 ? ' and sweeps to Local Goods Operating' : '').' ('
+                .Money::format($expected).') by '.Money::format($report['stripe']['balance_cents'] - $expected).'. That is expected: in test mode Stripe takes its card fees from this balance, and it also holds test activity from before the last Reset demo and from other environments sharing this Stripe account. Not counted as a mismatch.';
+        }
+        if ($report['operating']['note'] !== null) {
+            $report['notes'][] = $report['operating']['note'];
+        }
+        foreach (OperatingSweep::where('status', OperatingSweep::STATUS_PENDING)->get() as $sweep) {
+            $report['notes'][] = 'Sweep #'.$sweep->id.' of '.Money::format($sweep->amount_cents).' to Local Goods Operating is reserved but Stripe has not confirmed it'
+                .($sweep->failure_reason ? ' ('.$sweep->failure_reason.')' : '').'. Press Retry owed transfers: it is sent with the same key, so it can never be paid twice.';
         }
 
         $unsent = MerchantPayout::whereIn('status', MerchantPayout::UNPAID_STRIPE_STATUSES)->with('merchant')->get();
@@ -208,6 +234,9 @@ class StripeReconciliation
             'merchant_fee_cents' => (int) CreditLedgerEntry::where('platform', true)
                 ->whereIn('type', [CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED])
                 ->whereIn('redemption_id', (clone $sent)->select('redemption_id'))->sum('amount_cents'),
+            // Sent to Local Goods Operating through Stripe (ADR 0034): no longer in the customer funds account.
+            'sweep_cents' => (int) OperatingSweep::where('status', OperatingSweep::STATUS_SENT)->sum('amount_cents'),
+            'sweeps' => OperatingSweep::where('status', OperatingSweep::STATUS_SENT)->count(),
         ];
     }
 
@@ -293,6 +322,84 @@ class StripeReconciliation
         $known = $rows->pluck('stripe_transfer_id')->filter()->all();
         foreach ($transfers->except($known) as $tr) {
             $out[] = 'Stripe has a '.Money::format($tr['amount']).' transfer ('.$tr['id'].') to '.($tr['destination'] ?? 'a connected account').' that Local Goods has no record of.';
+        }
+
+        return $out;
+    }
+
+    /**
+     * Sweeps to Local Goods Operating (ADR 0034) against Stripe's transfers,
+     * by id and amount, both ways. A sweep reversed in Stripe is never
+     * written to the ledger automatically: a person decides.
+     *
+     * @return list<string>
+     */
+    private function compareSweeps($transfers): array
+    {
+        $out = [];
+        $sent = OperatingSweep::where('status', OperatingSweep::STATUS_SENT)->get();
+        $destination = OperatingAccount::current()?->stripe_account_id;
+
+        foreach ($sent as $sweep) {
+            $tr = $transfers->get($sweep->stripe_transfer_id);
+            if ($tr === null) {
+                $out[] = 'Local Goods recorded sweep #'.$sweep->id.' of '.Money::format($sweep->amount_cents).' to Local Goods Operating ('.$sweep->stripe_transfer_id.'), but Stripe has no such transfer since the last reset.';
+            } elseif ($tr['amount'] !== $sweep->amount_cents) {
+                $out[] = 'Sweep transfer '.$tr['id'].' is '.Money::format($sweep->amount_cents).' in the ledger but '.Money::format($tr['amount']).' in Stripe.';
+            } elseif (($tr['destination'] ?? null) !== $destination) {
+                $out[] = 'Sweep transfer '.$tr['id'].' went to '.($tr['destination'] ?? 'an unknown account').', not to Local Goods Operating.';
+            } elseif (($tr['amount_reversed'] ?? 0) > 0) {
+                $out[] = 'Stripe shows '.Money::format($tr['amount_reversed']).' of sweep transfer '.$tr['id'].' reversed back to the customer funds account, but the ledger still counts it as swept. A person decides what happens next; nothing is changed automatically.';
+            }
+        }
+
+        $byKey = OperatingSweep::whereNotNull('idempotency_key')->get()->keyBy('idempotency_key');
+        foreach ($transfers->except($sent->pluck('stripe_transfer_id')->filter()->all()) as $tr) {
+            $sweep = $byKey->get($tr['metadata']['lg_sweep_key']);
+            $out[] = $sweep?->status === OperatingSweep::STATUS_PENDING
+                ? 'Stripe made sweep transfer '.$tr['id'].' of '.Money::format($tr['amount']).' for sweep #'.$sweep->id.', but Local Goods never got the answer. Press Retry owed transfers to record it (same key, never paid twice).'
+                : 'Stripe has a '.Money::format($tr['amount']).' sweep transfer ('.$tr['id'].') that Local Goods has no record of.';
+        }
+
+        return $out;
+    }
+
+    /**
+     * Local Goods Operating's own balance against the sweeps sent to it.
+     *
+     * @return array{set_up: bool, account_id: ?string, expected_cents: int, balance_cents: ?int, matches: ?bool, error: ?string, mismatch: ?string, note: ?string}
+     */
+    private function operating($transfers, Carbon $since): array
+    {
+        $account = OperatingAccount::current();
+        $out = ['set_up' => $account?->stripe_account_id !== null, 'account_id' => $account?->stripe_account_id,
+            'expected_cents' => (int) OperatingSweep::where('status', OperatingSweep::STATUS_SENT)->sum('amount_cents'),
+            'balance_cents' => null, 'matches' => null, 'error' => null, 'mismatch' => null, 'note' => null];
+
+        if (! $out['set_up']) {
+            $out['note'] = 'Local Goods Operating is not set up in Stripe yet, so there is no operating balance to check. Create it below.';
+
+            return $out;
+        }
+
+        try {
+            $balance = $this->stripe->retrieveAccountBalance($account->stripe_account_id);
+        } catch (StripeGatewayException $e) {
+            $out['error'] = $e->getMessage();
+            $out['note'] = 'Couldn\'t read Local Goods Operating\'s balance from Stripe just now: '.$e->getMessage();
+
+            return $out;
+        }
+
+        $out['balance_cents'] = self::usd($balance['available'] ?? []) + self::usd($balance['pending'] ?? []);
+        $out['matches'] = $out['balance_cents'] === $out['expected_cents'];
+        if (! $out['matches']) {
+            $line = 'Local Goods Operating holds '.Money::format($out['balance_cents']).' in Stripe, but the sweeps sent to it come to '.Money::format($out['expected_cents']).'.';
+            // Only this environment sends to it and it is never paid out, so it must match, unless a Reset demo has
+            // cleared sweeps made before it (Stripe keeps the money; Local Goods forgets the records).
+            $account->created_at->lt($since)
+                ? $out['note'] = $line.' That can be expected here: a Reset demo since the account was made cleared earlier sweeps from the ledger, but not the money in Stripe. Not counted as a mismatch.'
+                : $out['mismatch'] = $line.' Only Local Goods sends money there, so they should be equal. Check before changing anything.';
         }
 
         return $out;
@@ -431,6 +538,15 @@ class StripeReconciliation
             StripeEnvironment::OTHER => false,
             default => MerchantPayout::stripe()->where(fn ($q) => $q->where('stripe_transfer_id', $tr['id'])
                 ->orWhere('idempotency_key', $tr['metadata']['lg_payout_key']))->exists(),
+        };
+    }
+
+    private function ourSweep(array $tr): bool
+    {
+        return match (StripeEnvironment::of($tr['metadata'] ?? null)) {
+            StripeEnvironment::SAME => true,
+            StripeEnvironment::OTHER => false,
+            default => OperatingSweep::where('stripe_transfer_id', $tr['id'])->orWhere('idempotency_key', $tr['metadata']['lg_sweep_key'])->exists(),
         };
     }
 

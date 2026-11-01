@@ -337,6 +337,9 @@ class FakeStripeGateway implements StripeGateway
     /** Next account balance read fails with this (plain English), once. */
     public ?string $accountBalanceFailure = null;
 
+    /** @var array<string, int> a connected account's balance in cents, when set; otherwise worked out from the transfers. */
+    public array $accountBalances = [];
+
     /** A connected account's balance: what was transferred to it, less what was reversed. All available, as in the trial. */
     public function retrieveAccountBalance(string $accountId): array
     {
@@ -348,7 +351,7 @@ class FakeStripeGateway implements StripeGateway
             throw new StripeGatewayException($message);
         }
 
-        $cents = array_sum(array_map(fn (array $t) => $t['amount'] - ($t['amount_reversed'] ?? 0),
+        $cents = $this->accountBalances[$accountId] ?? array_sum(array_map(fn (array $t) => $t['amount'] - ($t['amount_reversed'] ?? 0),
             array_filter($this->transfers, fn (array $t) => ($t['destination'] ?? null) === $accountId)));
 
         return ['object' => 'balance', 'available' => [['amount' => $cents, 'currency' => 'usd']], 'pending' => [['amount' => 0, 'currency' => 'usd']]];
