@@ -59,19 +59,27 @@ deleted afterwards; scrubbed responses in `tests/Fixtures/stripe/operating/`):
 - The platform can pull money back from the account by transfer reversal:
   both balances are controlled by Local Goods.
 
-## Live: the operating balance is $0.00
+## Live: where the operating balance comes from
 
-Local Goods charges nothing (the platform fee and the merchant fee are both
-off), so on live it has earned nothing to sweep, and the Local Goods
-Operating balance is $0.00. That is the true figure, not a gap. The sweep
-is proven by tests and by the scratch trial, not by live money; no fee will
-be switched on to make a live balance before judging.
+Local Goods charges nothing: the platform fee and the merchant fee are both
+off. The one exception is a three-minute check that the merchant fee
+mechanism worked. The fee audit log on live shows F.B. set the merchant
+fee to 2.5% on 2026-10-28 at 12:08 (reason "reflecting fee") and back to
+none at 12:11 (reason "no fee now"). One sale cleared inside that window:
+redemption #1841, $6.33, of which $6.17 was transferred to the merchant and
+$0.16 was kept (Stripe transfer metadata `lg_merchant_fee_cents=16`, found
+read-only by the scratch trial). No real person was charged: it is Stripe
+test mode with fictional people.
 
-One exception was found while planning this: on 2026-10-28 the merchant fee
-was switched on live for three minutes (12:08 to 12:11) to check the
-mechanism worked, and one sale, redemption #1841, was charged in that
-window. It was a test, not a pricing decision, and we say we charge
-nothing, so we decided to **give it back to the merchant rather than keep
-or sweep it**. The existing merchant adjustment can't do that (it only
-re-sends a payout that never went out), so how it is returned is part of
-this work.
+We considered giving the $0.16 back. The existing merchant adjustment can't
+(it only re-sends a payout that never went out), so it would need a new
+decided money path. We judged that building one for sixteen cents, twelve
+days before the freeze, was worse than recording exactly what happened, so
+the $0.16 is treated as earned income. After this is deployed, the platform
+admin sweeps it to Local Goods Operating, so the operating account holds
+real test-mode money that came from this one sale and nothing else. The
+Where the money is page says so, and says that Local Goods otherwise charges
+nothing; it never presents this as ongoing fee income.
+
+The sweep itself is also proven by tests and by the scratch trial, not
+only by this one live sweep. No fee will be switched on before judging.
