@@ -364,20 +364,32 @@ Local Goods holds is a promise, not ours
   every Stripe transfer, the position is checked. Anything that would leave
   less money than has been promised is refused and nothing changes. Money
   Stripe has already moved is recorded, then checked and flagged.
-- **One balance, kept apart by software.** The two kinds of money are an
-  accounting separation that Local Goods enforces in its ledger. They are
-  not two bank accounts: all of it sits in one Stripe test-mode balance,
-  and the seeded history is simulated. A deployment holding real employer
-  money would need customer funds kept in a separate account, for example
-  an FBO ("for benefit of") or trust account with a bank or a regulated
-  payments partner, and it may bring money-transmission rules into play.
-  What exactly is required depends on how the program is set up and where,
-  and needs legal advice, which we have not had.
+- **Two separate Stripe balances (ADR 0034).** Employer money is held in
+  the customer funds account (Local Goods' Stripe test-mode platform
+  balance), which may only pay merchants and refund employers. Local Goods'
+  own money is held in a separate Stripe test-mode account, Local Goods
+  Operating. The only way money gets there is a recorded sweep of money
+  Local Goods has earned: the platform admin decides it with a reason, it
+  is never edited, and the solvency check refuses one that would leave
+  customer funds short. Reconciliation checks both balances against
+  Stripe. With both fees off, the only money Local Goods has earned came
+  from one sale during a three-minute test of the fee setting on live; we
+  recorded it as earned rather than build a new money path to give it
+  back, and Where the money is says exactly that.
+- **Still not a bank trust account.** That is a real separation of
+  balances, but the customer funds account is not a bank FBO ("for benefit
+  of") or trust account, both accounts are controlled by Local Goods
+  through Stripe, and in test mode Stripe takes its own card fees from the
+  customer funds balance. The seeded history is simulated. A real
+  deployment would hold customer funds at a bank or a regulated payments
+  partner, and money-transmission rules may apply. What exactly is required
+  needs legal advice, which we have not had.
 - **What it doesn't cover.**
-  - That customer money is held apart from Local Goods' own: both are in
-    one Stripe test-mode balance, separated only in the ledger.
+  - That customer money is held the way a real deployment would need (see
+    above).
   - Stripe's own balance (that is reconciliation).
-  - Stripe's processing costs, which Local Goods pays itself.
+  - Stripe's card fees, which in test mode Stripe takes from the customer
+    funds balance.
   - Money still in flight between Stripe and its webhook.
   - Simulated money is not real money.
 - **Found by it.** Two existing paths broke the rule, and both were fixed
