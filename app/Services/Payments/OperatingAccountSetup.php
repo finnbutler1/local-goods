@@ -58,7 +58,8 @@ class OperatingAccountSetup
                     'address' => ['line1' => 'address_full_match', 'city' => 'Washington', 'state' => 'DC', 'postal_code' => '20006', 'country' => 'US'],
                     'phone' => '+12025550100',
                 ],
-                'attestations' => ['terms_of_service' => ['account' => ['date' => now()->utc()->format('Y-m-d\TH:i:s\Z'), 'ip' => $ip]]],
+                // The record's created_at, fixed with setup_key: a retry sends Stripe identical parameters.
+                'attestations' => ['terms_of_service' => ['account' => ['date' => $record->created_at->clone()->utc()->format('Y-m-d\TH:i:s\Z'), 'ip' => $ip]]],
             ],
             'defaults' => [
                 'responsibilities' => ['fees_collector' => 'application', 'losses_collector' => 'application'],

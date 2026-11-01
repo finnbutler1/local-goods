@@ -15,7 +15,7 @@ class Merchant extends Model
     protected $fillable = [
         'bid_id', 'name', 'category', 'address', 'user_id', 'stripe_account_id', 'stripe_onboarding_key',
         'stripe_details_submitted', 'stripe_payouts_enabled', 'stripe_transfers_active', 'stripe_synced_at',
-        'stripe_set_up_by_platform', 'district_id', 'latitude', 'longitude', 'district_approved_at',
+        'stripe_set_up_by_platform', 'stripe_tos_accepted_at', 'district_id', 'latitude', 'longitude', 'district_approved_at',
         'district_approved_by_user_id', 'live_at',
     ];
 
@@ -27,6 +27,7 @@ class Merchant extends Model
             'stripe_transfers_active' => 'boolean',
             'stripe_synced_at' => 'datetime',
             'stripe_set_up_by_platform' => 'boolean',
+            'stripe_tos_accepted_at' => 'datetime',
             'district_approved_at' => 'datetime',
             'live_at' => 'datetime',
         ];

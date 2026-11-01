@@ -111,6 +111,8 @@ class DemoMerchantStripeSetup
         // Marked before Stripe is asked, so an account made by the platform
         // can never be shown as one the merchant set up itself.
         $merchant->stripe_onboarding_key ??= (string) Str::uuid();
+        // Fixed with the key, so a retry sends Stripe identical parameters (it replays a key only for those).
+        $merchant->stripe_tos_accepted_at ??= now();
         $merchant->forceFill(['stripe_set_up_by_platform' => true])->save();
 
         $account = $this->stripe->createDemoAccount([
@@ -129,7 +131,7 @@ class DemoMerchantStripeSetup
                     'email' => $merchant->stripeContactEmail(),
                     'phone' => '+12025550100',
                 ],
-                'attestations' => ['terms_of_service' => ['account' => ['date' => now()->utc()->format('Y-m-d\TH:i:s\Z'), 'ip' => $ip]]],
+                'attestations' => ['terms_of_service' => ['account' => ['date' => $merchant->stripe_tos_accepted_at->clone()->utc()->format('Y-m-d\TH:i:s\Z'), 'ip' => $ip]]],
             ],
             'defaults' => [
                 'responsibilities' => ['fees_collector' => 'application', 'losses_collector' => 'application'],
