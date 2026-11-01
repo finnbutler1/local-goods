@@ -173,6 +173,22 @@ class FakeStripeGateway implements StripeGateway
         });
     }
 
+    /** Like Stripe (trial of 2026-10-30): with no bank account, transfers are active and payouts restricted. */
+    public function createOperatingAccount(array $params, string $idempotencyKey): array
+    {
+        return $this->remember($idempotencyKey, function () use ($params) {
+            $this->calls[] = ['operating_account', $params];
+            $id = 'acct_test_'.$this->next();
+
+            $account = self::v2Account($id, 'active', waitingOnMerchant: false);
+            $account['dashboard'] = 'none';
+            $account['configuration']['recipient']['capabilities']['stripe_balance']['payouts']['status'] = 'restricted';
+            $account['requirements']['entries'] = [['awaiting_action_from' => 'user', 'description' => 'external_account', 'errors' => []]];
+
+            return $this->accounts[$id] = $account;
+        });
+    }
+
     public function addTestBankAccount(string $accountId, string $idempotencyKey): array
     {
         return $this->remember($idempotencyKey, function () use ($accountId) {
@@ -316,6 +332,26 @@ class FakeStripeGateway implements StripeGateway
         $this->calls[] = ['balance', []];
 
         return $this->balance;
+    }
+
+    /** Next account balance read fails with this (plain English), once. */
+    public ?string $accountBalanceFailure = null;
+
+    /** A connected account's balance: what was transferred to it, less what was reversed. All available, as in the trial. */
+    public function retrieveAccountBalance(string $accountId): array
+    {
+        $this->calls[] = ['account_balance', ['account' => $accountId]];
+        $this->accounts[$accountId] ?? throw new StripeGatewayException('No such account.');
+        if ($this->accountBalanceFailure !== null) {
+            [$message, $this->accountBalanceFailure] = [$this->accountBalanceFailure, null];
+
+            throw new StripeGatewayException($message);
+        }
+
+        $cents = array_sum(array_map(fn (array $t) => $t['amount'] - ($t['amount_reversed'] ?? 0),
+            array_filter($this->transfers, fn (array $t) => ($t['destination'] ?? null) === $accountId)));
+
+        return ['object' => 'balance', 'available' => [['amount' => $cents, 'currency' => 'usd']], 'pending' => [['amount' => 0, 'currency' => 'usd']]];
     }
 
     public function listPaymentIntents(int $since, int $max = 300): array
