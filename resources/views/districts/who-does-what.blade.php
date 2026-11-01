@@ -126,6 +126,7 @@
                     ["We don't reset the live demo for convenience.", 'Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only.'],
                     ['No BID or employer initiation fee in the product.', 'It is already a lever in the projection model, and a new money path adds risk before judging.'],
                     ['No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source.', 'The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured.'],
+                    ["We don't keep a fee charged while testing the fee setting.", 'The merchant fee was switched on live for three minutes to check it worked, and one sale was charged. That was a test, not a pricing decision, and we say we charge nothing, so we decided to give it back to the merchant.'],
                     ['Customer money is never used for anything else: not invested, not lent, and new purchases never pay old promises.', "Unspent credits are the employer's money. A check over the whole ledger history, and a guard on every money operation, refuse anything that would leave less money than has been promised."],
                 ];
             @endphp
