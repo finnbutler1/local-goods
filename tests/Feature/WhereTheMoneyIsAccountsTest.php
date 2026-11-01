@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Tests\Concerns\MakesCorrections;
 use Tests\Concerns\SeedsOnAFixedDate;
 use Tests\Concerns\UsesFakeStripe;
+use Tests\Support\AccessibilityAudit;
 use Tests\TestCase;
 
 /**
@@ -130,6 +131,26 @@ class WhereTheMoneyIsAccountsTest extends TestCase
             ->assertSeeText('1 sale charged a merchant fee, on')
             ->assertSeeText('this is not ongoing income');
         $this->assertSame($reads, count($this->stripe->callsOf('balance')) + count($this->stripe->callsOf('account_balance')), 'A judge\'s visit never reads a Stripe balance.');
+    }
+
+    public function test_the_states_the_page_sweeps_never_see_pass_the_accessibility_audit(): void
+    {
+        // The site-wide sweeps see the seeded demo, with nothing to sweep and no history; these states only appear after a fee.
+        $this->fakeStripe();
+        app(OperatingAccountSetup::class)->create('127.0.0.1');
+        $this->feeTestOnOneSale();
+        $admin = $this->signIn(Role::PlatformAdmin);
+
+        $this->assertSame([], AccessibilityAudit::problems($this->get(route('money'))->assertOk()->assertSee('Review the sweep')->getContent()), 'The sweep form');
+        $this->assertSame([], AccessibilityAudit::problems($this->post(route('admin.operating.sweep.review'), ['amount' => '0.16', 'reason' => 'Kept from the fee test'])
+            ->assertOk()->assertSee('data-sweep-review', false)->getContent()), 'The review step');
+
+        app(OperatingSweeps::class)->sweep($admin, 16, 'Kept from the fee test', 16);
+        $this->assertSame([], AccessibilityAudit::problems($this->get(route('money'))->assertOk()->assertSee('data-sweep-history="table"', false)->getContent()), 'The sweep history');
+        $this->assertSame([], AccessibilityAudit::problems($this->get(route('admin.reconciliation'))->assertOk()->assertSee('data-operating-check="yes"', false)->getContent()), 'Reconciliation with a sweep');
+
+        $this->signIn(Role::Judge);
+        $this->assertSame([], AccessibilityAudit::problems($this->get(route('money'))->assertOk()->assertSee('data-sweep-history="words"', false)->getContent()), 'As a judge');
     }
 
     /**

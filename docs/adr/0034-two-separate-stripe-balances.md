@@ -1,8 +1,7 @@
 # 0034. Two separate Stripe balances: customer funds and Local Goods Operating
 
-**Status:** Accepted, being built. Builds on ADR 0033 (customer funds and the
-solvency rule). This record is completed when the work is done; until then it
-holds the research, the decision and what we already know about live.
+**Status:** Accepted, implemented. Builds on ADR 0033 (customer funds and the
+solvency rule).
 
 ## Context
 
@@ -41,6 +40,90 @@ apart only by the ledger. We want two genuinely separate balances.
   with a date, amount and reason, decided by the platform admin,
   append-only, and refused by the solvency guard if it would leave customer
   funds short.
+
+## How it works
+
+**The operating account.** `OperatingAccountSetup` makes it when the platform
+admin presses "Create the Local Goods Operating account (test mode)" on
+Reconciliation: a v2 account with no Stripe dashboard, Stripe's test
+identity values, display name "Local Goods Operating (test mode)", tagged
+`lg_operating_account` and with this environment's tag. Its id is kept in
+`operating_accounts` (one row, not a demo table, so Reset demo keeps it).
+Pressing again creates nothing: the row and its idempotency key exist
+before Stripe is asked. Test mode only. The merchant webhook ignores it.
+
+**The sweep.** `OperatingSweeps` is the only way earned money leaves the
+customer funds account:
+
+- The platform admin only (`sweep-operating-funds`), with a reason of 5 to
+  500 characters, in two steps on Where the money is: Review writes
+  nothing; Confirm (a tick box) is refused if the amount that can be swept
+  changed since the review.
+- Reserve, then send. The `operating_sweeps` row (append-only: only
+  Stripe's outcome is filled in later) and an `operating_sweep` ledger line
+  on the platform account are written inside `SolvencyGuard::transaction`.
+  A sweep of more than was earned takes the platform account below zero,
+  which is a shortfall in customer funds, so the guard refuses it and
+  nothing is written. A Stripe sweep counts as Stripe money out from that
+  moment, so the Stripe floor is checked there too.
+- Then, after commit, a Stripe transfer from the available balance to Local
+  Goods Operating. The destination comes only from
+  `OperatingSweeps::destination()`, which refuses any account a merchant
+  uses (`FraudGateTest` allows this one other transfer caller and checks
+  that). A definite refusal writes an `operating_sweep_returned` line, so
+  the money is unswept again. A lost answer stays pending with the same
+  idempotency key and blocks another sweep (unique `open_key`); "Retry owed
+  transfers" sends it again.
+- In Stripe test mode only money earned on Stripe-paid activity can be
+  swept. Money earned on simulated activity is never swept with real
+  money. With Stripe off, sweeps are simulated (ledger only).
+
+**The solvency rule.** Money in hand now means the money in the customer
+funds account. A sweep takes the same amount off it and off the platform
+account, so the rule still balances to the cent; swept money is Local
+Goods' own and nobody is promised it. Both new types are in
+`LedgerTranches::ACCOUNT_OF_TYPE` (platform) and `MONEY_IN_HAND_TYPES`; the
+full replay and `recordsAgree()` cover them. With no sweeps every figure is
+as before.
+
+**Reconciliation.** The customer funds balance it expects is net of sweeps.
+Each sweep is matched to Stripe's transfer by id, amount and destination,
+both ways; a sweep reversed in Stripe is a mismatch for a person and
+nothing is written. Local Goods Operating's own Stripe balance must equal
+the sweeps sent to it, unless a Reset demo since it was made cleared
+earlier sweeps from the ledger (then a note).
+
+**Where it shows.**
+
+- Where the money is: both accounts side by side, what each may be used
+  for, both real Stripe balances (staff only, read at most once a minute),
+  where earned money came from (from the ledger and the fee audit log, and
+  whether any fee is on now, so a one-off is never shown as ongoing
+  income), the sweep form and the sweep history. Judges see words and
+  counts, never an amount or a balance.
+- The employer's Buy credits screen, its paying and confirming states, each
+  paid purchase row, and Stripe Checkout under the Pay button: the money is
+  held in the customer funds account, stays theirs until staff spend it,
+  and is never used for Local Goods' own expenses.
+- Merchant payout rows: which account paid them.
+
+## What it still is not
+
+Two separate Stripe test-mode balances are a real separation of balances.
+But the customer funds account is not a bank FBO ("for benefit of") or trust
+account. Both accounts are controlled by Local Goods through Stripe: the
+platform can pull money back from Local Goods Operating by transfer
+reversal. In test mode Stripe takes its own card fees from the customer
+funds balance; a real deployment would pay them from operating money. A real
+deployment would hold customer funds at a bank or a regulated payments
+partner (or ask Stripe about funds segregation), and money-transmission
+rules may apply. What exactly is required needs legal advice, which we have
+not had. We have not asked Stripe whether a platform-owned connected account
+would be acceptable in live mode; in live mode, operating money would go to
+Local Goods' own bank account instead.
+
+Not done: Treasury, funds segregation, automatic sweeps, and paying Stripe's
+card fees back from operating money into customer funds (disclosed instead).
 
 ## Assumptions checked against Stripe before building
 
@@ -89,3 +172,11 @@ nothing; it never presents this as ongoing fee income.
 
 The sweep itself is also proven by tests and by the scratch trial, not
 only by this one live sweep. No fee will be switched on before judging.
+
+## Tests
+
+`OperatingAccountMigrationSafetyTest`, `OperatingAccountSetupTest`,
+`SolvencySweepTest`, `OperatingSweepTest`, `OperatingSweepReconciliationTest`,
+`WhereTheMoneyIsAccountsTest`, `CustomerFundsNoticeTest`, plus updates to
+`LedgerTranchesTest`, `FraudGateTest`, `ResetDemoTest`, `StripeCheckoutTest`
+and `WhereTheMoneyIsPageTest`.

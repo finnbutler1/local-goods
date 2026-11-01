@@ -26,6 +26,10 @@ With Stripe Connect the money never sits in a Local Goods account:
   [Demo merchants set up by the platform](#demo-merchants-set-up-by-the-platform).)
 - When a redemption clears, Local Goods asks Stripe to **transfer** the
   amount from the platform balance to the merchant's account.
+- The platform balance is the **customer funds account** (ADR 0034): it
+  holds employer money only. Local Goods' own money goes to a separate
+  connected account, **Local Goods Operating**, only by a recorded sweep
+  (see [Two accounts](#two-accounts-customer-funds-and-local-goods-operating-adr-0034)).
 
 Local Goods' job is the **entitlement ledger** (an append-only list of who
 is owed what, [ADR 0012](adr/0012-one-ledger-three-account-kinds.md)) and the
@@ -316,6 +320,40 @@ in the demo), which v2 requires. Transfers stay on v1 `/v1/transfers`.
 Stripe's reason for a refusal is shown on the merchant dashboard (first
 sentence and any missing-field lines, keys removed; never for key errors).
 
+## Two accounts: customer funds and Local Goods Operating (ADR 0034)
+
+- **Customer funds account** = the platform balance. Employer purchases
+  land there; merchant transfers and employer card refunds come out of it,
+  exactly as before.
+- **Local Goods Operating** = a v2 connected account with no Stripe
+  dashboard that Local Goods sets up for its own money, one per
+  environment (`OperatingAccountSetup`, tagged `lg_operating_account` and
+  `StripeEnvironment::tag()`). The platform admin creates it once on
+  Reconciliation. No bank account is ever added, so Stripe never pays it
+  out (its payouts show as restricted: on purpose).
+- **Sweep** = a Transfer from the platform's available balance (no
+  `source_transaction`) to Local Goods Operating, metadata `lg_sweep_key`
+  and `lg_sweep_id` (never `lg_payout_key`, so merchant reconciliation and
+  the webhook ignore it). Only `OperatingSweeps` sends one, and only to
+  `OperatingSweeps::destination()`, which refuses any merchant's account.
+  Idempotency key `lg-sweep-<instance>-s<id>-<created>-<attempts>`.
+- **Its balance** is read with v1 `GET /balance` and `Stripe-Account:
+  <id>`, which works for v2 accounts.
+
+Checked before building with `scripts/stripe-trial-operating-account.php`
+(2026-10-30) and `scripts/stripe-trial-small-sweep.php` (2026-11-01): test
+key only, objects tagged `lg_env=scratch`, everything reversed, refunded
+and deleted afterwards. An account with no bank account had
+`stripe_transfers` active at once (only payouts restricted); transfers with
+and without `source_transaction`, of 1 and 16 cents, were accepted; its
+balance read exactly what was sent; embedded Checkout accepted and echoed
+`custom_text.submit.message`; and the platform could reverse transfers out
+of the account. Scrubbed responses are in `tests/Fixtures/stripe/operating/`.
+
+Not used: Treasury / Financial Accounts for platforms (US private preview,
+access through Stripe sales) and funds segregation (`allocated_funds`,
+private preview). See ADR 0034.
+
 ## Webhooks
 
 `POST /stripe/webhook` (`App\Http\Controllers\Stripe\StripeWebhookController`):
@@ -417,6 +455,15 @@ fee on (ADR 0029) it checks that each sent transfer plus the fee held back
 is its redemption's total, and that the platform account's merchant fee
 lines are the fees on cleared sales less what refunds gave back; the
 balance row says how much of the expected balance is fees kept.
+
+With two accounts (ADR 0034) the expected platform balance is also net of
+sweeps. Every sweep is matched to Stripe's transfer by id, amount and
+destination, both ways, and a sweep reversed in Stripe is a mismatch for a
+person (nothing is written automatically). Local Goods Operating's own
+balance must equal the sweeps sent to it; if a Reset demo since the account
+was made cleared earlier sweeps from the ledger, that is a note instead. A
+sweep whose answer was lost is named, and "Retry owed transfers" sends it
+again with the same key.
 
 ### One Stripe sandbox, several environments
 

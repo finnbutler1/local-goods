@@ -3,6 +3,37 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-01: Two separate Stripe accounts, customer funds and Local Goods Operating (ADR 0034)
+
+- **Two real balances.** Employer money is held in the customer funds
+  account (the Stripe platform balance), which may only pay merchants and
+  refund employers. Local Goods' own money goes to a separate Stripe
+  test-mode account, Local Goods Operating, which the platform admin
+  creates once on Reconciliation. It has no bank account, so Stripe never
+  pays it out.
+- **Sweeps.** Money Local Goods has earned leaves customer funds only by a
+  sweep: platform admin, a reason, Review then Confirm, recorded and never
+  edited. It is reserved under the solvency guard before Stripe is asked,
+  so a sweep of more than was earned is refused. Only money earned on
+  Stripe-paid activity is swept with real test-mode money.
+- **Reconciliation** matches every sweep to its Stripe transfer and checks
+  Local Goods Operating's balance against the sweeps sent to it.
+- **Shown where money moves.** Where the money is shows both accounts and
+  their real Stripe balances side by side (staff only), where earned money
+  came from, and the sweep history. The employer's Buy credits screen, its
+  receipt rows and Stripe Checkout say the money is held in the customer
+  funds account and never used for Local Goods' own expenses; merchant
+  payout rows say which account paid them.
+- **Checked against Stripe first.** Two one-off scripts in test mode
+  confirmed an account with no bank account takes transfers (down to 1
+  cent), its balance can be read, and Checkout shows our sentence.
+- **Honest about what it isn't.** Still not a bank FBO or trust account;
+  both accounts are controlled by Local Goods; legal advice not yet had.
+- **A three-minute fee test, recorded.** On Oct 28 the merchant fee was on
+  for three minutes on live to check it worked, and one sale was charged.
+  We kept it as earned rather than build a new money path to return it,
+  and say so in "What we chose not to build".
+
 ## 2026-10-30: Where the money is, and the solvency rule (ADR 0033)
 
 - **Two kinds of money, never mixed.** Every ledger line is either customer

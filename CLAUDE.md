@@ -5,6 +5,48 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Two separate Stripe balances: customer funds and Local Goods Operating
+— done (2026-11-01, ADR 0034).** One additive migration
+(`2026_11_02_000001_add_operating_account`, snapshot
+`before-operating-account`). Fraud prompt, signals, AI input, eval data,
+holdouts, locks and adjudication unchanged; merchant payouts and employer
+refunds unchanged.
+
+- Platform balance = customer funds account. `OperatingAccountSetup`
+  makes Local Goods Operating (v2, no dashboard, **never a bank account**,
+  one per environment, `operating_accounts`, kept by Reset demo) from a
+  button on Reconciliation. Gateway: `createOperatingAccount`,
+  `retrieveAccountBalance` (v1 `/balance` + `Stripe-Account`).
+- Sweeps: `OperatingSweeps` only (`sweep-operating-funds`, platform admin,
+  reason, Review → Confirm against `reviewed_against_cents`). Reserve
+  (row + `operating_sweep` line inside `SolvencyGuard::transaction`), then
+  transfer after commit; refusal → `operating_sweep_returned`; lost answer
+  stays pending (unique `open_key`), "Retry owed transfers" resends. Only
+  Stripe-earned money is swept in Stripe mode. **Destination only from
+  `OperatingSweeps::destination()`** (refuses a merchant's account;
+  `FraudGateTest` allows this one other `createTransfer` caller).
+- Solvency: money in hand = customer funds account; `sweptCents`; both
+  types in `ACCOUNT_OF_TYPE` (platform), `MONEY_IN_HAND_TYPES`,
+  `SWEEP_TYPES`. `operating_sweeps` in `DEMO_TABLES`/`EMPTY_AFTER_SEED`.
+- Reconciliation: expected platform balance net of sweeps; sweeps matched
+  both ways (`lg_sweep_key`); Operating balance = sweeps sent (note if a
+  Reset since it was made).
+- Screens: Where the money is (two accounts, real balances via
+  `AccountBalances`, staff only, cached 60s; `EarnedMoney` from ledger and
+  fee audit log, never "ongoing income" with fees off; sweep history;
+  judges words/counts only). Employer Buy credits/receipt
+  (`partials/customer-funds-note`), Checkout `custom_text`
+  (`StripeCheckout::CUSTOMER_FUNDS_MESSAGE`), merchant payout rows.
+  **With no fee earned, employer and reconciliation pages never say "fee"**
+  (`BuyCreditsFlowTest`): say "money Local Goods has earned".
+- Live: the only earned money is $0.16 from the three-minute fee test
+  (Oct 28, redemption #1841), kept as earned (decisions table) and swept
+  by Finn after deploy. Trials: `scripts/stripe-trial-operating-account.php`,
+  `scripts/stripe-trial-small-sweep.php`.
+- Tests: `OperatingAccountMigrationSafetyTest`, `OperatingAccountSetupTest`,
+  `SolvencySweepTest`, `OperatingSweepTest`, `OperatingSweepReconciliationTest`,
+  `WhereTheMoneyIsAccountsTest`, `CustomerFundsNoticeTest`.
+
 **Customer funds, operating funds and the solvency rule — done
 (2026-10-30, ADR 0033).** One additive migration
 (`2026_11_01_000001_add_solvency_checks`, snapshot `before-solvency`).
@@ -733,8 +775,9 @@ pay codes (ADR 0026), the phone-first pass, DC sales tax at
 redemption (ADR 0027), refunds and corrections (ADR 0028), the
 merchant fee, ready but at 0 (ADR 0029), the business model with
 impact projections (ADR 0030), districts, partnerships and merchant
-joining (ADR 0031), live demo activity in Stripe test mode (ADR 0032)
-and customer funds with the solvency rule (ADR 0033).
+joining (ADR 0031), live demo activity in Stripe test mode (ADR 0032),
+customer funds with the solvency rule (ADR 0033) and two separate Stripe
+balances with recorded sweeps (ADR 0034).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -966,6 +1009,11 @@ snapshot step by name when the build says the deploy includes migrations.
    Open `/where-the-money-is`: the deploy recorded a solvency check. If it
    says Fail, tell Finn the window, merchant and amount; never write a
    fix to the ledger without his say-so.
+   On `/admin/reconciliation`, if Local Goods Operating says "Not set up
+   yet", press "Create the Local Goods Operating account (test mode)" once.
+   Then `/where-the-money-is` shows both accounts. Only Finn sweeps on
+   live (Review → Confirm, his own reason); never sweep for him. After a
+   sweep, reconciliation's Local Goods Operating row should say Matches.
    With Stripe keys set: the employer page shows "Stripe test mode", and
    `/admin/reconciliation` says everything matches. As the BID admin, press
    "Run a collusion example" once (one AI call) and check its path line.

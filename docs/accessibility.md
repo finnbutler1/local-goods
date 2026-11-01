@@ -416,6 +416,27 @@ was done for this page.
 - "Run the check now" is the shared button with `data-busy`; its result is
   a toast (`<x-flash>`).
 
+## Two accounts and sweeps (2026-11-01)
+
+**How it was checked.** Only the static checks ran. `AccessibilityTest`,
+`EmptyStatesTest`, `ResponsiveTablesTest`, `EmployeeNamePrivacyTest`,
+`PublicClaimsTest`, `JudgeReadOnlyTest` and `PhoneHonestyTest` sweep
+`/where-the-money-is`, `/admin/reconciliation`, `/employer` and `/merchant`
+as every role. Those sweeps see the seeded demo, where there is nothing
+to sweep and no history, so `WhereTheMoneyIsAccountsTest` also runs the
+same audit (`AccessibilityAudit`) on the states they never see: the sweep
+form, its review step, the sweep history (as staff and as a judge) and
+reconciliation with a sweep. `OperatingSweepTest` and
+`CustomerFundsNoticeTest` check the other states. No browser, axe or
+screen-reader pass was done for these sections.
+
+- The sweep history is an `<x-rtable>` with a screen-reader caption and
+  `data-label` on every cell.
+- The sweep form uses `<x-field>` (hint and error tied to each field) and
+  `data-busy`; Confirm needs a labelled tick box; its result is a toast.
+- How a sweep was sent is said in words ("Stripe test-mode transfer",
+  "Refused by Stripe, nothing moved"), not only by colour.
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session
