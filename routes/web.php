@@ -229,6 +229,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/reconciliation', [ReconciliationController::class, 'index'])->name('admin.reconciliation');
         Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1,admin.reconciliation.retry')->name('admin.reconciliation.retry');
         Route::post('/admin/solvency-check', [WhereTheMoneyIsController::class, 'run'])->middleware(['can:run-solvency-check', 'throttle:6,1,admin.solvency.run'])->name('admin.solvency.run');
+        // A sweep to Local Goods Operating (ADR 0034): review writes nothing, then confirm.
+        Route::post('/admin/sweep/review', [WhereTheMoneyIsController::class, 'reviewSweep'])->middleware(['can:sweep-operating-funds', 'throttle:20,1,admin.operating.sweep.review'])->name('admin.operating.sweep.review');
+        Route::post('/admin/sweep', [WhereTheMoneyIsController::class, 'sweep'])->middleware(['can:sweep-operating-funds', 'throttle:6,1,admin.operating.sweep'])->name('admin.operating.sweep');
         Route::post('/admin/stripe/demo-merchants', [ReconciliationController::class, 'connectDemoMerchants'])->middleware('throttle:30,1,admin.stripe.demo-merchants')->name('admin.stripe.demo-merchants');
         // Local Goods Operating, the account for Local Goods' own money (ADR 0034).
         Route::post('/admin/stripe/operating-account', [ReconciliationController::class, 'createOperatingAccount'])->middleware('throttle:6,1,admin.stripe.operating-account')->name('admin.stripe.operating-account');

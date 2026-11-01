@@ -92,6 +92,7 @@
                             <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Paid out to merchants</th><td data-label="Amount" class="py-2 text-right tabular">−{{ Money::format($now->paidOutCents) }}</td></tr>
                             <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Pulled back from merchants for refunds and reversals</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->pulledBackCents) }}</td></tr>
                             <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Refunded to employers</th><td data-label="Amount" class="py-2 text-right tabular">−{{ Money::format($now->refundedCents) }}</td></tr>
+                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Swept to Local Goods Operating</th><td data-label="Amount" class="py-2 text-right tabular" data-swept>−{{ Money::format($now->sweptCents) }}</td></tr>
                             <tr class="font-semibold"><th scope="row" data-primary class="py-2 pr-4">Money in hand</th><td data-label="Amount" class="py-2 text-right tabular" data-in-hand>{{ Money::format($now->inHandCents()) }}</td></tr>
                             <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Promised: customer funds plus operating funds</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->promisedCents()) }}</td></tr>
                         </tbody>
@@ -99,6 +100,56 @@
                 </x-rtable>
                 <p class="mt-3 text-sm text-muted">Of that, Stripe test mode: {{ Money::format($now->stripeInCents) }} paid in, {{ Money::format($now->stripeOutCents) }} paid out.</p>
             </x-card>
+        @endif
+    </section>
+
+    <section id="sweep" aria-labelledby="sweep-heading" class="scroll-mt-24 max-w-3xl space-y-3">
+        <h2 id="sweep-heading" class="text-2xl font-semibold text-primary">Moving earned money to Local Goods Operating</h2>
+        <p>
+            Money Local Goods has earned leaves the customer funds account in only one way: a sweep, decided by the platform admin with a reason,
+            recorded and never edited. The solvency check refuses a sweep that would leave customer funds short.
+        </p>
+        @if (! $showsFigures)
+            <p class="text-sm text-muted" data-sweep="words">Amounts are shown to Local Goods staff only. Only the platform admin can sweep.</p>
+        @elseif ($sweepable === 0)
+            <p class="rounded-2xl bg-band p-4" data-sweep="nothing">
+                <span class="font-semibold">Nothing to sweep.</span> Local Goods has no earned money left in the customer funds account,
+                so every cent there belongs to employers, their staff or merchants.
+            </p>
+        @else
+            <p data-sweep="available"><span class="font-semibold">Earned, not yet swept:</span> <span class="tabular" data-sweepable>{{ Money::format($sweepable) }}</span>
+                ({{ $sweepChannel === 'stripe' ? 'swept by a Stripe test-mode transfer' : 'simulated, no real money' }}).</p>
+            @if (! $maySweep)
+                <p class="text-sm text-muted">Read-only: only the platform admin can sweep.</p>
+            @elseif ($sweepReview === null)
+                <form method="POST" action="{{ route('admin.operating.sweep.review') }}" data-busy="Reviewing…" class="space-y-3">
+                    @csrf
+                    <x-field name="amount" label="Amount in dollars" hint="At most the amount earned and not yet swept.">
+                        <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" required value="{{ old('amount', Money::toDollars($sweepable)) }}"
+                               class="w-40 rounded-lg border-2 border-muted bg-surface px-3 py-2 text-base tabular" aria-describedby="amount-hint @error('amount') amount-error @enderror" @error('amount') aria-invalid="true" @enderror>
+                    </x-field>
+                    <x-field name="reason" label="Reason" hint="Kept with the sweep for good. 5 to 500 characters.">
+                        <textarea id="reason" name="reason" rows="2" required maxlength="500" class="w-full rounded-lg border-2 border-muted bg-surface px-3 py-2 text-base"
+                                  aria-describedby="reason-hint @error('reason') reason-error @enderror" @error('reason') aria-invalid="true" @enderror>{{ old('reason') }}</textarea>
+                    </x-field>
+                    <x-button type="submit">Review the sweep</x-button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('admin.operating.sweep') }}" data-busy="Sweeping…" class="space-y-3 rounded-2xl border-2 border-accent bg-band p-4" data-sweep-review>
+                    @csrf
+                    <p><span class="font-semibold">Review:</span> move <span class="tabular font-semibold">{{ Money::format($sweepReview['cents']) }}</span>
+                        from the customer funds account to Local Goods Operating, {{ $sweepChannel === 'stripe' ? 'by a Stripe test-mode transfer' : 'simulated, no real money' }}.</p>
+                    <p class="text-sm">Reason: {{ $sweepReview['reason'] }}</p>
+                    <input type="hidden" name="amount_cents" value="{{ $sweepReview['cents'] }}">
+                    <input type="hidden" name="reason" value="{{ $sweepReview['reason'] }}">
+                    <input type="hidden" name="reviewed_against_cents" value="{{ $sweepReview['reviewed'] }}">
+                    <label class="flex items-center gap-3"><input type="checkbox" name="confirm" value="1" required class="size-5"> I have checked the amount and the reason.</label>
+                    <div class="flex flex-wrap gap-3">
+                        <x-button type="submit" variant="accent">Confirm the sweep</x-button>
+                        <a class="tap-target underline" href="{{ route('money') }}#sweep">Cancel</a>
+                    </div>
+                </form>
+            @endif
         @endif
     </section>
 
