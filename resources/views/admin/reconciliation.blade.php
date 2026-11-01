@@ -141,6 +141,30 @@
         </form>
     @endif
 
+    <x-card as="section" id="operating-account" aria-labelledby="operating-account-heading" class="scroll-mt-24">
+        <h2 id="operating-account-heading" class="text-xl font-semibold">Local Goods Operating on Stripe</h2>
+        <p class="mt-2 text-muted">
+            {{ \App\Models\OperatingAccount::LABEL }} It is separate from the customer funds account (the Stripe platform balance) and receives only money
+            Local Goods has earned, moved by a recorded sweep. It has no bank account, so Stripe never pays it out: payouts are off on purpose.
+        </p>
+        <p class="mt-3" data-operating-account="{{ $operatingAccount?->stripe_account_id ? ($operatingAccount->transfers_active ? 'ready' : 'waiting') : 'none' }}">
+            @if ($operatingAccount?->stripe_account_id)
+                <x-badge :tone="$operatingAccount->transfers_active ? 'ok' : 'hold'">{{ $operatingAccount->transfers_active ? 'Set up, can receive sweeps' : 'Set up, Stripe is turning on transfers' }}</x-badge>
+                <code class="wrap-anywhere-safe mt-1 block font-mono text-xs text-muted">{{ $operatingAccount->stripe_account_id }}</code>
+            @else
+                <x-badge tone="neutral">Not set up yet</x-badge>
+            @endif
+        </p>
+        @if ($report['active'] && ! $operatingAccount?->transfers_active)
+            <form method="POST" action="{{ route('admin.stripe.operating-account') }}" data-busy="Setting up Local Goods Operating…" class="mt-4">
+                @csrf
+                <x-button type="submit">{{ $operatingAccount?->stripe_account_id ? 'Check Local Goods Operating again' : 'Create the Local Goods Operating account (test mode)' }}</x-button>
+            </form>
+        @elseif (! $report['active'])
+            <p class="mt-3 text-sm text-muted">Stripe test mode is off on this server, so there is no operating account to set up. Simulated sweeps are recorded in the ledger only.</p>
+        @endif
+    </x-card>
+
     <x-card as="section" id="demo-merchants" aria-labelledby="demo-merchants-heading" class="scroll-mt-24">
         <h2 id="demo-merchants-heading" class="text-xl font-semibold">Demo merchants on Stripe</h2>
         <p class="mt-2 text-muted">

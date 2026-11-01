@@ -41,6 +41,11 @@ class NoticeSafeStripeGateway implements StripeGateway
         return StripeNotices::quietly('accounts.create', fn () => $this->inner->createDemoAccount($params, $idempotencyKey));
     }
 
+    public function createOperatingAccount(array $params, string $idempotencyKey): array
+    {
+        return StripeNotices::quietly('accounts.create', fn () => $this->inner->createOperatingAccount($params, $idempotencyKey));
+    }
+
     public function addTestBankAccount(string $accountId, string $idempotencyKey): array
     {
         return StripeNotices::quietly('external_accounts.create', fn () => $this->inner->addTestBankAccount($accountId, $idempotencyKey));
@@ -79,6 +84,11 @@ class NoticeSafeStripeGateway implements StripeGateway
     public function retrieveBalance(): array
     {
         return StripeNotices::quietly('balance.retrieve', fn () => $this->inner->retrieveBalance());
+    }
+
+    public function retrieveAccountBalance(string $accountId): array
+    {
+        return StripeNotices::quietly('balance.retrieve', fn () => $this->inner->retrieveAccountBalance($accountId));
     }
 
     public function listPaymentIntents(int $since, int $max = 300): array

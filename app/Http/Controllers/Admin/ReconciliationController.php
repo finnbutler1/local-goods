@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
+use App\Models\OperatingAccount;
 use App\Services\Payments\DemoMerchantStripeSetup;
 use App\Services\Payments\MerchantPayouts;
+use App\Services\Payments\OperatingAccountSetup;
 use App\Services\Payments\StripeGatewayException;
 use App\Services\Payments\StripeReconciliation;
 use App\Support\StripeMode;
@@ -19,7 +21,9 @@ use Illuminate\View\View;
  * only (ADR 0015). Opening the page only reads from Stripe; "Retry owed
  * transfers" sends Stripe-channel payouts that are still owed, and
  * "Connect demo merchants to Stripe" gives the fictional demo merchants with
- * no login a test account (DemoMerchantStripeSetup).
+ * no login a test account (DemoMerchantStripeSetup). "Create the Local
+ * Goods Operating account" makes the account for Local Goods' own money
+ * (OperatingAccountSetup, ADR 0034).
  */
 class ReconciliationController extends Controller
 {
@@ -35,6 +39,7 @@ class ReconciliationController extends Controller
                 ->get()->keyBy('channel'),
             'demoMerchants' => DemoMerchantStripeSetup::demoMerchants(),
             'demoProgress' => $setup->progress(),
+            'operatingAccount' => OperatingAccount::current(),
             // Set only by the redirect after a step that left work to do.
             'continueRound' => $request->has('connecting') ? $request->integer('connecting') : null,
         ]);
@@ -66,6 +71,20 @@ class ReconciliationController extends Controller
 
         return redirect()->to(route('admin.reconciliation').'#demo-merchants')->with('status',
             "All {$step['total']} demo merchants are connected to Stripe (test mode). Stripe turns on their payouts within a minute or so; their status updates by itself.");
+    }
+
+    public function createOperatingAccount(Request $request, OperatingAccountSetup $setup): RedirectResponse
+    {
+        try {
+            $account = $setup->create((string) $request->ip());
+        } catch (StripeGatewayException $e) {
+            return redirect()->to(route('admin.reconciliation').'#operating-account')
+                ->with('error', $e->getMessage().' Press it again to try once more; nothing is duplicated.');
+        }
+
+        return redirect()->to(route('admin.reconciliation').'#operating-account')->with('status', $account->transfers_active
+            ? 'Local Goods Operating is set up in Stripe (test mode) and can receive sweeps.'
+            : 'Local Goods Operating is set up in Stripe (test mode). Stripe is still turning on transfers; press the button again in a minute to check.');
     }
 
     public function retry(MerchantPayouts $payouts): RedirectResponse

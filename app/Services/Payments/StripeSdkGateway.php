@@ -79,6 +79,15 @@ class StripeSdkGateway implements StripeGateway
         ));
     }
 
+    /** The same no-dashboard v2 account, for Local Goods Operating (ADR 0034). No bank account is ever added, so Stripe never pays it out. */
+    public function createOperatingAccount(array $params, string $idempotencyKey): array
+    {
+        return $this->call('v2.accounts.create', fn () => $this->client()->v2->core->accounts->create(
+            ['dashboard' => 'none', 'include' => self::ACCOUNT_INCLUDE] + $params,
+            ['idempotency_key' => $idempotencyKey],
+        ));
+    }
+
     /** btok_us_verified is Stripe's test-mode token for a verified US bank account; it only works with test keys. */
     public function addTestBankAccount(string $accountId, string $idempotencyKey): array
     {
@@ -129,6 +138,11 @@ class StripeSdkGateway implements StripeGateway
     public function retrieveBalance(): array
     {
         return $this->call('balance.retrieve', fn () => $this->client()->balance->retrieve());
+    }
+
+    public function retrieveAccountBalance(string $accountId): array
+    {
+        return $this->call('balance.retrieve', fn () => $this->client()->balance->retrieve([], ['stripe_account' => $accountId]));
     }
 
     public function listPaymentIntents(int $since, int $max = 300): array

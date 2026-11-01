@@ -230,6 +230,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/reconciliation/retry', [ReconciliationController::class, 'retry'])->middleware('throttle:10,1,admin.reconciliation.retry')->name('admin.reconciliation.retry');
         Route::post('/admin/solvency-check', [WhereTheMoneyIsController::class, 'run'])->middleware(['can:run-solvency-check', 'throttle:6,1,admin.solvency.run'])->name('admin.solvency.run');
         Route::post('/admin/stripe/demo-merchants', [ReconciliationController::class, 'connectDemoMerchants'])->middleware('throttle:30,1,admin.stripe.demo-merchants')->name('admin.stripe.demo-merchants');
+        // Local Goods Operating, the account for Local Goods' own money (ADR 0034).
+        Route::post('/admin/stripe/operating-account', [ReconciliationController::class, 'createOperatingAccount'])->middleware('throttle:6,1,admin.stripe.operating-account')->name('admin.stripe.operating-account');
 
         Route::get('/admin/feedback', [FeedbackInboxController::class, 'index'])->name('admin.feedback.index');
         Route::patch('/admin/feedback/{feedback}', [FeedbackInboxController::class, 'update'])->name('admin.feedback.update');

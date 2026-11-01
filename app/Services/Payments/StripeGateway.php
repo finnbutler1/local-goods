@@ -38,6 +38,15 @@ interface StripeGateway
      */
     public function createDemoAccount(array $params, string $idempotencyKey): array;
 
+    /**
+     * Local Goods Operating (ADR 0034): a v2 account with no Stripe
+     * dashboard that Local Goods sets up for its own money, one per
+     * environment. Only OperatingAccountSetup calls it; never for a merchant.
+     *
+     * @return array<string, mixed> an Account
+     */
+    public function createOperatingAccount(array $params, string $idempotencyKey): array;
+
     /** Gives a test-mode account Stripe's verified test bank account, so payouts are enabled. @return array<string, mixed> a bank account */
     public function addTestBankAccount(string $accountId, string $idempotencyKey): array;
 
@@ -73,6 +82,9 @@ interface StripeGateway
 
     /** @return array<string, mixed> the platform Balance */
     public function retrieveBalance(): array;
+
+    /** @return array<string, mixed> a connected account's own Balance (v1 /balance with Stripe-Account; works for v2 accounts, trial of 2026-10-30) */
+    public function retrieveAccountBalance(string $accountId): array;
 
     /** @return list<array<string, mixed>> PaymentIntents created at or after $since (unix time) */
     public function listPaymentIntents(int $since, int $max = 300): array;
