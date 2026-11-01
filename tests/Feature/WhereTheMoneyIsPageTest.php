@@ -6,6 +6,7 @@ use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Models\CreditLedgerEntry;
 use App\Models\Employee;
+use App\Models\Merchant;
 use App\Models\SolvencyCheckRun;
 use App\Models\User;
 use App\Services\Solvency\SolvencyCheck;
@@ -120,7 +121,8 @@ class WhereTheMoneyIsPageTest extends TestCase
         $at = now()->utc()->format('Y-m-d H:i:s');
         DB::table('credit_ledger_entries')->insert([
             ['employee_id' => $employee->id, 'merchant_id' => null, 'amount_cents' => -$spent, 'type' => CreditLedgerEntry::TYPE_REDEMPTION, 'description' => 'Planted by a test', 'created_at' => $at],
-            ['employee_id' => null, 'merchant_id' => 1, 'amount_cents' => $spent, 'type' => CreditLedgerEntry::TYPE_MERCHANT_EARNED, 'description' => 'Planted by a test', 'created_at' => $at],
+            // The first merchant's real id, not 1: on MySQL ids keep counting between tests.
+            ['employee_id' => null, 'merchant_id' => Merchant::orderBy('id')->value('id'), 'amount_cents' => $spent, 'type' => CreditLedgerEntry::TYPE_MERCHANT_EARNED, 'description' => 'Planted by a test', 'created_at' => $at],
         ]);
 
         $this->actingAs($this->signIn(Role::PlatformAdmin))->post('/admin/solvency-check')->assertSessionHas('error');
