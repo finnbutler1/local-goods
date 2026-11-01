@@ -61,8 +61,9 @@ class WhereTheMoneyIsPageTest extends TestCase
             ->assertSee('data-operating-funds>$0.00', false)
             ->assertSee('data-in-hand>'.Money::format($now->inHandCents()), false)
             ->assertSee('Demo data: all people and transactions are fictional.')
-            ->assertSee('They are not two bank accounts:')
-            ->assertSee('all of it sits in one Stripe test-mode balance')
+            // ADR 0034: two separate Stripe balances, and still not a bank FBO or trust account.
+            ->assertSee('Two separate Stripe balances, still not a bank trust account.')
+            ->assertSee('the customer funds account is not a bank FBO')
             ->assertSee('needs legal advice, which we have not had.');
     }
 
