@@ -18,6 +18,9 @@ use InvalidArgumentException;
  */
 class StripeCheckout
 {
+    /** Shown under Stripe's Pay button (ADR 0034): where the employer's money is held. No figures. */
+    public const CUSTOMER_FUNDS_MESSAGE = 'Your money is held in the Local Goods customer funds account (Stripe test mode) and stays yours until your staff spend it. It is never used for Local Goods\' own expenses.';
+
     /** How long a Checkout stays open; after that Stripe expires it and the webhook makes room for a fresh one. */
     public const OPEN_FOR_SECONDS = 3600;
 
@@ -64,10 +67,11 @@ class StripeCheckout
             'line_items' => $lineItems,
             'payment_intent_data' => [
                 'transfer_group' => $purchase->reference,
-                'description' => 'Local Goods credits '.$purchase->reference.' (test mode)',
+                'description' => 'Local Goods credits '.$purchase->reference.' (test mode), held as customer funds',
                 'metadata' => $metadata,
             ],
             'metadata' => $metadata,
+            'custom_text' => ['submit' => ['message' => self::CUSTOMER_FUNDS_MESSAGE]],
             'expires_at' => now()->addSeconds(self::OPEN_FOR_SECONDS)->getTimestamp(),
             // APP_URL in production (the CloudFront address), never this request's host.
             'return_url' => AppUrl::route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy',

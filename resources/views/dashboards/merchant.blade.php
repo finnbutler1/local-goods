@@ -310,7 +310,7 @@
 
             <div>
             <h2 id="payouts-heading" class="text-2xl font-semibold text-primary">Payout history</h2>
-            <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer (with its id), or simulated (recorded in the ledger, no money moved). Payouts are what you receive, after any Local Goods fee on each sale.</p>
+            <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer from the Local Goods customer funds account (with its id), or simulated (recorded in the ledger, no money moved). Payouts are what you receive, after any Local Goods fee on each sale.</p>
             <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
                 @forelse ($payouts as $payout)
                     <li class="flex items-center justify-between gap-3 px-5 py-3">
@@ -326,6 +326,15 @@
                                     <x-money-mode mode="simulated" />
                                 @endif
                             </div>
+                            <p class="mt-1 text-sm text-muted" data-paid-from="{{ $payout->isStripe() ? 'customer-funds' : 'simulated' }}">
+                                @if (! $payout->isStripe())
+                                    Simulated, from customer funds in the ledger; no money moved.
+                                @elseif ($payout->status === 'sent')
+                                    Paid from the Local Goods customer funds account.
+                                @else
+                                    To be paid from the Local Goods customer funds account.
+                                @endif
+                            </p>
                             @if ($figures && $payout->redemption)
                                 @include('partials.merchant-fee', ['sale' => $payout->amount_cents + $payout->fee_cents, 'fee' => $payout->fee_cents])
                             @endif
