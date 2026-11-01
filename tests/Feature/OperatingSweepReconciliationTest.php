@@ -72,10 +72,11 @@ class OperatingSweepReconciliationTest extends TestCase
 
     public function test_a_sweep_stripe_has_no_record_of_is_a_mismatch(): void
     {
-        $this->sweep();
+        $sweep = $this->sweep();
         $this->stripe->transfers = [];
 
-        $this->assertContains('Local Goods recorded sweep #1 of $1.60 to Local Goods Operating ('.OperatingSweep::first()->stripe_transfer_id.'), but Stripe has no such transfer since the last reset.',
+        // The sweep's real id: on MySQL ids keep counting between tests.
+        $this->assertContains('Local Goods recorded sweep #'.$sweep->id.' of $1.60 to Local Goods Operating ('.$sweep->stripe_transfer_id.'), but Stripe has no such transfer since the last reset.',
             app(StripeReconciliation::class)->report()['mismatches']);
     }
 
