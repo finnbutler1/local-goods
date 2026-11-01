@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\OperatingAccount;
+use App\Models\OperatingSweep;
 use App\Services\Payments\DemoMerchantStripeSetup;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\OperatingAccountSetup;
+use App\Services\Payments\OperatingSweeps;
 use App\Services\Payments\StripeGatewayException;
 use App\Services\Payments\StripeReconciliation;
 use App\Support\StripeMode;
@@ -87,7 +89,7 @@ class ReconciliationController extends Controller
             : 'Local Goods Operating is set up in Stripe (test mode). Stripe is still turning on transfers; press the button again in a minute to check.');
     }
 
-    public function retry(MerchantPayouts $payouts): RedirectResponse
+    public function retry(MerchantPayouts $payouts, OperatingSweeps $sweeps): RedirectResponse
     {
         if (! StripeMode::active()) {
             return redirect()->route('admin.reconciliation')->with('error', 'Stripe test mode is off on this server, so there is nothing to send.');
@@ -100,7 +102,15 @@ class ReconciliationController extends Controller
             }
         }
 
+        // A sweep to Local Goods Operating whose answer was lost (ADR 0034): same key, so never paid twice.
+        $swept = '';
+        foreach (OperatingSweep::where('status', OperatingSweep::STATUS_PENDING)->get() as $sweep) {
+            $swept = ' Sweep to Local Goods Operating: '.match ($sweeps->send($sweep)->status) {
+                OperatingSweep::STATUS_SENT => 'sent.', OperatingSweep::STATUS_FAILED => 'refused by Stripe, nothing left the customer funds account.', default => 'still not confirmed.',
+            };
+        }
+
         return redirect()->route('admin.reconciliation')->with('status',
-            "Sent {$totals['sent']}. Still not sent: {$totals['failed']} refused or unreachable, {$totals['waiting']} waiting for onboarding.");
+            "Sent {$totals['sent']}. Still not sent: {$totals['failed']} refused or unreachable, {$totals['waiting']} waiting for onboarding.".$swept);
     }
 }
