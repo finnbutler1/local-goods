@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Money;
 use App\Http\Controllers\Controller;
 use App\Models\OperatingSweep;
 use App\Models\SolvencyCheckRun;
+use App\Services\Payments\AccountBalances;
+use App\Services\Payments\EarnedMoney;
 use App\Services\Payments\OperatingSweeps;
 use App\Services\Solvency\SolvencyCheck;
 use App\Services\Solvency\SolvencyRefused;
@@ -26,7 +28,9 @@ use InvalidArgumentException;
  *
  * The platform admin also sweeps money Local Goods has earned to Local
  * Goods Operating here (ADR 0034), in two steps: review writes nothing,
- * then confirm against the amount that was reviewed.
+ * then confirm against the amount that was reviewed. Both accounts' real
+ * Stripe test-mode balances are shown side by side (to staff only), with
+ * the sweep history and where any earned money came from.
  */
 class WhereTheMoneyIsController extends Controller
 {
@@ -79,6 +83,7 @@ class WhereTheMoneyIsController extends Controller
             return redirect()->to(route('money').'#sweep')->with('error', $e->getMessage());
         }
 
+        AccountBalances::forget();
         $amount = Money::format($sweep->amount_cents);
 
         return redirect()->to(route('money').'#sweep')->with(...match ($sweep->status) {
@@ -101,6 +106,10 @@ class WhereTheMoneyIsController extends Controller
             'sweepable' => $sweeps->sweepable(),
             'sweepChannel' => OperatingSweeps::channel(),
             'sweepReview' => $review,
+            'sweeps' => OperatingSweep::with('decidedBy')->latest('id')->get(),
+            'earned' => app(EarnedMoney::class)->summary(),
+            // Real Stripe balances are money figures: staff only, never read for judges.
+            'balances' => MerchantFee::showsFiguresTo($request->user()) ? app(AccountBalances::class)->read() : null,
         ]);
     }
 }

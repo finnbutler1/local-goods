@@ -6,6 +6,11 @@
     $dc = fn ($at) => $at === null ? '—' : (is_string($at) ? Carbon::parse($at, 'UTC') : $at)->setTimezone('America/New_York')->format('M j, Y, g:i A');
     $day = fn ($at) => $at === null ? '—' : $at->setTimezone('America/New_York')->format('M j, Y');
     $windows = $run?->failures['windows'] ?? [];
+    $hasEarned = $earned['merchant_fee_sales'] > 0 || $earned['platform_fee_purchases'] > 0;
+    $window = fn (array $w) => $dc($w['from']).' to '.($w['to'] === null ? 'now (still on)'
+        : ($w['to']->copy()->setTimezone('America/New_York')->isSameDay($w['from']->copy()->setTimezone('America/New_York')) ? $w['to']->setTimezone('America/New_York')->format('g:i A') : $dc($w['to'])));
+    $saleDays = $earned['first_sale_at'] === null ? null : ($day($earned['first_sale_at']) === $day($earned['last_sale_at'])
+        ? $day($earned['first_sale_at']) : $day($earned['first_sale_at']).' to '.$day($earned['last_sale_at']));
 @endphp
 
 <x-app-shell title="Where the money is" active="money" context="Customer funds and the solvency rule">
@@ -25,11 +30,14 @@
     </header>
 
     <section aria-labelledby="tranches-heading" class="space-y-4">
-        <h2 id="tranches-heading" class="text-2xl font-semibold text-primary">Two kinds of money, never mixed</h2>
+        <h2 id="tranches-heading" class="text-2xl font-semibold text-primary">Two accounts, never mixed</h2>
+        <p class="max-w-3xl text-muted">Employer money and Local Goods' own money are held in two separate Stripe test-mode accounts. Money moves from the first to the second only by a recorded sweep.</p>
         <div class="grid gap-4 lg:grid-cols-2">
-            <x-card padding="p-5 sm:p-6">
-                <h3 class="text-lg font-semibold">Customer funds held</h3>
-                <p class="text-sm text-muted">A promise to pay. None of it is ours.</p>
+            <x-card padding="p-5 sm:p-6" data-account="customer-funds">
+                <h3 class="text-lg font-semibold">Customer funds account</h3>
+                <p class="text-sm text-muted">Employer money only: a promise to pay. None of it is ours.</p>
+                <p class="mt-3 text-sm"><span class="font-semibold">May be used for:</span> paying merchants for what staff spent, and refunding employers. Nothing else.</p>
+                <p class="mt-3 text-sm font-semibold">Customer funds held</p>
                 <p class="mt-3 font-display text-4xl font-semibold text-primary tabular" data-customer-funds>{{ Money::format($now->customerFundsCents()) }}</p>
                 <x-rtable class="mt-4" label="Customer funds held, by where they are">
                     <table data-rtable="stack" class="w-full text-left text-sm">
@@ -61,27 +69,79 @@
                         </tbody>
                     </table>
                 </x-rtable>
+                @if ($balances !== null && $balances['stripe'])
+                    <p class="mt-4 text-sm" data-customer-stripe-balance>
+                        <span class="font-semibold">In Stripe (the platform balance):</span>
+                        @if ($balances['customer_cents'] !== null)
+                            <span class="tabular">{{ Money::format($balances['customer_cents']) }}</span>.
+                            Not the same as the amount held: in test mode Stripe takes its card fees from this balance, and it is shared with
+                            other copies of Local Goods and test activity from before the last Reset demo. Reconciliation checks it.
+                        @else
+                            couldn't read it from Stripe just now.
+                        @endif
+                    </p>
+                @endif
                 <p class="mt-4 rounded-xl bg-band p-3 text-sm"><span class="font-semibold">Unspent credits always remain the employer's money, never ours.</span>
                     Local Goods never counts them as income, never spends or invests them, and an employer can ask for them back.</p>
             </x-card>
 
-            <x-card padding="p-5 sm:p-6">
-                <h3 class="text-lg font-semibold">Operating funds</h3>
-                <p class="text-sm text-muted">What Local Goods has actually earned and may spend.</p>
+            <x-card padding="p-5 sm:p-6" data-account="operating">
+                <h3 class="text-lg font-semibold">Local Goods Operating</h3>
+                <p class="text-sm text-muted">Local Goods' own money: what it has earned and may spend.</p>
+                <p class="mt-3 text-sm"><span class="font-semibold">May hold:</span> only money Local Goods has earned, moved here from the customer funds account by a recorded sweep. Never customer money.</p>
                 @if ($showsFigures)
-                    <p class="mt-3 font-display text-4xl font-semibold text-primary tabular" data-operating-funds>{{ Money::format($now->operatingCents) }}</p>
-                    <p class="mt-3 text-sm text-muted">Only fee income, kept on its own platform account in the ledger. Both fees are switched off, so this is zero.</p>
+                    <dl class="mt-3 space-y-2 text-sm">
+                        <div>
+                            <dt class="font-semibold">In Stripe (Local Goods Operating's own balance)</dt>
+                            <dd data-operating-stripe-balance>
+                                @if ($balances === null || ! $balances['stripe'])
+                                    Stripe test mode is off on this server, so there is no Stripe balance; sweeps are simulated.
+                                @elseif (! $balances['operating_set_up'])
+                                    Not set up in Stripe yet (platform admin: Reconciliation).
+                                @elseif ($balances['operating_cents'] === null)
+                                    Couldn't read it from Stripe just now.
+                                @else
+                                    <span class="font-display text-3xl font-semibold text-primary tabular">{{ Money::format($balances['operating_cents']) }}</span>
+                                @endif
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="font-semibold">Earned, not yet swept (still in the customer funds account)</dt>
+                            <dd class="tabular" data-operating-funds>{{ Money::format($now->operatingCents) }}</dd>
+                        </div>
+                    </dl>
                 @else
                     <p class="mt-3 text-lg font-semibold" data-operating-funds="hidden">Shown to Local Goods staff only.</p>
-                    <p class="mt-3 text-sm text-muted">It is only what Local Goods earns, kept on its own account in the ledger, apart from every customer's money.</p>
                 @endif
+                <div class="mt-3 space-y-2 text-sm" data-earned-origin="{{ $hasEarned ? 'some' : 'none' }}">
+                    @if ($hasEarned)
+                        <p><span class="font-semibold">Where it came from:</span>
+                            @if ($earned['merchant_fee_sales'] > 0)
+                                {{ $earned['merchant_fee_sales'] }} {{ Str::plural('sale', $earned['merchant_fee_sales']) }} charged a merchant fee{{ $showsFigures ? ' ('.Money::format($earned['merchant_fee_cents']).' in all)' : '' }}, on {{ $saleDays }}@if ($earned['fee_windows'] !== []),
+                                while the merchant fee was switched on {{ collect($earned['fee_windows'])->map(fn ($w) => 'from '.$window($w))->implode('; and ') }} (fee audit log)@endif.
+                            @endif
+                            @if ($earned['platform_fee_purchases'] > 0)
+                                {{ $earned['platform_fee_purchases'] }} credit {{ Str::plural('purchase', $earned['platform_fee_purchases']) }} paid a platform fee{{ $showsFigures ? ' ('.Money::format($earned['platform_fee_cents']).' in all)' : '' }}.
+                            @endif
+                        </p>
+                    @endif
+                    <p data-charges-now="{{ $earned['charges_now'] ? 'yes' : 'no' }}">
+                        @if ($earned['charges_now'])
+                            A fee is switched on now, so new activity can earn Local Goods money.
+                        @elseif ($hasEarned)
+                            Otherwise Local Goods charges nothing: the platform fee and the merchant fee are both off now, so this is not ongoing income.
+                        @else
+                            Local Goods charges nothing: the platform fee and the merchant fee are both off, so it has earned nothing.
+                        @endif
+                    </p>
+                </div>
             </x-card>
         </div>
 
         @if ($showsFigures)
             <x-card padding="p-5 sm:p-6">
                 <h3 class="text-lg font-semibold">Money in hand</h3>
-                <p class="text-sm text-muted">Simulated and Stripe test-mode money together, from the ledger.</p>
+                <p class="text-sm text-muted">The money in the customer funds account, from the ledger: simulated and Stripe test-mode money together.</p>
                 <x-rtable class="mt-3" label="Money in hand">
                     <table data-rtable="stack" class="w-full max-w-2xl text-left text-sm">
                         <caption class="sr-only">Money in hand: paid in, less paid out and refunded</caption>
@@ -94,7 +154,7 @@
                             <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Refunded to employers</th><td data-label="Amount" class="py-2 text-right tabular">−{{ Money::format($now->refundedCents) }}</td></tr>
                             <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Swept to Local Goods Operating</th><td data-label="Amount" class="py-2 text-right tabular" data-swept>−{{ Money::format($now->sweptCents) }}</td></tr>
                             <tr class="font-semibold"><th scope="row" data-primary class="py-2 pr-4">Money in hand</th><td data-label="Amount" class="py-2 text-right tabular" data-in-hand>{{ Money::format($now->inHandCents()) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Promised: customer funds plus operating funds</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->promisedCents()) }}</td></tr>
+                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Promised: customer funds plus earned money not yet swept</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->promisedCents()) }}</td></tr>
                         </tbody>
                     </table>
                 </x-rtable>
@@ -150,6 +210,46 @@
                     </div>
                 </form>
             @endif
+        @endif
+
+        <h3 class="pt-2 text-lg font-semibold">Sweep history</h3>
+        @if ($sweeps->isEmpty())
+            <p class="text-sm text-muted" data-sweep-history="empty">No sweeps yet. Every one will be listed here, with its date, amount, reason and who decided it.</p>
+        @elseif (! $showsFigures)
+            <p class="text-sm" data-sweep-history="words">{{ $sweeps->count() }} {{ Str::plural('sweep', $sweeps->count()) }} recorded. Amounts and reasons are shown to Local Goods staff only.</p>
+        @else
+            <x-rtable label="Sweeps to Local Goods Operating">
+                <table data-rtable="stack" class="w-full text-left text-sm" data-sweep-history="table">
+                    <caption class="sr-only">Every sweep from the customer funds account to Local Goods Operating, newest first</caption>
+                    <thead class="border-b border-line text-muted">
+                        <tr>
+                            <th scope="col" class="py-2 pr-4 font-semibold">When</th>
+                            <th scope="col" class="py-2 pr-4 text-right font-semibold">Amount</th>
+                            <th scope="col" class="py-2 pr-4 font-semibold">How</th>
+                            <th scope="col" class="py-2 pr-4 font-semibold">Reason</th>
+                            <th scope="col" class="py-2 font-semibold">Decided by</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line">
+                        @foreach ($sweeps as $sweep)
+                            <tr data-sweep="{{ $sweep->status }}">
+                                <td data-primary class="py-2.5 pr-4">{{ $dc($sweep->swept_at ?? $sweep->created_at) }}</td>
+                                <td data-label="Amount" class="py-2.5 pr-4 text-right tabular">{{ Money::format($sweep->amount_cents) }}</td>
+                                <td data-label="How" class="py-2.5 pr-4">
+                                    @switch ($sweep->status)
+                                        @case ('sent') <x-badge tone="ok">Stripe test-mode transfer</x-badge><code class="wrap-anywhere-safe block font-mono text-xs text-muted">{{ $sweep->stripe_transfer_id }}</code> @break
+                                        @case ('simulated') <x-money-mode mode="simulated" /> @break
+                                        @case ('failed') <x-badge tone="hold">Refused by Stripe, nothing moved</x-badge> @break
+                                        @default <x-badge tone="neutral">Sending, not confirmed yet</x-badge>
+                                    @endswitch
+                                </td>
+                                <td data-label="Reason" class="py-2.5 pr-4">{{ $sweep->reason }}</td>
+                                <td data-label="Decided by" class="py-2.5">{{ $sweep->decidedBy ? \App\Models\User::initialsOf($sweep->decidedBy->name) : '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </x-rtable>
         @endif
     </section>
 
@@ -241,12 +341,14 @@
             can't be hidden by a later correction.
         </p>
         <p data-separation-note>
-            <span class="font-semibold">One balance, kept apart by software.</span>
-            The two kinds of money are an accounting separation that Local Goods enforces in its ledger. They are not two bank accounts:
-            all of it sits in one Stripe test-mode balance, and the seeded history is simulated.
-            A deployment holding real employer money would need customer funds kept in a separate account, for example an FBO
-            ("for benefit of") or trust account with a bank or a regulated payments partner, and it may bring money-transmission rules into play.
-            What exactly is required depends on how the program is set up and where, and needs legal advice, which we have not had.
+            <span class="font-semibold">Two separate Stripe balances, still not a bank trust account.</span>
+            Employer money is held in the customer funds account (Local Goods' Stripe test-mode platform balance). Local Goods' own money is held in
+            a separate Stripe test-mode account, Local Goods Operating, and the only way money gets there is a recorded sweep of money Local Goods
+            has earned, which the solvency check refuses if it would leave customer funds short. That is a real separation of balances.
+            But the customer funds account is not a bank FBO ("for benefit of") or trust account, both accounts are controlled by Local Goods
+            through Stripe, and in test mode Stripe takes its own card fees from the customer funds balance. The seeded history is simulated.
+            A real deployment would hold customer funds at a bank or a regulated payments partner, and money-transmission rules may apply.
+            What exactly is required needs legal advice, which we have not had.
         </p>
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -260,15 +362,16 @@
             <div>
                 <h3 class="font-semibold">What it doesn't cover</h3>
                 <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
-                    <li>That customer money is held apart from Local Goods' own: both are in one Stripe test-mode balance, separated only in the ledger.</li>
+                    <li>That customer money is held the way a real deployment would need: it is in a Stripe test-mode balance Local Goods controls, not a bank FBO or trust account.</li>
                     <li>That Stripe's own balance matches: that is the reconciliation check, in Stripe test mode only.</li>
-                    <li>Stripe's processing costs, which Local Goods pays from its own money, outside this ledger.</li>
+                    <li>Stripe's card fees: in test mode Stripe takes them from the customer funds balance, outside this ledger. A real deployment would pay them from Local Goods' own money.</li>
                     <li>Money in flight between Stripe acting and telling us.</li>
                     <li>Simulated money is not real money.</li>
                 </ul>
             </div>
         </div>
-        <p class="text-sm text-muted">How it works: <a class="tap-target underline" rel="noopener" href="https://github.com/finnbutler1/local-goods/blob/main/docs/adr/0033-customer-funds-and-the-solvency-rule.md">decision record 0033</a>.</p>
+        <p class="text-sm text-muted">How it works: <a class="tap-target underline" rel="noopener" href="https://github.com/finnbutler1/local-goods/blob/main/docs/adr/0033-customer-funds-and-the-solvency-rule.md">decision record 0033</a>, and the two accounts:
+            <a class="tap-target underline" rel="noopener" href="https://github.com/finnbutler1/local-goods/blob/main/docs/adr/0034-two-separate-stripe-balances.md">decision record 0034</a>.</p>
     </section>
 </div>
 </x-app-shell>
