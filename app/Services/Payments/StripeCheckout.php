@@ -28,13 +28,26 @@ class StripeCheckout
 
     /**
      * The client secret Stripe.js needs to show the card form. Asking again
-     * for the same purchase gets the same Checkout (same idempotency key)
-     * until restart() gives it a new token.
+     * for the same purchase (a reload) gets the same Checkout while it is
+     * still open; once it has expired, a fresh one with a new token.
      */
     public function start(CreditPurchase $purchase): string
     {
         if (! $purchase->isPending()) {
             throw new InvalidArgumentException($purchase->isCancelled() ? 'That purchase was cancelled.' : 'That purchase is already paid.');
+        }
+
+        // Asked again, not asking Stripe with the old key: expires_at differs on
+        // every request, and Stripe replays a key only for identical parameters.
+        if ($purchase->stripe_checkout_session_id !== null) {
+            $session = $this->stripe->retrieveCheckoutSession($purchase->stripe_checkout_session_id);
+            if (($session['status'] ?? null) === 'open' && isset($session['client_secret'])) {
+                return $session['client_secret'];
+            }
+            // Expired: restart() gives a new token below. Complete: the payment is on its way.
+            if (! $this->restart($purchase)) {
+                throw new InvalidArgumentException('Stripe already has the payment for this purchase; the credits arrive once Stripe confirms it.');
+            }
         }
 
         if ($purchase->payment_token === null) {

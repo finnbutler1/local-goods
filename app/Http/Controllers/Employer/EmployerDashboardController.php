@@ -242,7 +242,7 @@ class EmployerDashboardController extends Controller
         try {
             return response()->json(['client_secret' => $checkout->start($purchase)]);
         } catch (InvalidArgumentException|StripeGatewayException $e) {
-            return response()->json(['message' => "Payment didn't start: {$e->getMessage()} Nothing was charged."], 422);
+            return response()->json(['message' => "Payment didn't start: {$e->getMessage()} No new charge was made."], 422);
         }
     }
 

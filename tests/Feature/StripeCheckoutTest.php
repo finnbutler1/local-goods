@@ -111,6 +111,52 @@ class StripeCheckoutTest extends TestCase
         $this->assertSame(['lg-checkout-'.$this->purchase->fresh()->payment_token], array_values(array_unique($this->stripe->idempotencyKeys)));
     }
 
+    public function test_reloading_while_the_checkout_is_open_gets_the_same_one_back(): void
+    {
+        $this->openCheckout();
+        $token = $this->purchase->fresh()->payment_token;
+
+        // A reload minutes later: a new expires_at, so the old key would be refused by Stripe.
+        $this->travel(5)->minutes();
+        $this->openCheckout();
+
+        $this->assertCount(1, $this->stripe->callsOf('checkout'), 'No second Checkout');
+        $this->assertSame($token, $this->purchase->fresh()->payment_token);
+        $this->assertSame('cs_test_0001', $this->purchase->fresh()->stripe_checkout_session_id);
+    }
+
+    public function test_reloading_after_the_checkout_expired_opens_a_fresh_one(): void
+    {
+        $this->openCheckout();
+        $oldToken = $this->purchase->fresh()->payment_token;
+        $this->stripe->sessions['cs_test_0001']['status'] = 'expired';
+
+        $this->travel(2)->hours();
+        $this->postJson("/employer/purchases/{$this->purchase->id}/checkout")->assertOk()->assertJson(['client_secret' => 'cs_test_0002_secret_fake']);
+
+        $purchase = $this->purchase->fresh();
+        $this->assertNotSame($oldToken, $purchase->payment_token);
+        $this->assertSame('cs_test_0002', $purchase->stripe_checkout_session_id);
+        $this->assertCount(2, $this->stripe->callsOf('checkout'));
+        $this->assertSame('lg-checkout-'.$purchase->payment_token, last($this->stripe->idempotencyKeys));
+        $this->assertTrue($purchase->isPending());
+    }
+
+    public function test_reloading_after_the_checkout_completed_opens_nothing_new(): void
+    {
+        $this->openCheckout();
+        $token = $this->purchase->fresh()->payment_token;
+        $this->stripe->completeSession('cs_test_0001');
+
+        $this->travel(1)->minutes();
+        $this->postJson("/employer/purchases/{$this->purchase->id}/checkout")->assertStatus(422)
+            ->assertJson(['message' => "Payment didn't start: Stripe already has the payment for this purchase; the credits arrive once Stripe confirms it. No new charge was made."]);
+
+        $this->assertCount(1, $this->stripe->callsOf('checkout'));
+        $this->assertSame($token, $this->purchase->fresh()->payment_token);
+        $this->assertSame('cs_test_0001', $this->purchase->fresh()->stripe_checkout_session_id);
+    }
+
     public function test_judges_see_the_stripe_badge_and_payment_id_but_no_pay_button(): void
     {
         $this->openCheckout();
@@ -185,7 +231,7 @@ class StripeCheckoutTest extends TestCase
         $this->stripe->checkoutFailure = 'Stripe refused the request (InvalidRequestException, field return_url).';
 
         $this->postJson("/employer/purchases/{$this->purchase->id}/checkout")->assertStatus(422)
-            ->assertJson(['message' => "Payment didn't start: Stripe refused the request (InvalidRequestException, field return_url). Nothing was charged."]);
+            ->assertJson(['message' => "Payment didn't start: Stripe refused the request (InvalidRequestException, field return_url). No new charge was made."]);
 
         // The page has the panel checkout.js fills in, with a Try again button.
         $this->get('/employer?pay='.$this->purchase->reference)->assertOk()
