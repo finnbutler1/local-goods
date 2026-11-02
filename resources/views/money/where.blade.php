@@ -69,12 +69,29 @@
                         </tbody>
                     </table>
                 </x-rtable>
+                <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2" data-customer-funds-split>
+                    <div>
+                        <dt class="font-semibold">Paid through Stripe (test mode)</dt>
+                        <dd class="tabular" data-stripe-backed>{{ Money::format($stripeBacked) }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold">Simulated, no money behind it</dt>
+                        <dd class="tabular" data-simulated>{{ Money::format($simulated) }}</dd>
+                    </div>
+                </dl>
+                @if ($simulated > 0)
+                    <p class="mt-2 text-sm text-muted" data-simulated-note>
+                        The simulated part comes from seeded demo purchases (and any bought while Stripe was off).
+                        No money for it ever reached Stripe: it keeps the demo's books whole, but it is not money.
+                    </p>
+                @endif
                 @if ($balances !== null && $balances['stripe'])
                     <p class="mt-4 text-sm" data-customer-stripe-balance>
                         <span class="font-semibold">In Stripe (the platform balance):</span>
                         @if ($balances['customer_cents'] !== null)
                             <span class="tabular">{{ Money::format($balances['customer_cents']) }}</span>.
-                            Not the same as the amount held: in test mode Stripe takes its card fees from this balance, and it is shared with
+                            Not the same as the amount held{{ $simulated > 0 ? ', mainly because '.Money::format($simulated).' of it is simulated and never reached Stripe. Also,' : ':' }}
+                            in test mode Stripe takes its card fees from this balance, and it is shared with
                             other copies of Local Goods and test activity from before the last Reset demo. Reconciliation checks it.
                         @else
                             couldn't read it from Stripe just now.
