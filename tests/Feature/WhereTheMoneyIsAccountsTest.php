@@ -4,12 +4,16 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\CreditLedgerEntry;
+use App\Models\Employer;
 use App\Models\MerchantFeeChange;
 use App\Models\Redemption;
 use App\Models\User;
+use App\Services\CreditLedger;
 use App\Services\Payments\AccountBalances;
 use App\Services\Payments\OperatingAccountSetup;
 use App\Services\Payments\OperatingSweeps;
+use App\Services\Solvency\SolvencyCheck;
+use App\Support\Money;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -57,6 +61,33 @@ class WhereTheMoneyIsAccountsTest extends TestCase
             ->assertSee('data-earned-origin="none"', false)
             ->assertSeeText('Local Goods charges nothing: the platform fee and the merchant fee are both off, so it has earned nothing.')
             ->assertSee('data-sweep-history="empty"', false);
+    }
+
+    public function test_customer_funds_held_are_split_into_stripe_paid_and_simulated_with_the_reason(): void
+    {
+        $this->fakeStripe();
+        app(OperatingAccountSetup::class)->create('127.0.0.1');
+        $ledger = app(CreditLedger::class);
+        $purchase = $ledger->requestPurchase(Employer::firstOrFail(), 25000, 'MPG-STRIPE-SPLIT');
+        $ledger->markPurchasePaidByStripe($purchase, 'pi_test_split', 'ch_test_split', 25000, 'usd');
+
+        $held = app(SolvencyCheck::class)->now()->customerFundsCents();
+        $simulated = Money::format($held - 25000);
+        $this->assertGreaterThan(25000, $held, 'The seeded history is simulated, so most of it is');
+
+        $this->signIn(Role::PlatformAdmin);
+        $this->get(route('money'))->assertOk()
+            ->assertSee('data-customer-funds-split', false)
+            ->assertSeeInOrder(['Paid through Stripe (test mode)', '$250.00', 'Simulated, no money behind it', $simulated], false)
+            ->assertSeeText('The simulated part comes from seeded demo purchases (and any bought while Stripe was off). No money for it ever reached Stripe: it keeps the demo\'s books whole, but it is not money.')
+            ->assertSeeText('Not the same as the amount held, mainly because '.$simulated.' of it is simulated and never reached Stripe.');
+
+        // Judges see the split and the reason (customer funds, not earned money), never the Stripe balance.
+        $this->signIn(Role::Judge);
+        $this->get(route('money'))->assertOk()
+            ->assertSeeInOrder(['Paid through Stripe (test mode)', '$250.00', 'Simulated, no money behind it', $simulated], false)
+            ->assertSee('data-simulated-note', false)
+            ->assertDontSee('data-customer-stripe-balance', false);
     }
 
     public function test_balances_are_read_once_a_minute_and_a_sweep_shows_at_once(): void

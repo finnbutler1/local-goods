@@ -97,8 +97,13 @@ class WhereTheMoneyIsController extends Controller
     /** @param  array{cents: int, reason: string, reviewed: int}|null  $review */
     private function page(Request $request, SolvencyCheck $check, OperatingSweeps $sweeps, ?array $review = null): View
     {
+        $now = $check->now();
+        $stripeBacked = $now->stripeBackedCustomerFundsCents($sweeps->stripeEarnedUnswept());
+
         return view('money.where', [
-            'now' => $check->now(),
+            'now' => $now,
+            'stripeBacked' => $stripeBacked,
+            'simulated' => $now->customerFundsCents() - $stripeBacked,
             'run' => SolvencyCheckRun::latest(),
             'showsFigures' => MerchantFee::showsFiguresTo($request->user()),
             'mayRun' => $request->user()->can('run-solvency-check'),

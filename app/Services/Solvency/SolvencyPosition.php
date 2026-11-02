@@ -47,6 +47,19 @@ final readonly class SolvencyPosition
         return $this->employerCents + $this->employeeCents + $this->merchantCents + $this->heldRedemptionsCents + $this->refundHoldsCents;
     }
 
+    /**
+     * How much of customer funds held came in through Stripe test mode and
+     * is still in the customer funds account, by our records: Stripe money
+     * in, less Stripe money out, less Stripe-earned money not yet swept
+     * (Local Goods' own, not a customer's). The rest of customer funds held
+     * is simulated: seeded demo purchases, or bought while Stripe was off,
+     * with no money behind it in Stripe.
+     */
+    public function stripeBackedCustomerFundsCents(int $stripeEarnedUnswept): int
+    {
+        return max(0, min($this->customerFundsCents(), $this->stripeInCents - $this->stripeOutCents - max(0, $stripeEarnedUnswept)));
+    }
+
     public function heldPendingCents(): int
     {
         return $this->heldRedemptionsCents + $this->refundHoldsCents;
