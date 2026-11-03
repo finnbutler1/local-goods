@@ -660,3 +660,18 @@ Not checked:
 - signing in after approval and Stripe onboarding in a browser (covered by
   `MerchantJoinOnboardingTest` with fake Stripe);
 - a judge's login in a browser.
+
+## Account menu, pay-code dialog and wallet tabs (2026-11-02)
+
+Checks that ran: automated tests only (`AccountMenuTest`, `PayCodeNotValidDialogTest`,
+`WalletTabsTest`, plus the page sweeps in `AccessibilityTest`). **Not tried in a real
+browser, with a screen reader or on a phone yet.**
+
+- Pay-code dialog: native `<dialog>` opened with `showModal()`, so the browser traps
+  focus and Escape closes it. "Try again" and Escape both return focus to the code field
+  with its text selected (`dialog[data-return-to]` in `app.js`). Without JavaScript the
+  dialog stays closed and the inline message under the field is the fallback. The
+  rate-limit message stays inline with `role="alert"`.
+- Wallet tabs: same tab roles and arrow keys. The selected tab has a check mark, an
+  underlined label and a heavy bar, not only a colour change.
+

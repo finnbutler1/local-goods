@@ -1046,3 +1046,15 @@ in small steps and reviewing every change before committing it.
 
 I made the product decisions, reviewed the code and tested each change in
 the browser. Claude Code did most of the typing.
+
+## What we store about you
+
+Every signed-in person can read this in plain words at `/account/data` ("What we
+store about you" in the Account menu). It lists, per role: name, email, role, a
+scrambled password, last-visit times, and the person's own records (credits and
+spending, shop sales and payouts, decisions, feedback). Reviewers also see what a
+magic link keeps: a hash of its secret, set-up and revoke dates, the reviewer type,
+a session fingerprint in their cookie, and their votes. It also says what is not
+stored: card numbers, location, page-by-page browsing, or anything naming a person
+sent to the AI. Keep the page and this section true when columns change.
+

@@ -5,6 +5,28 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Account menu, pay-code dialog and wallet tabs — done (2026-11-02).**
+Front end and copy only; no migration, money, fraud prompt, AI input, eval
+data or lock change.
+
+- Account menu: everyone gets Your account, What we store about you
+  (`/account/data`, `account.data`, GET only, also on the personal-contact
+  allowlist), Help and feedback (`/account#feedback`), public site, Log out;
+  employees add Your receipts (`wallet#history`), merchants Payout history
+  (`#payout-history`). Judges see the same menu. **Rejected (decisions
+  table):** sign out of other devices (needs `AuthenticateSession` in the
+  web group, which changes every session including judges' magic links, for
+  a fictional-account demo), two-factor sign-in, change name/email, device
+  list or login history, download/delete my data, notification preferences.
+- Pay-code dialog: `partials/pay-code-not-valid-dialog` has no variables, so
+  it is identical for every refusal; shown only for `PayCodes::NOT_VALID`.
+  The rate-limit message stays inline (`role="alert"`). Inline message kept
+  as the no-JS fallback. Tests: `PayCodeNotValidDialogTest`.
+- Wallet tabs: icon, label, one-line description, check mark on the
+  selected tab (`WalletTabsTest`); keep the attribute line layout that
+  `PayInPersonWalletTest` matches.
+- Not yet tried in a real browser or with a screen reader.
+
 **Two separate Stripe balances: customer funds and Local Goods Operating
 — done (2026-11-01, ADR 0034).** One additive migration
 (`2026_11_02_000001_add_operating_account`, snapshot
