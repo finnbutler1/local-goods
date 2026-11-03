@@ -3,6 +3,15 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-02: Demo activity scheduler fix
+
+- **The scheduler now actually runs on the live site.** Cron couldn't find
+  `runuser` (it isn't on cron's PATH on Amazon Linux), so every
+  minute failed and no demo activity happened. The wrapper now finds the
+  user-switching command by its full path, falls back to `su` or `sudo`,
+  and writes a clear "FAILED" line to `scheduler.log` (exit 1) if it can't
+  switch user, so this can't fail silently again.
+
 ## 2026-11-01: Two separate Stripe accounts, customer funds and Local Goods Operating (ADR 0034)
 
 - **Two real balances.** Employer money is held in the customer funds
