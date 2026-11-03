@@ -308,7 +308,7 @@
                 </x-card>
             </div>
 
-            <div>
+            <div id="payout-history" class="scroll-mt-24">
             <h2 id="payouts-heading" class="text-2xl font-semibold text-primary">Payout history</h2>
             <p class="mt-1 text-sm text-muted">Each payout says how it was paid: a Stripe test-mode transfer from the Local Goods customer funds account (with its id), or simulated (recorded in the ledger, no money moved). Payouts are what you receive, after any Local Goods fee on each sale.</p>
             <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
