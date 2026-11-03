@@ -84,11 +84,19 @@
 
     {{-- Two ways to pay (ADR 0026). Real tabs with arrow keys when JavaScript runs; plain links to ?tab= without it. --}}
     <div id="wallet-tabs" class="scroll-mt-24" data-tabs>
-        <div role="tablist" aria-label="How to pay" class="grid grid-cols-2 gap-1 rounded-2xl border-2 border-line bg-surface p-1">
-            @foreach (['to-go' => 'Order to go', 'in-person' => 'Pay in person'] as $key => $label)
+        <div role="tablist" aria-label="How to pay" class="grid grid-cols-2 gap-2 rounded-2xl border-2 border-edge bg-surface p-2">
+            @foreach ([
+                'to-go' => ['Order to go', 'Order ahead, pick it up', '<path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/>'],
+                'in-person' => ['Pay in person', 'Show a code at the counter', '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M10 7h4M10 12h4M10 16h4"/>'],
+            ] as $key => [$label, $description, $icon])
                 <a role="tab" id="tab-{{ $key }}" href="{{ route('employee.wallet', ['tab' => $key]) }}#wallet-tabs"
                    aria-controls="panel-{{ $key }}" aria-selected="{{ $tab === $key ? 'true' : 'false' }}" tabindex="{{ $tab === $key ? '0' : '-1' }}"
-                   class="rounded-xl px-3 py-2.5 text-center font-semibold text-primary hover:bg-primary-tint aria-selected:bg-primary aria-selected:text-on-primary">{{ $label }}</a>
+                   class="group relative flex min-h-20 flex-col items-center justify-center gap-1 rounded-xl border-2 border-edge px-2 py-3 text-center text-primary hover:bg-primary-tint aria-selected:border-primary aria-selected:bg-primary aria-selected:text-on-primary aria-selected:shadow-[inset_0_-6px_0_0_var(--color-on-primary)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-7" aria-hidden="true">{!! $icon !!}</svg>
+                    <span class="text-lg leading-tight font-bold group-aria-selected:underline group-aria-selected:decoration-2 group-aria-selected:underline-offset-4">{{ $label }}</span>
+                    <span class="text-sm leading-snug font-normal">{{ $description }}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="absolute top-2 right-2 hidden size-5 group-aria-selected:block" aria-hidden="true" data-selected-mark><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.5 3 3 6-7"/></svg>
+                </a>
             @endforeach
         </div>
 
