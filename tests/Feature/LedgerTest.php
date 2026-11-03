@@ -26,7 +26,7 @@ class LedgerTest extends TestCase
         Carbon::setTestNow('2026-10-20 12:00:00');
         $this->seed(DatabaseSeeder::class);
 
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
 
         $this->assertSame(2 * 15000 - 18000, $employee->balanceCents());
     }
@@ -37,7 +37,7 @@ class LedgerTest extends TestCase
         Carbon::setTestNow('2026-10-10 12:00:00');
         $this->seed(DatabaseSeeder::class);
 
-        $balance = Employee::firstOrFail()->balanceCents();
+        $balance = Employee::orderBy('id')->firstOrFail()->balanceCents();
 
         $this->assertSame(3 * 15000 - 18000, $balance);
         $this->assertSame(0, $balance % 1000);

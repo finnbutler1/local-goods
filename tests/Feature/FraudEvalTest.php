@@ -82,7 +82,7 @@ class FraudEvalTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
 
-        $live = app(SignalCalculator::class)->calculate(Employee::firstOrFail(), $deli, 12000);
+        $live = app(SignalCalculator::class)->calculate(Employee::orderBy('id')->firstOrFail(), $deli, 12000);
 
         // The seeded employee: $120 balance, 12 past redemptions, median $13.87, deli 1 visit in 7 and 30 days.
         $case = ['amount' => '120.00', 'balance_before' => '120.00', 'past_redemptions' => '12', 'median_past_amount' => '13.87',

@@ -38,7 +38,7 @@ class DemoActivitySolvencyTest extends TestCase
         $this->runDay('2026-10-26');
 
         $this->assertNull(DemoActivityDay::firstOrFail()->halted_reason);
-        $runs = SolvencyCheckRun::where('trigger', SolvencyCheckRun::TRIGGER_DEMO_ACTIVITY)->get();
+        $runs = SolvencyCheckRun::where('trigger', SolvencyCheckRun::TRIGGER_DEMO_ACTIVITY)->orderBy('id')->get();
         $this->assertCount(144, $runs, 'One per tick, every five minutes from 07:00 to 18:55');
         $this->assertTrue($runs->every->passed);
         $this->assertSame(CreditLedgerEntry::count(), $runs->last()->entries_checked);

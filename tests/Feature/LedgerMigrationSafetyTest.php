@@ -35,7 +35,7 @@ class LedgerMigrationSafetyTest extends TestCase
         $after = $this->snapshot($employees);
 
         $this->assertSame($before, $after);
-        $this->assertSame(['employee_id' => 1, 'employer_id' => null, 'merchant_id' => null],
+        $this->assertSame(['employee_id' => $employees[0], 'employer_id' => null, 'merchant_id' => null],
             (array) DB::table('credit_ledger_entries')->select('employee_id', 'employer_id', 'merchant_id')->orderBy('id')->first());
     }
 

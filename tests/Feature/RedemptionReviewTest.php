@@ -61,7 +61,7 @@ class RedemptionReviewTest extends TestCase
 
     public function test_approving_spends_the_reserved_credits_and_records_who_and_when(): void
     {
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $before = $employee->balanceCents();
         $redemption = $this->heldRedemption();
         $this->assertSame($before - 2000, $employee->balanceCents(), 'Held credits are reserved.');
@@ -95,7 +95,7 @@ class RedemptionReviewTest extends TestCase
 
     public function test_denying_as_no_purchase_returns_the_reserved_credits_to_the_employee(): void
     {
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $before = $employee->balanceCents();
         $redemption = $this->heldRedemption();
 
@@ -121,7 +121,7 @@ class RedemptionReviewTest extends TestCase
 
     public function test_denying_as_suspected_abuse_returns_the_credits_to_the_employer_not_the_employee(): void
     {
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $employer = $employee->employer;
         $before = $employee->balanceCents();
         $employerBefore = $employer->balanceCents();
@@ -170,7 +170,7 @@ class RedemptionReviewTest extends TestCase
     #[DataProvider('secondDecisions')]
     public function test_a_redemption_cannot_be_decided_twice(string $first, string $second): void
     {
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $redemption = $this->heldRedemption();
         $this->decide($first, $redemption, $this->reviewer);
         $status = $redemption->fresh()->status;
@@ -268,7 +268,7 @@ class RedemptionReviewTest extends TestCase
 
     public function test_deny_button_denies_and_the_employee_gets_the_credits_back(): void
     {
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $before = $employee->balanceCents();
         $held = $this->heldRedemption();
 

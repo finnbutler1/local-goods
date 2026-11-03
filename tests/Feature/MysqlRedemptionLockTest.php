@@ -45,7 +45,7 @@ class MysqlRedemptionLockTest extends TestCase
     public function test_redemption_waits_for_a_lock_held_on_the_same_employee(): void
     {
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(5, 'clear'));
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $merchant = Merchant::firstOrFail();
 
         // Another request is in the middle of redeeming for the same employee.

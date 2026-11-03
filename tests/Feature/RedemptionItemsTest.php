@@ -61,7 +61,7 @@ class RedemptionItemsTest extends TestCase
     {
         $latte = $this->product('Latte');
         $croissant = $this->product('Croissant');
-        $balance = Employee::firstOrFail()->balanceCents();
+        $balance = Employee::orderBy('id')->firstOrFail()->balanceCents();
 
         $this->post('/employee/redeem', [
             'merchant_id' => $this->grind()->id,
@@ -74,7 +74,7 @@ class RedemptionItemsTest extends TestCase
         $this->assertSame($redemption->subtotal_cents + $redemption->tax_cents, $redemption->amount_cents);
         $this->assertSame($redemption->subtotal_cents, $redemption->items->sum->totalCents());
         $this->assertSame('2× Latte, 1× Croissant', $redemption->itemsSummary());
-        $this->assertSame($balance - $redemption->amount_cents, Employee::firstOrFail()->balanceCents());
+        $this->assertSame($balance - $redemption->amount_cents, Employee::orderBy('id')->firstOrFail()->balanceCents());
     }
 
     public function test_an_other_amount_is_its_own_line_and_part_of_the_total_with_no_tax_added(): void
@@ -107,7 +107,7 @@ class RedemptionItemsTest extends TestCase
         $latte = $this->product('Latte');
         $croissant = $this->product('Croissant');
         $total = 2 * $latte->price_cents + $croissant->price_cents;
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $service = app(RedemptionService::class);
 
         $state = $this->snapshotState();
@@ -167,7 +167,7 @@ class RedemptionItemsTest extends TestCase
     public function test_items_that_dont_add_up_are_refused(): void
     {
         $this->expectException(LogicException::class);
-        app(RedemptionService::class)->redeem(Employee::firstOrFail(), $this->grind(), 1000, [
+        app(RedemptionService::class)->redeem(Employee::orderBy('id')->firstOrFail(), $this->grind(), 1000, [
             ['merchant_product_id' => null, 'name' => 'Other amount', 'unit_price_cents' => 900, 'quantity' => 1],
         ]);
     }

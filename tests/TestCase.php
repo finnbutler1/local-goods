@@ -19,7 +19,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function signIn(Role $role): User
     {
-        $user = User::where('role', $role)->first() ?? User::factory()->role($role)->create(match ($role) {
+        $user = User::where('role', $role)->orderBy('id')->first() ?? User::factory()->role($role)->create(match ($role) {
             Role::Employee => ['name' => 'Jordan Rivera'],
             Role::BidAdmin => ['name' => 'Sam Taylor'],
             default => [],

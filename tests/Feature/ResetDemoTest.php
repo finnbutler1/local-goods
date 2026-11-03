@@ -48,7 +48,7 @@ class ResetDemoTest extends TestCase
         $deli = Merchant::where('name', 'Press Room Deli')->firstOrFail();
         $this->signIn(Role::Employee);
         $this->post('/employee/redeem', ['merchant_id' => $deli->id, 'amount' => '120']);
-        $this->assertSame(0, Employee::firstOrFail()->balanceCents());
+        $this->assertSame(0, Employee::orderBy('id')->firstOrFail()->balanceCents());
         $this->assertSame($seeded['redemptions'] + 1, Redemption::count());
 
         $this->signIn(Role::BidAdmin);
@@ -63,7 +63,7 @@ class ResetDemoTest extends TestCase
         $this->assertSame(0, Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->count());
         $this->assertSame(DatabaseSeeder::ENROLLED, Employee::count());
         $this->assertSame(8, Merchant::count());
-        $this->assertSame(12000, Employee::firstOrFail()->balanceCents());
+        $this->assertSame(12000, Employee::orderBy('id')->firstOrFail()->balanceCents());
 
         // Non-demo tables untouched.
         $this->assertTrue(User::whereKey($user->id)->exists());

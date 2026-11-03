@@ -22,7 +22,7 @@ class SignalCalculatorTest extends TestCase
         // Oct 20, 2026 at noon in DC. Seeded balance is $120.00.
         Carbon::setTestNow(Carbon::parse('2026-10-20 12:00', 'America/New_York'));
         $this->seed(DatabaseSeeder::class);
-        $this->employee = Employee::firstOrFail();
+        $this->employee = Employee::orderBy('id')->firstOrFail();
     }
 
     protected function tearDown(): void
