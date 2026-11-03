@@ -6,5 +6,5 @@
            class="tabular mt-1.5 block w-full rounded-xl border-2 border-muted bg-surface px-3 py-3 font-display text-3xl font-semibold uppercase tracking-[0.12em] text-ink focus-visible:border-primary"
            aria-describedby="pay_code-hint @error('pay_code') pay_code-error @enderror" @error('pay_code') aria-invalid="true" @enderror>
     <p id="pay_code-hint" class="mt-1.5 text-sm text-muted">The 6 characters on the customer's phone. Spaces don't matter.</p>
-    @error('pay_code') <p id="pay_code-error" class="mt-1.5 text-sm font-semibold text-hold">{{ $message }}</p> @enderror
+    @error('pay_code') <p id="pay_code-error" @if ($message === \App\Services\PayCodes::TOO_MANY_TRIES) role="alert" @endif class="mt-1.5 text-sm font-semibold text-hold">{{ $message }}</p> @enderror
 </div>

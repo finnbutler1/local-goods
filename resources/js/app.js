@@ -116,6 +116,16 @@ document.addEventListener('click', (event) => {
 // Reopen a dialog whose form came back with errors.
 document.querySelectorAll('dialog[data-open-on-load]').forEach((dialog) => dialog.showModal());
 
+// A dialog with data-return-to hands focus back to that field when it closes
+// (button, Escape or backdrop), with the text selected so it can be retyped.
+document.querySelectorAll('dialog[data-return-to]').forEach((dialog) => {
+    dialog.addEventListener('close', () => {
+        const field = document.getElementById(dialog.dataset.returnTo);
+        field?.focus();
+        field?.select?.();
+    });
+});
+
 // After a form posts and the page comes back, start where the answer is: the
 // first field with an error, or else the message saying what happened
 // ([data-flash], see the x-flash component). Screen readers announce it and

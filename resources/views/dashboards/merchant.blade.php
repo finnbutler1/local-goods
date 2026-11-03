@@ -121,6 +121,9 @@
                     @include('dashboards.partials.pay-code-field', ['disabled' => false])
                     <x-button type="submit" size="lg" class="w-full">Check code</x-button>
                 </form>
+                @if ($errors->first('pay_code') === \App\Services\PayCodes::NOT_VALID)
+                    @include('dashboards.partials.pay-code-not-valid-dialog')
+                @endif
             @else
                 <div class="mt-4 space-y-3">
                     @include('dashboards.partials.pay-code-field', ['disabled' => true])
