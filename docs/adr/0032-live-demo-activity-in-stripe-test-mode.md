@@ -173,6 +173,15 @@ Cron on the instance runs Laravel's scheduler.
   minute, so turning the switch off stops the next run. It starts no PHP
   unless `DEMO_ACTIVITY_ENABLED` is true, then runs `schedule:run` as
   `webapp`.
+- **Switching to `webapp` by full path (fixed 2026-11-02).** Cron's PATH
+  is only `/usr/bin:/bin`, so the first version's bare `runuser` failed
+  every minute on the live site ("runuser: command not found"; it lives in
+  `/usr/sbin`) and nothing ran. The wrapper now sets a full PATH and calls
+  the first of `/usr/sbin/runuser`, `/sbin/runuser`, … that exists, then
+  `su`, then `sudo`, always by full path. If none exists it writes "FAILED:
+  cannot switch to the webapp user" to `storage/logs/scheduler.log` and
+  exits 1; each run logs which command it used. A test refuses a bare
+  switcher name.
 - **Never inside a web request.** A failure can't break a page, and the
   origin lock is untouched. There is one instance, so nothing runs twice.
 

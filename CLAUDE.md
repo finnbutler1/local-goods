@@ -127,7 +127,9 @@ unchanged; money logic unchanged apart from one gateway method.
 - Scheduling: `.platform/hooks/predeploy/02_scheduler.sh` (+ confighook)
   writes `/etc/cron.d/local-goods-scheduler` → `scripts/run-scheduler.sh`
   (reads Beanstalk properties each minute, no PHP unless the switch is
-  true, `schedule:run` as webapp). **The hook must never fail a deploy**
+  true, `schedule:run` as webapp; the user switcher only by full path,
+  runuser → su → sudo, exit 1 + "FAILED" line if none: cron's PATH has no
+  /usr/sbin). **The hook must never fail a deploy**
   (no `set -e`, ends `exit 0`; `DemoActivityScheduleTest`). Logs:
   `storage/logs/scheduler.log`, `storage/logs/demo-activity.log`.
 - Tables in `DEMO_TABLES` (front) and `EMPTY_AFTER_SEED`.
