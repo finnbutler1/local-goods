@@ -80,7 +80,7 @@ class SalesTaxRedemptionTest extends TestCase
 
     public function test_the_ledger_debits_and_the_merchant_earns_the_total(): void
     {
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $before = $employee->balanceCents();
         $payableBefore = $this->merchant()->payableCents();
 
@@ -193,7 +193,7 @@ class SalesTaxRedemptionTest extends TestCase
         $tax = SalesTax::forItems([['name' => 'Latte', 'unit_price_cents' => 575, 'quantity' => 1, 'tax_category' => 'prepared_food']]);
 
         $this->expectException(LogicException::class);
-        app(RedemptionService::class)->redeem(Employee::firstOrFail(), $this->merchant(), 575, $tax->items, Redemption::CHANNEL_TO_GO, $tax);
+        app(RedemptionService::class)->redeem(Employee::orderBy('id')->firstOrFail(), $this->merchant(), 575, $tax->items, Redemption::CHANNEL_TO_GO, $tax);
     }
 
     public function test_a_product_with_no_category_falls_back_to_its_merchants_default(): void

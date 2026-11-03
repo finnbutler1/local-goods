@@ -72,7 +72,7 @@ class SolvencyHistoryTest extends TestCase
         // A refund that takes the merchant $10 below zero and hands the credits back to an employee: net totals match.
         $refund = 1000 + $payout->merchant->payableCents();
         $this->plant(['merchant_id' => $payout->merchant_id, 'amount_cents' => -$refund, 'type' => CreditLedgerEntry::TYPE_MERCHANT_REFUNDED, 'created_at' => now()->utc()]);
-        $this->plant(['employee_id' => Employee::firstOrFail()->id, 'amount_cents' => $refund, 'type' => CreditLedgerEntry::TYPE_REFUND, 'created_at' => now()->utc()]);
+        $this->plant(['employee_id' => Employee::orderBy('id')->firstOrFail()->id, 'amount_cents' => $refund, 'type' => CreditLedgerEntry::TYPE_REFUND, 'created_at' => now()->utc()]);
 
         $now = app(SolvencyCheck::class)->now();
         $this->assertFalse($now->isSolvent());

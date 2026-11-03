@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Bid;
 use App\Models\Employee;
+use App\Models\MerchantApplication;
 use App\Models\MerchantProduct;
 use App\Models\Partnership;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Services\DemoResetter;
+use App\Services\Districts\MerchantApplications;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -64,14 +66,14 @@ class SeedDemoIfEmptyTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         DB::table('merchant_products')->delete();
-        $before = [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents()];
+        $before = [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::orderBy('id')->firstOrFail()->balanceCents()];
 
         $this->artisan('demo:seed-if-empty')
             ->expectsOutputToContain('product menus')
             ->assertSuccessful();
 
         $this->assertSame(collect(DatabaseSeeder::DEMO_MENUS)->flatten(1)->count(), MerchantProduct::count());
-        $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents()]);
+        $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::orderBy('id')->firstOrFail()->balanceCents()]);
         $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
     }
 
@@ -81,14 +83,14 @@ class SeedDemoIfEmptyTest extends TestCase
         foreach (DemoResetter::DISTRICT_TABLES as $table) {
             DB::table($table)->delete();
         }
-        $before = [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents(), MerchantProduct::count()];
+        $before = [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::orderBy('id')->firstOrFail()->balanceCents(), MerchantProduct::count()];
 
         $this->artisan('demo:seed-if-empty')
             ->expectsOutputToContain('Added the demo partnership')
             ->assertSuccessful();
 
         $this->assertTrue(Partnership::sole()->is_demo);
-        $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::firstOrFail()->balanceCents(), MerchantProduct::count()]);
+        $this->assertSame($before, [Redemption::count(), DB::table('credit_ledger_entries')->count(), Employee::orderBy('id')->firstOrFail()->balanceCents(), MerchantProduct::count()]);
         $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
     }
 
@@ -99,7 +101,7 @@ class SeedDemoIfEmptyTest extends TestCase
         foreach (DemoResetter::DISTRICT_TABLES as $table) {
             DB::table($table)->delete();
         }
-        app(\App\Services\Districts\MerchantApplications::class)->submit(['business_name' => 'K Street Gym', 'address' => '1700 K St NW',
+        app(MerchantApplications::class)->submit(['business_name' => 'K Street Gym', 'address' => '1700 K St NW',
             'category' => 'fitness', 'contact_email' => 'gym@example.com', 'independence_answer' => 'One gym, owned by its two trainers.']);
 
         $this->artisan('demo:seed-if-empty')
@@ -107,8 +109,8 @@ class SeedDemoIfEmptyTest extends TestCase
             ->assertSuccessful();
 
         $this->assertTrue(Partnership::sole()->is_demo);
-        $this->assertSame(2, \App\Models\MerchantApplication::where('is_sample', true)->count());
-        $this->assertSame(1, \App\Models\MerchantApplication::where('is_sample', false)->count(), 'the real application is kept');
+        $this->assertSame(2, MerchantApplication::where('is_sample', true)->count());
+        $this->assertSame(1, MerchantApplication::where('is_sample', false)->count(), 'the real application is kept');
         $this->artisan('demo:seed-if-empty')->expectsOutputToContain('nothing changed')->assertSuccessful();
     }
 
@@ -121,7 +123,7 @@ class SeedDemoIfEmptyTest extends TestCase
         $this->artisan('demo:seed-if-empty')->expectsOutputToContain('Added the demo partnership; nothing else changed.')->assertSuccessful();
 
         $this->assertSame(1, Partnership::count());
-        $this->assertSame(2, \App\Models\MerchantApplication::where('is_sample', true)->count(), 'the samples are not added twice');
+        $this->assertSame(2, MerchantApplication::where('is_sample', true)->count(), 'the samples are not added twice');
     }
 
     public function test_leaves_a_partly_filled_database_alone(): void

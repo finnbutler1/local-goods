@@ -62,7 +62,7 @@ class MerchantTaxTest extends TestCase
         $merchant ??= $this->grind();
         $basket = RedemptionBasket::build($merchant, [$merchant->products()->firstOrFail()->id => $count], 0);
 
-        return app(RedemptionService::class)->redeem(Employee::firstOrFail(), $merchant, $basket['total_cents'], $basket['items'], tax: $basket['tax']);
+        return app(RedemptionService::class)->redeem(Employee::orderBy('id')->firstOrFail(), $merchant, $basket['total_cents'], $basket['items'], tax: $basket['tax']);
     }
 
     private function taxBefore(string $key): int
@@ -94,7 +94,7 @@ class MerchantTaxTest extends TestCase
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(90, 'hold'));
         $this->orderDripCoffee(1);
         $this->app->instance(ClaudeClient::class, FakeClaudeClient::verdict(5, 'clear'));
-        app(RedemptionService::class)->redeem(Employee::firstOrFail(), $this->grind(), 650);
+        app(RedemptionService::class)->redeem(Employee::orderBy('id')->firstOrFail(), $this->grind(), 650);
         $this->orderDripCoffee(1, Merchant::where('name', 'Press Room Deli')->firstOrFail());
 
         $this->assertSame($before, $this->taxBefore('this_month'));
@@ -126,7 +126,7 @@ class MerchantTaxTest extends TestCase
 
     public function test_the_pay_code_review_shows_subtotal_tax_and_total(): void
     {
-        $code = app(PayCodes::class)->issue(Employee::firstOrFail(), $this->grind(), ...$this->basketArgs(2));
+        $code = app(PayCodes::class)->issue(Employee::orderBy('id')->firstOrFail(), $this->grind(), ...$this->basketArgs(2));
         $this->signIn(Role::Merchant);
 
         $this->withSession([PayCodeController::SESSION_KEY => $code->id])->get('/merchant')->assertOk()
@@ -146,7 +146,7 @@ class MerchantTaxTest extends TestCase
     public function test_the_csv_has_subtotal_tax_and_total_with_initials_only(): void
     {
         $order = $this->orderDripCoffee(1);
-        $typed = app(RedemptionService::class)->redeem(Employee::firstOrFail(), $this->grind(), 650);
+        $typed = app(RedemptionService::class)->redeem(Employee::orderBy('id')->firstOrFail(), $this->grind(), 650);
         $this->signIn(Role::Merchant);
 
         $response = $this->get(route('merchant.redemptions.csv'))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -155,13 +155,13 @@ class MerchantTaxTest extends TestCase
 
         $this->assertSame(RedemptionsExportController::HEADERS, $rows[0]);
         $byRef = collect(array_slice($rows, 1))->keyBy(1);
-        $initials = Employee::firstOrFail()->initials();
+        $initials = Employee::orderBy('id')->firstOrFail()->initials();
         $this->assertSame(['2026-10-20 12:00', $order->reference(), 'To go', 'Cleared', $initials, '1× Drip coffee', '3.75', '0.38', '4.13', '0.00', '4.13', 'DC meals tax 10% $0.38'], $byRef[$order->reference()]);
         $this->assertSame(['', '', '6.50', '0.00', '6.50', 'Amount includes any tax charged by the shop'], array_slice($byRef[$typed->reference()], 6));
         // Completed refunds (ADR 0028; the seed has one) are rows of their own.
         $orders = array_filter(array_slice($rows, 1), fn ($row) => $row[3] !== 'Refund');
         $this->assertSame($this->grind()->redemptions()->count(), count($orders), 'only this merchant\'s redemptions');
-        $this->assertStringNotContainsString(Employee::firstOrFail()->display_name, $response->streamedContent());
+        $this->assertStringNotContainsString(Employee::orderBy('id')->firstOrFail()->display_name, $response->streamedContent());
     }
 
     public function test_csv_cells_cannot_run_as_spreadsheet_formulas(): void

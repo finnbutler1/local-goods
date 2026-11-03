@@ -67,7 +67,7 @@ class EmployeeWalletTest extends TestCase
         $redemption = Redemption::latest('id')->firstOrFail();
         $this->assertSame(Redemption::STATUS_APPROVED, $redemption->status);
         $this->assertSame(650, $redemption->amount_cents);
-        $this->assertSame(11350, Employee::firstOrFail()->balanceCents());
+        $this->assertSame(11350, Employee::orderBy('id')->firstOrFail()->balanceCents());
     }
 
     public function test_the_ai_call_happens_outside_the_database_transaction(): void

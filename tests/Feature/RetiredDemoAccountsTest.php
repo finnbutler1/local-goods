@@ -60,7 +60,7 @@ class RetiredDemoAccountsTest extends TestCase
                 'page_url' => 'http://localhost/judge', 'category' => 'functionality', 'rating' => 3,
                 'severity' => 'should_fix', 'comment' => 'Synthetic.',
             ])],
-            'employee wallet' => [fn (User $u) => Employee::firstOrFail()->update(['user_id' => $u->id])],
+            'employee wallet' => [fn (User $u) => Employee::orderBy('id')->firstOrFail()->update(['user_id' => $u->id])],
             'redemption decided by id' => [fn (User $u) => DB::table('redemptions')->limit(1)->update(['reviewed_by_user_id' => $u->id])],
             'redemption decided by name' => [fn (User $u) => DB::table('redemptions')->limit(1)->update(['reviewed_by' => $u->name])],
             'ledger entry decided by name' => [fn (User $u) => DB::table('credit_ledger_entries')->limit(1)->update(['decided_by' => $u->name])],

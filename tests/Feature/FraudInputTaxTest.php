@@ -53,7 +53,7 @@ class FraudInputTaxTest extends TestCase
     {
         $claude = FakeClaudeClient::verdict(5, 'clear');
         $this->app->instance(ClaudeClient::class, $claude);
-        $employee = Employee::firstOrFail();
+        $employee = Employee::orderBy('id')->firstOrFail();
         $grind = Merchant::where('name', 'Farragut Grind')->firstOrFail();
         $service = app(RedemptionService::class);
         $lastRedemption = Redemption::max('id');
