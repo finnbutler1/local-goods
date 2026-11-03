@@ -5,6 +5,24 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Redemption refund lock order and MySQL-only test assumptions — done
+(2026-11-02).** No migration; fraud prompt, AI input, eval data, holdouts and
+locks unchanged. One money change: `approveRedemptionRefund` locks the
+redemption, payout and (simulated only) merchant before `claim()`, as
+`approveEmployerRefund` does. Without it, two simulated refunds at one merchant
+at the same moment could leave it below zero, and `SolvencyGuard` can't see
+that because it reads the same snapshot. Test: `MysqlRedemptionRefundSnapshotTest`.
+
+- **Open, Finn to decide:** `StripeFunding::claim` has the same shape (its
+  purchases lock comes after the transaction's first plain read). A throwaway
+  MySQL probe over-claimed a purchase. Don't change it without his say-so.
+- A locking read sees the latest commit; a plain read after it doesn't. In a
+  money transaction take every lock a check depends on before the first plain
+  read.
+- Tests: pick a row with `orderBy('id')`, never a bare `first()`, and use real
+  ids. To check by hand: MySQL with `auto_increment_increment=7`,
+  `--order-by=random`, and SQLite with `PRAGMA reverse_unordered_selects=ON`.
+
 **Account menu, pay-code dialog and wallet tabs — done (2026-11-02).**
 Front end and copy only; no migration, money, fraud prompt, AI input, eval
 data or lock change.

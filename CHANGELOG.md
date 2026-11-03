@@ -3,6 +3,14 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-02: Refund approvals see a refund that just finished
+
+- **A merchant can no longer be pushed below zero by two simulated refunds at
+  once.** Approving a refund read what the shop was owed from a snapshot taken
+  before it had waited for its locks, so it could miss another refund that had
+  just finished. It now takes its locks first, the same fix employer refunds
+  got. Simulated money only. New test on MySQL.
+
 ## 2026-11-02: Demo activity scheduler fix
 
 - **The scheduler now actually runs on the live site.** Cron couldn't find
