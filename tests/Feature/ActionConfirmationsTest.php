@@ -109,7 +109,8 @@ class ActionConfirmationsTest extends TestCase
         $purchase = CreditPurchase::latest('id')->firstOrFail();
 
         $this->assertStringContainsString("\$500.00 in credits added (simulated, no real money, {$purchase->reference}). Ready to give.", $toast);
-        $this->assertStringNotContainsString('fee', $toast);
+        // The slice reaches the header, whose menu says "Help and feedback".
+        $this->assertStringNotContainsString('fee', str_ireplace('feedback', '', $toast));
     }
 
     public function test_back_from_stripe_checkout_once_paid(): void
