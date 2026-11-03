@@ -76,16 +76,23 @@ class CorrectionDecisions
         $this->checkType($correction, Correction::TYPE_REDEMPTION_REFUND);
 
         $correction = $this->solvency->transaction('this refund', function () use ($correction, $by, $reason, $quantities, $amountCents) {
-            $this->claim($correction, $by, $reason);
-
-            // Lock the redemption: a second approval on it waits here, then sees this one.
+            // Lock the redemption (a second approval on it waits here, then sees this one),
+            // its payout and, for a simulated refund, the merchant, before anything is read
+            // with a plain SELECT. On MySQL a transaction's snapshot starts at its first plain
+            // SELECT (claim() refreshes the correction), so claiming first could leave what
+            // the merchant is owed read from before a refund that committed while we waited.
             $redemption = Redemption::whereKey($correction->redemption_id)->lockForUpdate()->firstOrFail();
+            $payout = MerchantPayout::where('redemption_id', $redemption->id)->lockForUpdate()->first();
+
+            if ($payout === null) {
+                Merchant::whereKey($redemption->merchant_id)->lockForUpdate()->first();
+            }
+
+            $this->claim($correction, $by, $reason);
 
             if (! $redemption->isApproved()) {
                 throw new InvalidArgumentException('Only a cleared redemption can be refunded.');
             }
-
-            $payout = MerchantPayout::where('redemption_id', $redemption->id)->lockForUpdate()->first();
 
             if ($payout !== null && $payout->status === MerchantPayout::STATUS_REVERSED) {
                 throw new InvalidArgumentException(self::REVERSED_IN_DASHBOARD);

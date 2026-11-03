@@ -190,6 +190,16 @@ employee's balance, which the AI already sees as `balance_before_cents`,
 exactly as an allowance of the same amount would (a test checks they give
 identical input).
 
+## Lock order (2026-11-02)
+
+The approval first claimed the request and then took its locks. On MySQL the
+claim's refresh starts the transaction's snapshot, so the plain reads after the
+locks could be older than the locks themselves. `open_key` keeps two refunds on
+one redemption apart, but nothing kept two refunds at one merchant apart, and
+`simulatedPullBack` could read what the merchant was owed from before the other
+refund. Both approvals now take the redemption, payout and (simulated only)
+merchant locks before claiming, checked by `MysqlRedemptionRefundSnapshotTest`.
+
 ## Known limitations
 
 - **A payout reversed in the Stripe dashboard is sorted out by hand.** No
