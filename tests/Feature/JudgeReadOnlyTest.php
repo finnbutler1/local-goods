@@ -165,7 +165,7 @@ class JudgeReadOnlyTest extends TestCase
         $this->assertSame(
             [
                 'adjudication.show', 'adjudication.start', 'adjudication.vote', 'adjudication.submit',
-                'adjudication.more', 'adjudication.finish', 'feedback.store', 'feedback.update', 'account', 'dashboard', 'logout',
+                'adjudication.more', 'adjudication.finish', 'feedback.store', 'feedback.update', 'account', 'account.data', 'dashboard', 'logout',
                 'judge-access.show', 'judge-access.store',
             ],
             KeepPersonalContactsToAdjudication::ALLOWED_ROUTES,

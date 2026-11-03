@@ -91,6 +91,9 @@ Route::middleware('auth')->group(function () {
         'feedback' => $request->user()->feedback()->latest()->latest('id')->get(),
     ]))->name('account');
 
+    // Plain words about what is stored about the signed-in person (read-only).
+    Route::get('/account/data', fn (Request $request) => view('account.data'))->name('account.data');
+
     // The Feedback button on every signed-in page, and editing your own items.
     // Rate-limited, more tightly for the shared public reviewer (AppServiceProvider).
     Route::middleware('throttle:feedback')->group(function () {

@@ -57,7 +57,7 @@ class PersonalContactAccessTest extends TestCase
 
         sort($opened);
         // judge-access.show is the magic link page itself.
-        $this->assertSame(['account', 'adjudication.show', 'judge-access.show'], $opened);
+        $this->assertSame(['account', 'account.data', 'adjudication.show', 'judge-access.show'], $opened);
     }
 
     public function test_the_named_pages_are_refused(): void

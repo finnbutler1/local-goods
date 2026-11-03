@@ -149,6 +149,14 @@
                             </div>
                             <ul class="mt-1">
                                 <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your account</a></li>
+                                @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Employee)
+                                    <li><a href="{{ route('employee.wallet') }}#history" class="menu-item">Your receipts</a></li>
+                                @endif
+                                @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Merchant)
+                                    <li><a href="{{ route('merchant.dashboard') }}#payout-history" class="menu-item">Payout history</a></li>
+                                @endif
+                                <li><a href="{{ route('account.data') }}" class="menu-item" @if ($active === 'account.data') aria-current="page" @endif>What we store about you</a></li>
+                                <li><a href="{{ route('account') }}#feedback" class="menu-item">Help and feedback</a></li>
                                 @unless ($votingOnly)
                                     <li><a href="{{ route('home') }}" class="menu-item">Back to the public site</a></li>
                                 @endunless

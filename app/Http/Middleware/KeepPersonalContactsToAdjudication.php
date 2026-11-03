@@ -26,6 +26,7 @@ class KeepPersonalContactsToAdjudication
         'feedback.store',
         'feedback.update',
         'account',
+        'account.data',
         'dashboard',
         'logout',
         'judge-access.show',

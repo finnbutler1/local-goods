@@ -36,7 +36,7 @@
     </x-card>
     @endunless
 
-    <section aria-labelledby="my-feedback-heading">
+    <section id="feedback" aria-labelledby="my-feedback-heading" class="scroll-mt-24">
         <h2 id="my-feedback-heading" class="text-2xl font-semibold text-primary">Your feedback</h2>
         @if ($feedback->isEmpty())
             <p class="mt-2 text-muted">Nothing yet. Use the Feedback button on any page.</p>
