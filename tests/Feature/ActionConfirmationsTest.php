@@ -16,6 +16,7 @@ use App\Services\Payments\StripeOnboarding;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\UsesFakeStripe;
 use Tests\Fakes\FakeClaudeClient;
@@ -47,17 +48,29 @@ class ActionConfirmationsTest extends TestCase
         $this->grind = Merchant::where('name', config('demo.accounts.merchant.business'))->firstOrFail();
     }
 
-    /** The toast's HTML only: everything between the toast region and <main>. */
+    /** The toast element's HTML only (the <div data-toasts>), never the header or its menus. */
     private function toast(TestResponse $response, string $tone = 'status'): string
     {
         $html = $response->assertOk()->getContent();
-        $start = strpos($html, 'data-toasts');
-        $this->assertNotFalse($start, 'No toast on the page');
-        $toast = substr($html, $start, strpos($html, '<main') - $start);
+
+        $dom = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8"?>'.$html);
+        libxml_clear_errors();
+        $region = (new \DOMXPath($dom))->query('//*[@data-toasts]')->item(0);
+        $this->assertNotNull($region, 'No toast on the page');
+        $toast = $dom->saveHTML($region);
+
         $this->assertStringContainsString("data-toast=\"{$tone}\"", $toast);
         $this->assertStringContainsString('aria-label="Dismiss message"', $toast);
 
         return html_entity_decode($toast, ENT_QUOTES);
+    }
+
+    /** "fee" or "fees" as a word, so "feedback" does not count. */
+    private function assertNoFeeWord(string $toast): void
+    {
+        $this->assertDoesNotMatchRegularExpression('/\bfees?\b/i', $toast);
     }
 
     private function assertNoFullNames(string $toast): void
@@ -109,8 +122,7 @@ class ActionConfirmationsTest extends TestCase
         $purchase = CreditPurchase::latest('id')->firstOrFail();
 
         $this->assertStringContainsString("\$500.00 in credits added (simulated, no real money, {$purchase->reference}). Ready to give.", $toast);
-        // The slice reaches the header, whose menu says "Help and feedback".
-        $this->assertStringNotContainsString('fee', str_ireplace('feedback', '', $toast));
+        $this->assertNoFeeWord($toast);
     }
 
     public function test_back_from_stripe_checkout_once_paid(): void
@@ -306,5 +318,25 @@ class ActionConfirmationsTest extends TestCase
         $this->signIn(Role::BidAdmin);
 
         return tap(Redemption::latest('id')->firstOrFail(), fn ($r) => $this->assertTrue($r->isUnderReview()));
+    }
+
+    public function test_the_toast_helper_reads_only_the_toast_and_the_fee_check_catches_the_word(): void
+    {
+        $this->signIn(Role::EmployerAdmin);
+        $toast = $this->toast($this->followingRedirects()->post('/employer/purchases', ['purchase_amount' => '500']));
+
+        $this->assertStringNotContainsString('Log out', $toast, 'The header menu is not part of the toast.');
+        $this->assertStringNotContainsString('Help and feedback', $toast);
+        $this->assertNoFeeWord($toast);
+
+        $this->assertNoFeeWord('Thanks, your feedback was sent.');
+        foreach (['A fee of $1.00 was kept.', 'No Fee.', 'Fees apply'] as $sentence) {
+            try {
+                $this->assertNoFeeWord($sentence);
+                $this->fail("The check let \"{$sentence}\" through.");
+            } catch (AssertionFailedError $e) {
+                $this->assertStringNotContainsString('let "', $e->getMessage());
+            }
+        }
     }
 }
