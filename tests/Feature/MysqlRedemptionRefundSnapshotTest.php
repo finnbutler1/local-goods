@@ -84,17 +84,20 @@ class MysqlRedemptionRefundSnapshotTest extends TestCase
      * open_key allows one open request per redemption, and a request only
      * counts once it is claimed, so this state can't come from real use. The
      * test forces it, to guard the order: refunds on this redemption are read
-     * after its lock, so no refund can exceed what was paid.
+     * after the approval's first lock, whichever table that is, so no refund
+     * can exceed what was paid. Later than that the competing write would wait
+     * on the employee lock this approval already holds.
      */
     public function test_a_refund_on_the_same_redemption_committed_before_the_lock_is_seen_and_this_one_is_refused(): void
     {
         $redemption = $this->cleared(1250);
         $request = $this->refundRequest($redemption);
 
-        $done = $this->beforeLocking('employees', fn () => $this->commitCompletedRefund($redemption));
+        $done = $this->beforeLocking(null, fn () => $this->commitCompletedRefund($redemption));
 
         try {
             app(CorrectionDecisions::class)->approveRedemptionRefund($request, $this->admin(), 'Refund.', amountCents: 1250);
+            $this->assertTrue($done(), 'the competing refund never ran');
             $this->fail('The refund went through on a redemption that was already fully refunded.');
         } catch (InvalidArgumentException $e) {
             $this->assertStringContainsString('can still be refunded', $e->getMessage());
@@ -121,6 +124,7 @@ class MysqlRedemptionRefundSnapshotTest extends TestCase
 
         try {
             app(CorrectionDecisions::class)->approveRedemptionRefund($request, $this->admin(), 'Refund.', amountCents: 1250);
+            $this->assertTrue($done(), 'the competing reversal never ran');
             $this->fail('The refund went ahead on a transfer already reversed in the dashboard.');
         } catch (InvalidArgumentException $e) {
             $this->assertSame(CorrectionDecisions::REVERSED_IN_DASHBOARD, $e->getMessage());
@@ -133,15 +137,16 @@ class MysqlRedemptionRefundSnapshotTest extends TestCase
 
     /**
      * Runs $change once, on the second connection (so it commits at once),
-     * just before this connection locks a row of $table.
+     * just before this connection locks a row of $table, or any row at all
+     * when $table is null.
      *
      * @return callable(): bool whether it ran
      */
-    private function beforeLocking(string $table, callable $change): callable
+    private function beforeLocking(?string $table, callable $change): callable
     {
         $done = false;
         DB::beforeExecuting(function (string $sql) use (&$done, $table, $change) {
-            if (! $done && str_contains($sql, "from `{$table}`") && str_contains($sql, 'for update')) {
+            if (! $done && ($table === null || str_contains($sql, "from `{$table}`")) && str_contains($sql, 'for update')) {
                 $done = true;
                 $change();
             }

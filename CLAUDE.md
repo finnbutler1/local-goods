@@ -22,6 +22,11 @@ that because it reads the same snapshot. Test: `MysqlRedemptionRefundSnapshotTes
   in `decide` (approve only), with Stripe on; `requestPurchase` and
   `markPurchasePaidByStripe` lock the employer first. Never put the AI call or
   Stripe inside these transactions. Test: `MysqlStripeFundingSnapshotTest`.
+  Deadlock runs and their limits: TRANSPARENCY.md and ADR 0028. Say "no
+  deadlocks in these runs", never "deadlock-free".
+- A MySQL test that commits a competing change from a hook must check the hook
+  ran before it can fail on anything else, or it can fail on old code for the
+  wrong reason. `MysqlRedemptionRefundSnapshotTest` fires at the first lock.
 - A locking read sees the latest commit; a plain read after it doesn't. In a
   money transaction take every lock a check depends on before the first plain
   read.

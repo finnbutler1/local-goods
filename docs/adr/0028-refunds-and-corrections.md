@@ -200,6 +200,58 @@ one redemption apart, but nothing kept two refunds at one merchant apart, and
 refund. Both approvals now take the redemption, payout and (simulated only)
 merchant locks before claiming, checked by `MysqlRedemptionRefundSnapshotTest`.
 
+## One lock order, and the deadlock runs (2026-11-04)
+
+`StripeFunding::claim` had the same shape as the refund above, so one purchase
+could be claimed twice. Taking the purchases' lock first fixed that, but the
+requested order of employee then purchases still deadlocked. Locking the
+purchases also locks the gap where a new purchase would go, so a new purchase
+and a redemption could wait on each other. A redemption holding the employee
+could also wait on a purchase row held by a payment, while that payment waited
+on the employer and `allocateMany` held the employer and waited on the employee.
+
+**The order is employer, employee, purchases, then everything else.** Cleared
+redemptions and approvals take the employer first, with Stripe on, and
+`requestPurchase` and `markPurchasePaidByStripe` do too. A redemption refund
+locks employee, redemption, payout, merchant. The AI call and Stripe stay
+outside these transactions.
+
+**Method.** Real concurrent PHP processes against a local MySQL 8.4.13 at
+REPEATABLE READ, 60 seconds per run, one run per mix on the code before the
+change (`d8aa1ea`) and one after. Deadlocks come from MySQL's own counter
+(InnoDB's `lock_deadlocks` metric). Over-claims come from the purchases'
+`unclaimedCents` after each run.
+
+| Processes | Deadlocks before | After | Over-claimed before | After |
+|---|---|---|---|---|
+| Tick, 2 shoppers | 0 | 0 | 0 | 0 |
+| 1 buying credits, 3 shoppers | 14 | 0 | 1 | 0 |
+| Tick, 3 shoppers, 2 giving out credits, buying and paying | 365 | 0 | 0 | 0 |
+
+There were no deadlocks in these runs after the change. That is not a claim that
+none is possible.
+
+**Limits.**
+
+- One laptop, with a fake Stripe and fake AI: no network delay and no real
+  webhook timing. One run per mix, at load far above real use.
+- The tick's real actions (top-up, allowances, due slots, sending owed
+  transfers) were called directly, because its reconciliation and solvency
+  checks would have halted it on the test's setup. Those checks take no row
+  locks, but they didn't run. It made only 1 to 4 redemptions per run; the
+  separate buying process covered its purchases.
+- Shoppers redeemed, had held redemptions approved and took simulated redemption
+  refunds. Pay codes, employer refunds, merchant adjustments and sweeps didn't
+  run; where they take these locks, the order was checked by reading the code.
+- The scripts were throwaway and aren't in the repository.
+  `MysqlStripeFundingSnapshotTest` stays: it checks the over-claim and pins the
+  lock order on six paths, and doesn't count deadlocks.
+
+**Cost.** Cleared redemptions at one employer now run one at a time for the
+short transaction. Total shopper actions per run went 2,530 → 2,216, 2,867 →
+2,442 and 1,459 → 1,330 (9 to 15% fewer), and purchases in the buying run went
+2,870 → 1,030, all at rates far above real use.
+
 ## Known limitations
 
 - **A payout reversed in the Stripe dashboard is sorted out by hand.** No

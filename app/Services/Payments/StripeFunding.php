@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Builder;
  * first plain SELECT, so a lock taken after one leaves unclaimedCents reading
  * from before a claim that committed while we waited, and the same money is
  * claimed twice. Lock order everywhere: employer, employee, purchases, then
- * everything else, so these locks can't deadlock against each other. The
+ * everything else, so these locks always queue in the same direction. The
  * employer comes first because locking the purchases also locks the gap for a
  * new one, and a new purchase (CreditLedger::requestPurchase) takes the
  * employer's lock first, so the two can never overlap.
