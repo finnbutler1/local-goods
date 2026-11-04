@@ -22,7 +22,7 @@ class JudgeLandingTest extends TestCase
             ->assertDontSee('What Local Goods is')
             ->assertSee('commute in, sit at a desk, commute out')
             ->assertSee('Redemption Fraud Detection')
-            ->assertSeeInOrder(['Employee wallet', 'BID fraud review', 'AI eval results', 'Merchant eligibility check', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
+            ->assertSeeInOrder(['Employee wallet', 'Fraud Review', 'AI Eval', 'Merchant Eligibility', 'Independent check of the AI', 'Employer dashboard', 'Merchant dashboard'])
             ->assertDontSee('Coming in a later build')
             ->assertSee('Payments and merchant payouts run on Stripe Connect in test mode (real Stripe transactions, no real money)')
             ->assertDontSee('later build')

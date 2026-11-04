@@ -9,11 +9,12 @@
     };
 @endphp
 
-<x-app-shell title="Applications" active="applications" context="Golden Triangle BID · Washington, DC">
+<x-app-shell title="Merchant Applications" active="applications" context="Golden Triangle BID · Washington, DC">
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Applications</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Shops asking to join</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Merchant Applications</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">Shops asking to join</p>
         <p class="mt-3 text-lg text-muted">
             Independent shops apply on the public <a href="{{ route('apply') }}" class="{{ $link }}">Apply to join</a> page. For each one,
             run the eligibility check (address and AI suggestion), then approve or decline with a reason the shop will see.

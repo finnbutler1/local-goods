@@ -51,20 +51,20 @@ class JudgeController extends Controller
                 'available' => true,
             ],
             [
-                'title' => 'BID fraud review',
+                'title' => 'Fraud Review',
                 'look_for' => 'Every redemption scored by Redemption Fraud Detection, with the anonymous signals it saw, its explanation and risk score, and the separate final decision a person made.',
                 'url' => route('judge.view-as', Role::BidAdmin->value),
                 'available' => true,
             ],
             [
-                'title' => 'AI eval results',
+                'title' => 'AI Eval',
                 'look_for' => 'How often the AI agrees with hand-labeled cases, including cases it never saw while the prompt was written, and every disagreement.',
                 'url' => route('bid-admin.eval'),
                 'available' => true,
             ],
             [
-                'title' => 'Merchant eligibility check',
-                'look_for' => 'Real businesses in the BID, each marked as a candidate, not a participant. The AI says whether each looks independent, how sure it is and why, judging from its own knowledge (no web search); a BID admin approves, rejects or asks for research. Its eval against hand labels is at /eval/merchants.',
+                'title' => 'Merchant Eligibility',
+                'look_for' => 'Real businesses in the BID, each marked as a candidate, not a participant. The AI says whether each looks independent, how sure it is and why, judging from its own knowledge (no web search); a BID admin approves, rejects or asks for research. Its eval against hand labels is Merchant Eval, in the AI & Evaluation group of the menu.',
                 'url' => route('bid-admin.merchants'),
                 'available' => true,
             ],
@@ -87,7 +87,7 @@ class JudgeController extends Controller
                 'available' => true,
             ],
             [
-                'title' => 'See how mistakes get fixed: open Corrections',
+                'title' => 'Open Corrections to see how mistakes get fixed',
                 'look_for' => 'Employees, merchants and HR ask for a refund or a payment they never got; the platform admin decides, always with a reason the requester sees. Every fix is a new ledger line backed by a Stripe test-mode action (a transfer reversal or a card refund), confirmed by Stripe\'s webhook, and reconciliation still matches. A seeded partial refund (with its tax) and a rejected request are there to look at; reviewers can\'t approve or ask.',
                 'url' => route('bid-admin.corrections'),
                 'available' => true,

@@ -30,7 +30,7 @@ showTheme();
 document.querySelectorAll('[data-menu]').forEach((menu) => {
     const button = menu.querySelector('[data-menu-button]');
     const panel = menu.querySelector('[data-menu-panel]');
-    const items = () => [...panel.querySelectorAll('a[href], button:not([disabled])')];
+    const items = () => [...panel.querySelectorAll('a[href], button:not([disabled])')].filter((el) => el.getClientRects().length > 0);
     const isOpen = () => button.getAttribute('aria-expanded') === 'true';
     const open = (focus) => {
         button.setAttribute('aria-expanded', 'true');
@@ -85,6 +85,14 @@ document.querySelectorAll('[data-menu]').forEach((menu) => {
     document.addEventListener('click', (event) => {
         if (!menu.contains(event.target)) close(false);
     });
+});
+
+// Collapsible menu groups: <x-nav-groups> headings are buttons with
+// aria-expanded; the panel they control is hidden by CSS when collapsed.
+document.addEventListener('click', (event) => {
+    const head = event.target.closest('[data-nav-group-button]');
+    if (!head) return;
+    head.setAttribute('aria-expanded', String(head.getAttribute('aria-expanded') !== 'true'));
 });
 
 // Copy buttons: <button data-copy="#input-id"> copies that input's value.

@@ -12,8 +12,7 @@ use Tests\TestCase;
 
 /**
  * Disclosure menus that cut clutter (ADR 0025): Account for every signed-in
- * role, More when a role has too many pages for the sidebar (over 5) or the
- * phone tab bar (over 4), View as for judges and Menu on the public site for
+ * role, grouped collapsible menus for the admin roles (ADR 0035), View as for judges and Menu on the public site for
  * phones. Each is a real button with aria-expanded and aria-controls
  * pointing at its list, and the moved links are inside that list.
  */
@@ -34,8 +33,8 @@ class DropdownMenuTest extends TestCase
             $menu = $this->menu($this->get(route($role->dashboardRoute()))->assertOk()->getContent(), 'account-menu');
 
             $this->assertStringContainsString('href="'.route('account').'"', $menu, $role->value);
-            $this->assertStringContainsString('Your account', $menu, $role->value);
-            $this->assertMatchesRegularExpression('#<form method="POST" action="'.preg_quote(route('logout'), '#').'">.*<button type="submit" class="menu-item">Log out</button>#s', $menu, $role->value);
+            $this->assertStringContainsString('Your Account', $menu, $role->value);
+            $this->assertMatchesRegularExpression('#<form method="POST" action="'.preg_quote(route('logout'), '#').'">.*<button type="submit" class="menu-item">Log Out</button>#s', $menu, $role->value);
             $this->assertStringContainsString('Signed in as', $menu, $role->value);
         }
     }
@@ -43,53 +42,92 @@ class DropdownMenuTest extends TestCase
     public function test_log_out_and_your_account_left_the_sidebar_and_top_bar(): void
     {
         $this->signIn(Role::BidAdmin);
-        $html = $this->get(route('bid-admin.dashboard'))->getContent();
+        $html = $this->get(route('bid-admin.home'))->getContent();
 
         $this->assertSame(1, substr_count($html, 'action="'.route('logout').'"'), 'Log out is only in the Account menu now.');
-        $this->assertSame(1, substr_count($html, '>Your account<'));
+        $this->assertSame(1, substr_count($html, '>Your Account<'));
     }
 
-    public function test_the_platform_admin_keeps_four_pages_in_the_sidebar_and_the_rest_in_more(): void
+    public function test_the_platform_admin_menu_is_six_collapsible_groups(): void
     {
         $this->signIn(Role::PlatformAdmin);
         $html = $this->get(route('admin.dashboard'))->assertOk()->getContent();
         $sidebar = str($html)->after('<aside')->before('</aside>')->toString();
-        $more = $this->menu($html, 'nav-more');
 
-        foreach (['admin.reviewers.index', 'admin.adjudication.index'] as $route) {
-            $this->assertStringContainsString('href="'.route($route).'"', $more, "{$route} is in More");
-        }
-        $this->assertSeeInOrderIn(str($sidebar)->before('data-menu')->toString(), [route('admin.dashboard'), route('bid-admin.dashboard'), route('admin.feedback.index'), route('bid-admin.eval')]);
-        foreach (['admin.dashboard', 'bid-admin.dashboard', 'admin.feedback.index', 'bid-admin.eval'] as $route) {
-            $this->assertStringNotContainsString('href="'.route($route).'"', $more, "{$route} stays visible");
-            $this->assertStringContainsString('href="'.route($route).'"', $sidebar);
-        }
+        $this->assertStringContainsString('href="'.route('admin.dashboard').'"', $sidebar);
+        $this->assertStringNotContainsString('id="nav-more"', $html, 'The old More menu is gone.');
+        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'money' => 'Money', 'program' => 'Program', 'ai' => 'AI &amp; Evaluation', 'people' => 'People &amp; Access']);
 
-        $tabMore = $this->menu($html, 'tab-more');
-        foreach (['bid-admin.eval', 'admin.reviewers.index', 'admin.adjudication.index'] as $route) {
-            $this->assertStringContainsString('href="'.route($route).'"', $tabMore, "{$route} is in the tab bar's More");
+        foreach (Role::PlatformAdmin->navigation() as $item) {
+            $this->assertStringContainsString('href="'.route($item['route']).'"', $sidebar, $item['label']);
         }
-        $this->assertStringNotContainsString('href="'.route('admin.feedback.index').'"', $tabMore, 'Feedback stays on the tab bar.');
+        $this->assertStringContainsString('aria-current="page"', str($sidebar)->before('Reviews'), 'Home is the current page.');
     }
 
-    public function test_the_bid_admin_tab_bar_keeps_merchants_visible(): void
+    public function test_the_group_with_the_current_page_starts_open_and_the_others_closed(): void
+    {
+        $this->signIn(Role::PlatformAdmin);
+        $sidebar = str($this->get(route('bid-admin.corrections'))->assertOk()->getContent())->after('<aside')->before('</aside>')->toString();
+
+        $this->assertMatchesRegularExpression('#id="nav-side-reviews-button" aria-expanded="true" aria-controls="nav-side-reviews"#', $sidebar);
+        $this->assertMatchesRegularExpression('#id="nav-side-money-button" aria-expanded="false" aria-controls="nav-side-money"#', $sidebar);
+        $this->assertSame(1, substr_count($sidebar, 'aria-current="page"'));
+    }
+
+    public function test_the_bid_admin_sees_only_its_own_subset_in_the_same_groups(): void
     {
         $this->signIn(Role::BidAdmin);
-        $html = $this->get(route('bid-admin.dashboard'))->assertOk()->getContent();
-        $tabBar = str($html)->afterLast('<nav aria-label="App"')->before('</nav>')->toString();
-        $tabMore = $this->menu($html, 'tab-more');
+        $sidebar = str($this->get(route('bid-admin.home'))->assertOk()->getContent())->after('<aside')->before('</aside>')->toString();
 
-        foreach (['bid-admin.dashboard', 'bid-admin.merchants', 'bid-admin.impact'] as $route) {
-            $this->assertStringContainsString('href="'.route($route).'"', str($tabBar)->before('data-menu')->toString(), "{$route} is a tab");
+        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'money' => 'Money', 'program' => 'Program', 'ai' => 'AI &amp; Evaluation']);
+        $this->assertStringNotContainsString('nav-side-people', $sidebar);
+        foreach (['admin.reconciliation', 'admin.adjudication.index', 'admin.reviewers.index', 'admin.feedback.index'] as $route) {
+            $this->assertStringNotContainsString('href="'.route($route).'"', $sidebar, "{$route} is platform admin only");
         }
-        $this->assertSeeInOrderIn(str($tabBar)->before('data-menu')->toString(), [route('bid-admin.dashboard'), route('bid-admin.merchants'), route('bid-admin.impact')]);
-        foreach (['bid-admin.participation', 'bid-admin.eval'] as $route) {
-            $this->assertStringContainsString('href="'.route($route).'"', $tabMore, "{$route} is in More");
+        foreach (['bid-admin.corrections', 'money', 'bid-admin.fees', 'bid-admin.impact'] as $route) {
+            $this->assertStringContainsString('href="'.route($route).'"', $sidebar, $route);
         }
-        // Partnership (ADR 0031) is a sixth page, so the sidebar now has a More too, holding the lowest-priority pages.
-        $navMore = $this->menu($html, 'nav-more');
-        $this->assertStringContainsString('href="'.route('bid-admin.partnership').'"', $navMore, 'Partnership is in the sidebar\'s More');
-        $this->assertStringNotContainsString('href="'.route('bid-admin.merchants').'"', $navMore, 'Merchants stays in the sidebar');
+    }
+
+    public function test_the_phone_bar_is_home_two_pages_and_a_menu_button_with_the_same_groups(): void
+    {
+        foreach ([[Role::PlatformAdmin, ['admin.dashboard', 'bid-admin.dashboard', 'money']], [Role::BidAdmin, ['bid-admin.home', 'bid-admin.dashboard', 'bid-admin.impact']]] as [$role, $tabs]) {
+            $this->signIn($role);
+            $html = $this->get(route($role->dashboardRoute()))->assertOk()->getContent();
+            $tabBar = str($html)->afterLast('<nav aria-label="App"')->before('</nav>')->toString();
+
+            $this->assertSeeInOrderIn(str($tabBar)->before('data-menu')->toString(), array_map(fn ($r) => route($r), $tabs));
+            $this->assertSame(3, substr_count(str($tabBar)->before('data-menu')->toString(), '<a href='), $role->value);
+            $sheet = $this->menu($html, 'tab-menu');
+            $this->assertStringContainsString('>Menu<', $tabBar);
+            $this->assertStringContainsString('id="nav-sheet-reviews-button" aria-expanded=', $sheet);
+            foreach ($role->navigation() as $item) {
+                $this->assertStringContainsString('href="'.route($item['route']).'"', $sheet, $role->value.' '.$item['label']);
+            }
+        }
+    }
+
+    public function test_a_judge_viewing_as_the_bid_admin_gets_the_same_structure(): void
+    {
+        $this->signIn(Role::Judge);
+        $sidebar = str($this->get(route('bid-admin.home'))->assertOk()->getContent())->after('<aside')->before('</aside>')->toString();
+
+        $this->assertMatchesRegularExpression('#Judge Home\s*</a>#', $sidebar);
+        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'money' => 'Money', 'program' => 'Program', 'ai' => 'AI &amp; Evaluation']);
+    }
+
+    /** @param array<string, string> $groups id => heading */
+    private function assertGroupsInOrder(string $html, string $variant, array $groups): void
+    {
+        $at = -1;
+        foreach ($groups as $id => $heading) {
+            $this->assertMatchesRegularExpression('#<button type="button" id="nav-'.$variant.'-'.$id.'-button" aria-expanded="(true|false)" aria-controls="nav-'.$variant.'-'.$id.'" data-nav-group-button#', $html, $id);
+            $this->assertSame(1, substr_count($html, 'id="nav-'.$variant.'-'.$id.'"'), "{$id}: the list exists once");
+            $next = strpos($html, 'id="nav-'.$variant.'-'.$id.'-button"');
+            $this->assertGreaterThan($at, $next, "{$id} is out of order");
+            $this->assertStringContainsString('>'.$heading, $html);
+            $at = $next;
+        }
     }
 
     public function test_roles_with_few_pages_have_no_more_menu(): void
@@ -110,7 +148,7 @@ class DropdownMenuTest extends TestCase
         foreach (ViewAs::ROLES as $role) {
             $this->assertStringContainsString('href="'.route('judge.view-as', $role->value).'"', $menu, $role->value);
         }
-        $this->assertStringContainsString('Back to judge home', $menu);
+        $this->assertStringContainsString('Back to Judge Home', $menu);
     }
 
     public function test_a_personal_contact_gets_an_account_menu_without_the_public_site(): void
@@ -118,8 +156,8 @@ class DropdownMenuTest extends TestCase
         $this->actingAs(User::factory()->role(Role::Judge)->create(['reviewer_type' => ReviewerType::PersonalContact]));
         $menu = $this->menu($this->get(route('adjudication.show'))->assertOk()->getContent(), 'account-menu');
 
-        $this->assertStringContainsString('Log out', $menu);
-        $this->assertStringNotContainsString('Back to the public site', $menu);
+        $this->assertStringContainsString('Log Out', $menu);
+        $this->assertStringNotContainsString('Back to the Public Site', $menu);
     }
 
     public function test_the_public_site_has_a_phone_menu_with_the_section_links(): void

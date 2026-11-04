@@ -11,7 +11,7 @@
     $confidenceWords = fn (float $c) => $c >= 0.9 ? 'high' : ($c >= 0.7 ? 'medium' : 'low');
 @endphp
 
-<x-app-shell :title="$a->business_name.' · Applications'" active="applications" context="Golden Triangle BID · Washington, DC">
+<x-app-shell :title="$a->business_name.' · Merchant Applications'" active="applications" context="Golden Triangle BID · Washington, DC">
 <div class="space-y-8">
     <header class="max-w-3xl">
         <p><a href="{{ route('bid-admin.applications') }}" class="tap-target {{ $link }}"><span aria-hidden="true">←</span> All applications</a></p>

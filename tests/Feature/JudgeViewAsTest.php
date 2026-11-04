@@ -30,13 +30,13 @@ class JudgeViewAsTest extends TestCase
     {
         $this->signIn(Role::Judge);
 
-        foreach (['bid_admin' => '/bid-admin', 'employer_admin' => '/employer', 'employee' => '/employee', 'merchant' => '/merchant'] as $role => $url) {
+        foreach (['bid_admin' => '/bid-admin/home', 'employer_admin' => '/employer', 'employee' => '/employee', 'merchant' => '/merchant'] as $role => $url) {
             $this->get("/judge/view-as/{$role}")->assertRedirect($url);
             $label = Role::from($role)->label();
             $this->get($url)->assertOk()
                 ->assertSee("You're viewing as {$label}. This is read-only.", false)
                 ->assertSee('role="status"', false)
-                ->assertSee('Judge home');
+                ->assertSee('Judge Home');
         }
 
         $this->get('/judge/view-as')->assertRedirect('/judge');

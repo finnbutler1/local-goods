@@ -469,6 +469,11 @@
     display: none;
 }
 
+/* Collapsed menu groups (<x-nav-groups>); with no JavaScript every group shows. */
+.js [data-nav-group-button][aria-expanded='false'] + [data-nav-group-panel] {
+    display: none;
+}
+
 .menu-item {
     display: flex;
     width: 100%;

@@ -11,7 +11,8 @@
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Feedback inbox</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Feedback</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">Feedback inbox</p>
         <p class="mt-3 text-lg text-muted">
             Everything reviewers sent from the Feedback button. Mark items fixed with the commit that fixed them:
             reviewers see their fixed items under "What's new" on their next visit.

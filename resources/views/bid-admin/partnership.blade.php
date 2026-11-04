@@ -21,7 +21,8 @@
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Partnership</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">The BID partnership for {{ $district->name }}</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Partnership</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">The BID partnership for {{ $district->name }}</p>
         <p class="mt-3 text-lg text-muted">
             The Business Improvement District introduces Local Goods to employers and merchants in its district. This page
             records what the BID and Local Goods agreed: whether it is exclusive, for how long, any revenue share and what
