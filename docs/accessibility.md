@@ -437,6 +437,14 @@ screen-reader pass was done for these sections.
 - How a sweep was sent is said in words ("Stripe test-mode transfer",
   "Refused by Stripe, nothing moved"), not only by colour.
 
+## Admin menu groups (2026-11-04)
+
+Checks that ran: `AccessibilityTest` (one h1, ids, aria-controls targets) over
+every admin page; `DropdownMenuTest` (each group heading is a real button with
+aria-expanded and aria-controls, the group holding the current page starts
+open); `AdminMenuCoverageTest`. Not run: a browser or screen reader on the
+collapsing groups or the phone Menu sheet.
+
 ## Not tested
 
 - **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session
