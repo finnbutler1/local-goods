@@ -5,6 +5,23 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Grouped admin menu and admin Home pages — done (2026-11-04, ADR 0035).**
+Front end and routes only; no migration, money, fraud prompt, AI input, eval
+data or lock change.
+
+- `Role::navigationGroups()` (BID admin, platform admin; judges viewing as BID
+  admin get the BID subset) rendered by `<x-nav-groups>` in the sidebar and the
+  phone Menu sheet; `navigation()` is the flat list. **A new admin page must be
+  added to a group** (`AdminMenuCoverageTest`); a menu page's `<title>` and
+  `<h1>` equal its Title Case label (old heading goes in a line under it).
+- Homes: `/admin` (platform) and `/bid-admin/home` (`bid-admin.home`, role
+  `bid_admin`; landing for BID admin and judges viewing as one). `/bid-admin`
+  stays Fraud Review. Cards read stored data only, never Stripe
+  (`AdminHomeTest`); accounts table at `/admin/accounts`.
+- Menu says "Fee Settings" on every platform-admin page, so `mentionsFees` in
+  `BuyCreditsFlowTest` reads the page body only.
+- Not yet tried in a real browser or with a screen reader.
+
 **Redemption refund lock order and MySQL-only test assumptions — done
 (2026-11-02).** No migration; fraud prompt, AI input, eval data, holdouts and
 locks unchanged. One money change: `approveRedemptionRefund` locks the

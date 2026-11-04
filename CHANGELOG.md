@@ -3,6 +3,19 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-04: A grouped admin menu and a Home page for each admin
+
+- **One menu, in groups that open and close.** The BID admin and platform admin
+  sidebars now have Home, Reviews & Decisions, Money, Program, AI & Evaluation
+  and (platform admin) People & Access. The row of shortcut links on the admin
+  pages is gone; everything is in the menu.
+- **A real Home.** The platform admin's Home shows what is waiting for a person,
+  the solvency check, reconciliation, the demo activity generator and recent
+  activity, each linking to its page. The BID admin has a smaller Home (signing
+  in lands there; /bid-admin is still Fraud Review). Accounts moved to /admin/accounts.
+- **Phones:** Home, two pages and a Menu button that opens the same groups.
+- **Title Case** for menu items, and each page's title now matches its menu label.
+
 ## 2026-11-04: One Stripe purchase can't be claimed twice, and fewer lock clashes
 
 - **Two redemptions at once can no longer claim the same Stripe-paid money.**
