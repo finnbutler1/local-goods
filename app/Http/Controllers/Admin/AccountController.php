@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Platform admin home: every login with its role and status. Revoked
+ * Platform admin accounts: every login with its role and status. Revoked
  * accounts are hidden unless "Show revoked" is on (?revoked=1).
  */
 class AccountController extends Controller
@@ -17,7 +17,7 @@ class AccountController extends Controller
     {
         $showRevoked = $request->boolean('revoked');
 
-        return view('dashboards.admin', [
+        return view('admin.accounts', [
             'users' => User::orderBy('id')->when(! $showRevoked, fn ($q) => $q->whereNull('revoked_at'))->get(),
             'showRevoked' => $showRevoked,
             'revokedCount' => User::whereNotNull('revoked_at')->count(),

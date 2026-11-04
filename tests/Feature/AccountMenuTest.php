@@ -24,18 +24,18 @@ class AccountMenuTest extends TestCase
         foreach ([Role::Employee, Role::Merchant, Role::EmployerAdmin, Role::BidAdmin, Role::PlatformAdmin, Role::Judge] as $role) {
             $html = $this->menuOf($role);
             $this->assertStringContainsString(route('account.data'), $html, $role->value);
-            $this->assertStringContainsString('What we store about you', $html, $role->value);
-            $this->assertStringContainsString('Help and feedback', $html, $role->value);
+            $this->assertStringContainsString('What We Store About You', $html, $role->value);
+            $this->assertStringContainsString('Help and Feedback', $html, $role->value);
             $this->assertStringContainsString(route('account').'#feedback', $html, $role->value);
         }
     }
 
     public function test_quick_links_fit_the_role(): void
     {
-        $this->assertStringContainsString('Your receipts', $this->menuOf(Role::Employee));
-        $this->assertStringNotContainsString('Payout history</a>', $this->menuOf(Role::Employee));
+        $this->assertStringContainsString('Your Receipts', $this->menuOf(Role::Employee));
+        $this->assertStringNotContainsString('Payout History</a>', $this->menuOf(Role::Employee));
         $this->assertStringContainsString('#payout-history', $this->menuOf(Role::Merchant));
-        $this->assertStringNotContainsString('Your receipts', $this->menuOf(Role::BidAdmin));
+        $this->assertStringNotContainsString('Your Receipts', $this->menuOf(Role::BidAdmin));
     }
 
     public function test_the_anchors_the_links_point_to_exist(): void
@@ -49,7 +49,7 @@ class AccountMenuTest extends TestCase
     {
         foreach ([Role::Employee, Role::Merchant, Role::EmployerAdmin, Role::BidAdmin, Role::PlatformAdmin] as $role) {
             $this->actingAs(User::factory()->role($role)->create())->get('/account/data')
-                ->assertOk()->assertSee('What we store about you')->assertDontSee('Your magic link');
+                ->assertOk()->assertSee('What We Store About You')->assertDontSee('Your magic link');
         }
 
         $this->actingAs(User::factory()->role(Role::Judge)->create())->get('/account/data')

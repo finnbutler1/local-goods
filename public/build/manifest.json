@@ -28,7 +28,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-vjveMb_X.css",
+    "file": "assets/app-a9xUIZwy.css",
     "name": "app",
     "names": [
       "app.css"
@@ -46,7 +46,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-IGCGF_s8.js",
+    "file": "assets/app-CueDWQR4.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

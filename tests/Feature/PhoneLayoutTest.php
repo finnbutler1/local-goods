@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\Merchant;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -38,7 +39,7 @@ class PhoneLayoutTest extends TestCase
     public function test_emails_break_only_between_their_parts(): void
     {
         $admin = $this->signIn(Role::PlatformAdmin);
-        $html = $this->actingAs($admin)->get('/admin')->assertOk()->getContent();
+        $html = $this->actingAs($admin)->get('/admin/accounts')->assertOk()->getContent();
 
         // <x-breakable>: the wrapping class, and <wbr> only after @ . / _ -.
         $this->assertMatchesRegularExpression('~<span class="wrap-anywhere-safe">(?:[^<]|<wbr>)+@<wbr>(?:[^<]|<wbr>)+\.<wbr>[a-z]+</span>~', $html);
@@ -132,7 +133,7 @@ class PhoneLayoutTest extends TestCase
         $this->sweepPages($check);
 
         // Fields that only show up in a state: a menu to pay from, and a merchant's menu editor.
-        $grind = \App\Models\Merchant::where('name', 'Farragut Grind')->value('id');
+        $grind = Merchant::where('name', 'Farragut Grind')->value('id');
         $employee = $this->signIn(Role::Employee);
         $check($this->actingAs($employee)->get('/employee?merchant='.$grind)->assertOk()->getContent(), 'redeem from a menu');
         $check($this->actingAs($employee)->get('/employee?tab=in-person&pay_merchant='.$grind)->assertOk()->getContent(), 'pay in person from a menu');

@@ -97,7 +97,7 @@ class ResponsiveTablesTest extends TestCase
 
     public function test_the_admin_accounts_table_stacks_with_labelled_cells(): void
     {
-        $html = $this->actingAs($this->signIn(Role::PlatformAdmin))->get('/admin')->assertOk()->getContent();
+        $html = $this->actingAs($this->signIn(Role::PlatformAdmin))->get('/admin/accounts')->assertOk()->getContent();
 
         $this->assertStringContainsString('data-rtable="stack"', $html);
         $this->assertStringContainsString('data-label="Email"', $html);

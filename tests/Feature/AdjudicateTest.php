@@ -472,9 +472,9 @@ class AdjudicateTest extends TestCase
     public function test_the_tour_step_sends_voters_to_vote_and_everyone_else_to_the_results(): void
     {
         $this->actingAs($this->reviewer(ReviewerType::Bid));
-        $this->get('/judge')->assertSeeInOrder(['AI eval results', route('adjudication.show'), 'Independent check of the AI', 'Employer dashboard'], false);
+        $this->get('/judge')->assertSeeInOrder(['AI Eval', route('adjudication.show'), 'Independent check of the AI', 'Employer dashboard'], false);
 
         $this->actingAs($this->reviewer(ReviewerType::Friend));
-        $this->get('/judge')->assertSeeInOrder(['AI eval results', route('eval').'#adjudication', 'Independent check of the AI', 'Employer dashboard'], false);
+        $this->get('/judge')->assertSeeInOrder(['AI Eval', route('eval').'#adjudication', 'Independent check of the AI', 'Employer dashboard'], false);
     }
 }

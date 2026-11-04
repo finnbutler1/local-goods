@@ -1,6 +1,6 @@
 @php $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary'; @endphp
 
-<x-app-shell title="Account" active="account">
+<x-app-shell title="Your Account" active="account">
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Your account</x-eyebrow>

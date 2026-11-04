@@ -5,6 +5,7 @@
     'align' => 'right',
     'buttonClass' => '',
     'panelClass' => '',
+    'width' => 'w-64',
 ])
 
 {{-- Disclosure menu (ADR 0025): a real button with aria-expanded and
@@ -15,11 +16,12 @@
 <div data-menu {{ $attributes->class('relative') }}>
     <button type="button" id="{{ $id }}-button" aria-expanded="false" aria-controls="{{ $id }}" data-menu-button @class([$buttonClass])>{{ $trigger }}</button>
     <div id="{{ $id }}" data-menu-panel @class([
-        'menu-panel z-40 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface p-2 text-ink shadow-lg',
+        'menu-panel z-40 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface p-2 text-ink shadow-lg',
         'top-full mt-2' => $direction === 'down',
         'bottom-full mb-2' => $direction === 'up',
         'right-0' => $align === 'right',
         'left-0' => $align === 'left',
+        $width,
         $panelClass,
     ])>
         {{ $slot }}

@@ -107,7 +107,7 @@ class CorrectionQueueTest extends TestCase
 
     public function test_the_tour_and_the_admin_pages_link_to_corrections(): void
     {
-        $step = collect(JudgeController::tour())->firstWhere('title', 'See how mistakes get fixed: open Corrections');
+        $step = collect(JudgeController::tour())->firstWhere('title', 'Open Corrections to see how mistakes get fixed');
         $this->assertSame(route('bid-admin.corrections'), $step['url']);
 
         $this->signIn(Role::BidAdmin);

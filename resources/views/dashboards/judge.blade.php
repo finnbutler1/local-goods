@@ -50,7 +50,7 @@
 
         <x-card as="section" aria-labelledby="money-heading" class="max-w-3xl">
             <h2 id="money-heading" class="text-2xl font-semibold text-primary">
-                <a href="{{ route('money') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Where the money is</a>
+                <a href="{{ route('money') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Where the Money Is</a>
             </h2>
             <p class="mt-2">
                 Employers' money held for their staff is kept apart from anything Local Goods earns, and a check over the whole ledger history
@@ -60,7 +60,7 @@
 
         <x-card as="section" aria-labelledby="model-heading" class="max-w-3xl">
             <h2 id="model-heading" class="text-2xl font-semibold text-primary">
-                <a href="{{ route('business-model') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business model</a>
+                <a href="{{ route('business-model') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business Model</a>
             </h2>
             <p class="mt-2">
                 How Local Goods could pay for itself in the Golden Triangle, DC-wide and nationally: a projected P&amp;L, what one district needs

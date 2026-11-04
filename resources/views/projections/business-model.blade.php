@@ -22,11 +22,12 @@
     $td = 'px-4 py-2.5 text-right';
 @endphp
 
-<x-app-shell title="Business model" active="business-model" context="Projection, not results">
+<x-app-shell title="Business Model" active="business-model" context="Projection, not results">
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Business model</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">How Local Goods could pay for itself</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Business Model</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">How Local Goods could pay for itself</p>
         <p class="mt-3 text-lg text-muted">
             A projected P&amp;L for three ways Local Goods could grow, worked out month by month from
             <a href="#assumptions" class="{{ $link }}">stated assumptions</a>, each with a source or labelled an assumption to check.

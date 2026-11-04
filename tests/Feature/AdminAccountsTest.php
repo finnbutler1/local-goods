@@ -26,12 +26,12 @@ class AdminAccountsTest extends TestCase
         User::factory()->role(Role::Merchant)->create(['name' => 'Avery Active']);
         $this->signIn(Role::PlatformAdmin);
 
-        $this->get('/admin')->assertOk()
+        $this->get('/admin/accounts')->assertOk()
             ->assertSee('Status')
             ->assertSeeInOrder(['Avery Active', 'Merchant', 'Active'])
             ->assertDontSee('Morgan Revoked')
             ->assertSee('Show revoked (1)')
-            ->assertSee('href="'.route('admin.dashboard', ['revoked' => 1]).'"', false);
+            ->assertSee('href="'.route('admin.accounts', ['revoked' => 1]).'"', false);
     }
 
     public function test_show_revoked_lists_them_with_a_revoked_status(): void
@@ -39,22 +39,22 @@ class AdminAccountsTest extends TestCase
         $this->revokedReviewer();
         $this->signIn(Role::PlatformAdmin);
 
-        $this->get('/admin?revoked=1')->assertOk()
+        $this->get('/admin/accounts?revoked=1')->assertOk()
             ->assertSeeInOrder(['Morgan Revoked', 'Judge', 'Revoked'])
             ->assertSee('Hide revoked')
-            ->assertSee('href="'.route('admin.dashboard').'"', false);
+            ->assertSee('href="'.route('admin.accounts').'"', false);
     }
 
     public function test_no_toggle_when_nothing_is_revoked(): void
     {
         $this->signIn(Role::PlatformAdmin);
 
-        $this->get('/admin')->assertOk()->assertDontSee('Show revoked');
+        $this->get('/admin/accounts')->assertOk()->assertDontSee('Show revoked');
     }
 
     public function test_only_the_platform_admin_sees_accounts(): void
     {
         $this->signIn(Role::BidAdmin);
-        $this->get('/admin?revoked=1')->assertForbidden();
+        $this->get('/admin/accounts?revoked=1')->assertForbidden();
     }
 }

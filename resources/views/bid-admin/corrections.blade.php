@@ -30,7 +30,8 @@
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Refunds and corrections</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">How money mistakes get fixed</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Corrections</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">How money mistakes get fixed</p>
         <p class="mt-3 text-lg text-muted">
             Employees, merchants and employers ask here when money went wrong. The Local Goods platform admin decides each one and writes why;
             the person who asked sees that reason. Nothing is edited or deleted: every fix is a new line in the ledger, linked to the request.

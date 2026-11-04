@@ -37,13 +37,13 @@ class WhoDoesWhatController extends Controller
             'title' => 'Check', 'who' => [self::LOCAL_GOODS, self::BID],
             'software' => 'Looks the address up in DC\'s Master Address Repository and checks it against the BID boundary DC publishes. It asks Merchant Eligibility Matching (AI) for a suggestion with reasons and a confidence.',
             'bid' => 'Presses "Run the eligibility check" and reads the result. The AI only suggests.',
-            'route' => 'bid-admin.applications', 'screen' => 'Applications queue', 'access' => 'BID admin (judges can view)',
+            'route' => 'bid-admin.applications', 'screen' => 'Merchant Applications', 'access' => 'BID admin (judges can view)',
         ],
         'approve' => [
             'title' => 'Approve', 'who' => [self::BID],
             'software' => 'Refuses an address outside the boundary and never lets the AI approve. It keeps every decision with who, when and why, and shows the shop the reason.',
             'bid' => 'Decides: approves or declines each shop, with a reason.',
-            'route' => 'bid-admin.applications', 'screen' => 'Applications queue', 'access' => 'BID admin (judges can view)',
+            'route' => 'bid-admin.applications', 'screen' => 'Merchant Applications', 'access' => 'BID admin (judges can view)',
         ],
         'onboard' => [
             'title' => 'Onboard', 'who' => [self::STRIPE, self::LOCAL_GOODS],
@@ -55,25 +55,25 @@ class WhoDoesWhatController extends Controller
             'title' => 'Live', 'who' => [self::LOCAL_GOODS],
             'software' => 'Once Stripe confirms the account can receive transfers, the shop goes on the district map and into employees\' wallets. Credits can\'t be spent at any shop that isn\'t approved and live in the district.',
             'bid' => 'Tells employers and staff about the new shop.',
-            'route' => 'district', 'screen' => 'District map', 'access' => 'Anyone',
+            'route' => 'district', 'screen' => 'District Map', 'access' => 'Anyone',
         ],
         'pay' => [
             'title' => 'Pay', 'who' => [self::LOCAL_GOODS, self::STRIPE, self::BID],
             'software' => 'Employees pay in the app. Redemption Fraud Detection checks every payment and holds anything unusual. Stripe transfers a cleared payment to the shop; a held one moves no money.',
             'bid' => 'Reviews held payments and approves or denies each one, with a reason.',
-            'route' => 'bid-admin.dashboard', 'screen' => 'Fraud review', 'access' => 'BID admin (judges can view)',
+            'route' => 'bid-admin.dashboard', 'screen' => 'Fraud Review', 'access' => 'BID admin (judges can view)',
         ],
         'reconcile' => [
             'title' => 'Reconcile', 'who' => [self::LOCAL_GOODS, self::STRIPE],
             'software' => 'Matches Local Goods\' ledger against Stripe\'s records: payments, transfers, reversals and refunds. It flags anything that doesn\'t match.',
             'bid' => 'Nothing. Local Goods\' platform admin does this, not the BID.',
-            'route' => 'admin.reconciliation', 'screen' => 'Stripe reconciliation', 'access' => 'Local Goods platform admin only',
+            'route' => 'admin.reconciliation', 'screen' => 'Reconciliation', 'access' => 'Local Goods platform admin only',
         ],
         'report' => [
             'title' => 'Report', 'who' => [self::LOCAL_GOODS, self::BID],
             'software' => 'Counts spending, visits, merchants reached and participating employers from the ledger, net of refunds. Employees are never named. The BID can export its district\'s aggregate data at any time.',
             'bid' => 'Uses the report with its members and the city, and downloads the CSV whenever it likes.',
-            'route' => 'bid-admin.impact', 'screen' => 'BID impact', 'access' => 'BID admin (judges can view)',
+            'route' => 'bid-admin.impact', 'screen' => 'Impact', 'access' => 'BID admin (judges can view)',
         ],
     ];
 

@@ -15,6 +15,6 @@ class SolvencyRefused extends InvalidArgumentException
     public function __construct(string $what, public readonly SolvencyPosition $position, ?string $problem = null)
     {
         parent::__construct('Refused: '.$what.' would leave Local Goods holding less money than it has promised ('
-            .($problem ?? $position->problem()).'). Nothing was changed. See Where the money is.');
+            .($problem ?? $position->problem()).'). Nothing was changed. See Where the Money Is.');
     }
 }

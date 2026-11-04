@@ -1,11 +1,12 @@
 @php use App\Support\Money; use App\Support\SignalPresenter; @endphp
 
-<x-app-shell title="Fraud review" active="bid-admin"
+<x-app-shell title="Fraud Review" active="fraud-review"
              :context="$bid->name.' BID · '.$bid->city">
 <div class="space-y-8">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">{{ $bid->name }} BID · {{ $bid->city }}</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Redemption Fraud Detection</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Fraud Review</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">Redemption Fraud Detection</p>
         <p class="mt-3 text-lg text-muted">
             Every new redemption is scored by AI from anonymous signals (no names) before any merchant is paid.
             The AI can be wrong, so a held redemption is never approved or denied automatically: a person at the BID decides.
@@ -16,41 +17,6 @@
             {{ \App\Support\StripeMode::active()
                 ? 'Held redemptions never reach Stripe. Approving one funded by Stripe-paid credits sends its one Stripe test-mode transfer to the merchant; denying sends nothing, ever.'
                 : 'Stripe isn\'t connected on this server: approving a redemption records what the merchant is owed, and payouts are simulated.' }}
-        </p>
-        <p class="mt-3">
-            <a href="{{ route('bid-admin.eval') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                How often does the AI agree with a person? See the eval results <span aria-hidden="true">→</span>
-            </a>
-        </p>
-        <p class="mt-2">
-            <a href="{{ route('bid-admin.corrections') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                Refunds and corrections: how money mistakes get fixed <span aria-hidden="true">→</span>
-            </a>
-        </p>
-        <p class="mt-2">
-            <a href="{{ route('bid-admin.fees') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                Fee settings: the Local Goods fee on merchant sales <span aria-hidden="true">→</span>
-            </a>
-        </p>
-        <p class="mt-2">
-            <a href="{{ route('bid-admin.applications') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                Merchant applications: shops asking to join <span aria-hidden="true">→</span>
-            </a>
-        </p>
-        <p class="mt-2">
-            <a href="{{ route('bid-admin.partnership') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                The BID partnership: exclusivity, dates and data terms <span aria-hidden="true">→</span>
-            </a>
-        </p>
-        <p class="mt-2">
-            <a href="{{ route('bid-admin.demo-activity') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                Demo activity: what the scheduled generator has done in Stripe test mode <span aria-hidden="true">→</span>
-            </a>
-        </p>
-        <p class="mt-2">
-            <a href="{{ route('money') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
-                Where the money is: customer funds held, and the check that every promise has money behind it <span aria-hidden="true">→</span>
-            </a>
         </p>
     </header>
 

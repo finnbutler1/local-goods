@@ -24,11 +24,12 @@
     $time = fn ($at) => $at?->setTimezone('America/New_York')->format('M j, g:i A');
 @endphp
 
-<x-app-shell title="Demo activity" active="demo-activity" context="Golden Triangle BID · Washington, DC">
+<x-app-shell title="Demo Activity" active="demo-activity" context="Golden Triangle BID · Washington, DC">
 <div class="space-y-10">
     <header class="max-w-3xl">
         <x-eyebrow class="text-accent-ink">Generated demo activity</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Fictional people, real Stripe test-mode transactions</h1>
+        <h1 class="mt-1 text-title font-semibold text-primary">Demo Activity</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">Fictional people, real Stripe test-mode transactions</p>
         <p class="mt-3 text-lg text-muted">
             Between now and judging, a scheduled generator makes a small, realistic slice of activity each weekday, busiest at lunch:
             buying credits, allowances, orders to go and payments in person at the demo merchants, and the occasional refund request.

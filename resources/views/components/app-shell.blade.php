@@ -15,40 +15,51 @@
     $role = $user?->role ?? $preview;
     // A judge viewing as another role sees that role's menu, read-only.
     $viewAs = \App\Support\ViewAs::current(request());
-    $nav = ($viewAs ?? $role)->navigation();
+    $menuRole = $viewAs ?? $role;
+    $groups = $menuRole->navigationGroups();
+    $grouped = $menuRole->hasGroupedNavigation();
+    $nav = $menuRole->navigation();
     // Personal contacts only vote (ADR 0019): one menu item, no view-as.
     $votingOnly = (bool) $user?->isPersonalContact();
     if ($votingOnly) {
+        $grouped = false;
         $nav = ['dashboard' => ['label' => 'Check the AI', 'short' => 'Vote', 'route' => 'adjudication.show', 'icon' => 'M12 3.75v16.5M7.5 20.25h9M4.5 7.5h15M6.75 7.5 3.75 13.5a3 3 0 0 0 6 0L6.75 7.5Zm10.5 0-3 6a3 3 0 0 0 6 0l-3-6Z']];
+        $groups = ['main' => ['label' => null, 'items' => $nav]];
     }
     if ($role === \App\Enums\Role::Judge && $viewAs) {
-        $nav = ['judge-home' => ['label' => 'Judge home', 'short' => 'Judge', 'route' => 'judge.dashboard', 'icon' => 'M3.75 12 12 4.5l8.25 7.5M5.25 10.5v9h4.5v-5.25h4.5v5.25h4.5v-9']] + $nav;
+        $judgeHome = ['judge-home' => ['label' => 'Judge Home', 'short' => 'Judge', 'route' => 'judge.dashboard', 'icon' => 'M3.75 12 12 4.5l8.25 7.5M5.25 10.5v9h4.5v-5.25h4.5v5.25h4.5v-9']];
+        $nav = $judgeHome + $nav;
+        $groups = ['judge' => ['label' => null, 'items' => $judgeHome]] + $groups;
     }
     // Unread (status New) feedback, shown on the platform admin's Feedback item.
     $unreadFeedback = $role === \App\Enums\Role::PlatformAdmin && ! $viewAs
         ? \App\Models\Feedback::where('status', \App\Enums\FeedbackStatus::New)->count() : 0;
     $initials = collect(explode(' ', $userName))
         ->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
-    // Fewer things at once (ADR 0025): the sidebar shows up to 5 items and the
-    // phone tab bar up to 4. Past that, the first in this list stay, in this
-    // order, and the rest go into a More menu. Feedback stays visible for the platform admin;
-    // Merchants (Merchant Eligibility Matching, a named AI function) for the
-    // BID admin. Role::navigation() itself is unchanged.
-    $priority = ['dashboard', 'wallet', 'judge-home', 'bid-admin', 'merchants', 'feedback', 'impact', 'applications', 'eval', 'participation', 'menu', 'reviewers', 'adjudication', 'business-model', 'partnership'];
-    $split = function (array $items, int $max) use ($priority): array {
-        if (count($items) <= $max) {
-            return [$items, []];
-        }
-        $rank = fn ($key) => ($i = array_search($key, $priority, true)) === false ? PHP_INT_MAX : $i;
-        $keep = collect(array_keys($items))->sortBy($rank)->take($max - 1)->values()->all();
+    $menuIcon = 'M4 7h16M4 12h16M4 17h16';
+    if ($grouped) {
+        // Phone bar: Home, the role's two pinned pages, and a Menu button with every group.
+        $tabNav = array_intersect_key($nav, array_flip(['home', ...$menuRole->pinnedNavigation()]));
+        $tabMore = [];
+        $sideNav = $sideMore = [];
+    } else {
+        // Flat menus (ADR 0025): the sidebar shows up to 5 items and the phone tab bar
+        // up to 4. Past that, the first in this list stay and the rest go into a More menu.
+        $priority = ['dashboard', 'wallet', 'judge-home', 'menu', 'business-model'];
+        $split = function (array $items, int $max) use ($priority): array {
+            if (count($items) <= $max) {
+                return [$items, []];
+            }
+            $rank = fn ($key) => ($i = array_search($key, $priority, true)) === false ? PHP_INT_MAX : $i;
+            $keep = collect(array_keys($items))->sortBy($rank)->take($max - 1)->values()->all();
 
-        // Kept items in priority order; the rest keep the role's own order.
-        return [array_merge(array_flip($keep), array_intersect_key($items, array_flip($keep))), array_diff_key($items, array_flip($keep))];
-    };
-    [$sideNav, $sideMore] = $split($nav, 5);
-    [$tabNav, $tabMore] = $split($nav, 4);
+            return [array_merge(array_flip($keep), array_intersect_key($items, array_flip($keep))), array_diff_key($items, array_flip($keep))];
+        };
+        [$sideNav, $sideMore] = $split($nav, 5);
+        [$tabNav, $tabMore] = $split($nav, 4);
+    }
     // Literal class names so Tailwind includes them in the build.
-    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4'][count($tabNav) + ($tabMore ? 1 : 0)];
+    $tabColumns = [1 => 'grid-cols-1', 2 => 'grid-cols-2', 3 => 'grid-cols-3', 4 => 'grid-cols-4'][count($tabNav) + ($tabMore || $grouped ? 1 : 0)];
     $moreIcon = 'M5 12h.01M12 12h.01M19 12h.01';
 @endphp
 
@@ -73,7 +84,10 @@
             </a>
             <p class="mt-2 text-sm font-semibold text-night-muted">Reroute your lunch.</p>
         </div>
-        <nav aria-label="App" class="flex-1 px-3">
+        <nav aria-label="App" class="flex-1 overflow-y-auto px-3">
+            @if ($grouped)
+                <x-nav-groups :groups="$groups" :active="$active" :unread="$unreadFeedback" variant="side" />
+            @else
             <ul class="space-y-1">
                 @foreach ($sideNav as $key => $item)
                     <li>
@@ -104,6 +118,7 @@
                     </li>
                 @endif
             </ul>
+            @endif
         </nav>
         <div class="m-3 rounded-xl border border-night-line p-4 text-sm text-night-muted">
             <p class="font-semibold text-on-night">Demo mode</p>
@@ -125,12 +140,12 @@
                 <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                     @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
                         <x-menu id="view-as-menu" button-class="flex items-center gap-1 rounded-full border-2 border-primary px-3 py-1.5 max-lg:min-h-11 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary-tint aria-expanded:bg-primary-tint active:translate-y-px">
-                            <x-slot:trigger>View as<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></x-slot:trigger>
+                            <x-slot:trigger>View As<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></x-slot:trigger>
                             <ul>
                                 @foreach (\App\Support\ViewAs::ROLES as $option)
                                     <li><a href="{{ route('judge.view-as', $option->value) }}" class="menu-item" @if ($viewAs === $option) aria-current="true" @endif>{{ $option->label() }}</a></li>
                                 @endforeach
-                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="menu-item">Back to judge home</a></li>
+                                <li class="mt-1 border-t border-line pt-1"><a href="{{ route('judge.view-as') }}" class="menu-item">Back to Judge Home</a></li>
                             </ul>
                         </x-menu>
                     @endif
@@ -148,22 +163,22 @@
                                 <x-badge tone="primary" :wrap="true" class="mt-1"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs) · viewing as {{ $viewAs->label() }}@endif</x-badge>
                             </div>
                             <ul class="mt-1">
-                                <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your account</a></li>
+                                <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your Account</a></li>
                                 @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Employee)
-                                    <li><a href="{{ route('employee.wallet') }}#history" class="menu-item">Your receipts</a></li>
+                                    <li><a href="{{ route('employee.wallet') }}#history" class="menu-item">Your Receipts</a></li>
                                 @endif
                                 @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Merchant)
-                                    <li><a href="{{ route('merchant.dashboard') }}#payout-history" class="menu-item">Payout history</a></li>
+                                    <li><a href="{{ route('merchant.dashboard') }}#payout-history" class="menu-item">Payout History</a></li>
                                 @endif
-                                <li><a href="{{ route('account.data') }}" class="menu-item" @if ($active === 'account.data') aria-current="page" @endif>What we store about you</a></li>
-                                <li><a href="{{ route('account') }}#feedback" class="menu-item">Help and feedback</a></li>
+                                <li><a href="{{ route('account.data') }}" class="menu-item" @if ($active === 'account.data') aria-current="page" @endif>What We Store About You</a></li>
+                                <li><a href="{{ route('account') }}#feedback" class="menu-item">Help and Feedback</a></li>
                                 @unless ($votingOnly)
-                                    <li><a href="{{ route('home') }}" class="menu-item">Back to the public site</a></li>
+                                    <li><a href="{{ route('home') }}" class="menu-item">Back to the Public Site</a></li>
                                 @endunless
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="menu-item">Log out</button>
+                                        <button type="submit" class="menu-item">Log Out</button>
                                     </form>
                                 </li>
                             </ul>
@@ -182,7 +197,7 @@
             @if ($viewAs)
                 <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-band px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
-                    <a href="{{ route('judge.view-as') }}" class="tap-target text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline">Back to judge home</a>
+                    <a href="{{ route('judge.view-as') }}" class="tap-target text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline">Back to Judge Home</a>
                 </div>
             @endif
             {{ $slot }}
@@ -217,6 +232,22 @@
                     </a>
                 </li>
             @endforeach
+            @if ($grouped)
+                <li>
+                    <x-menu id="tab-menu" direction="up" width="w-[min(22rem,calc(100vw-2rem))]" panel-class="max-h-[calc(100dvh-9rem)] overflow-y-auto" button-class="flex w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-expanded:text-on-night">
+                        <x-slot:trigger>
+                            <span class="relative">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" class="size-6" aria-hidden="true"><path d="{{ $menuIcon }}"/></svg>
+                                @if ($unreadFeedback > 0)
+                                    <span class="tabular absolute -top-1.5 -right-2.5 rounded-full bg-night-accent px-1.5 text-[0.65rem] font-semibold text-night">{{ $unreadFeedback }}<span class="sr-only"> unread feedback</span></span>
+                                @endif
+                            </span>
+                            <span @class(['underline decoration-2 underline-offset-4 text-night-primary' => ($active !== null && ! array_key_exists($active, $tabNav) && array_key_exists($active, $nav))])>Menu</span>
+                        </x-slot:trigger>
+                        <x-nav-groups :groups="$groups" :active="$active" :unread="$unreadFeedback" variant="sheet" />
+                    </x-menu>
+                </li>
+            @endif
             @if ($tabMore)
                 <li>
                     <x-menu id="tab-more" direction="up" button-class="flex w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-expanded:text-on-night">

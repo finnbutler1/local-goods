@@ -63,10 +63,16 @@ class BuyCreditsFlowTest extends TestCase
         ];
     }
 
-    /** Visible text only, so a fee mention can't hide in markup and "coffee" doesn't count. */
+    /**
+     * Visible text of the page itself (not the platform admin's menu, which names the
+     * Fee Settings page), so a fee mention can't hide in markup and "coffee" doesn't count.
+     */
     private function mentionsFees(TestResponse $response): bool
     {
-        return (bool) preg_match('/\bfees?\b/i', strip_tags($response->getContent()));
+        $html = $response->getContent();
+        $page = str_contains($html, '<main') ? str($html)->after('<main')->before('</main>')->toString() : $html;
+
+        return (bool) preg_match('/\bfees?\b/i', strip_tags($page));
     }
 
     public static function fees(): array

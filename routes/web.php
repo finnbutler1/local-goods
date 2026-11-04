@@ -5,8 +5,10 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AdjudicationController;
 use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\FeedbackInboxController;
+use App\Http\Controllers\Admin\HomeController as AdminHomeController;
 use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewerController;
+use App\Http\Controllers\BidAdmin\ApplicationController;
 use App\Http\Controllers\BidAdmin\BidAdminController;
 use App\Http\Controllers\BidAdmin\CollusionExampleController;
 use App\Http\Controllers\BidAdmin\CorrectionsController;
@@ -14,10 +16,9 @@ use App\Http\Controllers\BidAdmin\DemoActivityController;
 use App\Http\Controllers\BidAdmin\ImpactController;
 use App\Http\Controllers\BidAdmin\ImpactExportController;
 use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
-use App\Http\Controllers\BidAdmin\ApplicationController;
 use App\Http\Controllers\BidAdmin\MerchantFeeController;
-use App\Http\Controllers\BidAdmin\PartnershipController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
+use App\Http\Controllers\BidAdmin\PartnershipController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\CorrectionRequestController;
@@ -112,6 +113,10 @@ Route::middleware('auth')->group(function () {
         // Request a correction (ADR 0028): moves no money, a platform admin decides.
         Route::post('/employee/redemptions/{redemption}/correction', [CorrectionRequestController::class, 'employeeRedemption'])->middleware('throttle:5,1,employee.correction.store')->name('employee.correction.store');
     });
+
+    // Home for the BID admin (the platform admin's Home is /admin); judges see it as the BID admin.
+    // /bid-admin itself stays Fraud Review.
+    Route::middleware('role:bid_admin')->get('/bid-admin/home', AdminHomeController::class)->name('bid-admin.home');
 
     Route::middleware('role:bid_admin,platform_admin')->prefix('bid-admin')->name('bid-admin.')->group(function () {
         Route::get('/', BidAdminController::class)->name('dashboard');
@@ -219,7 +224,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/where-the-money-is', [WhereTheMoneyIsController::class, 'show'])->name('money');
     });
     Route::middleware('role:platform_admin')->group(function () {
-        Route::get('/admin', AccountController::class)->name('admin.dashboard');
+        Route::get('/admin', AdminHomeController::class)->name('admin.dashboard');
+        Route::get('/admin/accounts', AccountController::class)->name('admin.accounts');
 
         Route::prefix('admin/reviewers')->name('admin.reviewers.')->group(function () {
             Route::get('/', [ReviewerController::class, 'index'])->name('index');

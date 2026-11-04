@@ -54,7 +54,7 @@ class SolvencyGuardTest extends TestCase
             ]));
             $this->fail('An unbacked allowance was allowed.');
         } catch (SolvencyRefused $e) {
-            $this->assertSame('Refused: an allowance with no allocation would leave Local Goods holding less money than it has promised (short by $40.00). Nothing was changed. See Where the money is.', $e->getMessage());
+            $this->assertSame('Refused: an allowance with no allocation would leave Local Goods holding less money than it has promised (short by $40.00). Nothing was changed. See Where the Money Is.', $e->getMessage());
         }
 
         $this->assertSame($lines, CreditLedgerEntry::count(), 'Rolled back');

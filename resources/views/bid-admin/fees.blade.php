@@ -8,11 +8,12 @@
     $show = fn (int $bps, int $fixed) => \App\Http\Controllers\BidAdmin\MerchantFeeController::short(new MerchantFee($bps, $fixed));
 @endphp
 
-<x-app-shell title="Fee settings" active="fees" context="Golden Triangle BID · Washington, DC">
+<x-app-shell title="Fee Settings" active="fees" context="Golden Triangle BID · Washington, DC">
 <div class="space-y-10">
     <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Fee settings</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Local Goods fee on merchant sales</h1>
+        <x-eyebrow class="text-accent-ink">Fee Settings</x-eyebrow>
+        <h1 class="mt-1 text-title font-semibold text-primary">Fee Settings</h1>
+        <p class="mt-2 text-xl font-semibold text-ink">Local Goods fee on merchant sales</p>
         <p class="mt-3 text-lg text-muted">
             How Local Goods would earn money: a fee on each cleared sale, kept out of what the merchant is transferred.
             It is set to charge nothing until we have talked with merchants about it.
