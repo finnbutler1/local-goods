@@ -81,10 +81,19 @@ class RedemptionService
         $verdict = $this->detector->score($signals);
 
         $redemption = $this->solvency->transaction('this redemption', function () use ($employee, $merchant, $amountCents, $items, $channel, $tax, $fee, $signals, $verdict) {
+            // Only a cleared redemption claims Stripe money (lock order: StripeFunding).
+            if ($verdict->isClear()) {
+                $this->funding->lockEmployer($employee->employer_id);
+            }
+
             // Lock the employee row so two redemptions at once can't both pass
             // the balance check on MySQL. SQLite ignores this; its IMMEDIATE
             // transactions already let only one writer in at a time.
             Employee::whereKey($employee->id)->lockForUpdate()->first();
+
+            if ($verdict->isClear()) {
+                $this->funding->lockPurchases($employee->employer_id);
+            }
 
             // Re-check inside the transaction in case another redemption landed meanwhile.
             $this->ensureAffordable($employee, $amountCents);

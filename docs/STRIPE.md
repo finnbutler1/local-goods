@@ -165,7 +165,10 @@ Only **Stripe-funded** redemptions are ever sent to Stripe: cleared while
 Stripe test mode is on *and* covered by a purchase that was paid through
 Stripe. The employer's credits are one pool, so Stripe-paid purchases are
 matched oldest first (`App\Services\Payments\StripeFunding`): the total of
-Stripe transfers can never exceed what Stripe actually received.
+Stripe transfers can never exceed what Stripe actually received. The claim
+takes its locks before the transaction's first plain read, in one order
+everywhere (employer, employee, purchases, then the rest), so two redemptions
+at once can't claim the same money (`MysqlStripeFundingSnapshotTest`).
 
 Everything else is **simulated**, and labeled so: the seeded demo history,
 anything bought (simulated) while Stripe was off, and any

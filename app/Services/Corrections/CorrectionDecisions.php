@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Correction;
 use App\Models\CorrectionAction;
 use App\Models\CreditPurchase;
+use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
@@ -76,11 +77,12 @@ class CorrectionDecisions
         $this->checkType($correction, Correction::TYPE_REDEMPTION_REFUND);
 
         $correction = $this->solvency->transaction('this refund', function () use ($correction, $by, $reason, $quantities, $amountCents) {
-            // Lock the redemption (a second approval on it waits here, then sees this one),
-            // its payout and, for a simulated refund, the merchant, before anything is read
-            // with a plain SELECT. On MySQL a transaction's snapshot starts at its first plain
+            // Lock the employee (lock order: StripeFunding), the redemption (a second approval
+            // on it waits here, then sees this one), its payout and, for a simulated refund,
+            // the merchant, before anything is read with a plain SELECT. On MySQL a transaction's snapshot starts at its first plain
             // SELECT (claim() refreshes the correction), so claiming first could leave what
             // the merchant is owed read from before a refund that committed while we waited.
+            Employee::whereKey($correction->employee_id)->lockForUpdate()->first();
             $redemption = Redemption::whereKey($correction->redemption_id)->lockForUpdate()->firstOrFail();
             $payout = MerchantPayout::where('redemption_id', $redemption->id)->lockForUpdate()->first();
 
