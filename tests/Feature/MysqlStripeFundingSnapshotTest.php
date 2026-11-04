@@ -31,8 +31,9 @@ use Tests\TestCase;
  * lock must come before the transaction's first plain SELECT: otherwise the
  * snapshot misses a claim that committed while we waited, and one purchase is
  * claimed twice. Each test commits a competing claim on a second connection
- * just before the lock. The last tests pin the lock order that keeps these
- * locks from deadlocking: employer, employee, purchases, then everything else.
+ * just before the lock. The last tests pin the lock order, so these locks
+ * always queue in the same direction: employer, employee, purchases, then
+ * everything else.
  * Runs only in the MySQL CI job.
  */
 class MysqlStripeFundingSnapshotTest extends TestCase

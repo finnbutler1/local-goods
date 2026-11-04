@@ -10,8 +10,10 @@ commit history.
   had claimed it, which left a payment stuck. Cleared redemptions and approvals
   now take their locks first.
 - **One lock order everywhere** (employer, employee, purchases, then the rest),
-  so a redemption, giving out credits and buying credits at the same moment no
-  longer deadlock. The AI check still happens before any lock.
+  so a redemption, giving out credits and buying credits at the same moment
+  queue the same way. In 60-second test runs on a local MySQL, deadlocks went
+  from 14 and 365 to 0; those runs are evidence, not a guarantee, and TRANSPARENCY.md lists
+  their limits. The AI check still happens before any lock.
 
 ## 2026-11-02: Refund approvals see a refund that just finished
 

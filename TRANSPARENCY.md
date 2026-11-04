@@ -402,6 +402,53 @@ Local Goods holds is a promise, not ours
   for signed-in reviewers. Judges see customer funds and the check, never
   an operating funds figure.
 
+### When two things happen at the same moment: the lock order
+
+Redemptions, giving out credits, buying credits and refunds can all reach for
+the same database rows at once. On MySQL, two of them can each hold a row the
+other needs. That is a deadlock: MySQL cancels one, and that person's action
+fails with nothing half-written. To make this less likely, every money
+operation now takes its locks in one order: **employer, employee, the
+employer's paid Stripe purchases, then everything else.** A redemption refund
+never touches the employer or purchases, so it locks the employee, redemption,
+payout and merchant. Fraud checks by the AI and calls to Stripe stay outside
+these locks.
+
+We tested this with real concurrent PHP processes against a local MySQL 8.4.13,
+one 60-second run of each mix before the change and one after, reading MySQL's
+own deadlock counter. There were no deadlocks in these runs after the change:
+
+| What ran at once | Deadlocks before | Deadlocks after | Purchases over-claimed before | After |
+|---|---|---|---|---|
+| Demo activity tick and redemptions | 0 | 0 | 0 | 0 |
+| Buying credits and redemptions | 14 | 0 | 1 | 0 |
+| Tick, redemptions, giving out credits, buying and paying | 365 | 0 | 0 | 0 |
+
+The over-claim is a separate bug fixed by the same change: two redemptions
+counted the same Stripe-paid money.
+
+This is evidence from these runs, not a promise that a deadlock can't happen.
+The limits:
+
+- **Not production.** One laptop, a fake Stripe and a fake AI, so no network
+  delays and no real webhook timing. Each mix ran once, under artificial load.
+- **The tick did little.** It was driven directly, skipping its reconciliation
+  and solvency checks, and made only 1 to 4 redemptions a run. Its purchases
+  were covered by a separate process buying credits far faster than a real
+  tick would.
+- **Not every path ran.** Pay codes, employer refunds, merchant adjustments and
+  sweeps weren't in the mix. Where they take these locks, the order was checked
+  by reading the code.
+- **The scripts were throwaway** and aren't in this repository, so these exact
+  runs can't be repeated from it. `MysqlStripeFundingSnapshotTest` stays, and
+  checks the over-claim and the order on most of these paths; it doesn't count
+  deadlocks.
+- **It has a cost.** Cleared redemptions at one employer now run one at a time.
+  Shopper actions fell 9 to 15% in these runs, and purchases in the buying run
+  fell from 2,870 to 1,030 a minute, a rate far above real use.
+
+Details: [ADR 0028](docs/adr/0028-refunds-and-corrections.md#one-lock-order-and-the-deadlock-runs-2026-11-04).
+
 ### How we measure it
 
 We test Redemption Fraud Detection against a person's judgment, not our own
