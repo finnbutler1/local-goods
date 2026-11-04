@@ -6,6 +6,7 @@ use App\Enums\DenialReason;
 use App\Enums\Role;
 use App\Exceptions\RedemptionAlreadyReviewed;
 use App\Models\CreditLedgerEntry;
+use App\Models\Employee;
 use App\Models\Redemption;
 use App\Models\RedemptionDecision;
 use App\Models\User;
@@ -92,9 +93,19 @@ class RedemptionReviewService
     {
         $approve = $kind === RedemptionDecision::APPROVE;
         $status = $approve ? Redemption::STATUS_APPROVED : Redemption::STATUS_REJECTED;
+        // Read before the transaction: inside it, nothing is read until the locks are held.
+        $employerId = $approve ? $redemption->employee->employer_id : null;
 
-        $redemption = $this->solvency->transaction('this decision', function () use ($redemption, $reviewer, $reason, $kind, $returnsTo, $shownAs, $approve, $status, $entry) {
+        $redemption = $this->solvency->transaction('this decision', function () use ($redemption, $reviewer, $reason, $kind, $returnsTo, $shownAs, $approve, $status, $entry, $employerId) {
             $now = now();
+
+            // An approval may claim Stripe money, so the same locks as a cleared
+            // redemption, in the same order, before anything is read (StripeFunding).
+            if ($approve) {
+                $this->funding->lockEmployer($employerId);
+                Employee::whereKey($redemption->employee_id)->lockForUpdate()->first();
+                $this->funding->lockPurchases($employerId);
+            }
 
             // Only flips a row that is still under review, so a second decision
             // (a double click, two tabs, two reviewers) changes nothing.

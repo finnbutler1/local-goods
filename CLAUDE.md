@@ -13,9 +13,15 @@ redemption, payout and (simulated only) merchant before `claim()`, as
 at the same moment could leave it below zero, and `SolvencyGuard` can't see
 that because it reads the same snapshot. Test: `MysqlRedemptionRefundSnapshotTest`.
 
-- **Open, Finn to decide:** `StripeFunding::claim` has the same shape (its
-  purchases lock comes after the transaction's first plain read). A throwaway
-  MySQL probe over-claimed a purchase. Don't change it without his say-so.
+- `StripeFunding::claim` had the same shape and could claim one purchase
+  twice; fixed 2026-11-04. **Lock order everywhere: employer, employee,
+  purchases, then everything else** (a redemption refund, which never touches
+  the employer or purchases: employee, redemption, payout, merchant). A new
+  transaction that locks these rows must follow it. `lockEmployer` and
+  `lockPurchases` in `StripeFunding` come first in `redeem` (cleared only) and
+  in `decide` (approve only), with Stripe on; `requestPurchase` and
+  `markPurchasePaidByStripe` lock the employer first. Never put the AI call or
+  Stripe inside these transactions. Test: `MysqlStripeFundingSnapshotTest`.
 - A locking read sees the latest commit; a plain read after it doesn't. In a
   money transaction take every lock a check depends on before the first plain
   read.

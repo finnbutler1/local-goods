@@ -3,6 +3,16 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-04: One Stripe purchase can't be claimed twice, and fewer lock clashes
+
+- **Two redemptions at once can no longer claim the same Stripe-paid money.**
+  The second could read how much of a purchase was left from before the first
+  had claimed it, which left a payment stuck. Cleared redemptions and approvals
+  now take their locks first.
+- **One lock order everywhere** (employer, employee, purchases, then the rest),
+  so a redemption, giving out credits and buying credits at the same moment no
+  longer deadlock. The AI check still happens before any lock.
+
 ## 2026-11-02: Refund approvals see a refund that just finished
 
 - **A merchant can no longer be pushed below zero by two simulated refunds at

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Correction;
 use App\Models\CorrectionAction;
 use App\Models\CreditLedgerEntry;
+use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
@@ -64,7 +65,7 @@ class MysqlRedemptionRefundSnapshotTest extends TestCase
     {
         $merchant = $this->farragut();
         $refunding = $this->cleared(1250);
-        $other = $this->cleared(1250);
+        $other = $this->cleared(1250, Employee::orderBy('id')->skip(2)->firstOrFail());
         app(CreditLedger::class)->payout($merchant, $merchant->owedSimulatedCents() - 1250, MerchantPayout::STATUS_SIMULATED);
         $this->assertSame(1250, $merchant->owedSimulatedCents());
         $request = $this->refundRequest($refunding);
@@ -90,7 +91,7 @@ class MysqlRedemptionRefundSnapshotTest extends TestCase
         $redemption = $this->cleared(1250);
         $request = $this->refundRequest($redemption);
 
-        $done = $this->beforeLocking('redemptions', fn () => $this->commitCompletedRefund($redemption));
+        $done = $this->beforeLocking('employees', fn () => $this->commitCompletedRefund($redemption));
 
         try {
             app(CorrectionDecisions::class)->approveRedemptionRefund($request, $this->admin(), 'Refund.', amountCents: 1250);

@@ -3,9 +3,11 @@
 namespace App\Services\Payments;
 
 use App\Models\CreditPurchase;
+use App\Models\Employer;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Support\StripeMode;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Decides, when a redemption clears, whether it will be paid through Stripe
@@ -22,11 +24,35 @@ use App\Support\StripeMode;
  * credits actually spent. A sale whose fee is all of it has nothing to
  * transfer, so it gets no row.
  *
- * Call inside the transaction that clears the redemption.
+ * Call inside the transaction that clears the redemption, which must have
+ * called lockPurchases first: on MySQL a transaction's snapshot starts at its
+ * first plain SELECT, so a lock taken after one leaves unclaimedCents reading
+ * from before a claim that committed while we waited, and the same money is
+ * claimed twice. Lock order everywhere: employer, employee, purchases, then
+ * everything else, so these locks can't deadlock against each other. The
+ * employer comes first because locking the purchases also locks the gap for a
+ * new one, and a new purchase (CreditLedger::requestPurchase) takes the
+ * employer's lock first, so the two can never overlap.
  */
 class StripeFunding
 {
     public function __construct(private TransferGate $gate) {}
+
+    /** The first lock of a transaction that may claim(). Nothing to lock with Stripe off. */
+    public function lockEmployer(int $employerId): void
+    {
+        if (StripeMode::active()) {
+            Employer::whereKey($employerId)->lockForUpdate()->first();
+        }
+    }
+
+    /** Locks the purchases claim() chooses from: after the employee's lock, before the transaction's first plain SELECT. Nothing to lock with Stripe off. */
+    public function lockPurchases(int $employerId): void
+    {
+        if (StripeMode::active()) {
+            $this->fundingPurchases($employerId)->lockForUpdate()->get();
+        }
+    }
 
     public function claim(Redemption $redemption): ?MerchantPayout
     {
@@ -40,10 +66,7 @@ class StripeFunding
 
         $employerId = $redemption->employee->employer_id;
 
-        $purchase = CreditPurchase::where('employer_id', $employerId)
-            ->where('status', CreditPurchase::STATUS_PAID)
-            ->whereNotNull('stripe_charge_id')
-            ->orderBy('paid_at')->orderBy('id')
+        $purchase = $this->fundingPurchases($employerId)
             ->lockForUpdate()
             ->get()
             ->first(fn (CreditPurchase $p) => $p->unclaimedCents() >= $redemption->amount_cents);
@@ -68,5 +91,14 @@ class StripeFunding
             'transfer_group' => $purchase->reference,
             'source_charge_id' => $purchase->stripe_charge_id,
         ]);
+    }
+
+    /** The employer's Stripe-paid purchases, oldest first. */
+    private function fundingPurchases(int $employerId): Builder
+    {
+        return CreditPurchase::where('employer_id', $employerId)
+            ->where('status', CreditPurchase::STATUS_PAID)
+            ->whereNotNull('stripe_charge_id')
+            ->orderBy('paid_at')->orderBy('id');
     }
 }

@@ -68,14 +68,20 @@ class CreditLedger
     {
         $this->ensurePositive($amountCents);
 
-        return CreditPurchase::create([
-            'employer_id' => $employer->id,
-            'amount_cents' => $amountCents,
-            'platform_fee_cents' => PlatformFee::centsFor($amountCents),
-            'reference' => $reference,
-            'purchased_at' => $at ?? now(),
-            'status' => CreditPurchase::STATUS_PENDING,
-        ]);
+        return DB::transaction(function () use ($employer, $amountCents, $reference, $at) {
+            // The employer first (lock order: StripeFunding). A new row's foreign key check needs
+            // the employer row, and a redemption locking the purchases waits on the new row.
+            Employer::whereKey($employer->id)->lockForUpdate()->first();
+
+            return CreditPurchase::create([
+                'employer_id' => $employer->id,
+                'amount_cents' => $amountCents,
+                'platform_fee_cents' => PlatformFee::centsFor($amountCents),
+                'reference' => $reference,
+                'purchased_at' => $at ?? now(),
+                'status' => CreditPurchase::STATUS_PENDING,
+            ]);
+        });
     }
 
     /**
@@ -133,6 +139,12 @@ class CreditLedger
 
         // Stripe already has the money: recorded whatever the check finds, then checked (ADR 0033).
         $paid = DB::transaction(function () use ($purchase, $paymentIntentId, $chargeId, $at) {
+            // The employer before the purchase, the lock order in StripeFunding. The ledger line
+            // below needs the employer row: holding the purchase while waiting for it can deadlock
+            // with giving out credits (holds the employer, needs an employee) and a redemption
+            // (holds that employee, needs the purchases).
+            Employer::whereKey($purchase->employer_id)->lockForUpdate()->first();
+
             $changed = CreditPurchase::whereKey($purchase->id)
                 ->where('status', CreditPurchase::STATUS_PENDING)
                 ->update([
