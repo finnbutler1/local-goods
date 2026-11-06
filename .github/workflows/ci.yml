@@ -36,6 +36,12 @@ jobs:
       - name: Every locked package runs on this runner's PHP
         run: composer check-platform-reqs --lock
 
+      - name: No known security advisories in the locked packages
+        # Reads composer.lock only; fails on any advisory (and on abandoned
+        # packages). A new advisory can turn this red with no code change:
+        # update the package (TRANSPARENCY.md "Security" lists past ones).
+        run: composer audit --locked --no-interaction
+
   # Local development and tests use SQLite (see phpunit.xml).
   tests-sqlite:
     name: Tests (SQLite)
