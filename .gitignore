@@ -30,3 +30,9 @@ Thumbs.db
 /storage/*.sqlite*
 /.last-deploy-commit
 /.deploy-zip-commit
+# Impeccable (keep config/design/critique files, ignore the rest)
+.impeccable/*
+!.impeccable/config.json
+!.impeccable/design.json
+!.impeccable/surfaces/
+!.impeccable/critique/
