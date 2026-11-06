@@ -27,6 +27,9 @@ class ProductionConfig
         if (config('app.debug') === true || self::$debugWasForcedOff) {
             $problems[] = 'APP_DEBUG must be "false": debug pages show code, settings and data to anyone.';
         }
+        if (! str_starts_with((string) config('app.url'), 'https://')) {
+            $problems[] = 'APP_URL must start with "https://" (for example https://uselocalgoods.com), so links, Stripe return pages and judge links use the real address.';
+        }
         if (config('session.secure') !== true) {
             $problems[] = 'SESSION_SECURE_COOKIE must be "true", so the login cookie is only sent over HTTPS.';
         }

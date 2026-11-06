@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\Models\Merchant;
 use App\Services\Districts\MerchantApplications;
+use App\Support\AppUrl;
 use App\Support\StripeEnvironment;
 use Illuminate\Support\Str;
 
@@ -44,8 +45,8 @@ class StripeOnboarding
 
         return $this->stripe->createAccountLink(
             $merchant->stripe_account_id,
-            route('merchant.stripe.refresh'),
-            route('merchant.stripe.return'),
+            AppUrl::route('merchant.stripe.refresh'),
+            AppUrl::route('merchant.stripe.return'),
         )['url'];
     }
 

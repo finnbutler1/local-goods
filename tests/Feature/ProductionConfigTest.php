@@ -27,6 +27,7 @@ class ProductionConfigTest extends TestCase
         config([
             'app.env' => 'production',
             'app.debug' => false,
+            'app.url' => 'https://uselocalgoods.com',
             'session.secure' => true,
             'services.cloudfront.enforce' => true,
             'services.cloudfront.origin_secret' => self::SECRET,
@@ -45,6 +46,8 @@ class ProductionConfigTest extends TestCase
         return [
             'debug on' => [['app.debug' => true], 'APP_DEBUG must be "false"'],
             'not production' => [['app.env' => 'local'], 'APP_ENV must be "production"'],
+            'APP_URL not https' => [['app.url' => 'http://uselocalgoods.com'], 'APP_URL must start with "https://"'],
+            'APP_URL unset' => [['app.url' => 'http://localhost'], 'APP_URL must start with "https://"'],
             'cookie not secure' => [['session.secure' => null], 'SESSION_SECURE_COOKIE must be "true"'],
             'cookie secure false' => [['session.secure' => false], 'SESSION_SECURE_COOKIE must be "true"'],
             'no CloudFront secret while enforcing' => [['services.cloudfront.origin_secret' => ''], 'CLOUDFRONT_ORIGIN_SECRET is empty'],
