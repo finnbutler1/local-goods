@@ -33,9 +33,17 @@ class Feedback extends Model
         return $this->belongsTo(User::class);
     }
 
-    /** The page link, only if it points into this app (it came from a form, so don't trust it). */
+    /** The page link, only if it points into this app, at its address now or a previous one (it came from a form, so don't trust it). */
     public function safePageUrl(): ?string
     {
-        return str_starts_with($this->page_url, url('/')) ? $this->page_url : null;
+        foreach ([url('/'), ...config('app.previous_urls', [])] as $root) {
+            $root = rtrim($root, '/');
+            // The root, then nothing or a path, query or fragment: not https://uselocalgoods.com.example.org.
+            if (str_starts_with($this->page_url, $root) && in_array(substr($this->page_url, strlen($root), 1), ['', '/', '?', '#'], true)) {
+                return $this->page_url;
+            }
+        }
+
+        return null;
     }
 }

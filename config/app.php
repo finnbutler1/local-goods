@@ -54,6 +54,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Addresses the site had before APP_URL (ADR 0037). CloudFront still
+    // serves them and redirects them to APP_URL; links saved from them, such
+    // as feedback page links, still count as ours.
+    'previous_urls' => ['https://d4ghrpm72uczx.cloudfront.net'],
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
