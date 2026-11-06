@@ -6,7 +6,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4.1",
         "anthropic-ai/sdk": "^0.57.0",
         "laravel/fortify": "^1.41",
         "laravel/framework": "^13.17",
@@ -77,6 +77,9 @@
     },
     "config": {
         "optimize-autoloader": true,
+        "platform": {
+            "php": "8.4.1"
+        },
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {

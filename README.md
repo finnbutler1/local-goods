@@ -28,7 +28,7 @@ businesses, so the district your company calls home gets livelier.
 
 [![CI](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml/badge.svg)](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml)
 
-**Stack:** Laravel 13 · PHP 8.3+ (CI on 8.4) · Tailwind CSS 4 (Vite 8) · SQLite (local) / Amazon RDS MySQL (production) · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect, test mode (`stripe/stripe-php`)
+**Stack:** Laravel 13 · PHP 8.4.1+ (CI on 8.4) · Tailwind CSS 4 (Vite 8) · SQLite (local) / Amazon RDS MySQL (production) · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect, test mode (`stripe/stripe-php`)
 
 ---
 
@@ -300,7 +300,11 @@ in [TRANSPARENCY.md](TRANSPARENCY.md).
 
 ## Local setup
 
-Requirements: PHP 8.3+ (CI uses 8.4), Composer, Node 20.19+ or 22.12+ (CI uses 22).
+**Judges don't need to install anything.** The live site and your judge link
+are the way to review Local Goods; this section is only for running it on your
+own computer.
+
+Requirements: PHP 8.4.1 or later (CI uses 8.4), Composer, Node 20.19+ or 22.12+ (CI uses 22).
 
 ```sh
 git clone https://github.com/finnbutler1/local-goods.git

@@ -5,6 +5,37 @@ on:
   pull_request:
 
 jobs:
+  # composer.json's PHP minimum and composer.lock must agree, so anyone on the
+  # declared minimum can install the project.
+  composer-platform:
+    name: Composer (declared PHP minimum)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: composer.json is valid and the lock is up to date
+        run: composer validate --strict
+
+      - name: The minimum in require.php is the one in config.platform.php
+        run: |
+          php -r '$c = json_decode(file_get_contents("composer.json"), true);
+            $want = "^".($c["config"]["platform"]["php"] ?? "missing");
+            if ($c["require"]["php"] !== $want) { fwrite(STDERR, "require.php is {$c["require"]["php"]}, config.platform.php says {$want}\n"); exit(1); }'
+
+      - name: Every locked package runs on the declared minimum
+        # Exits 1 and lists the packages if any locked package needs a newer PHP.
+        run: composer why-not --locked php "$(composer config platform.php)"
+
+      - name: Every locked package runs on this runner's PHP
+        run: composer check-platform-reqs --lock
+
   # Local development and tests use SQLite (see phpunit.xml).
   tests-sqlite:
     name: Tests (SQLite)
