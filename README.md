@@ -275,7 +275,8 @@ Saying no was part of the design. Each decision below is already in our decision
 | Unspent credits are never counted as revenue ([ADR 0030](docs/adr/0030-business-model-projections.md)). | They are the employer's money, and a test checks that revenue doesn't move with the share spent. |
 | No issued card, so no interchange ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md), [model](docs/finance/MODEL.md)). | The MVP has no card program, and we could not verify the interchange rate, so the model keeps it off. |
 | No admin "Cancel" button on a held in-person payment ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)). | The shop is the one who knows the customer paid another way, so only the shop can cancel. An admin's Deny already returns the credits. |
-| No gift cards in the product menus ([ADR 0023](docs/adr/0023-product-menus-are-display-only.md)). | They would be cash. |
+| No card preview: a Stripe Issuing test card next to pay codes ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)). | Issuing switches on instantly in test mode, but funding cards needs a business account behind an identity check, which we chose not to complete with invented details. We won't show a fake card instead. |
+| Merchants can't sell gift cards, gift certificates or other cash-like items for credits ([ADR 0023](docs/adr/0023-product-menus-are-display-only.md)). | Buying one with credits would turn credits into cash that could be spent anywhere, which breaks the rule that credits are only spent at local independent shops. The planned employer-funded prepaid card enforces the same principle from the other side, by refusing everywhere except approved shops. |
 | No email sending in the prototype ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md), [ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)). | There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead. |
 | The Merchant Eligibility Matching AI has no web search ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)). | Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides. |
 | We don't reset the live demo for convenience ([CLAUDE.md](CLAUDE.md)). | Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only. |
@@ -330,8 +331,17 @@ php artisan test
 - A check across redemptions for collusion rings (new signals, so a new
   prompt version and a fresh holdout)
 - An employer/HR dashboard
-- Interchange revenue would need Local Goods to issue cards (Stripe
-  Issuing). The MVP has no card program, so this is not built.
+- **Where this goes next: an employer-funded prepaid card.** Today staff pay
+  with credits through pay codes. The next step is a prepaid card the employer
+  funds for its staff, which approved Golden Triangle shops could accept like
+  any other card while the card itself refuses everywhere else. We tested this
+  in a Stripe sandbox: card issuing switches on instantly in test mode, but
+  funding cards required a verified business account in our sandbox, which we
+  chose not to open with invented details. A real card program would likely
+  also need a fraud check that decides within seconds at the counter, a bank or
+  regulated partner holding the funds, and legal advice on prepaid card rules.
+  It's on the roadmap, not built. Details in
+  [ADR 0036](docs/adr/0036-no-card-preview-yet.md).
 
 ---
 
