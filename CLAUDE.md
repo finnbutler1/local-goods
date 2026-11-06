@@ -1012,7 +1012,7 @@ Use these exact names in code, UI, and docs.
 
 ## Stack
 
-- **Laravel** — check `composer.json` for the version (currently `^13.17`, PHP `^8.3`).
+- **Laravel** — check `composer.json` for the version (currently `^13.17`, PHP `^8.4.1`, the real minimum of the locked packages; `config.platform.php` pins it and CI checks the lock against it).
 - **Tailwind via Vite** (`npm run dev` / `npm run build`).
 - **Database:** SQLite at `storage/database.sqlite` (gitignored) for local
   development; tests use in-memory SQLite. **Production uses Amazon RDS MySQL**
