@@ -5,6 +5,12 @@ commit history.
 
 ## 2026-11-06: PHP requirement, Local Goods in one minute, and a history plan
 
+- **Security patches for five Symfony packages** (10 advisories published
+  Oct 28 to Nov 4). Patch releases only, nothing else changed. Our code
+  doesn't use the affected parts, apart from one that production already
+  guards against; [TRANSPARENCY.md](TRANSPARENCY.md#symfony-security-advisories-2026-11-06)
+  lists each advisory and why. CI now fails on any known advisory.
+
 - **The PHP requirement is now honest: 8.4.1 or later.** composer.json said
   8.3, but the locked Symfony packages need 8.4.1, so installing on 8.3
   failed. The requirement and the lock now agree, and CI checks that they

@@ -20,6 +20,11 @@ prompt, AI input, eval data, holdout or lock change.
   needing Finn's explicit approval, including the rule change below and
   `merchant:lock --force`. Never print the names; the runbook's script
   prints counts only.
+- Security: 5 Symfony 8.1 packages patched for 10 advisories (patch
+  releases only; table in TRANSPARENCY.md "Symfony security advisories
+  (2026-11-06)"). The CI Composer job runs `composer audit --locked`, so a
+  new advisory fails the build: patch/minor within PHP 8.4.1, ask Finn
+  before a major.
 
 **Grouped admin menu and admin Home pages — done (2026-11-04, ADR 0035).**
 Front end and routes only; no migration, money, fraud prompt, AI input, eval

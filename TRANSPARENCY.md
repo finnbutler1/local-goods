@@ -1064,13 +1064,42 @@ checked or built, and how.
   simulated), a balance spent twice at once, and every kind of malformed AI
   reply. These tests found no bugs in the money or AI code.
 - **Dependencies:** `composer audit` reported no known vulnerabilities in
-  the PHP packages.
+  the PHP packages that day. Since November 6, CI runs `composer audit` on
+  every push and fails on any advisory (below).
 
 **Not done:** no penetration test or outside security review; the JavaScript
 packages (npm) were not audited; the history scan only finds
 secrets that match its patterns; the server's network rules don't yet block
 non-CloudFront traffic (the app refuses it instead); limits are counted on
 the one server and start again from zero after each deploy.
+
+#### Symfony security advisories (2026-11-06)
+
+`composer audit` reported 10 advisories, published October 28 to
+November 4, in five Symfony 8.1 packages that Laravel is built on. We
+checked each one against our own code. Only one touches code we run, and
+there a protection we already had covers it in production. **We patched all
+10 anyway**, with patch releases inside 8.1 (no other package changed,
+still PHP 8.4.1): http-foundation 8.1.7 → 8.1.11, http-kernel 8.1.7 →
+8.1.11, mime 8.1.7 → 8.1.10, routing 8.1.6 → 8.1.11, serializer 8.1.8 →
+8.1.11. CI now runs `composer audit --locked` and fails the build on any
+new advisory.
+
+| Advisory | Package | Does our code use the affected part? |
+|---|---|---|
+| [CVE-2026-118514](https://symfony.com/cve-2026-118514): HEAD requests get past `methods` on `security.access_control` and firewalls | http-foundation | No. That's Symfony's own security layer, which Laravel doesn't use; our access checks are Laravel middleware and gates. |
+| [GHSA-3h27-hjv7-fqjx](https://github.com/symfony/symfony/security/advisories/GHSA-3h27-hjv7-fqjx): path rules enforced in front of PHP can be bypassed through the script name | http-foundation | No. Our web server config has no path rules ([`laravel.conf`](.platform/nginx/conf.d/elasticbeanstalk/laravel.conf) sends everything to Laravel); every check runs inside the app. |
+| [GHSA-xg2q-4rrq-657q](https://github.com/symfony/symfony/security/advisories/GHSA-xg2q-4rrq-657q): the `private_ranges` trusted-proxy shortcut trusts some disguised client addresses | http-foundation | No. We trust only the address that connected, and only when CloudFront's secret header matches; we never use `private_ranges`. |
+| [GHSA-5mx8-mwrp-5693](https://github.com/symfony/symfony/security/advisories/GHSA-5mx8-mwrp-5693): generated URLs can point to a host the client chose | http-foundation | Yes, Laravel builds URLs with it. But in production every URL and the request itself are pinned to our real address ([ADR 0009](docs/adr/0009-https-through-cloudfront.md)), so a client's Host header is ignored. |
+| [GHSA-wg5q-m2ww-f3c9](https://github.com/symfony/symfony/security/advisories/GHSA-wg5q-m2ww-f3c9): inline fragments let forwarded headers set the host, scheme and port | http-kernel | No. Fragments are a Symfony framework feature Laravel doesn't use, and we read only the forwarded IP, not host or scheme. |
+| [CVE-2026-45070](https://symfony.com/cve-2026-45070) (medium): email header injection through MIME parameter names | mime | No in practice. It ships with Laravel's mailer, but Local Goods sends no email (there is no mail service; mail goes to the log). |
+| [CVE-2026-118516](https://symfony.com/cve-2026-118516): host placeholders in compiled route matchers can match the start of the path | routing | No. We have no host-based routes and don't compile (cache) routes. |
+| [CVE-2026-118515](https://symfony.com/cve-2026-118515): the Serializer builds uploaded files from request data | serializer | No. The Serializer is only installed for passkey sign-in (via Fortify), which is switched off; our code never uses it. |
+| [GHSA-pxj9-jh84-vhm5](https://github.com/symfony/symfony/security/advisories/GHSA-pxj9-jh84-vhm5): `DataUriNormalizer` can open server files | serializer | No, for the same reason. |
+| [GHSA-hqp2-7rr8-hf26](https://github.com/symfony/symfony/security/advisories/GHSA-hqp2-7rr8-hf26): `ObjectNormalizer` dotted keys get past `#[Ignore]` | serializer | No, for the same reason. |
+
+Severity: Symfony rated only the mime advisory (medium); the other nine had
+no rating when we checked.
 
 ## How I built Local Goods with Claude Code
 
