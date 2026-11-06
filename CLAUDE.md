@@ -5,6 +5,22 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Prof. Yoest's asks — done (2026-11-06).** No migration, money, fraud
+prompt, AI input, eval data, holdout or lock change.
+
+- PHP: `^8.4.1` with `config.platform.php` 8.4.1 (20 locked Symfony 8.1
+  packages need it); CI job "Composer (declared PHP minimum)" runs
+  `validate --strict`, `why-not --locked php <min>` and
+  `check-platform-reqs --lock`. Live Beanstalk platform not pinned in the
+  repo: confirm in the console.
+- "Local Goods in one minute": `partials/one-minute-summary` on `/judge`, same
+  text as the README's first section (`OneMinuteSummaryTest`). Change both
+  together; never imply the BID endorses or partners with us.
+- History: `docs/history-rewrite-runbook.md` is a plan only (planned Nov 9),
+  needing Finn's explicit approval, including the rule change below and
+  `merchant:lock --force`. Never print the names; the runbook's script
+  prints counts only.
+
 **Grouped admin menu and admin Home pages — done (2026-11-04, ADR 0035).**
 Front end and routes only; no migration, money, fraud prompt, AI input, eval
 data or lock change.

@@ -754,8 +754,10 @@ for the trade name, address, business activity and status only.
 **Removed on 2026-10-21, after an audit:**
 
 - **Real people named by the AI.** Merchant Eligibility Matching judges from
-  its own memory, and in a few answers it named a restaurateur and two chefs,
-  and described one café's founders as military veterans. Those words are
+  its own memory, and in a few answers it named four real people (among
+  them a restaurateur and two chefs), and described one café's founders as
+  military veterans. (Until 2026-11-06 this page said three people; an
+  audit of the history found four different names.) Those words are
   replaced with "[name removed]" (or "local founders") in
   `data/merchant_assessments.json` and every eval output under `docs/evals/`.
   Each edited answer carries a "redacted" note, shown next to the reasoning.
@@ -792,7 +794,8 @@ for the trade name, address, business activity and status only.
 rewritten: the merchant label lock and the fraud eval lock point at specific
 commits, and rewriting would break them. Commits before 2026-10-21 still
 contain the AI's original reasoning, the five candidates, the license numbers
-and the old link format.
+and the old link format. A plan to remove the names from the history, not yet
+carried out, is in [docs/history-rewrite-runbook.md](docs/history-rewrite-runbook.md).
 
 ### How does the test recognize a named individual?
 

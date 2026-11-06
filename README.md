@@ -1,5 +1,20 @@
 # Local Goods
 
+## Local Goods in one minute
+
+Local Goods turns a staff perk into business for the independent shops around
+the office. Employers in Washington, DC's Golden Triangle district buy credits
+for their staff, and those credits can only be spent at approved local cafés,
+restaurants and shops in the district, never at chains. Employees get lunch or
+coffee on the company, small businesses get new customers from the office
+towers next door, and a district could see how much is being spent in its
+neighborhood. Why trust it: the money an employer puts in is held for them and
+their staff until it's spent, kept apart from Local Goods' own money, and a
+check on every transaction confirms the books still cover what's been
+promised. No one can spend more than they were given. An AI flags unusual
+payments, and a person decides each one. It's a working prototype, running on
+Stripe's test mode with no real money, built and tested in the open.
+
 ## For judges
 
 **Public judge link:** *coming with the next deploy. The link will go here.*

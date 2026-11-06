@@ -3,6 +3,7 @@
         <header class="max-w-3xl">
             <x-eyebrow class="text-accent-ink">Reviewer home</x-eyebrow>
             <h1 class="mt-1 text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+            @include('partials.one-minute-summary', ['class' => 'mt-3 text-lg'])
             <p class="mt-3 text-lg text-muted">
                 Thank you for reviewing Local Goods. Your login is read-only: look at anything, change nothing.
                 Use the Feedback button on any page to tell me what works and what doesn't.
