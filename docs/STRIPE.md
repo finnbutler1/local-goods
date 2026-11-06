@@ -571,7 +571,7 @@ keeps them fully separate and is free:
 ### Production webhook (Stripe dashboard, test mode)
 
 **Two event destinations, both "snapshot" events, same URL:**
-`https://d4ghrpm72uczx.cloudfront.net/stripe/webhook`. Always the CloudFront address: production refuses requests sent straight to Beanstalk ([ADR 0018](adr/0018-only-cloudfront-reaches-beanstalk.md)). Create them in the
+`https://uselocalgoods.com/stripe/webhook`. Always an address that goes through CloudFront (the old `https://d4ghrpm72uczx.cloudfront.net/stripe/webhook` works too, [ADR 0037](adr/0037-custom-domain.md)): production refuses requests sent straight to Beanstalk ([ADR 0018](adr/0018-only-cloudfront-reaches-beanstalk.md)). Create them in the
 same test-mode environment (or sandbox) your `sk_test_…` key comes from.
 In Stripe: Developers → Webhooks (in Workbench: Event destinations) → Add
 destination.
@@ -597,6 +597,13 @@ destination.
    receive transfers, what's owed through Stripe is sent). Copy its signing
    secret into Beanstalk as `STRIPE_CONNECT_WEBHOOK_SECRET`. Stripe gives
    each destination its own secret; the app tries both.
+
+**Changing the webhook address** (done once, for the move to
+uselocalgoods.com): open each destination → Edit destination → change only
+the URL → Save. Editing keeps the destination's signing secret, so nothing
+changes in Beanstalk and no event is lost. Don't delete and re-create a
+destination: the new one gets a new secret. Stripe doesn't follow redirects,
+so `/stripe/webhook` is never redirected on any address (ADR 0037).
 
 **Accounts v2 does not need thin events or a third destination.** Stripe
 still sends the classic `account.updated` snapshot for our Accounts v2

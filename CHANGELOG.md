@@ -3,6 +3,13 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-06: A new address, uselocalgoods.com
+
+- **Local Goods now lives at https://uselocalgoods.com.** The old address
+  and www send you there, keeping the page you asked for, so old bookmarks
+  and judge links keep working. Stripe's messages to us are never
+  redirected ([ADR 0037](docs/adr/0037-custom-domain.md)).
+
 ## 2026-11-06: PHP requirement, Local Goods in one minute, and a history plan
 
 - **Security patches for five Symfony packages** (10 advisories published
