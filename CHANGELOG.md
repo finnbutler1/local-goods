@@ -3,6 +3,21 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-06: PHP requirement, Local Goods in one minute, and a history plan
+
+- **The PHP requirement is now honest: 8.4.1 or later.** composer.json said
+  8.3, but the locked Symfony packages need 8.4.1, so installing on 8.3
+  failed. The requirement and the lock now agree, and CI checks that they
+  stay that way. Judges don't need to install anything: the live site and
+  the judge link are the way to review.
+- **"Local Goods in one minute"** opens the README and the reviewer home
+  page: what it is, who it's for and why to trust it, checked against the
+  code.
+- **Corrected:** the AI had named four real people in its merchant reasoning
+  in October, not three as TRANSPARENCY said. All four were already removed.
+- **A plan, not yet run,** for removing the redacted names from the git
+  history ([runbook](docs/history-rewrite-runbook.md)).
+
 ## 2026-11-04: A grouped admin menu and a Home page for each admin
 
 - **One menu, in groups that open and close.** The BID admin and platform admin
