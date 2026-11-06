@@ -5,6 +5,23 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Custom domain uselocalgoods.com — code done (2026-11-06, ADR 0037);
+switch made by Finn in the consoles.** No migration, money, fraud prompt, AI
+input, eval data or lock change.
+
+- APP_URL = `https://uselocalgoods.com` (Beanstalk only). CloudFront can't
+  tell Laravel the visitor's host, and the session cookie is host-only, so a
+  second address breaks forms: every other host gets a 301 from the
+  CloudFront Function `infra/cloudfront/canonical-host.js` (viewer request;
+  `CanonicalHostFunctionTest` runs it with node). **Never redirect
+  `/stripe/webhook` or `/up`**; keep `SESSION_DOMAIN` unset.
+- External return URLs via `AppUrl::route` (Checkout, onboarding). Old
+  address in `config('app.previous_urls')` (feedback links).
+  `ProductionConfig` refuses a non-https APP_URL. Judge links are
+  path-based, so old ones still work: never press New link for this.
+- Stripe webhook destinations: edit the URL in place (keeps the secret).
+- Tests: `CustomDomainTest`, `CanonicalHostFunctionTest`.
+
 **Prof. Yoest's asks — done (2026-11-06).** No migration, money, fraud
 prompt, AI input, eval data, holdout or lock change.
 
@@ -933,7 +950,8 @@ balances with recorded sweeps (ADR 0034).
   Feedback button on every signed-in page (`feedback` table), inbox at
   `/admin/feedback`, changelog for reviewers at `/admin/changelog`, "What's
   new" on `/judge`. ADR 0008.
-- HTTPS (ADR 0009): CloudFront (`cloudfront.net` address) in front of
+- HTTPS (ADR 0009, address ADR 0037): CloudFront (`uselocalgoods.com`; www
+  and the old `cloudfront.net` address redirect there) in front of
   Beanstalk, talking to it over http without the Host header. In production
   `UseAppUrl` pins URLs and the request itself to APP_URL (magic links use
   it too); `TrustCloudFront` believes X-Forwarded-For only with the
@@ -1090,8 +1108,10 @@ snapshot step by name when the build says the deploy includes migrations.
 5. Upload `deploy.zip` in Elastic Beanstalk with the next version label and
    wait for green. Then run `scripts/mark-deployed.sh` to record the commit
    the zip was built from in `.last-deploy-commit` (git-ignored).
-6. After deploy: open the CloudFront site and check that the raw
-   `…elasticbeanstalk.com` address returns "Forbidden". Log in as each demo role, check
+6. After deploy: open https://uselocalgoods.com and check that the raw
+   `…elasticbeanstalk.com` address returns "Forbidden", www and the old
+   cloudfront.net address 301 to uselocalgoods.com, and a POST to
+   `/stripe/webhook` on the old address answers 400 (not 301). Log in as each demo role, check
    `/eval` and `/eval/merchants`. **Never press Reset demo on the live site:**
    it erases the real examples made there (the in-person payment, menu
    orders with tax, the completed correction and any other live demo

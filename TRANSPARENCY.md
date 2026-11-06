@@ -163,7 +163,7 @@ Claude replies in a fixed JSON format with three things:
 - a **plain-English explanation** that an HR manager can read
 
 The app saves all three, along with the signals and the model that scored it.
-The BID admin view (after [logging in](https://d4ghrpm72uczx.cloudfront.net/login))
+The BID admin view (after [logging in](https://uselocalgoods.com/login))
 shows them for every redemption, so the AI's reasoning is never hidden.
 
 ### The score-70 override
@@ -398,7 +398,7 @@ Local Goods holds is a promise, not ours
     merchant below zero;
   - on some seed dates, the planted collusion ring in the demo data
     overdrew its members' credits.
-- **See it.** [Where the money is](https://d4ghrpm72uczx.cloudfront.net/where-the-money-is),
+- **See it.** [Where the money is](https://uselocalgoods.com/where-the-money-is),
   for signed-in reviewers. Judges see customer funds and the check, never
   an operating funds figure.
 
