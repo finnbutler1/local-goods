@@ -952,6 +952,10 @@ Update this section whenever the milestone changes.
   `tests/Feature/LandingPageTest.php` together. Until then the footer must say
   all businesses are fictional, and the test checks that "public records" does
   not appear.
+- Stripe Issuing card preview: not built (ADR 0036). Issuing switches on
+  in test mode, but funding cards needs a business account behind an identity
+  check (test SSN refused); we chose not to fill it with invented details.
+  Don't retry without Finn's say-so; the trial is `scripts/stripe-trial-issuing.php`.
 
 ## What Local Goods is
 
