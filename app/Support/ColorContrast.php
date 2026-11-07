@@ -28,6 +28,7 @@ class ColorContrast
         ['focus', 'page', 3.0], ['focus', 'surface', 3.0], ['night-focus', 'night', 3.0],
         ['edge', 'surface', 3.0], ['edge', 'page', 3.0], ['primary', 'page', 3.0],
         ['edge', 'band', 3.0], ['night-focus', 'night-soft', 3.0], ['page', 'ink'],
+        ['map-label', 'map-district'], ['ink', 'map-district'], ['accent-ink', 'map-district'], ['on-night', 'sign'],
     ];
 
     /**
