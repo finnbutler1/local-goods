@@ -36,7 +36,7 @@
                     @if ($result?->lookup->isFound())
                         <span aria-hidden="true" class="ml-4 mr-1 inline-block size-3 rounded-full border-2 border-ink bg-surface align-middle"></span> The address you checked
                     @endif
-                    · North is up. Drawn from the stored boundary: no map service is contacted.
+                    · North is up. The map is drawn from the stored boundary, so no map service is contacted.
                 </p>
             </section>
 
