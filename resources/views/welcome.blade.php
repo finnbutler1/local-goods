@@ -73,7 +73,7 @@
             <h2 id="problem-heading" class="mt-2 text-3xl font-semibold text-primary sm:text-4xl">The commute-desk-commute loop</h2>
             <p class="mt-5 text-lg leading-relaxed text-ink">
                 Thousands of people work in the Golden Triangle every weekday. Most follow the same loop: commute in, sit at a desk,
-                commute out. That isn't a failing of the people doing it; it's how office work is set up. But it means their spending,
+                commute out. That loop comes from how office work is set up, and the people in it aren't to blame. But it means their spending,
                 and the life they could bring to the streets around them, goes home with them.
             </p>
         </div>
@@ -90,7 +90,7 @@
             <div class="absolute top-[calc(1.75rem-1.5px)] left-7 hidden h-[3px] bg-primary w-[calc((100%_-_4rem)*2/3_+_4rem)] md:block" aria-hidden="true"></div>
             <ol class="relative grid gap-12 md:grid-cols-3 md:gap-8">
                 @foreach ([
-                    ['Your company buys credits', 'Fund a monthly allowance for each employee. One invoice, no cards to issue, nothing for staff to sign up for beyond an app.'],
+                    ['Your company buys credits', 'Fund a monthly allowance for each employee on one invoice. Staff need nothing beyond the app.'],
                     ['Employees spend them nearby', 'Credits work only at independent restaurants, shops, salons and gyms inside the district. The phone is the card.'],
                     ['The money stays in the neighborhood', 'Every redemption is checked for abuse before a merchant is paid. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.'],
                 ] as $i => [$title, $body])
@@ -115,8 +115,8 @@
                 <p class="text-sm font-semibold uppercase tracking-widest text-muted">Most of all</p>
                 <h3 id="gain-district" class="mt-2 text-3xl font-semibold text-primary">The district</h3>
                 <p class="mt-3 max-w-3xl text-lg text-ink">
-                    More foot traffic and more spending at the independent shops, restaurants and services that give the Golden Triangle
-                    its character. A livelier district is good for everyone who works, lives or does business in it.
+                    Credits can only be spent at the independent shops, restaurants and services that give the Golden Triangle its
+                    character, so they bring foot traffic and spending there. A livelier district is good for everyone who works, lives or does business in it.
                 </p>
             </x-card>
 
@@ -124,7 +124,7 @@
                 <div>
                 <p class="text-sm font-semibold uppercase tracking-widest text-night-muted">For HR teams</p>
                 <h3 id="gain-employers" class="mt-2 text-3xl font-semibold">Employers</h3>
-                <p class="mt-3 text-lg text-night-muted">A benefit your staff actually use, because it shows up at lunch, not in a portal.</p>
+                <p class="mt-3 text-lg text-night-muted">A benefit your staff will use, because it shows up at lunch near the office.</p>
                 </div>
                 <ul class="space-y-6">
                     @foreach ([
@@ -145,9 +145,9 @@
             </article>
 
             @foreach ([
-                ['gain-merchants', 'For independents', 'Merchants', 'A large, steady workforce audience on your doorstep, and a reason for them to come back. No new hardware: customers show the app at the counter. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.', [['apply', 'Apply to join']]],
-                ['gain-employees', 'For staff', 'Employees', 'A perk that makes the workday better: lunch, coffee, errands. And a reason to discover the neighborhood you already spend most of your week in.', []],
-                ['gain-bid', 'For the Golden Triangle', 'The BID', 'A measurable, privacy-respecting way to support the district\'s independent businesses. Spending and participation are counted from the ledger; employees are never named.', [['who-does-what', 'Who does what'], ['district', 'The district map']]],
+                ['gain-merchants', 'For independents', 'Merchants', 'The district\'s large weekday workforce gets a reason to visit you and to come back. No new hardware: customers show the app at the counter. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.', [['apply', 'Apply to join']]],
+                ['gain-employees', 'For staff', 'Employees', 'Credits from your employer cover lunch, coffee and errands near the office. They also give you a reason to explore the neighborhood where you spend most of your week.', []],
+                ['gain-bid', 'For the Golden Triangle', 'The BID', 'It gives the BID a way to support the district\'s independent businesses and measure the result. Spending and participation are counted from the ledger; employees are never named.', [['who-does-what', 'Who does what'], ['district', 'The district map']]],
             ] as [$id, $eyebrow, $title, $body, $links])
                 <x-card as="article" aria-labelledby="{{ $id }}" class="lg:col-span-2" padding="p-6 lg:p-8">
                     <p class="text-sm font-semibold uppercase tracking-widest text-muted">{{ $eyebrow }}</p>
@@ -182,7 +182,7 @@
                         ['It fails closed.', 'If the AI check errors or gives an unusable answer, the redemption is held. It is never waved through.'],
                         ['The AI assists; people decide.', 'Redemption Fraud Detection and Merchant Eligibility Matching flag and explain. A held redemption is never approved automatically; it waits for review by the BID, and a person approves every new merchant.'],
                         ['No names go to the AI.', 'It sees only anonymous signals, like amount, time of day and visit history.'],
-                        ['Shops see initials, not names.', 'A shop needs to know a payment is real, not who the person is.'],
+                        ['Shops see initials only.', 'A shop only needs to know the payment is real.'],
                         ['Held payments use neutral words.', 'A held payment at a counter says it is held, with no fraud words, so nobody is accused.'],
                         ['Honesty labels stay on phones.', 'Demo data, test mode and "not affiliated" notices are never hidden on a small screen.'],
                     ] as [$lead, $rest])
@@ -198,7 +198,7 @@
             </div>
 
             <figure class="self-center rounded-3xl bg-page p-8 text-ink sm:p-10">
-                <x-eyebrow class="text-accent-ink">Measured, not promised</x-eyebrow>
+                <x-eyebrow class="text-accent-ink">How we measure the AI</x-eyebrow>
                 @if ($evalHeadline)
                     <blockquote class="mt-4">
                         <p class="font-display text-3xl leading-tight font-semibold text-primary sm:text-4xl">{{ $evalHeadline['text'] }}</p>
