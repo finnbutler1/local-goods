@@ -54,7 +54,7 @@ class LandingPageTest extends TestCase
             "That loop comes from how office work is set up, and the people in it aren't to blame.",
             'Everyone gains. The district gains most.',
             'A livelier neighborhood can make an office easier to recruit to, easier to stay at and more worth coming in to; a pilot would measure how much.',
-            'The AI assists; people decide.',
+            'The AI flags; people decide anything it holds.',
         ] as $line) {
             $this->assertStringContainsString($line, $text);
         }

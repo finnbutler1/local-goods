@@ -180,7 +180,7 @@
                     @foreach ([
                         ['Redemption Fraud Detection', 'scores every redemption for abuse, such as turning credits into cash, and explains its reasoning in plain language.'],
                         ['It fails closed.', 'If the AI check errors or gives an unusable answer, the redemption is held. It is never waved through.'],
-                        ['The AI assists; people decide.', 'Redemption Fraud Detection and Merchant Eligibility Matching flag and explain. A held redemption is never approved automatically; it waits for review by the BID, and a person approves every new merchant.'],
+                        ['The AI flags; people decide anything it holds.', 'Redemption Fraud Detection and Merchant Eligibility Matching flag and explain. A held redemption is never approved automatically; it waits for review by the BID, and a person approves every new merchant.'],
                         ['No names go to the AI.', 'It sees only anonymous signals, like amount, time of day and visit history.'],
                         ['Shops see initials only.', 'A shop only needs to know the payment is real.'],
                         ['Held payments use neutral words.', 'A held payment at a counter says it is held, with no fraud words, so nobody is accused.'],
