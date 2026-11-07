@@ -4,7 +4,7 @@
     // Every state is visible: pointer, hover, pressed (darker and 1px down),
     // loading (aria-busy: spinner and busy text, set by app.js) and
     // unavailable (disabled or aria-disabled: grey, not see-through).
-    $base = 'inline-flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold transition-colors duration-150 '
+    $base = 'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold transition-colors duration-150 '
         .'active:translate-y-px aria-busy:cursor-progress '
         .'unavailable:cursor-not-allowed unavailable:border-disabled-bg unavailable:bg-disabled-bg unavailable:text-disabled-ink '
         .'unavailable:no-underline unavailable:shadow-none unavailable:translate-y-0 [&[href][aria-disabled=true]]:pointer-events-none';
