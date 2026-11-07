@@ -51,7 +51,7 @@ class LandingPageTest extends TestCase
             "At 6 p.m., downtown's workers head home, and their spending goes with them. Local Goods gives employees credits that only work at independent local businesses, so the district your company calls home gets livelier.",
             'A working prototype: payments run on Stripe in test mode, and every person and business in the demo is fictional.',
             'The commute-desk-commute loop',
-            "That isn't a failing of the people doing it; it's how office work is set up.",
+            "That loop comes from how office work is set up, and the people in it aren't to blame.",
             'Everyone gains. The district gains most.',
             'A livelier neighborhood can make an office easier to recruit to, easier to stay at and more worth coming in to; a pilot would measure how much.',
             'The AI assists; people decide.',
