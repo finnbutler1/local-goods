@@ -186,7 +186,8 @@ class PublicClaimsTest extends TestCase
         $this->assertStringContainsString('An estimate from an outside study, not measured by Local Goods', $readme);
         $this->assertStringContainsString('## You work here. Spend here.', $readme);
         $this->assertStringContainsString('Real results here will be measured in a pilot.', $readme);
-        $this->assertStringContainsString('assist human decisions and do not make them', $readme);
+        $this->assertStringContainsString('people decide every held redemption and every new merchant', $readme);
+        $this->assertStringNotContainsString('do not make them', $readme);
         foreach (['52.3%', '15.8%', '2011–2012', '134 businesses in 10 U.S. communities, none in DC', 'Civic Economics', 'American Booksellers Association'] as $fact) {
             $this->assertStringContainsString($fact, $readme);
         }
