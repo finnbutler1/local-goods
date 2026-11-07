@@ -47,7 +47,7 @@
     {{-- Type --}}
     <section id="type" aria-labelledby="type-heading" class="scroll-mt-24">
         <h2 id="type-heading" class="text-3xl font-semibold text-primary">Type</h2>
-        <p class="mt-1 text-muted">Headings: Overpass. Body: Atkinson Hyperlegible Next, with digits from Overpass for a plain zero. Both self-hosted from npm (ADR 0025).</p>
+        <p class="mt-1 text-muted">Public Sans for headings, text and large money figures; Overpass Mono only for ledger tables and transaction amounts. Both self-hosted from npm (ADR 0038).</p>
         <x-card class="mt-6 space-y-6">
             @foreach ([
                 ['Heading 1', 'h1', 'text-5xl sm:text-6xl', 'Spend local. Prove it.'],
@@ -77,9 +77,21 @@
                 <p class="text-sm text-muted">Small / muted</p>
                 <p class="text-sm text-muted">Restores the seeded demo data only.</p>
             </div>
+            <div class="grid gap-2 border-b border-line/70 pb-6 sm:grid-cols-[10rem_1fr]">
+                <p class="text-sm text-muted">Money <code>money</code></p>
+                <p class="money text-4xl">$1,120.00 · $13.87</p>
+            </div>
+            <div class="grid gap-2 border-b border-line/70 pb-6 sm:grid-cols-[10rem_1fr]">
+                <p class="text-sm text-muted">Ledger <code>ledger-num</code></p>
+                <p class="ledger-num text-lg">$1,120.00 · $13.87</p>
+            </div>
+            <div class="grid gap-2 border-b border-line/70 pb-6 sm:grid-cols-[10rem_1fr]">
+                <p class="text-sm text-muted">Station sign <code>&lt;x-station-sign&gt;</code></p>
+                <x-station-sign as="p" :dots="4" :local="3">How it works</x-station-sign>
+            </div>
             <div class="grid gap-2 sm:grid-cols-[10rem_1fr]">
-                <p class="text-sm text-muted">Money <code>tabular</code></p>
-                <p class="tabular font-display text-4xl font-semibold text-primary">$1,120.00 · $13.87</p>
+                <p class="text-sm text-muted">Stop number <code>&lt;x-stop-number&gt;</code></p>
+                <p class="flex gap-3"><x-stop-number n="1" /><x-stop-number n="2" /><x-stop-number n="3" /></p>
             </div>
         </x-card>
     </section>
