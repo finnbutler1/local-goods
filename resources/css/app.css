@@ -72,7 +72,15 @@
     --color-night-primary: #42c4b9;
     --color-night-accent: #ff8a63;
     --color-night-focus: #d7b4ff;
-
+    /* The district diagram (<x-district-diagram>): the district, its streets
+       and street labels. The route, stops and local stop use primary, ink,
+       surface and accent. */
+    --color-map-district: #f7f3e8;
+    --color-map-street: #fffdf7;
+    --color-map-street-case: #bdb39b;
+    --color-map-label: #5f5a4c;
+    /* Station sign bands: the night ink in light mode, lifted off the page in dark. */
+    --color-sign: #121820;
 }
 
 /* Dark mode: the system setting, unless the header toggle chose light; or
@@ -110,6 +118,11 @@
         --color-night: #070b10;
         --color-night-soft: #172230;
         --color-night-line: #26313d;
+        --color-map-district: #172230;
+        --color-map-street: #26364b;
+        --color-map-street-case: #3a4b60;
+        --color-map-label: #a7b3c0;
+        --color-sign: #1d2a3a;
     }
 }
 
@@ -145,6 +158,11 @@
     --color-night: #070b10;
     --color-night-soft: #172230;
     --color-night-line: #26313d;
+    --color-map-district: #172230;
+    --color-map-street: #26364b;
+    --color-map-street-case: #3a4b60;
+    --color-map-label: #a7b3c0;
+    --color-sign: #1d2a3a;
 }
 
 :root {
@@ -300,7 +318,7 @@
         min-height: 3rem;
         padding: 0.5rem 1rem;
         border-radius: 0.25rem;
-        background: var(--color-night);
+        background: var(--color-sign);
         color: var(--color-on-night);
     }
 
@@ -378,60 +396,512 @@
         line-height: 1;
     }
 
-    /* The day as a route: <ol class="route-line"> with one li.route-line-local.
-       The local stop is bigger and says "local stop", not only a color. */
+    /* The workday as a strip map, like the line diagram above a train door:
+       <ol class="route-line"> with termini at both ends and one
+       li.route-line-local, which is bigger and says "local stop", not only a
+       color (landing hero, ADR 0038). */
     .route-line {
+        position: relative;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr);
-        font-size: 0.8125rem;
-        color: var(--color-muted);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        max-width: 34rem;
+        padding-top: 4px;
+    }
+
+    .route-line::before {
+        content: '';
+        position: absolute;
+        top: 13px;
+        left: 12.5%;
+        right: 12.5%;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--color-primary);
     }
 
     .route-line li {
         position: relative;
-        padding-top: 1.6rem;
-        padding-right: 0.25rem;
+        padding-top: 2.25rem;
+        text-align: center;
+        font-size: 0.9375rem;
+        font-weight: 600;
         line-height: 1.25;
     }
 
     .route-line li::before {
         content: '';
         position: absolute;
-        top: 0.5rem;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: var(--color-primary);
-    }
-
-    .route-line li:last-child::before {
-        right: auto;
-        width: 0.75rem;
-    }
-
-    .route-line li::after {
-        content: '';
-        position: absolute;
-        top: 0.3rem;
-        left: 0;
-        width: 0.8rem;
-        height: 0.8rem;
+        top: 4px;
+        left: 50%;
+        width: 26px;
+        height: 26px;
+        margin-left: -13px;
         border-radius: 50%;
         background: var(--color-surface);
-        box-shadow: inset 0 0 0 3px var(--color-ink);
+        box-shadow: inset 0 0 0 5px var(--color-ink);
     }
 
-    .route-line .route-line-local {
+    .route-line li:first-child::before,
+    .route-line li:last-child::before {
+        width: 12px;
+        margin-left: -6px;
+        border-radius: 4px;
+        background: var(--color-ink);
+        box-shadow: none;
+    }
+
+    .route-line .route-line-local::before {
+        top: -2px;
+        width: 38px;
+        height: 38px;
+        margin-left: -19px;
+        background: var(--color-accent);
+        box-shadow: inset 0 0 0 5px var(--color-ink), 0 0 0 4px var(--color-page);
+    }
+
+    .route-line strong {
+        display: block;
+        font-weight: 800;
+    }
+
+    .route-line .local-tag {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--color-accent-ink);
+    }
+
+    /* Landing hero: the headline on two lines, the second in teal. */
+    .hero-title {
+        font-size: clamp(2.75rem, 1.4rem + 5.4vw, 6rem);
+        font-weight: 800;
+        line-height: 0.92;
+        letter-spacing: -0.04em;
         color: var(--color-ink);
     }
 
-    .route-line .route-line-local::after {
-        top: 0;
-        left: -0.25rem;
-        width: 1.4rem;
-        height: 1.4rem;
+    .hero-title span {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .hero-title span + span {
+        color: var(--color-primary);
+    }
+
+    @media (width >= 64rem) {
+        .hero-title {
+            font-size: clamp(3.5rem, 6vw, 5.375rem);
+        }
+    }
+
+    /* A line of signage: an ink rule with the coral stop on it. */
+    .sign-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        border-top: 3px solid var(--color-ink);
+        font-size: 0.9375rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+
+    .sign-line::before {
+        content: '';
+        flex: none;
+        width: 14px;
+        height: 14px;
+        margin-left: 3px;
+        border-radius: 50%;
         background: var(--color-accent);
-        box-shadow: inset 0 0 0 3px var(--color-ink), 0 0 0 3px var(--color-page);
+        box-shadow: 0 0 0 3px var(--color-ink);
+    }
+
+    /* The district diagram (<x-district-diagram>). */
+    .dd-map {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .dd-district {
+        fill: var(--color-map-district);
+    }
+
+    .dd-boundary {
+        fill: none;
+        stroke: var(--color-ink);
+        stroke-width: 3;
+        stroke-dasharray: 14 8;
+        stroke-linejoin: round;
+    }
+
+    .dd-street-case,
+    .dd-street {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .dd-street-case {
+        stroke: var(--color-map-street-case);
+        stroke-width: 16;
+    }
+
+    .dd-street {
+        stroke: var(--color-map-street);
+        stroke-width: 12;
+    }
+
+    .dd-street-label {
+        font: 800 22px var(--font-sans);
+        letter-spacing: 0.12em;
+        fill: var(--color-map-label);
+        paint-order: stroke;
+        stroke: var(--color-map-district);
+        stroke-width: 6;
+    }
+
+    .dd-route {
+        fill: none;
+        stroke: var(--color-primary);
+        stroke-width: 13;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .dd-stop {
+        fill: var(--color-surface);
+        stroke: var(--color-ink);
+        stroke-width: 6;
+    }
+
+    .dd-local {
+        fill: var(--color-accent);
+        stroke: var(--color-ink);
+        stroke-width: 7;
+    }
+
+    .dd-label,
+    .dd-label-sub {
+        paint-order: stroke;
+        stroke: var(--color-map-district);
+        stroke-width: 7;
+        stroke-linejoin: round;
+    }
+
+    .dd-label {
+        font: 700 27px var(--font-sans);
+        fill: var(--color-ink);
+    }
+
+    .dd-label-local {
+        font-size: 31px;
+        font-weight: 800;
+    }
+
+    .dd-label-sub {
+        font: 700 23px var(--font-sans);
+        fill: var(--color-accent-ink);
+    }
+
+    /* The one authored motion on the landing page: the line draws itself
+       once. Only for people who allow motion; otherwise it is simply there. */
+    @media (prefers-reduced-motion: no-preference) {
+        .dd-draw {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+            animation: dd-draw 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes dd-draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    }
+
+    /* Phones: the labels would be too small to read, so the key and the
+       workday strip carry the same facts; the local stop grows instead. */
+    @media (width < 48rem) {
+        .dd-label,
+        .dd-label-sub,
+        .dd-street-label {
+            display: none;
+        }
+
+        .dd-local {
+            r: 34px;
+        }
+    }
+
+    .dd-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.25rem;
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .dd-legend li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dd-key {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    .dd-key-stop {
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 4px var(--color-ink);
+    }
+
+    .dd-key-local {
+        background: var(--color-accent);
+        box-shadow: inset 0 0 0 4px var(--color-ink);
+    }
+
+    .dd-key-boundary {
+        width: 26px;
+        height: 0;
+        border-radius: 0;
+        border-top: 3px dashed var(--color-ink);
+    }
+
+    /* The example wallet as a fare card: an ink frame, a night head, and no
+       shadow, so it sits on the page under the map rather than over it. */
+    .fare-card {
+        max-width: 22rem;
+        margin-top: 1.75rem;
+        overflow: hidden;
+        border: 2px solid var(--color-frame);
+        border-radius: 0.375rem;
+        background: var(--color-surface);
+    }
+
+    .fare-card-head {
+        padding: 1rem 1.25rem;
+        background: var(--color-night);
+        color: var(--color-on-night);
+    }
+
+    @media (width >= 64rem) {
+        .fare-card {
+            display: grid;
+            grid-template-columns: minmax(12.5rem, 46%) 1fr;
+            max-width: none;
+            margin-top: 1.25rem;
+        }
+
+        .fare-card-check {
+            grid-column: 1 / -1;
+        }
+    }
+
+    /* One line down the page: each section is a numbered stop on it
+       (<x-stop-number>), under a station sign (ADR 0038). Each stop draws
+       its own length of line, so the line ends at the last stop. */
+    .stop-line {
+        position: relative;
+        padding-top: 4.5rem;
+    }
+
+    .stop-line::before,
+    .stop::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        width: 10px;
+        background: var(--color-primary);
+    }
+
+    .stop-line::before {
+        top: 0;
+        height: 4.5rem;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .stop {
+        position: relative;
+        padding-bottom: 5.5rem;
+        padding-left: 4rem;
+        scroll-margin-top: 1.5rem;
+    }
+
+    .stop::before {
+        top: 0;
+        bottom: 0;
+    }
+
+    .stop:last-child {
+        padding-bottom: 4.5rem;
+    }
+
+    .stop:last-child::before {
+        bottom: auto;
+        height: 1.5rem;
+    }
+
+    .stop > .stop-number {
+        position: absolute;
+        top: 4px;
+        left: 0;
+        z-index: 1;
+    }
+
+    .stop-title {
+        margin-top: 1.75rem;
+        max-width: 18ch;
+        font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+    }
+
+    .stop-body {
+        margin-top: 1.25rem;
+        max-width: 40rem;
+        font-size: 1.1875rem;
+        line-height: 1.6;
+    }
+
+    @media (width >= 64rem) {
+        .stop {
+            display: grid;
+            grid-template-columns: repeat(11, minmax(0, 1fr));
+            column-gap: 1.5rem;
+            align-content: start;
+            padding-left: 6rem;
+        }
+
+        .stop > * {
+            grid-column: 1 / -1;
+        }
+
+        /* Placed on the line, not in a grid area. */
+        .stop > .stop-number {
+            grid-column: auto;
+        }
+
+        .stop > .stop-title {
+            grid-column: 1 / 6;
+        }
+
+        .stop > .stop-body {
+            grid-column: 6 / 12;
+            margin-top: 1.875rem;
+        }
+    }
+
+    /* How it works: a three-stop branch off the line. */
+    .steps {
+        display: grid;
+        gap: 2.25rem;
+        margin-top: 2.5rem;
+    }
+
+    .steps li {
+        position: relative;
+        padding-left: 4rem;
+    }
+
+    .steps li::before {
+        content: '';
+        position: absolute;
+        top: 2.75rem;
+        bottom: -2.25rem;
+        left: 21px;
+        width: 6px;
+        background: var(--color-ink);
+    }
+
+    .steps li:last-child::before {
+        display: none;
+    }
+
+    .step-number {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: grid;
+        place-items: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+        font: 700 1.25rem/1 var(--font-mono);
+    }
+
+    @media (width >= 64rem) {
+        .steps {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+
+        .steps li {
+            padding-top: 4.5rem;
+            padding-left: 0;
+        }
+
+        .steps li::before {
+            top: 21px;
+            right: -1.5rem;
+            bottom: auto;
+            left: 24px;
+            width: auto;
+            height: 6px;
+        }
+
+        /* The line runs on past step 3, into the neighborhood. */
+        .steps li:last-child::before {
+            display: block;
+            right: 50%;
+            height: 0;
+            background: none;
+            border-top: 6px dashed var(--color-ink);
+        }
+    }
+
+    /* A heavy rule over a block, instead of a card: a printed timetable's
+       section break. */
+    .rule-top {
+        border-top: 3px solid var(--color-ink);
+        padding-top: 1rem;
+    }
+
+    .rule-heavy {
+        border-top: 6px solid var(--color-ink);
+        padding-top: 1.25rem;
+    }
+
+    /* A block's label as a tab hanging from its top rule, not a floating
+       line above the heading. */
+    .rule-tag {
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+        margin-top: -1rem;
+        padding: 0.25rem 0.5rem 0.3rem;
+        border-radius: 0 0 3px 3px;
+        background: var(--color-ink);
+        color: var(--color-page);
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .rule-heavy > .rule-tag {
+        margin-top: -1.25rem;
     }
 
     /* Merchant card: a teal rail on the left with a stop on it. */
