@@ -1,21 +1,21 @@
 {{-- BIDs taking part at each year's end in every scenario (ADR 0030), with sources. --}}
-@php $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary'; @endphp
+@php $link = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover'; @endphp
 <x-rtable class="mt-4" label="BIDs by scenario">
     <table data-rtable="stack" class="w-full min-w-2xl text-left text-sm">
         <caption class="sr-only">BIDs taking part at the end of each year, by scenario</caption>
-        <thead class="border-b border-line/70 text-muted">
+        <thead>
             <tr>
-                <th scope="col" class="px-4 py-3 font-semibold">Scenario</th>
+                <th scope="col" class="py-3 pr-4">Scenario</th>
                 @foreach ([1, 2, 3, 4] as $y)<th scope="col" class="px-4 py-3 text-right font-semibold">End of year {{ $y }}</th>@endforeach
-                <th scope="col" class="px-4 py-3 font-semibold">Source</th>
+                <th scope="col" class="py-3 pl-4">Source</th>
             </tr>
         </thead>
-        <tbody class="tabular divide-y divide-line/70">
+        <tbody class="tabular divide-y divide-line">
             @foreach (config('projections.scenarios') as $s)
                 <tr>
-                    <th scope="row" data-primary class="px-4 py-3 font-semibold">{{ $s['name'] }}</th>
-                    @foreach ($s['bids_by_year_end'] as $i => $bids)<td data-label="End of year {{ $i + 1 }}" class="px-4 py-3 text-right">{{ $bids }} {{ ($bids === 1 ? 'BID' : 'BIDs') }}</td>@endforeach
-                    <td data-label="Source" class="px-4 py-3">
+                    <th scope="row" data-primary class="py-3 pr-4 font-bold">{{ $s['name'] }}</th>
+                    @foreach ($s['bids_by_year_end'] as $i => $bids)<td data-label="End of year {{ $i + 1 }}" class="ledger-num px-4 py-3 text-right whitespace-nowrap">{{ $bids }} {{ ($bids === 1 ? 'BID' : 'BIDs') }}</td>@endforeach
+                    <td data-label="Source" class="py-3 pl-4">
                         @if ($s['source_url'])<a href="{{ $s['source_url'] }}" class="{{ $link }}" rel="noopener">{{ $s['source'] }}</a>@else<span class="font-semibold">{{ $s['source'] }}</span>@endif
                         <span class="mt-1 block text-muted">{{ $s['note'] }}</span>
                     </td>

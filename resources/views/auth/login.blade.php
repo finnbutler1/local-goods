@@ -1,9 +1,9 @@
 @php use App\Support\PasswordResets; @endphp
 
 <x-guest-shell title="Log in">
-    <h1 class="text-3xl font-semibold text-primary">Log in</h1>
-    <p class="mt-1 text-muted">Accounts are created by the Local Goods team. There is no public sign-up.</p>
-    <p class="mt-3 rounded-xl bg-band p-3 text-sm">
+    <h1 class="text-[2.5rem] leading-none font-extrabold tracking-[-0.035em] sm:text-5xl">Log in</h1>
+    <p class="mt-3 text-muted">Accounts are created by the Local Goods team. There is no public sign-up.</p>
+    <p class="rule-top mt-5 bg-band px-4 pb-3 text-sm">
         <span class="font-semibold">Reviewing Local Goods?</span>
         Open the personal link Finn sent you, or the public judge link in the README. No password needed.
     </p>
@@ -12,18 +12,18 @@
         <p role="status" class="mt-5 rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok">{{ session('status') }}</p>
     @endif
 
-    <form method="POST" action="{{ route('login') }}" data-busy="Logging in…" class="mt-6 space-y-5">
+    <form method="POST" action="{{ route('login') }}" data-busy="Logging in…" class="mt-8 space-y-5">
         @csrf
         <x-field name="email" label="Email">
             <input id="email" name="email" type="email" autocomplete="username" required autofocus
                    value="{{ old('email') }}"
-                   class="block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary @error('email') border-hold @else border-muted @enderror"
+                   class="block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary @error('email') border-hold @else border-edge @enderror"
                    @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
         </x-field>
 
         <x-field name="password" label="Password">
             <input id="password" name="password" type="password" autocomplete="current-password" required
-                   class="block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary @error('password') border-hold @else border-muted @enderror"
+                   class="block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary @error('password') border-hold @else border-edge @enderror"
                    @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
         </x-field>
 

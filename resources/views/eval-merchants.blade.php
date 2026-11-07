@@ -16,34 +16,38 @@
 @endphp
 
 @section('content')
-    <div class="mx-auto max-w-6xl space-y-10 px-4 py-12 sm:px-6">
+    <div class="wrap pt-6 pb-6">
         <nav aria-label="Breadcrumb" class="text-sm font-semibold text-primary">
             <a href="{{ route('eval') }}" class="tap-target underline decoration-line decoration-2 underline-offset-4 hover:decoration-primary">
                 <span aria-hidden="true">←</span> AI eval results
             </a>
         </nav>
 
-        <header class="max-w-3xl">
-            <x-eyebrow class="text-accent-ink">Merchant Eligibility Matching</x-eyebrow>
-            <h1 class="mt-1 text-title font-semibold text-primary">Can the AI tell an independent business from a chain?</h1>
-            <p class="mt-3 text-lg text-muted">
+        <header class="mt-6">
+            <x-station-sign as="p">Merchant Eligibility Matching</x-station-sign>
+            <h1 class="page-title">Can the AI tell an independent business from a chain?</h1>
+            <p class="page-lede max-w-[46rem]">
                 Finn hand-labeled 60 real businesses inside the Golden Triangle BID against the independence rule, with a public source for each,
                 and locked the labels before the AI saw them. The AI saw only each business's name, address, category and license activity.
                 <strong>Dev</strong> cases (40) may be used to improve the prompt; <strong>holdout</strong> cases (20) are scored once per prompt version
                 and never used to change it. The two are always reported separately.
             </p>
-            <p class="mt-3 text-muted">
+            <p class="mt-4 max-w-[46rem] text-muted">
                 <span class="font-semibold text-ink">What the AI knows:</span> {{ MerchantEligibilityMatcher::KNOWLEDGE_NOTICE }}
             </p>
-            <p class="mt-4 rounded-2xl border-2 border-accent bg-surface p-4 font-semibold">
+            <p class="mt-6 max-w-[46rem] rounded-lg border-2 border-ink bg-surface px-4 py-3 font-bold">
                 {{ $candidateLabel }} None of these businesses has joined Local Goods.
             </p>
         </header>
 
-        <section aria-labelledby="policy-heading" class="relative overflow-hidden rounded-3xl bg-night p-6 text-on-night sm:p-8">
-            <h2 id="policy-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-night-accent">How to read these numbers</h2>
-            <p class="mt-2 max-w-3xl font-display text-2xl font-semibold sm:text-3xl">{{ config('eligibility.policy') }}</p>
-            <p class="mt-4 max-w-3xl">
+        @php $stop = 0; @endphp
+        <div class="stop-line stop-line-dense">
+        <section aria-labelledby="policy-heading" class="stop">
+            @php $stop++; @endphp
+            <x-stop-number :n="$stop" />
+            <x-station-sign heading-id="policy-heading">How to read these numbers</x-station-sign>
+            <p class="mt-6 max-w-[30ch] font-display text-2xl leading-[1.15] font-extrabold tracking-[-0.025em] text-primary sm:text-4xl lg:col-span-9">{{ config('eligibility.policy') }}</p>
+            <p class="mt-5 max-w-[46rem] lg:col-span-8">
                 An AI “eligible” is only a recommendation: the BID admin sees “AI recommends eligible — confirm before approving”, and no business is approved until a person presses Approve.
                 @php $devRecall = $latest['splits']['dev']['summary']['recall'] ?? null; @endphp
                 @if ($devRecall && $devRecall['of'] > 0)
@@ -51,102 +55,107 @@
                 @endif
                 Giving it a vetted web search is future work, and would need a new prompt version and a fresh unseen holdout.
             </p>
-            <p class="mt-3 max-w-3xl text-sm text-night-muted">Final prompt: <code class="text-on-night">{{ config('eligibility.frozen_prompt_version') }}</code>, frozen before the holdout was run once.</p>
-        </section>
+            <p class="mt-3 max-w-[46rem] text-sm text-muted lg:col-span-8">Final prompt: <code class="text-ink">{{ config('eligibility.frozen_prompt_version') }}</code>, frozen before the holdout was run once.</p>
 
         @if ($lock)
-            <p class="max-w-3xl text-sm text-muted">
+            <p class="rule-top mt-6 max-w-[46rem] text-sm text-muted lg:col-span-8">
                 <strong class="text-ink">Locked before the AI saw them:</strong> the {{ $lock['row_count'] }} labels were made in commit
-                <a href="{{ config('fraud.eval_repo_url') }}/commit/{{ $lock['labeling_commit'] }}" class="font-mono underline underline-offset-4">{{ substr($lock['labeling_commit'], 0, 7) }}</a>
+                <a href="{{ config('fraud.eval_repo_url') }}/commit/{{ $lock['labeling_commit'] }}" class="font-mono text-primary underline underline-offset-4">{{ substr($lock['labeling_commit'], 0, 7) }}</a>
                 and locked on {{ Carbon::parse($lock['locked_at'])->format('M j, Y') }} with a SHA-256 of every row
                 (combined <code class="whitespace-nowrap">{{ substr($lock['combined_sha256'], 0, 12) }}</code>). The eval refuses to run if any label changes.
             </p>
         @endif
 
         @if (! $showNames)
-            <x-card tone="band" class="max-w-3xl">
-                <h2 class="text-xl font-semibold text-primary">Totals only on this page</h2>
+            <div class="rule-heavy mt-8 max-w-[46rem] bg-band px-5 pb-5 lg:col-span-8">
+                <h2 class="text-xl font-extrabold">Totals only on this page</h2>
                 <p class="mt-2">
                     These are real businesses that have not joined Local Goods, so this public page shows totals only: no names, notes or per-business results.
                     Signed-in reviewers with their own link see every disagreement with the hand label's note and the AI's reasoning.
                 </p>
-            </x-card>
+            </div>
         @endif
 
         @if ($latest === null)
-            <p class="rounded-2xl bg-surface p-5 ring-1 ring-line/70">
+            <p class="rule-heavy mt-8">
                 No results yet. Run <code>php artisan merchant:eval</code> to create them.
             </p>
         @else
-            <p class="max-w-3xl text-sm text-muted">
+            <p class="mt-6 max-w-[46rem] text-sm text-muted lg:col-span-8">
                 Current prompt version <code>{{ $promptVersion }}</code>.
                 Prompt versions that have seen the holdout:
                 @if ($latest['holdout_seen_by'] === []) none yet. @else @foreach ($latest['holdout_seen_by'] as $v)<code>{{ $v }}</code>@if (! $loop->last), @endif @endforeach. @endif
             </p>
+        @endif
+        </section>
+
+        @if ($latest !== null)
 
             @foreach (MerchantEvalRunner::SPLITS as $split => $title)
                 @php $run = $latest['splits'][$split] ?? null; @endphp
-                <section aria-labelledby="{{ $split }}-heading" class="space-y-4">
-                    <h2 id="{{ $split }}-heading" class="text-3xl font-semibold text-primary">{{ $title }}</h2>
+                <section aria-labelledby="{{ $split }}-heading" class="stop">
+                    @php $stop++; @endphp
+                    <x-stop-number :n="$stop" />
+                    <x-station-sign heading-id="{{ $split }}-heading">{{ $title }}</x-station-sign>
 
                     @if ($run === null)
-                        <p class="rounded-2xl bg-surface p-5 ring-1 ring-line/70">
+                        <p class="mt-6">
                             Not run yet. @if ($split === 'holdout') The holdout is scored once, after the prompt is final. @endif
                         </p>
                     @else
                         @php $s = $run['summary']; @endphp
-                        <p class="text-sm text-muted">
+                        <p class="mt-4 text-sm text-muted">
                             {{ $s['cases'] }} cases · run {{ Carbon::parse($run['run_at'])->format('M j, Y') }} · model <code>{{ $run['model'] }}</code> ·
                             prompt <code>{{ $run['prompt_version'] }}</code>@if ($run['prompt_version'] !== $promptVersion) (not the current prompt)@endif
                         </p>
 
-                        <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            <x-card padding="p-4 sm:p-5">
-                                <dt class="text-sm font-semibold text-muted">Eligible yes/no agreement</dt>
-                                <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['agreement']) }}</dd>
-                                <dd class="text-sm text-muted">{{ $pct($s['agreement']) }}, {{ $ci($s['agreement']) }}</dd>
-                            </x-card>
-                            <x-card padding="p-4 sm:p-5" tone="band">
-                                <dt class="text-sm font-semibold text-muted">Baseline: always answer “not eligible”</dt>
-                                <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['baseline_always_not_eligible']) }}</dd>
-                                <dd class="text-sm text-muted">{{ $pct($s['baseline_always_not_eligible']) }}. Most labeled businesses are not independent, so agreement alone flatters.</dd>
-                            </x-card>
-                            <x-card padding="p-4 sm:p-5">
-                                <dt class="text-sm font-semibold text-muted">Independent businesses the AI found</dt>
-                                <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['recall']) }}</dd>
-                                <dd class="text-sm text-muted">Of Finn's independent ones, the AI called eligible. {{ $ci($s['recall']) }}</dd>
-                            </x-card>
-                            <x-card padding="p-4 sm:p-5">
-                                <dt class="text-sm font-semibold text-muted">AI “eligible” calls that were right</dt>
-                                <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['precision']) }}</dd>
-                                <dd class="text-sm text-muted">Of the AI's eligible calls, Finn labeled independent. {{ $ci($s['precision']) }}</dd>
-                            </x-card>
+                        <dl class="mt-8 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="rule-top">
+                                <dt class="text-sm font-bold">Eligible yes/no agreement</dt>
+                                <dd class="money mt-2 text-4xl">{{ $rate($s['agreement']) }}</dd>
+                                <dd class="mt-1 text-sm text-muted">{{ $pct($s['agreement']) }}, {{ $ci($s['agreement']) }}</dd>
+                            </div>
+                            <div class="rule-top">
+                                <dt class="text-sm font-bold">Baseline: always answer “not eligible”</dt>
+                                <dd class="money mt-2 text-4xl">{{ $rate($s['baseline_always_not_eligible']) }}</dd>
+                                <dd class="mt-1 text-sm text-muted">{{ $pct($s['baseline_always_not_eligible']) }}. Most labeled businesses are not independent, so agreement alone flatters.</dd>
+                            </div>
+                            <div class="rule-top">
+                                <dt class="text-sm font-bold">Independent businesses the AI found</dt>
+                                <dd class="money mt-2 text-4xl">{{ $rate($s['recall']) }}</dd>
+                                <dd class="mt-1 text-sm text-muted">Of Finn's independent ones, the AI called eligible. {{ $ci($s['recall']) }}</dd>
+                            </div>
+                            <div class="rule-top">
+                                <dt class="text-sm font-bold">AI “eligible” calls that were right</dt>
+                                <dd class="money mt-2 text-4xl">{{ $rate($s['precision']) }}</dd>
+                                <dd class="mt-1 text-sm text-muted">Of the AI's eligible calls, Finn labeled independent. {{ $ci($s['precision']) }}</dd>
+                            </div>
                         </dl>
 
                         @if (isset($s['triage']))
-                            <div>
-                                <h3 class="text-xl font-semibold text-primary">Triage</h3>
-                                <dl class="mt-2 grid gap-3 sm:grid-cols-3">
-                                    <x-card padding="p-4 sm:p-5">
-                                        <dt class="text-sm font-semibold text-muted">Chains and franchises correctly called not eligible</dt>
-                                        <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['triage']['chains_not_eligible']) }}</dd>
-                                        <dd class="text-sm text-muted">{{ $pct($s['triage']['chains_not_eligible']) }}, {{ $ci($s['triage']['chains_not_eligible']) }}</dd>
-                                    </x-card>
-                                    <x-card padding="p-4 sm:p-5">
-                                        <dt class="text-sm font-semibold text-muted">Chains and franchises wrongly called eligible</dt>
-                                        <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['triage']['chains_called_eligible']) }}</dd>
-                                        <dd class="text-sm text-muted">{{ $pct($s['triage']['chains_called_eligible']) }}, {{ $ci($s['triage']['chains_called_eligible']) }}. The costliest mistake; a person still decides.</dd>
-                                    </x-card>
-                                    <x-card padding="p-4 sm:p-5">
-                                        <dt class="text-sm font-semibold text-muted">All cases routed to human review</dt>
-                                        <dd class="tabular mt-1 font-display text-3xl font-semibold text-primary">{{ $rate($s['triage']['routed_to_review']) }}</dd>
-                                        <dd class="text-sm text-muted">{{ $pct($s['triage']['routed_to_review']) }}, {{ $ci($s['triage']['routed_to_review']) }}</dd>
-                                    </x-card>
+                            <div class="mt-12">
+                                <h3 class="stop-subtitle">Triage</h3>
+                                <dl class="mt-5 grid gap-x-6 gap-y-8 sm:grid-cols-3">
+                                    <div class="rule-top">
+                                        <dt class="text-sm font-bold">Chains and franchises correctly called not eligible</dt>
+                                        <dd class="money mt-2 text-4xl">{{ $rate($s['triage']['chains_not_eligible']) }}</dd>
+                                        <dd class="mt-1 text-sm text-muted">{{ $pct($s['triage']['chains_not_eligible']) }}, {{ $ci($s['triage']['chains_not_eligible']) }}</dd>
+                                    </div>
+                                    <div class="rule-top">
+                                        <dt class="text-sm font-bold">Chains and franchises wrongly called eligible</dt>
+                                        <dd class="money mt-2 text-4xl">{{ $rate($s['triage']['chains_called_eligible']) }}</dd>
+                                        <dd class="mt-1 text-sm text-muted">{{ $pct($s['triage']['chains_called_eligible']) }}, {{ $ci($s['triage']['chains_called_eligible']) }}. The costliest mistake; a person still decides.</dd>
+                                    </div>
+                                    <div class="rule-top">
+                                        <dt class="text-sm font-bold">All cases routed to human review</dt>
+                                        <dd class="money mt-2 text-4xl">{{ $rate($s['triage']['routed_to_review']) }}</dd>
+                                        <dd class="mt-1 text-sm text-muted">{{ $pct($s['triage']['routed_to_review']) }}, {{ $ci($s['triage']['routed_to_review']) }}</dd>
+                                    </div>
                                 </dl>
                             </div>
                         @endif
 
-                        <ul class="space-y-1 text-sm">
+                        <ul class="mt-10 max-w-[52rem] border-t-[3px] border-ink text-sm [&>li]:border-b [&>li]:border-line [&>li]:py-2">
                             <li><span class="font-semibold">Exact classification match:</span> {{ MerchantEvalReport::rate($s['class_match']) }}</li>
                             <li><span class="font-semibold">AI said undetermined on a case Finn could decide:</span> {{ MerchantEvalReport::rate($s['undetermined']['ai_undetermined_on_decided']) }}</li>
                             <li><span class="font-semibold">Cases Finn labeled undetermined:</span>
@@ -159,32 +168,32 @@
                             <li><span class="font-semibold">Flagged for a person by the AI or the confidence rule:</span> {{ $s['needs_human_review'] }} of {{ $s['cases'] }}</li>
                         </ul>
 
-                        <div class="grid gap-6 lg:grid-cols-2">
+                        <div class="mt-10 grid gap-x-8 gap-y-10 lg:grid-cols-2">
                             <x-rtable :card="false" label="Confusion matrix ({{ $title }}) table">
-                                <table data-rtable="stack" class="tabular w-full rounded-2xl bg-surface text-left ring-1 ring-line/70">
-                                    <caption class="px-4 pt-3 text-left text-sm font-semibold text-muted">Confusion matrix ({{ $title }}): rows are Finn's labels, columns the AI's answers</caption>
+                                <table data-rtable="stack" class="tabular w-full text-left">
+                                    <caption class="pb-3 text-left font-bold">Confusion matrix ({{ $title }}): rows are Finn's labels, columns the AI's answers</caption>
                                     <thead>
-                                        <tr class="bg-band/60 text-sm text-muted">
-                                            <th scope="col" class="px-4 py-2">Finn</th>
+                                        <tr>
+                                            <th scope="col" class="py-2 pr-4">Finn</th>
                                             @foreach (MerchantEvalReport::OUTCOME_NAMES as $name)<th scope="col" class="px-4 py-2">AI: {{ $name }}</th>@endforeach
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($s['matrix'] as $label => $row)
-                                            <tr class="border-t border-line/70">
-                                                <th scope="row" data-primary class="px-4 py-2 font-semibold">{{ MerchantEvalReport::LABEL_NAMES[$label] }}</th>
-                                                @foreach ($row as $outcome => $n)<td data-label="AI: {{ MerchantEvalReport::OUTCOME_NAMES[$outcome] ?? $outcome }}" class="px-4 py-2">{{ $n }}</td>@endforeach
+                                            <tr class="border-t border-line align-top">
+                                                <th scope="row" data-primary class="py-2.5 pr-4 font-bold">{{ MerchantEvalReport::LABEL_NAMES[$label] }}</th>
+                                                @foreach ($row as $outcome => $n)<td data-label="AI: {{ MerchantEvalReport::OUTCOME_NAMES[$outcome] ?? $outcome }}" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $n }}</td>@endforeach
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                             </x-rtable>
                             <x-rtable :card="false" label="Not independent, by reason ({{ $title }}) table">
-                                <table data-rtable="stack" class="tabular w-full rounded-2xl bg-surface text-left ring-1 ring-line/70">
-                                    <caption class="px-4 pt-3 text-left text-sm font-semibold text-muted">Not independent, by the reason Finn gave ({{ $title }})</caption>
+                                <table data-rtable="stack" class="tabular w-full text-left">
+                                    <caption class="pb-3 text-left font-bold">Not independent, by the reason Finn gave ({{ $title }})</caption>
                                     <thead>
-                                        <tr class="bg-band/60 text-sm text-muted">
-                                            <th scope="col" class="px-4 py-2">Reason</th>
+                                        <tr>
+                                            <th scope="col" class="py-2 pr-4">Reason</th>
                                             <th scope="col" class="px-4 py-2">Cases</th>
                                             <th scope="col" class="px-4 py-2">AI: not eligible</th>
                                             <th scope="col" class="px-4 py-2">AI: same reason</th>
@@ -194,13 +203,13 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($s['by_fail_reason'] as $reason => $r)
-                                            <tr class="border-t border-line/70">
-                                                <th scope="row" data-primary class="px-4 py-2 font-semibold">{{ MerchantEvalReport::CLASS_NAMES[$reason] }}</th>
-                                                <td data-label="Cases" class="px-4 py-2">{{ $r['cases'] }}</td>
-                                                <td data-label="AI: not eligible" class="px-4 py-2">{{ $rate($r['not_eligible']) }}</td>
-                                                <td data-label="AI: same reason" class="px-4 py-2">{{ $rate($r['same_reason']) }}</td>
-                                                <td data-label="AI: undetermined" class="px-4 py-2">{{ $r['undetermined'] }}</td>
-                                                <td data-label="AI: eligible" class="px-4 py-2">{{ $r['called_eligible'] }}</td>
+                                            <tr class="border-t border-line align-top">
+                                                <th scope="row" data-primary class="py-2.5 pr-4 font-bold">{{ MerchantEvalReport::CLASS_NAMES[$reason] }}</th>
+                                                <td data-label="Cases" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $r['cases'] }}</td>
+                                                <td data-label="AI: not eligible" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $rate($r['not_eligible']) }}</td>
+                                                <td data-label="AI: same reason" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $rate($r['same_reason']) }}</td>
+                                                <td data-label="AI: undetermined" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $r['undetermined'] }}</td>
+                                                <td data-label="AI: eligible" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $r['called_eligible'] }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -209,8 +218,8 @@
                         </div>
 
                         @isset($s['category_disagreements'])
-                            <div class="max-w-3xl">
-                                <h3 class="text-xl font-semibold text-primary">Category disagreements ({{ $s['category_disagreements'] }})</h3>
+                            <div class="mt-10 max-w-[46rem]">
+                                <h3 class="stop-subtitle">Category disagreements ({{ $s['category_disagreements'] }})</h3>
                                 <p class="mt-1">{{ MerchantEvalReport::CATEGORY_NOTE }}</p>
                                 @if ($showNames && $s['category_disagreements'] > 0)
                                     <ul class="mt-2 list-disc space-y-0.5 pl-5 text-sm">
@@ -224,33 +233,33 @@
 
                         @if ($showNames)
                             @php $disagreements = array_values(array_filter($run['results'], fn ($r) => ! $r['class_match'])); @endphp
-                            <div>
-                                <h3 class="text-xl font-semibold text-primary">Disagreements ({{ count($disagreements) }})</h3>
+                            <div class="mt-12">
+                                <h3 class="stop-subtitle">Disagreements ({{ count($disagreements) }})</h3>
                                 <p class="mt-1 text-sm text-muted">Every case where the AI's classification differs from Finn's. “Eligible answer differs” means the yes/no answer differs too.</p>
-                                <ul class="mt-3 space-y-3">
+                                <ul class="mt-4 border-t-[3px] border-ink">
                                     @foreach ($disagreements as $r)
-                                        <x-card as="li" @class(['border-l-4', 'border-l-hold' => ! $r['agree'], 'border-l-accent' => $r['agree']])>
+                                        <li class="border-b border-line py-5">
                                             <div class="flex flex-wrap items-start justify-between gap-2">
                                                 <div>
-                                                    <p class="font-display text-lg font-semibold">{{ $r['candidate_id'] }} · {{ $r['name'] }}</p>
+                                                    <p class="text-lg font-bold"><span class="ledger-num">{{ $r['candidate_id'] }}</span> · {{ $r['name'] }}</p>
                                                     <p class="text-sm text-muted">{{ ucfirst($r['category']) }}@if ($r['business_activity']) · license: {{ $r['business_activity'] }}@endif</p>
                                                     <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-accent-ink">{{ $candidateLabel }}</p>
                                                 </div>
                                                 @unless ($r['agree'])<x-badge tone="hold">Eligible answer differs</x-badge>@endunless
                                             </div>
-                                            <dl class="mt-3 grid gap-3 border-t border-line/70 pt-3 md:grid-cols-2">
+                                            <dl class="mt-3 grid gap-x-8 gap-y-4 md:grid-cols-2">
                                                 <div>
-                                                    <dt class="text-xs font-semibold uppercase tracking-widest text-muted">Finn</dt>
+                                                    <dt class="text-sm font-bold">Finn</dt>
                                                     <dd class="mt-1"><span class="font-semibold">{{ MerchantEvalReport::LABEL_NAMES[$r['my_label']] }}@if ($r['fail_reason']) ({{ MerchantEvalReport::CLASS_NAMES[$r['fail_reason']] }})@endif.</span> {{ $r['my_note'] }}
                                                         @if ($r['evidence_url'])<a href="{{ EvidenceUrl::withoutTracking($r['evidence_url']) }}" class="underline underline-offset-4" rel="noopener" target="_blank">Source<span class="sr-only"> for {{ $r['name'] }} (opens in a new tab)</span></a>@endif
                                                     </dd>
                                                 </div>
                                                 <div>
-                                                    <dt class="text-xs font-semibold uppercase tracking-widest text-muted">AI</dt>
+                                                    <dt class="text-sm font-bold">AI</dt>
                                                     <dd class="mt-1"><span class="font-semibold">{{ MerchantEvalReport::CLASS_NAMES[$r['ai_classification']] }}, confidence {{ round(100 * $r['confidence']) }}%.</span> {{ $r['reasoning'] }}@if (! empty($r['redacted']))<span class="mt-1 block text-sm text-muted">{{ $r['redacted'] }}</span>@endif</dd>
                                                 </div>
                                             </dl>
-                                        </x-card>
+                                        </li>
                                     @endforeach
                                 </ul>
                             </div>
@@ -259,14 +268,16 @@
                 </section>
             @endforeach
 
-            <section aria-labelledby="history-heading">
-                <h2 id="history-heading" class="text-2xl font-semibold text-primary">Run history</h2>
-                <x-rtable :card="false" class="mt-3" label="Every merchant eval run table">
-                    <table data-rtable="stack" class="tabular w-full min-w-2xl rounded-2xl bg-surface text-left ring-1 ring-line/70">
+            <section aria-labelledby="history-heading" class="stop">
+                @php $stop++; @endphp
+                <x-stop-number :n="$stop" />
+                <x-station-sign heading-id="history-heading">Run history</x-station-sign>
+                <x-rtable :card="false" class="mt-6" label="Every merchant eval run table">
+                    <table data-rtable="stack" class="tabular w-full min-w-2xl text-left">
                         <caption class="sr-only">Every merchant eval run, oldest first</caption>
                         <thead>
-                            <tr class="bg-band/60 text-sm text-muted">
-                                <th scope="col" class="px-4 py-2">Run</th>
+                            <tr>
+                                <th scope="col" class="py-2 pr-4">Run</th>
                                 <th scope="col" class="px-4 py-2">Split</th>
                                 <th scope="col" class="px-4 py-2">Prompt</th>
                                 <th scope="col" class="px-4 py-2">Agreement</th>
@@ -277,13 +288,13 @@
                         </thead>
                         <tbody>
                             @foreach ($latest['history'] as $h)
-                                <tr class="border-t border-line/70">
-                                    <td data-primary class="px-4 py-2">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
+                                <tr class="border-t border-line align-top">
+                                    <td data-primary class="ledger-num py-2.5 pr-4">{{ Carbon::parse($h['run_at'])->format('M j, Y g:i A') }}</td>
                                     <td data-label="Split" class="px-4 py-2">{{ MerchantEvalRunner::SPLITS[$h['split']] ?? $h['split'] }}</td>
                                     <td data-label="Prompt" class="px-4 py-2"><code>{{ $h['prompt_version'] }}</code></td>
-                                    <td data-label="Agreement" class="px-4 py-2">{{ $h['agreement_pct'] }}% of {{ $h['cases'] }}</td>
-                                    <td data-label="Independent found" class="px-4 py-2">{{ $rate($h['recall']) }}</td>
-                                    <td data-label="Eligible calls right" class="px-4 py-2">{{ $rate($h['precision']) }}</td>
+                                    <td data-label="Agreement" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $h['agreement_pct'] }}% of {{ $h['cases'] }}</td>
+                                    <td data-label="Independent found" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $rate($h['recall']) }}</td>
+                                    <td data-label="Eligible calls right" class="ledger-num whitespace-nowrap px-4 py-2.5">{{ $rate($h['precision']) }}</td>
                                     <td data-label="Note" class="px-4 py-2 text-sm">{{ $h['note'] }}</td>
                                 </tr>
                             @endforeach
@@ -292,5 +303,6 @@
                 </x-rtable>
             </section>
         @endif
+        </div>
     </div>
 @endsection

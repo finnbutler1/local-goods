@@ -349,6 +349,13 @@
         background: var(--color-night-accent);
     }
 
+    /* Decoration only: on phones the title needs the room. */
+    @media (width < 40rem) {
+        .station-sign-dots {
+            display: none;
+        }
+    }
+
     /* Sidebar menus: the pages sit on a teal line, and the current page is
        the coral stop on it (<x-nav-groups>, app-shell). */
     .side-nav-line {
@@ -904,6 +911,261 @@
         margin-top: -1.25rem;
     }
 
+    /* Inner pages (ADR 0038): the page's station sign, then its title on
+       the container's left edge, then the lede. */
+    .page-head {
+        padding-top: 2.5rem;
+    }
+
+    .page-title {
+        margin-top: 1.75rem;
+        max-width: 22ch;
+        font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+        color: var(--color-ink);
+    }
+
+    .page-lede {
+        margin-top: 1.25rem;
+        max-width: 42rem;
+        font-size: 1.1875rem;
+        line-height: 1.6;
+    }
+
+    /* Inner pages are denser than the landing page: less air between stops,
+       and on phones a slimmer line so tables keep their width. */
+    .stop-line-dense {
+        margin-top: 2rem;
+        padding-top: 3rem;
+    }
+
+    .stop-line-dense::before {
+        height: 3rem;
+    }
+
+    .stop-line-dense > .stop {
+        padding-bottom: 4rem;
+    }
+
+    .stop-line-dense > .stop:last-child {
+        padding-bottom: 1rem;
+    }
+
+    @media (width < 48rem) {
+        .stop-line-dense::before,
+        .stop-line-dense > .stop::before {
+            left: 12px;
+            width: 6px;
+        }
+
+        .stop-line-dense > .stop {
+            padding-left: 2.75rem;
+        }
+
+        .stop-line-dense > .stop > .stop-number {
+            width: 1.875rem;
+            height: 1.875rem;
+            box-shadow: inset 0 0 0 5px var(--color-ink);
+            font-size: 0.8125rem;
+            top: 9px;
+        }
+    }
+
+    /* A stop's own sub-heading, under its station sign. */
+    .stop-subtitle {
+        font-size: 1.375rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+    }
+
+    /* Ruled rows instead of a pile of cards: a heavy ink rule on top, thin
+       rules between rows. */
+    .ruled-rows {
+        border-top: 3px solid var(--color-ink);
+    }
+
+    .ruled-rows > li,
+    .ruled-rows > div {
+        border-bottom: 1px solid var(--color-line);
+        padding-block: 1rem;
+    }
+
+    /* The judge's guided tour as a line diagram: every step is a stop on one
+       teal line, with the step's number in the stop. */
+    .tour-line {
+        border-top: 3px solid var(--color-ink);
+    }
+
+    .tour-line > li {
+        position: relative;
+        display: grid;
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+        column-gap: 1.25rem;
+        padding-block: 1.125rem;
+        border-bottom: 1px solid var(--color-line);
+    }
+
+    .tour-line > li::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: -1px;
+        left: 15px;
+        width: 10px;
+        background: var(--color-primary);
+    }
+
+    .tour-line > li:first-child::before {
+        top: 1.75rem;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .tour-line > li:last-child::before {
+        bottom: auto;
+        height: 1.75rem;
+    }
+
+    .tour-line .stop-number {
+        position: relative;
+        z-index: 1;
+        margin-top: 0.125rem;
+    }
+
+    /* Who does what: the eight steps as a strip map. On phones the stops run
+       down one line; from 64rem across it, like the line diagram over a
+       train door. The selected step is the coral stop. */
+    .step-line {
+        position: relative;
+        display: grid;
+    }
+
+    .step-line [role='tab'] {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        min-height: 2.75rem;
+        padding: 0.375rem 0.5rem 0.375rem 0;
+        border-radius: 0.25rem;
+        font-weight: 700;
+        color: var(--color-ink);
+    }
+
+    .step-line [role='tab']::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 13px;
+        width: 6px;
+        background: var(--color-primary);
+    }
+
+    .step-line [role='tab']:first-child::before {
+        top: 50%;
+    }
+
+    .step-line [role='tab']:last-child::before {
+        bottom: 50%;
+    }
+
+    .step-line [role='tab']:hover .step-line-name {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.2em;
+    }
+
+    .step-line-stop {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 4px var(--color-ink);
+        font: 700 0.8125rem/1 var(--font-mono);
+    }
+
+    .step-line [aria-selected='true'] .step-line-stop {
+        background: var(--color-accent);
+        color: var(--color-on-accent);
+        box-shadow: inset 0 0 0 4px var(--color-ink), 0 0 0 3px var(--color-page);
+    }
+
+    .step-line [aria-selected='true'] .step-line-name {
+        text-decoration: underline;
+        text-decoration-color: var(--color-accent);
+        text-decoration-thickness: 3px;
+        text-underline-offset: 0.25em;
+    }
+
+    @media (width >= 64rem) {
+        .step-line {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            column-gap: 0.5rem;
+        }
+
+        .step-line [role='tab'] {
+            flex-direction: column;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0 0.25rem 0.5rem;
+            text-align: center;
+            line-height: 1.25;
+        }
+
+        .step-line [role='tab']::before {
+            top: 13px;
+            bottom: auto;
+            left: -0.25rem;
+            right: -0.25rem;
+            width: auto;
+            height: 6px;
+        }
+
+        .step-line [role='tab']:first-child::before {
+            top: 13px;
+            left: 50%;
+        }
+
+        .step-line [role='tab']:last-child::before {
+            bottom: auto;
+            right: 50%;
+        }
+    }
+
+    /* Scenario and case pickers: square-cornered keys, the chosen one filled. */
+    .picker {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--color-edge);
+        border-radius: 0.25rem;
+        background: var(--color-surface);
+        color: var(--color-primary);
+        font-size: 0.875rem;
+        font-weight: 700;
+        transition: background-color 150ms, border-color 150ms;
+    }
+
+    .picker:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-tint);
+    }
+
+    .picker[aria-current] {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+    }
+
     /* Merchant card: a teal rail on the left with a stop on it. */
     .merchant-rail {
         position: relative;
@@ -1034,8 +1296,11 @@ table[data-rtable] > :is(tbody, tfoot) > tr > :is(td, th).tabular {
         max-width: 50%;
         padding-right: 0.75rem;
         text-align: left;
+        font-family: var(--font-sans);
         font-size: 0.875rem;
         font-weight: 600;
+        letter-spacing: normal;
+        white-space: normal;
         color: var(--color-muted);
     }
 

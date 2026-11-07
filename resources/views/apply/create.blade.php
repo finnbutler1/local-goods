@@ -6,39 +6,52 @@
     use App\Http\Controllers\Districts\ApplyController;
     use App\Models\MerchantApplication;
 
-    $input = 'block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2 focus-visible:border-primary';
-    $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
+    $input = 'block w-full rounded-xl border-2 border-edge bg-surface px-3 py-2.5 focus-visible:border-primary';
+    $link = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover';
     $readOnly = auth()->user()?->isReadOnly() ?? false;
     $described = fn (string $id) => "{$id}-hint".($errors->has(str_replace('apply-', '', $id)) ? " {$id}-error" : '');
 @endphp
 
 @section('content')
-    <div class="mx-auto max-w-3xl space-y-8 px-4 py-12 sm:px-6">
-        @include('apply.partials.prototype-notice')
+    <div class="wrap grid-12 pt-6 pb-12">
+        <div class="col-span-12">@include('apply.partials.prototype-notice')</div>
 
-        <header>
-            <x-eyebrow class="text-accent-ink">Apply to join</x-eyebrow>
-            <h1 class="mt-1 text-title font-semibold text-primary">Independent shops in the {{ $district->name }}</h1>
-            <p class="mt-3 text-lg text-muted">
+        <header class="page-head col-span-12 pt-8 lg:col-span-8">
+            <x-station-sign as="p">Apply to join</x-station-sign>
+            <h1 class="page-title">Independent shops in the {{ $district->name }}</h1>
+            <p class="page-lede">
                 Local Goods credits are spent only at independent businesses inside the district. Tell us about your shop. A person at
                 the BID decides; an AI check only suggests. No account needed.
             </p>
-            <ol class="mt-4 list-decimal space-y-1 pl-5 text-muted">
-                <li>You apply. You get a private link to follow your application.</li>
-                <li>We check your address is inside the <a href="{{ route('district') }}" class="{{ $link }}">district boundary</a> and ask Merchant Eligibility Matching (AI) for a suggestion.</li>
-                <li>A BID admin approves or declines, with a reason you can see.</li>
-                <li>You sign in from your link and set up payouts with Stripe (test mode).</li>
-                <li>You're live: employees can spend credits at your shop.</li>
+            <ol class="tour-line mt-8">
+                @foreach ([
+                    'You apply. You get a private link to follow your application.',
+                    null,
+                    'A BID admin approves or declines, with a reason you can see.',
+                    'You sign in from your link and set up payouts with Stripe (test mode).',
+                    'You\'re live: employees can spend credits at your shop.',
+                ] as $i => $text)
+                    <li class="!py-3">
+                        <x-stop-number :n="$i + 1" />
+                        <p class="self-center">
+                            @if ($text === null)
+                                We check your address is inside the <a href="{{ route('district') }}" class="{{ $link }}">district boundary</a> and ask Merchant Eligibility Matching (AI) for a suggestion.
+                            @else
+                                {{ $text }}
+                            @endif
+                        </p>
+                    </li>
+                @endforeach
             </ol>
         </header>
 
         @if ($readOnly)
-            <p id="apply-read-only" class="rounded-2xl bg-band p-4 text-sm"><span class="font-semibold">Read-only.</span> Reviewers can see the form but not send it.</p>
+            <p id="apply-read-only" class="col-span-12 mt-8 border-t-[3px] border-ink bg-band px-4 py-3 text-sm lg:col-span-8"><span class="font-semibold">Read-only.</span> Reviewers can see the form but not send it.</p>
         @endif
 
-        <x-card as="section" aria-labelledby="form-heading">
-            <h2 id="form-heading" class="text-xl font-semibold text-primary">Your shop</h2>
-            <form method="POST" action="{{ route('apply.store') }}" data-busy="Sending your application…" class="mt-4 grid gap-5" novalidate>
+        <section aria-labelledby="form-heading" class="col-span-12 mt-12 lg:col-span-8">
+            <x-station-sign heading-id="form-heading">Your shop</x-station-sign>
+            <form method="POST" action="{{ route('apply.store') }}" data-busy="Sending your application…" class="mt-6 grid gap-6" novalidate>
                 @csrf
                 <fieldset class="contents" @disabled($readOnly)>
                     <x-field name="business_name" id="apply-business_name" label="Business name" hint="The name on your door.">
@@ -72,9 +85,9 @@
                         <input id="apply-{{ ApplyController::HONEYPOT }}" name="{{ ApplyController::HONEYPOT }}" type="text" tabindex="-1" autocomplete="off" value="">
                     </div>
 
-                    <section aria-labelledby="privacy-heading" class="rounded-2xl bg-band p-4 text-sm" data-privacy-note>
-                        <h3 id="privacy-heading" class="font-semibold">Your information</h3>
-                        <ul class="mt-2 list-disc space-y-1 pl-5">
+                    <section aria-labelledby="privacy-heading" class="rule-heavy bg-band px-5 pb-4 text-sm" data-privacy-note>
+                        <h3 id="privacy-heading" class="text-base font-bold">Your information</h3>
+                        <ul class="mt-2 [&>li]:border-b [&>li]:border-line [&>li]:py-2 [&>li:last-child]:border-b-0">
                             <li>We store what you type here: business name, address, category, contact email and your answer about independence.</li>
                             <li>The business name, address and category go to an AI model (Anthropic's Claude) for an eligibility suggestion. Your email and your answer don't.</li>
                             <li>Nothing is shared or sold.</li>
@@ -94,8 +107,8 @@
                     <div><x-button type="submit" :disabled="$readOnly">Send my application</x-button></div>
                 </fieldset>
             </form>
-        </x-card>
+        </section>
 
-        <p class="text-sm text-muted">Already applied? Open the private link you saved, or <a href="{{ route('apply.status') }}" class="{{ $link }}">paste it here</a>.</p>
+        <p class="col-span-12 mt-8 text-sm text-muted lg:col-span-8">Already applied? Open the private link you saved, or <a href="{{ route('apply.status') }}" class="{{ $link }}">paste it here</a>.</p>
     </div>
 @endsection

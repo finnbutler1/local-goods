@@ -1,5 +1,5 @@
 <x-guest-shell title="Choose a new password">
-    <h1 class="text-3xl font-semibold text-primary">Choose a new password</h1>
+    <h1 class="text-[2.5rem] leading-none font-extrabold tracking-[-0.035em] sm:text-5xl">Choose a new password</h1>
 
     <form method="POST" action="{{ route('password.update') }}" data-busy="Saving…" class="mt-6 space-y-5">
         @csrf

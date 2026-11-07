@@ -4,9 +4,9 @@
 <x-rtable class="mt-3" label="District impact by year">
     <table data-rtable="stack" class="w-full min-w-2xl text-left text-sm">
         <caption class="sr-only">Projected district impact by year</caption>
-        <thead class="border-b border-line/70 text-muted">
+        <thead>
             <tr>
-                <th scope="col" class="px-4 py-3 font-semibold">Year</th>
+                <th scope="col" class="py-3 pr-4">Year</th>
                 <th scope="col" class="px-4 py-3 text-right font-semibold">BIDs</th>
                 <th scope="col" class="px-4 py-3 text-right font-semibold">Employers</th>
                 <th scope="col" class="px-4 py-3 text-right font-semibold">Participating employees</th>
@@ -16,17 +16,17 @@
                 <th scope="col" class="px-4 py-3 text-right font-semibold">Average per merchant</th>
             </tr>
         </thead>
-        <tbody class="tabular divide-y divide-line/70">
+        <tbody class="tabular divide-y divide-line">
             @foreach ($district as $year)
                 <tr>
-                    <th scope="row" data-primary class="px-4 py-3 font-semibold">Year {{ $year['year'] }}</th>
-                    <td data-label="BIDs" class="px-4 py-3 text-right">{{ Figures::count($year['bids']) }}</td>
-                    <td data-label="Employers" class="px-4 py-3 text-right">{{ Figures::count($year['employers']) }}</td>
-                    <td data-label="Participating employees" class="px-4 py-3 text-right">{{ Figures::count($year['employees']) }}</td>
-                    <td data-label="Merchants" class="px-4 py-3 text-right">{{ Figures::count($year['merchants']) }}</td>
-                    <td data-label="Spent at independent merchants" class="px-4 py-3 text-right">{{ Figures::dollars($year['spend']) }}</td>
-                    <td data-label="Visits" class="px-4 py-3 text-right">{{ Figures::count($year['visits']) }}</td>
-                    <td data-label="Average per merchant" class="px-4 py-3 text-right">{{ Figures::dollars($year['per_merchant']) }}</td>
+                    <th scope="row" data-primary class="py-3 pr-4 font-bold whitespace-nowrap">Year {{ $year['year'] }}</th>
+                    <td data-label="BIDs" class="ledger-num px-4 py-3 text-right">{{ Figures::count($year['bids']) }}</td>
+                    <td data-label="Employers" class="ledger-num px-4 py-3 text-right">{{ Figures::count($year['employers']) }}</td>
+                    <td data-label="Participating employees" class="ledger-num px-4 py-3 text-right">{{ Figures::count($year['employees']) }}</td>
+                    <td data-label="Merchants" class="ledger-num px-4 py-3 text-right">{{ Figures::count($year['merchants']) }}</td>
+                    <td data-label="Spent at independent merchants" class="ledger-num px-4 py-3 text-right">{{ Figures::dollars($year['spend']) }}</td>
+                    <td data-label="Visits" class="ledger-num px-4 py-3 text-right">{{ Figures::count($year['visits']) }}</td>
+                    <td data-label="Average per merchant" class="ledger-num px-4 py-3 text-right">{{ Figures::dollars($year['per_merchant']) }}</td>
                 </tr>
             @endforeach
         </tbody>
