@@ -21,8 +21,8 @@
         <p class="mt-2 text-center text-xl font-semibold text-ink">Where the money is</p>
         <p class="mt-3 text-lg text-muted">
             Employers pay for credits before anyone spends them. Until an employee spends them at a local merchant and the merchant is paid,
-            that money is a promise Local Goods has made, and it has to be there. This page shows where every cent is,
-            and the check that the money held has always covered every promise.
+            that money is a promise Local Goods has made. The money has to be there. This page shows where every cent is,
+            and a check of whether the money held has always covered every promise.
         </p>
         <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
             <x-money-mode />
@@ -91,9 +91,9 @@
                         <span class="font-semibold">In Stripe (the platform balance):</span>
                         @if ($balances['customer_cents'] !== null)
                             <span class="tabular">{{ Money::format($balances['customer_cents']) }}</span>.
-                            Not the same as the amount held{{ $simulated > 0 ? ', mainly because '.Money::format($simulated).' of it is simulated and never reached Stripe. Also,' : ':' }}
-                            in test mode Stripe takes its card fees from this balance, and it is shared with
-                            other copies of Local Goods and test activity from before the last Reset demo. Reconciliation checks it.
+                            That is not the same as the amount held{{ $simulated > 0 ? ', mainly because '.Money::format($simulated).' of it is simulated and never reached Stripe. Also,' : ':' }}
+                            in test mode Stripe takes its card fees from this balance. It is also shared with
+                            other copies of Local Goods and with test activity from before the last Reset demo. Reconciliation checks it.
                         @else
                             couldn't read it from Stripe just now.
                         @endif
@@ -348,7 +348,7 @@
         <h2 id="meaning-heading" class="text-2xl font-semibold text-primary">What the rule means</h2>
         <p>
             <span class="font-semibold">The rule:</span> the money employers have paid in, less what has been paid out to merchants and refunded to employers,
-            must always cover every promise still open: every employer's unspent credits, every employee's balance, everything owed to merchants,
+            must always cover every promise still open. The open promises are every employer's unspent credits, every employee's balance, everything owed to merchants,
             everything held waiting for a person, and what Local Goods has earned. Each promise counts on its own: one account below zero
             never makes up for another.
         </p>

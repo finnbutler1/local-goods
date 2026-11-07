@@ -80,7 +80,7 @@ class WhereTheMoneyIsAccountsTest extends TestCase
             ->assertSee('data-customer-funds-split', false)
             ->assertSeeInOrder(['Paid through Stripe (test mode)', '$250.00', 'Simulated, no money behind it', $simulated], false)
             ->assertSeeText('The simulated part comes from seeded demo purchases (and any bought while Stripe was off). No money for it ever reached Stripe: it keeps the demo\'s books whole, but it is not money.')
-            ->assertSeeText('Not the same as the amount held, mainly because '.$simulated.' of it is simulated and never reached Stripe.');
+            ->assertSeeText('That is not the same as the amount held, mainly because '.$simulated.' of it is simulated and never reached Stripe.');
 
         // Judges see the split and the reason (customer funds, not earned money), never the Stripe balance.
         $this->signIn(Role::Judge);
