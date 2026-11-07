@@ -14,11 +14,11 @@
 @endphp
 
 <x-app-shell title="Where the Money Is" active="money" context="Customer funds and the solvency rule">
-<div class="space-y-10">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Customer funds and the solvency rule</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Where the Money Is</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">Where the money is</p>
+<div class="mx-auto max-w-6xl space-y-10">
+    <header class="mx-auto max-w-3xl">
+        <x-eyebrow :center="true" class="text-accent-ink">Customer funds and the solvency rule</x-eyebrow>
+        <h1 class="mt-1 text-center text-title font-semibold text-primary">Where the Money Is</h1>
+        <p class="mt-2 text-center text-xl font-semibold text-ink">Where the money is</p>
         <p class="mt-3 text-lg text-muted">
             Employers pay for credits before anyone spends them. Until an employee spends them at a local merchant and the merchant is paid,
             that money is a promise Local Goods has made, and it has to be there. This page shows where every cent is,

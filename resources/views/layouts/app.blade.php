@@ -22,7 +22,7 @@
             <nav aria-label="Site" class="flex items-center gap-1 sm:gap-2">
                 <ul class="hidden items-center gap-6 pr-4 text-sm font-semibold text-primary md:flex">
                     <li><a href="{{ route('home') }}#how-it-works" class="underline-offset-4 hover:underline">How it works</a></li>
-                    <li><a href="{{ route('home') }}#who-its-for" class="underline-offset-4 hover:underline">Who it's for</a></li>
+                    <li><a href="{{ route('home') }}#why-it-matters" class="underline-offset-4 hover:underline">Who it's for</a></li>
                     <li><a href="{{ route('home') }}#trust" class="underline-offset-4 hover:underline">Trust &amp; AI</a></li>
                 </ul>
                 {{-- On phones the three section links live in a menu (ADR 0025). --}}
@@ -33,7 +33,7 @@
                     </x-slot:trigger>
                     <ul>
                         <li><a href="{{ route('home') }}#how-it-works" class="menu-item">How it works</a></li>
-                        <li><a href="{{ route('home') }}#who-its-for" class="menu-item">Who it's for</a></li>
+                        <li><a href="{{ route('home') }}#why-it-matters" class="menu-item">Who it's for</a></li>
                         <li><a href="{{ route('home') }}#trust" class="menu-item">Trust &amp; AI</a></li>
                     </ul>
                 </x-menu>
