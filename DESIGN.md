@@ -71,10 +71,7 @@ typography:
     lineHeight: 1.25
     letterSpacing: "0.1em"
 rounded:
-  lg: "8px"
-  xl: "12px"
-  2xl: "16px"
-  3xl: "24px"
+  md: "8px"
   full: "9999px"
 spacing:
   card-padding: "20px"
@@ -84,7 +81,7 @@ components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "10px 20px"
     height: "44px"
   button-primary-hover:
@@ -94,30 +91,30 @@ components:
   button-accent:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.on-accent}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "10px 20px"
     height: "44px"
   button-secondary:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.primary}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "10px 20px"
     height: "44px"
   button-danger:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.danger}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "10px 20px"
     height: "44px"
   card-surface:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.2xl}"
+    rounded: "{rounded.md}"
     padding: "20px"
   card-night:
     backgroundColor: "{colors.night}"
     textColor: "{colors.on-night}"
-    rounded: "{rounded.2xl}"
+    rounded: "{rounded.md}"
     padding: "20px"
   badge-ok:
     backgroundColor: "{colors.ok-bg}"
@@ -132,7 +129,7 @@ components:
   input:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.xl}"
+    rounded: "{rounded.md}"
     padding: "12px"
 ---
 
@@ -242,23 +239,19 @@ Flat by default. Cards are white with a 1px hairline ring and a 1px bottom rule 
 
 ## Shapes
 
-Currently soft and rounded: cards `rounded-2xl` (16px), fields and inner panels `rounded-xl` (12px), small controls `rounded-lg` (8px), buttons, badges and menu triggers fully round pills, hero panels `rounded-3xl` (24px). Control borders are 2px (`border-2`); card rings are 1px.
+One corner radius, 8px (`rounded-lg`, `rounded-xl`, `rounded-2xl` and `rounded-3xl` all resolve to it through the theme tokens in `app.css`), for cards, panels, fields, menus, toasts and buttons. Fully round pills (`rounded-full`) are only for small status badges, status dots, the spinner, the theme toggle and the menu triggers. Dashed borders mark only "not measured" boxes. Control borders are 2px (`border-2`); card rings are 1px.
 
 The route motif is geometry: a 3px teal line ending in a coral dot (`route-stop`), a 5px line with ink dots and a larger coral local stop (`route-line`), and a 5px teal rail with a coral stop on the left of participating merchant cards (`merchant-rail`, never on candidates). Motion is minimal: 150ms colour transitions, a 1px press, a spinner only when motion is allowed; `prefers-reduced-motion` removes everything else.
 
-### Planned refinements (direction for the coming design pass, not yet built)
-- **Smaller corners:** cards and inputs to about 6 to 8px instead of 16 and 12px.
-- **Buttons:** primary buttons take a modest radius instead of a full pill.
-- **Pills only for small status badges** (and the tiny theme toggle and menu triggers if they still read as pills).
-- **Keep the 3px focus ring** and the 44px targets unchanged.
+### Planned refinements (direction for later passes, not yet built)
 - **Route motif steps back** on ledger, Where the Money Is, fraud-hold and admin pages.
-- Cut remaining generic decoration (extra cards and badges, soft shadows such as `shadow-lg`/`shadow-xl` on the landing mock).
+- Cut remaining generic decoration (extra cards and badges in the landing "Why it matters" grid, `shadow-lg` on the menu panel).
 
 ## Components
 
 ### Buttons
 Calm, pressable, always at least 44px tall on phones.
-- **Shape:** full pill today (`rounded-full`); see planned refinements.
+- **Shape:** 8px radius (`rounded-lg`), never a pill.
 - **Primary (teal):** Route Teal fill, white text, `10px 20px`; hover #085754, pressed #064441 and 1px down. The default action.
 - **Accent (coral):** Local Stop Coral with ink text and the press-edge shadow. One per screen at most.
 - **Secondary:** white fill, 2px teal border and text; hover tint.
@@ -266,7 +259,7 @@ Calm, pressable, always at least 44px tall on phones.
 - **States:** unavailable = grey fill and grey text, not see-through, still focusable if `aria-disabled` so its reason can be read. Busy = spinner plus static busy text ("Paying…"), second submit cancelled. Sizes sm, md, lg; sm stays compact only from 640px.
 
 ### Cards / Containers
-- **Surface:** white, 16px radius, 1px hairline ring, bottom rule, padding 20px (24px from 640px).
+- **Surface:** white, 8px radius, 1px hairline ring, bottom rule, padding 20px (24px from 640px).
 - **Night:** dark in both modes, for headline numbers. **Tint** (#e0f0ee) and **Band** (#e6ecea) for emphasis and grouping.
 - No nested cards; a card never has a shadow beyond the rule.
 
@@ -274,7 +267,7 @@ Calm, pressable, always at least 44px tall on phones.
 Small status words, `text-xs` semibold, `2px 10px`, fully round. Tones: neutral (band), primary, ok, hold, danger, accent. Long text uses `:wrap="true"`. Never colour alone.
 
 ### Inputs / Fields
-- **Style:** white, 2px `muted` border, 12px radius, `12px` padding, at least 16px text on phones; select is redrawn on phones (44px, own chevron).
+- **Style:** white, 2px `muted` border, 8px radius, `12px` padding, at least 16px text on phones; select is redrawn on phones (44px, own chevron).
 - **Anatomy (`<x-field>`):** semibold label above, control, muted hint below, error below that with a flag mark (⚑) in Hold colour; control points at `{id}-hint` and `{id}-error`.
 - **Focus:** border turns teal plus the 3px focus ring. **Error:** `aria-invalid`, and the first invalid field takes focus. **Disabled:** grey.
 
@@ -312,6 +305,7 @@ Logo A, "The daily loop": a teal route loop with two ink stops and one coral loc
 - **Don't** reintroduce forest, cream, paper, amber, sage or the awning.
 - **Don't** add a new font, a new colour world or a new tagline; the Transit lines brand (ADR 0025) is binding.
 - **Don't** use gradients, glows, emoji, decorative blur, or heavy shadows; no `shadow-lg` or `shadow-xl` on new work.
+- **Don't** add a second coral call to action on a screen, put coral fills behind figures, or use a pill for anything bigger than a badge.
 - **Don't** stack cards in cards, or add cards and badges where plain text and a rule will do.
 - **Don't** use the route motif beyond eyebrows, the landing route line and participating merchant cards; never put a merchant rail on a candidate.
 - **Don't** use `break-all`; break at `<wbr>` or `wrap-anywhere-safe`.

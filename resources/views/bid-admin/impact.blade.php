@@ -17,7 +17,7 @@
             Dollars spent at independent merchants, and who took part. Every number is read from the credit ledger and uses
             the same definitions as the employer dashboards, so the two always agree. Employees are counted, never named.
         </p>
-        <p class="mt-3 inline-block rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">
+        <p class="mt-3 inline-block text-sm font-semibold text-ink">
             Demo data: all people and transactions are fictional.
         </p>
         <p class="mt-3 text-sm">

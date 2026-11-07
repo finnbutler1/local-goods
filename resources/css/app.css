@@ -34,6 +34,13 @@
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-display: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
 
+    /* One corner radius, 8px, for cards, panels, fields and buttons (DESIGN.md Shapes).
+       Pills (rounded-full) are only for small badges and round controls. */
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.5rem;
+    --radius-2xl: 0.5rem;
+    --radius-3xl: 0.5rem;
+
     /* Transit lines palette, light mode. Dark mode redefines the same names
        below, so every class switches with the theme. Approved text/background
        pairs are checked against WCAG AA in both modes by
@@ -210,14 +217,6 @@
 }
 
 @layer components {
-    /* Thin dotted "ledger" leader, used between label and figure. */
-    .ledger-rule {
-        background-image: radial-gradient(circle, var(--color-line) 1px, transparent 1.5px);
-        background-size: 8px 3px;
-        background-repeat: repeat-x;
-        background-position: left center;
-    }
-
     /* A wide table that scrolls sideways on phones. Use with role="region",
        tabindex="0" and an aria-label so keyboard users can scroll it too.
        position: relative keeps sr-only text inside it from widening the page. */
@@ -403,7 +402,7 @@
     table[data-rtable='stack'] > :is(tbody, tfoot) > tr {
         margin-bottom: 0.75rem;
         border: 0;
-        border-radius: 1rem;
+        border-radius: 0.5rem;
         padding: 0.75rem 1rem;
         background: var(--color-surface);
         box-shadow: 0 0 0 1px var(--color-line);
