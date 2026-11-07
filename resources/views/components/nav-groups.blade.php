@@ -14,11 +14,11 @@
 @php
     $side = $variant === 'side';
     $itemClass = $side
-        ? 'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:text-on-night aria-[current=page]:before:absolute aria-[current=page]:before:inset-y-2 aria-[current=page]:before:-left-3 aria-[current=page]:before:w-1 aria-[current=page]:before:rounded-full aria-[current=page]:before:bg-night-primary'
+        ? 'side-nav-item group relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:font-bold aria-[current=page]:text-on-night'
         : 'menu-item';
     $headClass = $side
-        ? 'group/head flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left font-semibold text-night-muted hover:bg-night-soft hover:text-on-night'
-        : 'group/head flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-primary hover:bg-band';
+        ? 'group/head flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left font-bold text-on-night hover:bg-night-soft'
+        : 'group/head flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-primary hover:bg-band';
 @endphp
 
 <ul @class(['space-y-1' => $side])>
@@ -45,7 +45,7 @@
                     @endif
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4 shrink-0 motion-safe:transition-transform group-aria-expanded/head:rotate-180" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
                 </button>
-                <ul id="{{ $panelId }}" data-nav-group-panel @class(['mt-1 space-y-1', 'ml-5 border-l border-night-line pl-3' => $side, 'ml-2 border-l border-line pl-2' => ! $side])>
+                <ul id="{{ $panelId }}" data-nav-group-panel @class(['mt-0.5 mb-1.5 space-y-0.5', 'side-nav-line ml-3.5 pl-3.5' => $side, 'ml-2 border-l-2 border-primary pl-2' => ! $side])>
                     @foreach ($group['items'] as $key => $item)
                         <li>
                             <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif class="{{ $itemClass }}">

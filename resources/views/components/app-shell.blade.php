@@ -84,15 +84,15 @@
             </a>
             <p class="mt-2 text-sm font-semibold text-night-muted">Reroute your lunch.</p>
         </div>
-        <nav aria-label="App" class="flex-1 overflow-y-auto px-3">
+        <nav aria-label="App" class="flex-1 overflow-y-auto px-4">
             @if ($grouped)
                 <x-nav-groups :groups="$groups" :active="$active" :unread="$unreadFeedback" variant="side" />
             @else
-            <ul class="space-y-1">
+            <ul class="side-nav-line space-y-0.5 pl-3.5">
                 @foreach ($sideNav as $key => $item)
                     <li>
                         <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
-                           class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:text-on-night aria-[current=page]:before:absolute aria-[current=page]:before:inset-y-2 aria-[current=page]:before:-left-3 aria-[current=page]:before:w-1 aria-[current=page]:before:rounded-full aria-[current=page]:before:bg-night-primary">
+                           class="side-nav-item group relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-[current=page]:bg-night-soft aria-[current=page]:font-bold aria-[current=page]:text-on-night">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
                             {{ $item['label'] }}
                             @if ($key === 'feedback' && $unreadFeedback > 0)
@@ -103,7 +103,7 @@
                 @endforeach
                 @if ($sideMore)
                     <li>
-                        <x-menu id="nav-more" align="left" button-class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-expanded:bg-night-soft aria-expanded:text-on-night">
+                        <x-menu id="nav-more" align="left" button-class="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 font-semibold text-night-muted hover:bg-night-soft hover:text-on-night aria-expanded:bg-night-soft aria-expanded:text-on-night">
                             <x-slot:trigger>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="size-5 shrink-0" aria-hidden="true"><path d="{{ $moreIcon }}"/></svg>
                                 More
@@ -120,7 +120,7 @@
             </ul>
             @endif
         </nav>
-        <div class="m-3 rounded-xl border border-night-line p-4 text-sm text-night-muted">
+        <div class="mx-6 mt-4 mb-6 border-t border-night-line pt-4 text-sm text-night-muted">
             <p class="font-semibold text-on-night">Demo mode</p>
             <p class="mt-1">All people and transactions are fictional.</p>
         </div>
@@ -128,18 +128,18 @@
 
     <div class="pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:pl-64">
         {{-- Top bar --}}
-        <header class="sticky top-0 z-20 border-b border-line bg-page/95 backdrop-blur supports-[backdrop-filter]:bg-page/85">
-            <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
+        <header class="sticky top-0 z-20 border-b-2 border-frame bg-page">
+            <div class="wrap flex min-h-16 items-center justify-between gap-4 py-2.5">
                 <div class="min-w-0">
                     <a href="{{ route('home') }}" class="grid min-h-11 min-w-11 place-items-center rounded-lg lg:hidden" aria-label="Local Goods home">
                         <x-logo :mark-only="true" class="h-8 w-auto sm:hidden" />
                         <x-logo class="hidden h-7 w-auto sm:block" />
                     </a>
-                    <p class="hidden truncate text-sm font-semibold text-muted lg:block">{{ $context }}</p>
+                    <p class="hidden truncate text-sm font-bold lg:block">{{ $context }}</p>
                 </div>
                 <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                     @if ($role === \App\Enums\Role::Judge && ! $votingOnly)
-                        <x-menu id="view-as-menu" button-class="flex items-center gap-1 rounded-full border-2 border-primary px-3 py-1.5 max-lg:min-h-11 text-sm font-semibold whitespace-nowrap text-primary hover:bg-primary-tint aria-expanded:bg-primary-tint active:translate-y-px">
+                        <x-menu id="view-as-menu" button-class="flex min-h-11 items-center gap-1 rounded-lg border-2 border-primary px-3 py-1.5 text-sm font-bold whitespace-nowrap text-primary hover:bg-primary-tint aria-expanded:bg-primary-tint active:translate-y-px">
                             <x-slot:trigger>View As<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></x-slot:trigger>
                             <ul>
                                 @foreach (\App\Support\ViewAs::ROLES as $option)
@@ -151,9 +151,9 @@
                     @endif
                     <x-theme-toggle />
                     @if ($user)
-                        <x-menu id="account-menu" button-class="flex items-center gap-2 rounded-full border border-edge bg-surface py-1 pr-2 pl-1 max-lg:min-h-11 text-sm font-semibold hover:border-primary aria-expanded:border-primary active:translate-y-px sm:pr-3">
+                        <x-menu id="account-menu" button-class="flex min-h-11 items-center gap-2 rounded-full border-2 border-edge bg-surface py-1 pr-2 pl-1 text-sm font-bold hover:border-ink aria-expanded:border-ink active:translate-y-px sm:pr-3">
                             <x-slot:trigger>
-                                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-accent font-display text-on-accent" aria-hidden="true">{{ $initials }}</span>
+                                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-accent font-display text-[0.8125rem] font-extrabold text-on-accent" aria-hidden="true">{{ $initials }}</span>
                                 <span class="sr-only">Account: </span><span class="max-w-40 truncate max-sm:sr-only">{{ $userName }}</span>
                                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" class="size-4 shrink-0" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
                             </x-slot:trigger>
@@ -193,9 +193,9 @@
             </div>
         </header>
 
-        <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 pt-6 pb-8 focus:outline-none sm:px-6 lg:px-10 lg:pt-10 lg:pb-12">
+        <main id="main" tabindex="-1" class="wrap pt-6 pb-8 focus:outline-none lg:pt-10 lg:pb-12">
             @if ($viewAs)
-                <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-band px-4 py-3">
+                <div role="status" class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-accent bg-surface px-4 py-3">
                     <p class="font-semibold">You're viewing as {{ $viewAs->label() }}. This is read-only.</p>
                     <a href="{{ route('judge.view-as') }}" class="tap-target text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline">Back to Judge Home</a>
                 </div>
@@ -206,7 +206,7 @@
         {{-- Shown at every width (the sidebar's demo note is desktop-only). On phones it is
              the last thing on the page, with room under it for the tab bar, the Feedback
              button and the home indicator. --}}
-        <footer class="mx-auto max-w-6xl px-4 pb-[calc(10rem+env(safe-area-inset-bottom))] text-sm text-muted sm:px-6 lg:px-10 lg:pb-8">
+        <footer class="wrap pb-[calc(10rem+env(safe-area-inset-bottom))] text-sm text-muted lg:pb-8">
             Demonstration project. All businesses, people and transactions are fictional.
         </footer>
     </div>
@@ -216,12 +216,12 @@
     @endif
 
     {{-- Mobile bottom tab bar --}}
-    <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t border-night-line bg-night pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] lg:hidden">
+    <nav aria-label="App" class="fixed inset-x-0 bottom-0 z-30 border-t-[6px] border-primary bg-night pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] lg:hidden">
         <ul class="grid {{ $tabColumns }}">
             @foreach ($tabNav as $key => $item)
                 <li>
                     <a href="{{ route($item['route']) }}" @if ($active === $key) aria-current="page" @endif
-                       class="flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-[current=page]:text-night-primary aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4">
+                       class="flex min-h-15 flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-bold text-night-muted hover:text-on-night aria-[current=page]:text-night-primary aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4">
                         <span class="relative">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-6" aria-hidden="true"><path d="{{ $item['icon'] }}"/></svg>
                             @if ($key === 'feedback' && $unreadFeedback > 0)
@@ -234,7 +234,7 @@
             @endforeach
             @if ($grouped)
                 <li>
-                    <x-menu id="tab-menu" direction="up" width="w-[min(22rem,calc(100vw-2rem))]" panel-class="max-h-[calc(100dvh-9rem)] overflow-y-auto" button-class="flex w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-expanded:text-on-night">
+                    <x-menu id="tab-menu" direction="up" width="w-[min(22rem,calc(100vw-2rem))]" panel-class="max-h-[calc(100dvh-9rem)] overflow-y-auto" button-class="flex min-h-15 w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-bold text-night-muted hover:text-on-night aria-expanded:text-on-night">
                         <x-slot:trigger>
                             <span class="relative">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" class="size-6" aria-hidden="true"><path d="{{ $menuIcon }}"/></svg>
@@ -250,7 +250,7 @@
             @endif
             @if ($tabMore)
                 <li>
-                    <x-menu id="tab-more" direction="up" button-class="flex w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-semibold text-night-muted hover:text-on-night aria-expanded:text-on-night">
+                    <x-menu id="tab-more" direction="up" button-class="flex min-h-15 w-full flex-col items-center gap-1 px-1 pt-2.5 pb-2 text-xs font-bold text-night-muted hover:text-on-night aria-expanded:text-on-night">
                         <x-slot:trigger>
                             <span class="relative">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="size-6" aria-hidden="true"><path d="{{ $moreIcon }}"/></svg>
