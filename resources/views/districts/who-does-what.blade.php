@@ -16,8 +16,8 @@
             <x-eyebrow class="text-accent-ink">For Business Improvement Districts</x-eyebrow>
             <h1 class="mt-1 text-title font-semibold text-primary">Who does what</h1>
             <p class="mt-3 text-lg text-muted">
-                Why a BID would use Local Goods rather than build this itself: each step from a shop applying to the BID's report,
-                who handles it and what the software does. The BID keeps the decisions that need local judgment; the rest is software
+                This page explains why a BID would use Local Goods rather than build this itself. It walks through each step from a
+                shop applying to the BID's report, who handles it and what the software does. The BID keeps the decisions that need local judgment; the rest is software
                 and Stripe.
             </p>
         </header>
@@ -121,14 +121,14 @@
                     ['No issued card, so no interchange.', 'The MVP has no card program, and we could not verify the interchange rate, so the model keeps it off.'],
                     ['No admin "Cancel" button on a held in-person payment.', 'The shop is the one who knows the customer paid another way, so only the shop can cancel. An admin\'s Deny already returns the credits.'],
                     ['No card preview: a Stripe Issuing test card next to pay codes.', "Issuing switches on instantly in test mode, but funding cards needs a business account behind an identity check, which we chose not to complete with invented details. We won't show a fake card instead."],
-                    ["Merchants can't sell gift cards, gift certificates or other cash-like items for credits.", 'Buying one with credits would turn credits into cash that could be spent anywhere, which breaks the rule that credits are only spent at local independent shops. The planned employer-funded prepaid card enforces the same principle from the other side, by refusing everywhere except approved shops.'],
+                    ["Merchants can't sell gift cards, gift certificates or other cash-like items for credits.", 'Buying one with credits would turn credits into cash that could be spent anywhere, which breaks the rule that credits are only spent at local independent shops. The planned employer-funded prepaid card would enforce the same principle from the other side, by refusing everywhere except approved shops.'],
                     ['No email sending in the prototype.', "There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead."],
                     ['The Merchant Eligibility Matching AI has no web search.', 'Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides.'],
-                    ["We don't reset the live demo for convenience.", 'Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only.'],
+                    ["We don't reset the live demo for convenience.", 'Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction. It is for local use only.'],
                     ['No BID or employer initiation fee in the product.', 'It is already a lever in the projection model, and a new money path adds risk before judging.'],
                     ['No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source.', 'The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured.'],
-                    ['A fee charged during a three-minute check that the fee setting worked is kept as earned income, not given back.', 'On Oct 28, from 12:08 to 12:11 (fee audit log), the merchant fee was switched on live to check that it worked, and one sale was charged a few cents. We considered building a way to give it back, and decided that a new money path for so small an amount, this close to the freeze, was the wrong trade. Instead we recorded exactly what happened and treated it as earned. Otherwise Local Goods charges nothing.'],
-                    ['Customer money is never used for anything else: not invested, not lent, and new purchases never pay old promises.', "Unspent credits are the employer's money. A check over the whole ledger history, and a guard on every money operation, refuse anything that would leave less money than has been promised."],
+                    ['A fee charged during a three-minute check that the fee setting worked is kept as earned income, not given back.', 'On Oct 28, from 12:08 to 12:11 (fee audit log), the merchant fee was switched on live to check that it worked. One sale was charged a few cents. We considered building a way to give it back. We decided that a new money path for so small an amount, this close to the freeze, was the wrong trade. Instead we recorded exactly what happened and treated it as earned. Otherwise Local Goods charges nothing.'],
+                    ['Customer money is never invested or lent, and new purchases never pay old promises.', "Unspent credits are the employer's money. A guard on every money operation refuses anything that would leave less money than has been promised. A check over the whole ledger history reports any moment when that happened."],
                 ];
             @endphp
             <x-rtable label="What we chose not to build">
