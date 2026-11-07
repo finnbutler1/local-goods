@@ -2,24 +2,10 @@
 
 /* Self-hosted fonts: Vite copies the .woff2 files from these npm packages into
    public/build, so browsers never contact Google or any other font server.
-   Transit lines brand (ADR 0025): Overpass for headings, Atkinson Hyperlegible
-   Next for text. */
-@import '@fontsource-variable/overpass/wght.css';
-@import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
-
-/* Plain zeros: Atkinson Hyperlegible Next only has a slashed zero, so its
-   digits 0-9 come from Overpass (plain zero, tabular figures). Declared after
-   the imports with the same descriptors as Atkinson's own face (weight
-   200 800), so browsers treat both as one family and this face wins for
-   digits. */
-@font-face {
-    font-family: 'Atkinson Hyperlegible Next Variable';
-    font-style: normal;
-    font-display: swap;
-    font-weight: 200 800;
-    src: url('../../node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2') format('woff2-variations');
-    unicode-range: U+0030-0039;
-}
+   Wayfinding (ADR 0038): Public Sans for everything, including large money
+   figures; Overpass Mono only for ledger tables and transaction amounts. */
+@import '@fontsource-variable/public-sans/wght.css';
+@import '@fontsource-variable/overpass-mono/wght.css';
 
 /* A control that can't be used right now: disabled, or aria-disabled (kept
    focusable so its explanation can be read). A button that is loading is
@@ -30,52 +16,59 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Atkinson Hyperlegible Next Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Overpass Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    /* One corner radius, 8px, for cards, panels, fields and buttons (DESIGN.md Shapes).
-       Pills (rounded-full) are only for small badges and round controls. */
-    --radius-lg: 0.5rem;
-    --radius-xl: 0.5rem;
-    --radius-2xl: 0.5rem;
-    --radius-3xl: 0.5rem;
+    /* Two corners: 4px for buttons, fields, badges and menus; 6px for cards
+       and panels. Pills (rounded-full) only for small round controls. */
+    --radius-lg: 0.25rem;
+    --radius-xl: 0.25rem;
+    --radius-2xl: 0.375rem;
+    --radius-3xl: 0.375rem;
 
-    /* Transit lines palette, light mode. Dark mode redefines the same names
-       below, so every class switches with the theme. Approved text/background
-       pairs are checked against WCAG AA in both modes by
-       tests/Unit/ColorContrastTest.php (App\Support\ColorContrast::PAIRS). */
-    --color-page: #f4f6f5;            /* page background */
-    --color-surface: #ffffff;         /* cards */
-    --color-band: #e6ecea;            /* section bands */
-    --color-ink: #121820;             /* body text */
-    --color-muted: #4d5666;           /* secondary text */
-    --color-line: #d3dad8;            /* decorative rules only, never a UI boundary */
-    --color-edge: #7a8494;            /* control borders (3:1) */
-    --color-primary: #0a6b67;         /* teal route line: primary actions, links */
-    --color-primary-hover: #085754;
+    /* Wayfinding palette, light mode: warm map paper, ink, the logo's teal
+       line and coral local stop (ADR 0038). Dark mode redefines the same
+       names below (the night palette), so every class switches with the
+       theme. Approved text/background pairs are checked against WCAG AA in
+       both modes by tests/Unit/ColorContrastTest.php
+       (App\Support\ColorContrast::PAIRS). The logo is drawn with primary,
+       ink and accent (and the night- versions), so those keep the logo
+       files' exact colors (docs/redesign-rules.md). */
+    --color-page: #ede8da;            /* map paper: page background */
+    --color-surface: #f8f5ec;         /* raised paper: cards and panels */
+    --color-band: #e3ddcd;            /* section bands, quiet fills */
+    --color-ink: #121820;             /* body text (logo ink) */
+    --color-muted: #4a5058;           /* secondary text */
+    --color-line: #c8bfa8;            /* decorative rules only, never a UI boundary */
+    --color-frame: #121820;           /* panel and card borders */
+    --color-edge: #7d7564;            /* control borders (3:1) */
+    --color-primary: #0a6b67;         /* teal line (logo): primary actions, links */
+    --color-primary-hover: #08524f;
     --color-primary-pressed: #064441;
     --color-on-primary: #ffffff;
-    --color-primary-tint: #e0f0ee;
-    --color-accent: #e2603a;          /* coral local stop: highlights; ink text on it */
+    --color-primary-tint: #d6e6e1;
+    --color-accent: #e2603a;          /* coral local stop (logo); ink text on it */
+    --color-accent-hover: #ec7d5a;
     --color-on-accent: #121820;
-    --color-accent-ink: #a83c1b;      /* coral-toned text */
+    --color-accent-ink: #a13a1b;      /* coral where it is text */
     --color-route-2: #7a3f9a;         /* plum second line, decoration only */
-    --color-ok: #196a3e;
-    --color-ok-bg: #e0f1e6;
-    --color-hold: #8a4b00;
-    --color-hold-bg: #fcefd9;
-    --color-danger: #b3261e;
-    --color-danger-bg: #fbe5e3;
+    --color-ok: #1e6a3e;
+    --color-ok-bg: #dcebdd;
+    --color-hold: #834700;
+    --color-hold-bg: #f6e5c4;
+    --color-danger: #a8261e;
+    --color-danger-bg: #f6dcd6;
     --color-focus: #5a2d86;
-    --color-disabled-ink: #4d5462;
-    --color-disabled-bg: #dde1e6;
-    /* Night panels (sidebar, footer, tab bar): dark in both modes. */
+    --color-disabled-ink: #4a5058;
+    --color-disabled-bg: #d9d2c0;
+    /* Station signs (sidebar, footer, tab bar, section bands): dark in both modes. */
     --color-night: #121820;
     --color-night-soft: #1f2832;
     --color-night-line: #2f3a45;
     --color-on-night: #edf1f4;
-    --color-night-muted: #a9b2bf;
+    --color-night-muted: #b9c0c5;
     --color-night-primary: #42c4b9;
     --color-night-accent: #ff8a63;
     --color-night-focus: #d7b4ff;
@@ -87,20 +80,22 @@
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
         color-scheme: dark;
-        --color-page: #0d1216;
-        --color-surface: #161d23;
-        --color-band: #1b242b;
+        --color-page: #0e1621;
+        --color-surface: #172230;
+        --color-band: #1d2a3a;
         --color-ink: #edf1f4;
-        --color-muted: #a4adba;
-        --color-line: #2a333c;
-        --color-edge: #68737f;
+        --color-muted: #a7b3c0;
+        --color-line: #2c3a4b;
+        --color-frame: #3d4c5e;
+        --color-edge: #6f7f92;
         --color-primary: #42c4b9;
         --color-primary-hover: #6ad4cb;
         --color-primary-pressed: #2ea89e;
-        --color-on-primary: #0d1216;
-        --color-primary-tint: #10302d;
+        --color-on-primary: #0e1621;
+        --color-primary-tint: #12302f;
         --color-accent: #ff8a63;
-        --color-on-accent: #0d1216;
+        --color-accent-hover: #ffa181;
+        --color-on-accent: #0e1621;
         --color-accent-ink: #ff9c7a;
         --color-route-2: #c08ae0;
         --color-ok: #6fd49a;
@@ -111,29 +106,31 @@
         --color-danger-bg: #3a1512;
         --color-focus: #d7b4ff;
         --color-disabled-ink: #b6bec9;
-        --color-disabled-bg: #2a333c;
-        --color-night: #080b0e;
-        --color-night-soft: #161d23;
-        --color-night-line: #252e36;
+        --color-disabled-bg: #2a3646;
+        --color-night: #070b10;
+        --color-night-soft: #172230;
+        --color-night-line: #26313d;
     }
 }
 
 :root[data-theme='dark'] {
     color-scheme: dark;
-    --color-page: #0d1216;
-    --color-surface: #161d23;
-    --color-band: #1b242b;
+    --color-page: #0e1621;
+    --color-surface: #172230;
+    --color-band: #1d2a3a;
     --color-ink: #edf1f4;
-    --color-muted: #a4adba;
-    --color-line: #2a333c;
-    --color-edge: #68737f;
+    --color-muted: #a7b3c0;
+    --color-line: #2c3a4b;
+    --color-frame: #3d4c5e;
+    --color-edge: #6f7f92;
     --color-primary: #42c4b9;
     --color-primary-hover: #6ad4cb;
     --color-primary-pressed: #2ea89e;
-    --color-on-primary: #0d1216;
-    --color-primary-tint: #10302d;
+    --color-on-primary: #0e1621;
+    --color-primary-tint: #12302f;
     --color-accent: #ff8a63;
-    --color-on-accent: #0d1216;
+    --color-accent-hover: #ffa181;
+    --color-on-accent: #0e1621;
     --color-accent-ink: #ff9c7a;
     --color-route-2: #c08ae0;
     --color-ok: #6fd49a;
@@ -144,10 +141,10 @@
     --color-danger-bg: #3a1512;
     --color-focus: #d7b4ff;
     --color-disabled-ink: #b6bec9;
-    --color-disabled-bg: #2a333c;
-    --color-night: #080b0e;
-    --color-night-soft: #161d23;
-    --color-night-line: #252e36;
+    --color-disabled-bg: #2a3646;
+    --color-night: #070b10;
+    --color-night-soft: #172230;
+    --color-night-line: #26313d;
 }
 
 :root {
@@ -169,14 +166,48 @@
         }
     }
 
+    html {
+        scrollbar-color: var(--color-edge) var(--color-page);
+    }
+
     body {
         font-feature-settings: 'kern', 'liga';
+        caret-color: var(--color-primary);
+    }
+
+    ::selection {
+        background: var(--color-primary);
+        color: var(--color-on-primary);
     }
 
     h1, h2, h3, h4, .font-display {
         font-family: var(--font-display);
-        letter-spacing: -0.015em;
+        letter-spacing: -0.025em;
         text-wrap: balance;
+    }
+
+    a {
+        text-underline-offset: 0.2em;
+    }
+
+    /* Figures in tables line up. */
+    table {
+        font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    /* Text fields and selects: the control edge, raised paper, at least 44px.
+       Classes on a field still win. */
+    :is(input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range']), select, textarea) {
+        border-color: var(--color-edge);
+        background-color: var(--color-surface);
+    }
+
+    :is(input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range']), select) {
+        min-height: 2.75rem;
+    }
+
+    input::placeholder, textarea::placeholder {
+        color: var(--color-muted);
     }
 
     /* Every enabled button looks pressable. */
@@ -225,14 +256,14 @@
         overflow-x: auto;
     }
 
-    /* Transit motif, used in three places only (ADR 0025): section eyebrows
-       (<x-eyebrow>), the landing hero's route line and merchant cards. */
+    /* The route motif (ADR 0038): a short teal line ending in a ringed stop,
+       before a section's small label (<x-eyebrow>). Decorative only. */
     .route-stop {
         position: relative;
         display: inline-block;
         flex: none;
-        width: 1.5rem;
-        height: 0.75rem;
+        width: 1.75rem;
+        height: 0.875rem;
     }
 
     .route-stop::before {
@@ -240,9 +271,9 @@
         position: absolute;
         top: 50%;
         left: 0;
-        right: 0.375rem;
-        height: 3px;
-        margin-top: -1.5px;
+        right: 0.5rem;
+        height: 4px;
+        margin-top: -2px;
         border-radius: 2px;
         background: var(--color-primary);
     }
@@ -252,11 +283,99 @@
         position: absolute;
         top: 50%;
         right: 0;
-        width: 0.625rem;
-        height: 0.625rem;
-        margin-top: -0.3125rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        margin-top: -0.4375rem;
         border-radius: 50%;
-        background: var(--color-accent);
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 3px var(--color-ink);
+    }
+
+    /* Station sign (<x-station-sign>): a section title on a dark band. */
+    .station-sign {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 3rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        background: var(--color-night);
+        color: var(--color-on-night);
+    }
+
+    .station-sign-label {
+        font-family: var(--font-display);
+        font-size: 1.0625rem;
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-wrap: balance;
+    }
+
+    .station-sign-dots {
+        display: flex;
+        flex: none;
+        gap: 0.375rem;
+    }
+
+    .station-sign-dots i {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 50%;
+        background: var(--color-on-night);
+    }
+
+    .station-sign-dots i.is-local {
+        background: var(--color-night-accent);
+    }
+
+    /* Sidebar menus: the pages sit on a teal line, and the current page is
+       the coral stop on it (<x-nav-groups>, app-shell). */
+    .side-nav-line {
+        position: relative;
+    }
+
+    .side-nav-line::before {
+        content: '';
+        position: absolute;
+        top: 0.375rem;
+        bottom: 0.375rem;
+        left: 0;
+        width: 4px;
+        border-radius: 2px;
+        background: var(--color-night-primary);
+    }
+
+    .side-nav-line .side-nav-item[aria-current='page']::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -1.1875rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        margin-top: -0.4375rem;
+        border-radius: 50%;
+        background: var(--color-night-accent);
+        box-shadow: 0 0 0 3px var(--color-night);
+    }
+
+    /* Route stop number (<x-stop-number>): a ringed stop with its number. */
+    .stop-number {
+        display: inline-grid;
+        flex: none;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 6px var(--color-ink);
+        color: var(--color-ink);
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
     }
 
     /* The day as a route: <ol class="route-line"> with one li.route-line-local.
@@ -298,7 +417,8 @@
         width: 0.8rem;
         height: 0.8rem;
         border-radius: 50%;
-        background: var(--color-ink);
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 3px var(--color-ink);
     }
 
     .route-line .route-line-local {
@@ -311,7 +431,7 @@
         width: 1.4rem;
         height: 1.4rem;
         background: var(--color-accent);
-        box-shadow: 0 0 0 3px var(--color-page);
+        box-shadow: inset 0 0 0 3px var(--color-ink), 0 0 0 3px var(--color-page);
     }
 
     /* Merchant card: a teal rail on the left with a stop on it. */
@@ -337,7 +457,8 @@
     }
 
     .bg-night .route-stop::after {
-        background: var(--color-night-accent);
+        background: var(--color-night);
+        box-shadow: inset 0 0 0 3px var(--color-on-night);
     }
 }
 
@@ -359,6 +480,23 @@
         display: inline-block;
         animation: spin 0.8s linear infinite;
     }
+}
+
+/* Plain ruled tables (ADR 0038): small uppercase column names over a heavy
+   ink rule, thin rules between rows, amounts in Overpass Mono. Unlayered,
+   so it wins over the cells' utility classes. */
+table[data-rtable] > thead > tr > th {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    border-bottom: 3px solid var(--color-frame);
+}
+
+table[data-rtable] > :is(tbody, tfoot) > tr > :is(td, th).tabular {
+    font-family: var(--font-mono);
+    letter-spacing: -0.01em;
 }
 
 /* Responsive tables (<table data-rtable>, usually inside <x-rtable>). From
@@ -400,12 +538,12 @@
     }
 
     table[data-rtable='stack'] > :is(tbody, tfoot) > tr {
-        margin-bottom: 0.75rem;
         border: 0;
-        border-radius: 0.5rem;
-        padding: 0.75rem 1rem;
-        background: var(--color-surface);
-        box-shadow: 0 0 0 1px var(--color-line);
+        border-top: 2px solid var(--color-frame);
+        border-radius: 0;
+        padding: 0.75rem 0 1rem;
+        background: transparent;
+        box-shadow: none;
     }
 
     table[data-rtable='stack'] > :is(tbody, tfoot) > tr > :is(td, th) {
@@ -478,10 +616,11 @@
     width: 100%;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 0.5rem;
+    min-height: 2.75rem;
+    border-radius: 0.25rem;
     padding: 0.625rem 0.75rem;
     text-align: left;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-ink);
 }
@@ -493,11 +632,12 @@
 
 .menu-item[aria-current]::before {
     content: '';
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.625rem;
+    height: 0.625rem;
     flex: none;
     border-radius: 9999px;
     background: var(--color-accent);
+    box-shadow: inset 0 0 0 2px var(--color-ink);
 }
 
 /* Theme toggle icon: a moon offers dark mode, a sun offers light mode. */
@@ -536,6 +676,41 @@
 
 @utility tabular {
     font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Large money figures (balances, totals): Public Sans bold, tabular. */
+@utility money {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.02em;
+}
+
+/* Ledger tables and transaction amounts: Overpass Mono, tabular. */
+@utility ledger-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.01em;
+}
+
+/* The page container: centered, 1240px at most, with one strong left edge
+   that headings, text, tables and forms all align to. */
+@utility wrap {
+    width: 100%;
+    max-width: 77.5rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+
+    @media (width >= 48rem) {
+        padding-inline: 2rem;
+    }
+}
+
+/* Twelve columns inside the container. */
+@utility grid-12 {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
 }
 
 /* A standalone text link (not one inside a sentence) that must be 44px tall

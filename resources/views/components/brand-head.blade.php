@@ -9,8 +9,8 @@
 <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#f4f6f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0d1216" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ede8da" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1621" media="(prefers-color-scheme: dark)">
 <script>
     document.documentElement.classList.add('js');
     try {
