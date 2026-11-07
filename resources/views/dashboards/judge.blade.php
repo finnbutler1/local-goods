@@ -2,9 +2,9 @@
     <div class="mx-auto max-w-3xl space-y-10">
         <header>
             <x-eyebrow :center="true" class="text-accent-ink">Reviewer home</x-eyebrow>
-            <h1 class="mt-1 text-center text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
-            @include('partials.one-minute-summary', ['class' => 'mt-3 text-lg'])
-            <p class="mt-3 text-lg text-muted">
+            <h1 class="mt-3 text-center text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+            @include('partials.one-minute-summary', ['class' => 'mt-6 text-base leading-7'])
+            <p class="mt-4 text-base leading-7 text-muted">
                 Thank you for reviewing Local Goods. Your login is read-only: look at anything, change nothing.
                 Use the Feedback button on any page to tell me what works and what doesn't.
             </p>
@@ -49,25 +49,25 @@
             </x-card>
         @endif
 
-        <x-card as="section" aria-labelledby="money-heading">
-            <h2 id="money-heading" class="text-2xl font-semibold text-primary">
-                <a href="{{ route('money') }}" class="underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Where the Money Is</a>
+        <section aria-labelledby="money-heading" class="border-t border-line pt-5">
+            <h2 id="money-heading" class="text-xl font-semibold text-ink">
+                <a href="{{ route('money') }}" class="text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Where the Money Is</a>
             </h2>
             <p class="mt-2">
                 Employers' money held for their staff is kept apart from anything Local Goods earns, and a check over the whole ledger history
                 shows that every promise has always had money behind it.
             </p>
-        </x-card>
+        </section>
 
-        <x-card as="section" aria-labelledby="model-heading">
-            <h2 id="model-heading" class="text-2xl font-semibold text-primary">
-                <a href="{{ route('business-model') }}" class="underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Business Model</a>
+        <section aria-labelledby="model-heading" class="border-t border-line pt-5">
+            <h2 id="model-heading" class="text-xl font-semibold text-ink">
+                <a href="{{ route('business-model') }}" class="text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Business Model</a>
             </h2>
             <p class="mt-2">
                 How Local Goods could pay for itself in the Golden Triangle, DC-wide and nationally: a projected P&amp;L, what one district needs
                 to break even, and every assumption with its source. A projection, not results.
             </p>
-        </x-card>
+        </section>
 
         <section aria-labelledby="new-heading">
             <h2 id="new-heading" class="text-2xl font-semibold text-primary">
@@ -121,13 +121,12 @@
         <section aria-labelledby="tour-heading">
             <h2 id="tour-heading" class="text-2xl font-semibold text-primary">Guided tour</h2>
             <p class="mt-1 text-muted">Each step opens the screen as that role would see it, read-only.</p>
-            <ol class="mt-4 grid gap-3 md:grid-cols-2">
+            <ol class="mt-4 divide-y divide-line border-y border-line">
                 @foreach ($tour as $i => $step)
-                    {{-- Phones: the number sits beside the title and the text uses the card's full width. --}}
-                    <x-card as="li" class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:items-start">
-                        <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-display text-lg font-semibold text-on-primary" aria-hidden="true">{{ $i + 1 }}</span>
-                        <div class="contents sm:block sm:min-w-0">
-                            <h3 class="flex flex-wrap items-center gap-2 text-xl font-semibold">
+                    <li class="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3 py-4">
+                        <span class="pt-1.5 text-sm font-semibold tabular-nums text-muted" aria-hidden="true">{{ $i + 1 }}</span>
+                        <div class="min-w-0">
+                            <h3 class="flex flex-wrap items-center gap-2 text-lg font-semibold">
                                 <a href="{{ $step['url'] }}" class="tap-target text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">
                                     <span class="sr-only">Step {{ $i + 1 }}: </span>{{ $step['title'] }}
                                 </a>
@@ -135,9 +134,9 @@
                                     <x-badge tone="neutral" class="font-sans">Coming in a later build</x-badge>
                                 @endunless
                             </h3>
-                            <p class="col-span-2 text-muted sm:col-span-1 sm:mt-1">{{ $step['look_for'] }}</p>
+                            <p class="text-muted">{{ $step['look_for'] }}</p>
                         </div>
-                    </x-card>
+                    </li>
                 @endforeach
             </ol>
         </section>

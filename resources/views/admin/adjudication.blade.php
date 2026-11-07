@@ -4,11 +4,11 @@
 @endphp
 
 <x-app-shell title="Adjudication" active="adjudication" context="Local Goods platform">
-<div class="space-y-10">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Adjudication</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">Blind adjudication</p>
+<div class="mx-auto max-w-6xl space-y-10">
+    <header class="mx-auto max-w-3xl">
+        <x-eyebrow :center="true" class="text-accent-ink">Platform admin</x-eyebrow>
+        <h1 class="mt-1 text-center text-title font-semibold text-primary">Adjudication</h1>
+        <p class="mt-2 text-center text-xl font-semibold text-ink">Blind adjudication</p>
         <p class="mt-3 text-lg text-muted">
             Named BID and contest-judge reviewers vote, blind, on the eval cases where your label and the AI disagree.
             The same number of cases where you agreed are mixed in as controls, so nobody can tell which cases are disputed.
