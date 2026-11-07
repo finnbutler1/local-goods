@@ -111,20 +111,22 @@
         <h2 id="why-heading" class="mx-auto mt-2 max-w-2xl text-center text-3xl font-semibold text-primary sm:text-4xl">Everyone gains. The district gains most.</h2>
 
         <div class="mt-12 grid gap-4 lg:grid-cols-4">
-            <x-card as="article" aria-labelledby="gain-district" tone="tint" class="lg:col-span-4" padding="p-8 lg:p-10">
+            <x-card as="article" aria-labelledby="gain-district" tone="tint" class="lg:col-span-4" padding="p-6 lg:p-8">
                 <p class="text-sm font-semibold uppercase tracking-widest text-muted">Most of all</p>
-                <h3 id="gain-district" class="mt-2 text-4xl font-semibold text-primary">The district</h3>
+                <h3 id="gain-district" class="mt-2 text-3xl font-semibold text-primary">The district</h3>
                 <p class="mt-3 max-w-3xl text-lg text-ink">
                     More foot traffic and more spending at the independent shops, restaurants and services that give the Golden Triangle
                     its character. A livelier district is good for everyone who works, lives or does business in it.
                 </p>
             </x-card>
 
-            <article aria-labelledby="gain-employers" class="relative flex flex-col overflow-hidden rounded-3xl bg-night p-8 text-on-night lg:col-span-2 lg:row-span-2 lg:p-10">
-                <x-badge tone="accent" class="self-start">For HR teams</x-badge>
-                <h3 id="gain-employers" class="mt-5 text-4xl font-semibold">Employers</h3>
+            <article aria-labelledby="gain-employers" class="relative flex flex-col justify-between gap-8 overflow-hidden rounded-2xl bg-night p-6 text-on-night lg:col-span-2 lg:row-span-3 lg:p-8">
+                <div>
+                <p class="text-sm font-semibold uppercase tracking-widest text-night-muted">For HR teams</p>
+                <h3 id="gain-employers" class="mt-2 text-3xl font-semibold">Employers</h3>
                 <p class="mt-3 text-lg text-night-muted">A benefit your staff actually use, because it shows up at lunch, not in a portal.</p>
-                <ul class="mt-8 space-y-4">
+                </div>
+                <ul class="space-y-6">
                     @foreach ([
                         'A practical way to improve the streets around your own office.',
                         'A livelier neighborhood can make an office easier to recruit to, easier to stay at and more worth coming in to; a pilot would measure how much.',
@@ -137,7 +139,7 @@
                         </li>
                     @endforeach
                 </ul>
-                <div class="mt-auto pt-10">
+                <div>
                     <x-button variant="inverse" href="#request-demo">Request a demo for your team</x-button>
                 </div>
             </article>
@@ -147,9 +149,9 @@
                 ['gain-employees', 'For staff', 'Employees', 'A perk that makes the workday better: lunch, coffee, errands. And a reason to discover the neighborhood you already spend most of your week in.', []],
                 ['gain-bid', 'For the Golden Triangle', 'The BID', 'A measurable, privacy-respecting way to support the district\'s independent businesses. Spending and participation are counted from the ledger; employees are never named.', [['who-does-what', 'Who does what'], ['district', 'The district map']]],
             ] as [$id, $eyebrow, $title, $body, $links])
-                <x-card as="article" aria-labelledby="{{ $id }}" class="lg:col-span-2" padding="p-8">
+                <x-card as="article" aria-labelledby="{{ $id }}" class="lg:col-span-2" padding="p-6 lg:p-8">
                     <p class="text-sm font-semibold uppercase tracking-widest text-muted">{{ $eyebrow }}</p>
-                    <h3 id="{{ $id }}" class="mt-2 text-3xl font-semibold text-primary">{{ $title }}</h3>
+                    <h3 id="{{ $id }}" class="mt-2 text-2xl font-semibold text-primary">{{ $title }}</h3>
                     <p class="mt-3 text-muted">{{ $body }}</p>
                     @if ($links !== [])
                         <p class="mt-4 flex flex-wrap gap-x-5 gap-y-1">
