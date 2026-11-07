@@ -1,8 +1,8 @@
 <x-app-shell title="Dashboard" active="dashboard" context="CUA Busch School AI Vibe Coding Contest">
-    <div class="space-y-10">
-        <header class="max-w-3xl">
-            <x-eyebrow class="text-accent-ink">Reviewer home</x-eyebrow>
-            <h1 class="mt-1 text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+    <div class="mx-auto max-w-3xl space-y-10">
+        <header>
+            <x-eyebrow class="justify-center text-accent-ink">Reviewer home</x-eyebrow>
+            <h1 class="mt-1 text-center text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             @include('partials.one-minute-summary', ['class' => 'mt-3 text-lg'])
             <p class="mt-3 text-lg text-muted">
                 Thank you for reviewing Local Goods. Your login is read-only: look at anything, change nothing.
@@ -11,7 +11,7 @@
         </header>
 
         @if ($adjudication && $adjudication['can_vote'])
-            <x-card as="section" tone="night" aria-labelledby="adjudicate-heading" class="max-w-3xl">
+            <x-card as="section" tone="night" aria-labelledby="adjudicate-heading">
                 <h2 id="adjudicate-heading" class="text-2xl font-semibold text-on-night">
                     <a href="{{ route('adjudication.show') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-on-night">Help check the AI, about 5 minutes</a>
                 </h2>
@@ -28,7 +28,7 @@
                 </p>
             </x-card>
         @elseif ($adjudication)
-            <x-card as="section" aria-labelledby="independent-check-heading" class="max-w-3xl border-l-4 border-l-primary">
+            <x-card as="section" aria-labelledby="independent-check-heading" class="border-l-4 border-l-primary">
                 <h2 id="independent-check-heading" class="text-2xl font-semibold text-primary">Independent check of the AI</h2>
                 <p class="mt-2">
                     Where my hand labels and the AI disagree, invited BID staff and contest judges rate each disputed case blind: they see the redemption's facts, never my label or the AI's call.
@@ -49,7 +49,7 @@
             </x-card>
         @endif
 
-        <x-card as="section" aria-labelledby="money-heading" class="max-w-3xl">
+        <x-card as="section" aria-labelledby="money-heading">
             <h2 id="money-heading" class="text-2xl font-semibold text-primary">
                 <a href="{{ route('money') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Where the Money Is</a>
             </h2>
@@ -59,7 +59,7 @@
             </p>
         </x-card>
 
-        <x-card as="section" aria-labelledby="model-heading" class="max-w-3xl">
+        <x-card as="section" aria-labelledby="model-heading">
             <h2 id="model-heading" class="text-2xl font-semibold text-primary">
                 <a href="{{ route('business-model') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business Model</a>
             </h2>
@@ -69,7 +69,7 @@
             </p>
         </x-card>
 
-        <section aria-labelledby="new-heading" class="max-w-3xl">
+        <section aria-labelledby="new-heading">
             <h2 id="new-heading" class="text-2xl font-semibold text-primary">
                 What's new {{ $since ? 'since your last visit' : 'lately' }}
             </h2>
@@ -100,7 +100,7 @@
             @endif
         </section>
 
-        <section aria-labelledby="about-heading" class="max-w-3xl">
+        <section aria-labelledby="about-heading">
             <h2 id="about-heading" class="text-2xl font-semibold text-primary">Why Local Goods exists</h2>
             <div class="mt-3 space-y-3 text-lg">
                 <p>

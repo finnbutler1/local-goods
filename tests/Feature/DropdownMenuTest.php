@@ -164,7 +164,7 @@ class DropdownMenuTest extends TestCase
     {
         $menu = $this->menu($this->get('/')->assertOk()->getContent(), 'site-menu');
 
-        foreach (['#how-it-works' => 'How it works', '#who-its-for' => "Who it's for", '#trust' => 'Trust &amp; AI'] as $anchor => $label) {
+        foreach (['#how-it-works' => 'How it works', '#why-it-matters' => "Who it's for", '#trust' => 'Trust &amp; AI'] as $anchor => $label) {
             $this->assertStringContainsString('href="'.route('home').$anchor.'" class="menu-item">'.$label.'</a>', $menu);
         }
         $this->assertStringContainsString('<span class="sr-only">Site menu</span>', $menu);
