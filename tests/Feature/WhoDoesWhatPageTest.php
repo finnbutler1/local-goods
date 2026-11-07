@@ -43,7 +43,7 @@ class WhoDoesWhatPageTest extends TestCase
         $html = $this->get('/who-does-what?step=reconcile')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('/id="step-tab-reconcile"[^>]*aria-selected="true"/', $html);
-        $this->assertStringContainsString('Local Goods\' platform admin does this, not the BID.', html_entity_decode($html, ENT_QUOTES));
+        $this->assertStringContainsString('Local Goods\' platform admin handles reconciliation.', html_entity_decode($html, ENT_QUOTES));
         $this->get('/who-does-what?step=nonsense')->assertOk();
     }
 

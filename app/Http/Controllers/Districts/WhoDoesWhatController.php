@@ -48,7 +48,7 @@ class WhoDoesWhatController extends Controller
         'onboard' => [
             'title' => 'Onboard', 'who' => [self::STRIPE, self::LOCAL_GOODS],
             'software' => 'Creates the shop\'s sign-in from its status link and opens Stripe Express. Stripe collects the bank and identity details; Local Goods never sees them.',
-            'bid' => 'Nothing to do. It may answer the shop\'s questions.',
+            'bid' => 'Nothing to do, though it may answer the shop\'s questions.',
             'route' => 'merchant.dashboard', 'screen' => 'Merchant dashboard', 'access' => 'The shop\'s own sign-in (judges can view the demo shop)',
         ],
         'live' => [
@@ -66,7 +66,7 @@ class WhoDoesWhatController extends Controller
         'reconcile' => [
             'title' => 'Reconcile', 'who' => [self::LOCAL_GOODS, self::STRIPE],
             'software' => 'Matches Local Goods\' ledger against Stripe\'s records: payments, transfers, reversals and refunds. It flags anything that doesn\'t match.',
-            'bid' => 'Nothing. Local Goods\' platform admin does this, not the BID.',
+            'bid' => 'Nothing: Local Goods\' platform admin handles reconciliation.',
             'route' => 'admin.reconciliation', 'screen' => 'Reconciliation', 'access' => 'Local Goods platform admin only',
         ],
         'report' => [
