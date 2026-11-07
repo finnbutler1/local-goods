@@ -6,7 +6,7 @@
     {{-- Hero --}}
     <section aria-labelledby="hero-heading" class="mx-auto overflow-x-clip max-w-6xl px-4 pt-10 pb-20 sm:px-6 lg:pt-16 lg:pb-28">
         <div class="mx-auto max-w-3xl text-center">
-            <x-eyebrow class="justify-center text-accent-ink">For employers in the Golden Triangle · Washington, DC</x-eyebrow>
+            <x-eyebrow :center="true" class="text-accent-ink">For employers in the Golden Triangle · Washington, DC</x-eyebrow>
             <h1 id="hero-heading" class="mt-4 text-title leading-[1.05] font-semibold text-primary lg:text-6xl">
                 You work here.<br>
                 <span>Spend here.</span>
@@ -32,14 +32,16 @@
         {{-- Illustration of the wallet, built in HTML so it stays sharp and needs no image file. --}}
         <div class="relative mx-auto mt-16 w-full max-w-sm" role="img"
              aria-label="Example employee wallet: $120.00 available, with a $12.90 lunch at Press Room Deli approved after an AI fraud check.">
-            <div class="absolute -inset-4 -z-10 rotate-3 rounded-[2.5rem] bg-band" aria-hidden="true"></div>
-            <div aria-hidden="true" class="overflow-hidden rounded-[2rem] bg-surface shadow-[0_30px_60px_-30px_rgb(18_24_32/0.55)] ring-1 ring-line">
+            <div aria-hidden="true" class="overflow-hidden rounded-lg bg-surface ring-1 ring-line shadow-[0_1px_0_0_var(--color-line)]">
                 <div class="relative bg-night px-6 pt-7 pb-8 text-on-night">
                     <div class="flex items-center justify-between text-sm">
                         <span class="font-semibold uppercase tracking-widest text-night-muted">Available</span>
-                        <span class="font-display font-semibold">Local Goods</span>
+                        <span class="flex items-center gap-2">
+                            <span class="font-display font-semibold">Local Goods</span>
+                            <span class="rounded px-1.5 py-0.5 text-xs font-semibold text-night-muted ring-1 ring-night-line">Demo</span>
+                        </span>
                     </div>
-                    <p class="tabular mt-3 font-display text-6xl font-semibold text-night-accent">$120.00</p>
+                    <p class="tabular mt-3 font-display text-6xl font-semibold">$120.00</p>
                     <p class="mt-2 text-sm text-night-muted">$150.00 added monthly by your employer</p>
                 </div>
                 <ul class="divide-y divide-line/70 px-6 py-2 text-sm">
@@ -56,20 +58,17 @@
                         </li>
                     @endforeach
                 </ul>
+                <p class="flex items-center gap-2 border-t border-line px-6 py-3 text-sm font-semibold text-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                    AI fraud check passed
+                </p>
             </div>
-            <div aria-hidden="true" class="absolute -bottom-5 -left-1 flex items-center gap-2 rounded-full bg-primary py-2 pr-4 pl-2 text-sm font-semibold text-on-primary shadow-lg sm:-left-10">
-                <span class="grid size-7 place-items-center rounded-full bg-accent text-on-accent">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
-                </span>
-                AI fraud check passed
-            </div>
-            <p aria-hidden="true" class="absolute -top-3 right-4 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">Demo</p>
         </div>
     </section>
 
     {{-- The problem: the commute-desk-commute loop, named without blaming anyone --}}
     <section id="the-problem" aria-labelledby="problem-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 pb-20 sm:px-6">
-        <div class="mx-auto max-w-3xl border-l-4 border-accent pl-6">
+        <div class="mx-auto max-w-3xl border-l-4 border-primary pl-6">
             <x-eyebrow class="text-accent-ink">The problem</x-eyebrow>
             <h2 id="problem-heading" class="mt-2 text-3xl font-semibold text-primary sm:text-4xl">The commute-desk-commute loop</h2>
             <p class="mt-5 text-lg leading-relaxed text-ink">
@@ -83,12 +82,12 @@
     {{-- How it works --}}
     <section id="how-it-works" aria-labelledby="how-heading" class="scroll-mt-6 border-y border-line bg-surface">
         <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-            <x-eyebrow class="justify-center text-accent-ink">How it works</x-eyebrow>
+            <x-eyebrow :center="true" class="text-accent-ink">How it works</x-eyebrow>
             <h2 id="how-heading" class="mx-auto mt-2 max-w-2xl text-center text-3xl font-semibold text-primary sm:text-4xl">Three steps from payroll perk to a busier block.</h2>
             <div class="relative mt-14">
             {{-- Runs from the centre of circle 1 to the centre of circle 3 (circles are 3.5rem, column gap 2rem),
                  so the circles cover both ends exactly. Keep in sync with size-14 and md:gap-8 below. --}}
-            <div class="ledger-rule absolute top-[1.625rem] left-7 hidden h-1 w-[calc((100%_-_4rem)*2/3_+_4rem)] md:block" aria-hidden="true"></div>
+            <div class="absolute top-[calc(1.75rem-1.5px)] left-7 hidden h-[3px] bg-primary w-[calc((100%_-_4rem)*2/3_+_4rem)] md:block" aria-hidden="true"></div>
             <ol class="relative grid gap-12 md:grid-cols-3 md:gap-8">
                 @foreach ([
                     ['Your company buys credits', 'Fund a monthly allowance for each employee. One invoice, no cards to issue, nothing for staff to sign up for beyond an app.'],
@@ -108,7 +107,7 @@
 
     {{-- Why it matters: the district first, then everyone else who gains (ADR 0024) --}}
     <section id="why-it-matters" aria-labelledby="why-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
-        <x-eyebrow class="justify-center text-accent-ink">Why it matters</x-eyebrow>
+        <x-eyebrow :center="true" class="text-accent-ink">Why it matters</x-eyebrow>
         <h2 id="why-heading" class="mx-auto mt-2 max-w-2xl text-center text-3xl font-semibold text-primary sm:text-4xl">Everyone gains. The district gains most.</h2>
 
         <div class="mt-12 grid gap-4 lg:grid-cols-4">
@@ -133,13 +132,13 @@
                         'No cards to issue: the employee\'s phone is the card.',
                     ] as $point)
                         <li class="flex gap-3">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0 text-night-accent" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0 text-night-primary" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
                             <span>{{ $point }}</span>
                         </li>
                     @endforeach
                 </ul>
                 <div class="mt-auto pt-10">
-                    <x-button variant="accent" href="#request-demo">Request a demo for your team</x-button>
+                    <x-button variant="inverse" href="#request-demo">Request a demo for your team</x-button>
                 </div>
             </article>
 
@@ -155,7 +154,7 @@
                     @if ($links !== [])
                         <p class="mt-4 flex flex-wrap gap-x-5 gap-y-1">
                             @foreach ($links as [$route, $text])
-                                <a href="{{ route($route) }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">{{ $text }} <span aria-hidden="true">→</span></a>
+                                <a href="{{ route($route) }}" class="tap-target font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">{{ $text }} <span aria-hidden="true">→</span></a>
                             @endforeach
                         </p>
                     @endif
@@ -186,7 +185,7 @@
                         ['Honesty labels stay on phones.', 'Demo data, test mode and "not affiliated" notices are never hidden on a small screen.'],
                     ] as [$lead, $rest])
                         <li class="flex gap-3">
-                            <span class="mt-2 size-2 shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
+                            <span class="mt-2 size-2 shrink-0 rounded-full bg-night-primary" aria-hidden="true"></span>
                             <p class="text-night-muted"><strong class="font-semibold text-on-night">{{ $lead }}</strong> {{ $rest }}</p>
                         </li>
                     @endforeach
@@ -220,9 +219,9 @@
     {{-- Impact strip: the demo's real ledger totals since launch. Totals only, never a name (ADR 0017). --}}
     <section aria-labelledby="demo-totals-heading" class="border-b border-line bg-surface" data-demo-totals>
         <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-            <div class="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
                 <h2 id="demo-totals-heading" class="text-3xl font-semibold text-primary">The demo program so far</h2>
-                <p class="rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">Demo data: all people and transactions are fictional.</p>
+                <p class="mt-2 text-sm font-semibold text-ink">Demo data: all people and transactions are fictional.</p>
             </div>
             @if ($demoTotals['visits'] === 0)
                 <p class="mt-4 max-w-2xl text-muted">No cleared redemptions yet. Once employees spend their credits, the totals from the credit ledger appear here.</p>
@@ -248,9 +247,9 @@
     {{-- Impact: one worked, illustrative scenario (not real data) --}}
     <section aria-labelledby="impact-heading" class="border-b border-line bg-band">
         <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <div class="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
                 <h2 id="impact-heading" class="text-3xl font-semibold text-primary">What one district program could add up to</h2>
-                <p class="rounded-full border-2 border-dashed border-muted px-3 py-1 text-sm font-semibold text-muted">Illustrative scenario</p>
+                <p class="mt-2 text-sm font-semibold text-ink">Illustrative scenario</p>
             </div>
             <p class="mt-3 max-w-2xl text-muted">
                 A worked example, not a result: suppose employers in the district enroll 2,000 employees at $50 a month.
@@ -269,7 +268,7 @@
                 @endforeach
                 <span class="pb-7 text-3xl text-muted sm:text-4xl" aria-hidden="true">=</span>
                 <div aria-hidden="true">
-                    <p class="tabular rounded-xl bg-accent px-3 text-4xl font-semibold text-on-accent sm:text-5xl">$1.2M</p>
+                    <p class="tabular text-4xl font-semibold sm:text-5xl">$1.2M</p>
                     <p class="mt-1 font-sans text-sm text-muted">a year</p>
                 </div>
             </div>
@@ -279,7 +278,7 @@
                 because credits can't be spent anywhere else.
             </p>
             <p class="mt-4">
-                <a href="{{ route('projection') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">See the impact projection for one district, DC and nationally</a>
+                <a href="{{ route('projection') }}" class="tap-target font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">See the impact projection for one district, DC and nationally</a>
             </p>
         </div>
     </section>

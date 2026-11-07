@@ -1,7 +1,7 @@
 <x-app-shell title="Dashboard" active="dashboard" context="CUA Busch School AI Vibe Coding Contest">
     <div class="mx-auto max-w-3xl space-y-10">
         <header>
-            <x-eyebrow class="justify-center text-accent-ink">Reviewer home</x-eyebrow>
+            <x-eyebrow :center="true" class="text-accent-ink">Reviewer home</x-eyebrow>
             <h1 class="mt-1 text-center text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             @include('partials.one-minute-summary', ['class' => 'mt-3 text-lg'])
             <p class="mt-3 text-lg text-muted">
@@ -13,7 +13,7 @@
         @if ($adjudication && $adjudication['can_vote'])
             <x-card as="section" tone="night" aria-labelledby="adjudicate-heading">
                 <h2 id="adjudicate-heading" class="text-2xl font-semibold text-on-night">
-                    <a href="{{ route('adjudication.show') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-on-night">Help check the AI, about 5 minutes</a>
+                    <a href="{{ route('adjudication.show') }}" class="underline decoration-night-primary decoration-2 underline-offset-4 hover:decoration-on-night">Help check the AI, about 5 minutes</a>
                 </h2>
                 <p class="mt-2 text-night-muted">
                     @if ($adjudication['submitted'])
@@ -44,14 +44,14 @@
                 </p>
                 <p class="mt-2 text-muted">Voting is limited to invited reviewers, so you can't vote from this login.</p>
                 <p class="mt-3">
-                    <a href="{{ route('eval') }}#adjudication" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">See the adjudication results on the eval page</a>
+                    <a href="{{ route('eval') }}#adjudication" class="font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">See the adjudication results on the eval page</a>
                 </p>
             </x-card>
         @endif
 
         <x-card as="section" aria-labelledby="money-heading">
             <h2 id="money-heading" class="text-2xl font-semibold text-primary">
-                <a href="{{ route('money') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Where the Money Is</a>
+                <a href="{{ route('money') }}" class="underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Where the Money Is</a>
             </h2>
             <p class="mt-2">
                 Employers' money held for their staff is kept apart from anything Local Goods earns, and a check over the whole ledger history
@@ -61,7 +61,7 @@
 
         <x-card as="section" aria-labelledby="model-heading">
             <h2 id="model-heading" class="text-2xl font-semibold text-primary">
-                <a href="{{ route('business-model') }}" class="underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Business Model</a>
+                <a href="{{ route('business-model') }}" class="underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Business Model</a>
             </h2>
             <p class="mt-2">
                 How Local Goods could pay for itself in the Golden Triangle, DC-wide and nationally: a projected P&amp;L, what one district needs
@@ -128,7 +128,7 @@
                         <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-display text-lg font-semibold text-on-primary" aria-hidden="true">{{ $i + 1 }}</span>
                         <div class="contents sm:block sm:min-w-0">
                             <h3 class="flex flex-wrap items-center gap-2 text-xl font-semibold">
-                                <a href="{{ $step['url'] }}" class="tap-target text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                                <a href="{{ $step['url'] }}" class="tap-target text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">
                                     <span class="sr-only">Step {{ $i + 1 }}: </span>{{ $step['title'] }}
                                 </a>
                                 @unless ($step['available'])
