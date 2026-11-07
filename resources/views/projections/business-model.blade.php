@@ -29,7 +29,7 @@
         <h1 class="mt-1 text-center text-title font-semibold text-primary">Business Model</h1>
         <p class="mt-2 text-center text-xl font-semibold text-ink">How Local Goods could pay for itself</p>
         <p class="mt-3 text-lg text-muted">
-            A projected P&amp;L for three ways Local Goods could grow, worked out month by month from
+            This is a projected P&amp;L for three ways Local Goods could grow. It is worked out month by month from
             <a href="#assumptions" class="{{ $link }}">stated assumptions</a>, each with a source or labelled an assumption to check.
             None of it is a result: Local Goods hasn't run a pilot yet.
         </p>
@@ -83,8 +83,9 @@
             @include('projections.partials.label')
         </div>
         <p class="mt-2 max-w-3xl text-muted">
-            One Golden Triangle BID on its own (scenario A), fully enrolled, in an ordinary month: what it needs for monthly EBITDA to reach 0,
-            at the {{ $caseName }} case's fees and costs. Searched month by month, because payroll grows in steps.
+            This shows what one Golden Triangle BID on its own (scenario A) needs for monthly EBITDA to reach 0. It assumes the BID is
+            fully enrolled, in an ordinary month, at the {{ $caseName }} case's fees and costs. The model searches month by month,
+            because payroll grows in steps.
         </p>
         <dl class="mt-4 grid gap-3 md:grid-cols-2">
             <div class="rounded-xl bg-band p-4">
@@ -216,7 +217,7 @@
         <x-card as="section" aria-labelledby="funds-heading">
             <h2 id="funds-heading" class="text-xl font-semibold">Customer funds held: a promise to pay</h2>
             <p class="mt-1 text-sm text-muted">
-                Money that belongs to employers, employees and merchants, held by Stripe. Never revenue and never operating cash.
+                This is money that belongs to employers, employees and merchants, held by Stripe. It is not revenue or operating cash.
                 Unspent credits stay the employer's money: breakage is excluded from revenue by policy.
             </p>
             <x-rtable class="mt-3" label="Customer funds table" :card="false">
@@ -253,7 +254,7 @@
             @include('partials.recirculation-evidence')
             <p class="mt-3 text-sm">
                 If the study's rates held here, about {{ Figures::dollars($projection->districtImpact()[3]['recirculated_if_independent']) }} of year 4's projected
-                spending would recirculate locally. Both are estimates on top of a projection.
+                spending would recirculate locally. This is an estimate on top of a projection.
             </p>
         </div>
     </section>
@@ -266,7 +267,7 @@
         <p class="mt-1 max-w-3xl text-muted">
             Every number above comes from these, and nothing else: the model never reads the live fee settings, the ledger or Stripe.
             “{{ $config['assumption_label'] }}” marks a value with no public source.
-            Three go-to-market costs are under review because the BID partner does the on-the-ground recruiting.
+            Three go-to-market costs are under review because the model assumes the BID does the on-the-ground recruiting.
         </p>
         @include('projections.partials.assumptions', ['keys' => array_keys($config['assumptions'])])
         @include('projections.partials.scenarios')
