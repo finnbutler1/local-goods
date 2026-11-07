@@ -18,7 +18,7 @@
             <x-eyebrow class="text-accent-ink">Impact projection</x-eyebrow>
             <h1 class="mt-1 text-title font-semibold text-primary">What the program could mean for independent merchants</h1>
             <p class="mt-3 text-lg text-muted">
-                A projection from stated assumptions, not a measurement: how much employees might spend at independent
+                A projection from stated assumptions, not a measurement. It shows how much employees might spend at independent
                 businesses, and how many visits that is, if Local Goods grows as each scenario assumes.
                 Real results will be measured in a pilot.
             </p>
