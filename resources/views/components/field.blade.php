@@ -9,7 +9,7 @@
 @endphp
 
 <div {{ $attributes->class('space-y-1.5') }}>
-    <label for="{{ $id }}" class="block font-semibold text-ink">{{ $label }}</label>
+    <label for="{{ $id }}" class="block font-bold text-ink">{{ $label }}</label>
     {{ $slot }}
     @if ($hint)
         <p id="{{ $id }}-hint" class="text-sm text-muted">{{ $hint }}</p>
