@@ -4,28 +4,25 @@
 
 @section('content')
     {{-- Hero --}}
-    <section aria-labelledby="hero-heading" class="mx-auto grid overflow-x-clip max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
-        <div>
-            <x-eyebrow class="text-accent-ink">For employers in the Golden Triangle · Washington, DC</x-eyebrow>
-            <h1 id="hero-heading" class="mt-4 text-[clamp(3rem,0.5rem+12.5vw,3.75rem)] leading-[0.95] font-semibold text-primary sm:text-7xl lg:text-8xl">
+    <section aria-labelledby="hero-heading" class="mx-auto overflow-x-clip max-w-6xl px-4 pt-10 pb-20 sm:px-6 lg:pt-16 lg:pb-28">
+        <div class="mx-auto max-w-3xl text-center">
+            <x-eyebrow class="justify-center text-accent-ink">For employers in the Golden Triangle · Washington, DC</x-eyebrow>
+            <h1 id="hero-heading" class="mt-4 text-title leading-[1.05] font-semibold text-primary lg:text-6xl">
                 You work here.<br>
-                <span class="relative inline-block">
-                    Spend here.
-                    <span class="absolute inset-x-0 -bottom-1 h-3 rounded-full bg-accent/70 sm:h-4" aria-hidden="true"></span>
-                </span>
+                <span>Spend here.</span>
             </h1>
-            <p class="mt-8 max-w-xl text-lg leading-relaxed text-ink sm:text-xl">
+            <p class="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-ink sm:text-xl">
                 At 6 p.m., downtown's workers head home, and their spending goes with them. Local Goods gives employees
                 credits that only work at independent local businesses, so the district your company calls home gets livelier.
             </p>
             {{-- The commute-desk-commute loop, rerouted through one local stop. --}}
-            <ol class="route-line mt-8 max-w-md" aria-label="A workday, rerouted">
+            <ol class="route-line mx-auto mt-8 max-w-md text-left" aria-label="A workday, rerouted">
                 <li>Home</li>
                 <li>Desk</li>
                 <li class="route-line-local"><strong class="block font-semibold">Farragut Grind</strong> <span class="font-semibold text-accent-ink">local stop</span></li>
                 <li>Home</li>
             </ol>
-            <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+            <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <x-button variant="accent" size="lg" href="#request-demo">Request a demo</x-button>
                 <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
             </div>
@@ -33,7 +30,7 @@
         </div>
 
         {{-- Illustration of the wallet, built in HTML so it stays sharp and needs no image file. --}}
-        <div class="relative mx-auto w-full max-w-sm" role="img"
+        <div class="relative mx-auto mt-16 w-full max-w-sm" role="img"
              aria-label="Example employee wallet: $120.00 available, with a $12.90 lunch at Press Room Deli approved after an AI fraud check.">
             <div class="absolute -inset-4 -z-10 rotate-3 rounded-[2.5rem] bg-band" aria-hidden="true"></div>
             <div aria-hidden="true" class="overflow-hidden rounded-[2rem] bg-surface shadow-[0_30px_60px_-30px_rgb(18_24_32/0.55)] ring-1 ring-line">
@@ -72,9 +69,9 @@
 
     {{-- The problem: the commute-desk-commute loop, named without blaming anyone --}}
     <section id="the-problem" aria-labelledby="problem-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 pb-20 sm:px-6">
-        <div class="max-w-3xl border-l-4 border-accent pl-6">
+        <div class="mx-auto max-w-3xl border-l-4 border-accent pl-6">
             <x-eyebrow class="text-accent-ink">The problem</x-eyebrow>
-            <h2 id="problem-heading" class="mt-2 text-4xl font-semibold text-primary sm:text-5xl">The commute-desk-commute loop</h2>
+            <h2 id="problem-heading" class="mt-2 text-3xl font-semibold text-primary sm:text-4xl">The commute-desk-commute loop</h2>
             <p class="mt-5 text-lg leading-relaxed text-ink">
                 Thousands of people work in the Golden Triangle every weekday. Most follow the same loop: commute in, sit at a desk,
                 commute out. That isn't a failing of the people doing it; it's how office work is set up. But it means their spending,
@@ -86,8 +83,8 @@
     {{-- How it works --}}
     <section id="how-it-works" aria-labelledby="how-heading" class="scroll-mt-6 border-y border-line bg-surface">
         <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-            <x-eyebrow class="text-accent-ink">How it works</x-eyebrow>
-            <h2 id="how-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-primary sm:text-5xl">Three steps from payroll perk to a busier block.</h2>
+            <x-eyebrow class="justify-center text-accent-ink">How it works</x-eyebrow>
+            <h2 id="how-heading" class="mx-auto mt-2 max-w-2xl text-center text-3xl font-semibold text-primary sm:text-4xl">Three steps from payroll perk to a busier block.</h2>
             <div class="relative mt-14">
             {{-- Runs from the centre of circle 1 to the centre of circle 3 (circles are 3.5rem, column gap 2rem),
                  so the circles cover both ends exactly. Keep in sync with size-14 and md:gap-8 below. --}}
@@ -111,8 +108,8 @@
 
     {{-- Why it matters: the district first, then everyone else who gains (ADR 0024) --}}
     <section id="why-it-matters" aria-labelledby="why-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
-        <x-eyebrow class="text-accent-ink">Why it matters</x-eyebrow>
-        <h2 id="why-heading" class="mt-2 max-w-2xl text-4xl font-semibold text-primary sm:text-5xl">Everyone gains. The district gains most.</h2>
+        <x-eyebrow class="justify-center text-accent-ink">Why it matters</x-eyebrow>
+        <h2 id="why-heading" class="mx-auto mt-2 max-w-2xl text-center text-3xl font-semibold text-primary sm:text-4xl">Everyone gains. The district gains most.</h2>
 
         <div class="mt-12 grid gap-4 lg:grid-cols-4">
             <x-card as="article" aria-labelledby="gain-district" tone="tint" class="lg:col-span-4" padding="p-8 lg:p-10">
@@ -177,7 +174,7 @@
         <div class="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:gap-16">
             <div>
                 <x-eyebrow class="text-night-accent">Trust and AI</x-eyebrow>
-                <h2 id="trust-heading" class="mt-2 text-4xl font-semibold sm:text-5xl">Every redemption is checked before anyone is paid.</h2>
+                <h2 id="trust-heading" class="mt-2 text-3xl font-semibold sm:text-4xl">Every redemption is checked before anyone is paid.</h2>
                 <ul class="mt-8 space-y-5">
                     @foreach ([
                         ['Redemption Fraud Detection', 'scores every redemption for abuse, such as turning credits into cash, and explains its reasoning in plain language.'],
@@ -291,7 +288,7 @@
     <section id="request-demo" aria-labelledby="request-heading" class="mx-auto max-w-6xl scroll-mt-6 px-4 py-20 sm:px-6">
         <x-card padding="p-8 sm:p-12" class="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             <div>
-                <h2 id="request-heading" class="text-4xl font-semibold text-primary">Request a demo</h2>
+                <h2 id="request-heading" class="text-3xl font-semibold text-primary sm:text-4xl">Request a demo</h2>
                 <p class="mt-3 max-w-xl text-lg text-muted">
                     Online demo booking is coming soon. The working product is live: demo logins for an employee
                     and a BID admin are available on request, and contest judges get a personal sign-in link with
