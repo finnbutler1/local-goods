@@ -1,6 +1,8 @@
 # 0025. Transit lines brand, Logo A, visible button states and disclosure menus
 
-**Status:** Accepted, implemented. Replaces the Storefront look (forest,
+**Status:** Accepted, implemented; visual parts superseded by ADR 0038
+(fonts, palette beyond the logo anchors, layout, components, motif
+treatment). Replaces the Storefront look (forest,
 cream and amber; Fraunces and Public Sans; the awning stripe).
 
 ## Context

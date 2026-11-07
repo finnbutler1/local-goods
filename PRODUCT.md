@@ -43,13 +43,12 @@ The local-spend mission is the why; this is the proof.
 
 ## Brand Commitments
 
-Binding; refine only. The Transit lines brand (ADR 0025, `docs/brand/`) stays: the Overpass and Atkinson Hyperlegible Next fonts, the route-line motif, "Reroute your lunch." and the current overall layout.
+Redesign allowed (ADR 0038, supersedes the visual parts of ADR 0025). The goal is a real redesign that reads as serious fintech real businesses would trust, with a downtown-DC, community feel built on the metro line and stop, not a polish pass on the old look.
 
-The goal of the design pass is to make it look less AI-generated, not to redesign it.
-
-- Allowed: tighter spacing, alignment and type sizes; cutting generic decoration (gradients, glows, emoji, too many cards or badges, rounded-everything); making the route motif feel more deliberate and less decorative.
-- Not allowed: new fonts, a new color world, a new tagline, or removing content.
-- Layout rule: center the main content column, the hero and page headings, but keep body text, lists, tables and forms left-aligned.
+- Keep: the name Local Goods; the existing logo files exactly as they are in `docs/brand/transit/` and `public/` (no redraw); the metro line and stop motif; "Reroute your lunch." and "You work here. Spend here."; every honesty rule and the content lock above.
+- Allowed to change: fonts, palette, layout system, components and how the route motif is drawn. The logo's teal (#0a6b67) and coral (#e2603a) stay as anchor colors.
+- Layout rule: a 12-column grid in a centered container with a strong left edge. Center text only where it truly helps; body text, lists, tables and forms stay left-aligned.
+- Still binding: WCAG AA contrast for every pair (`ColorContrast::PAIRS`, light and dark), 3px focus rings, 44px tap targets, 16px fields on phones, `prefers-reduced-motion` respected, demo merchants labelled as demo on any map, SVG and CSS only (no stock photos, no AI images of people or real places, no outside image or map services), and self-hosted fonts only.
 
 ## Evidence on Hand
 
