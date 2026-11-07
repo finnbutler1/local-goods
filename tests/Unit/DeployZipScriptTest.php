@@ -41,13 +41,13 @@ class DeployZipScriptTest extends TestCase
         $script = $this->script();
         preg_match_all("#@import '@fontsource-variable/([a-z0-9-]+)/wght\.css';#", file_get_contents(__DIR__.'/../../resources/css/app.css'), $m);
 
-        $this->assertSame(['overpass', 'atkinson-hyperlegible-next'], $m[1], 'The fonts in app.css changed: update the deploy check too.');
+        $this->assertSame(['public-sans', 'overpass-mono'], $m[1], 'The fonts in app.css changed: update the deploy check too.');
         preg_match('/foreach \(\[([^\]]*)\] as \$font\)/', $script, $list);
         foreach ($m[1] as $font) {
             $this->assertStringContainsString("\"{$font}-latin-wght-normal\"", $list[1] ?? '', "The deploy check must require {$font}'s latin file.");
         }
-        foreach (['fraunces', 'public-sans'] as $retired) {
-            $this->assertStringNotContainsString($retired, $script, "{$retired} was replaced in ADR 0025.");
+        foreach (['fraunces', 'atkinson-hyperlegible-next', '"overpass-latin-wght-normal"'] as $retired) {
+            $this->assertStringNotContainsString($retired, $script, "{$retired} was replaced in ADR 0038.");
         }
     }
 }

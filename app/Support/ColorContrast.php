@@ -18,7 +18,7 @@ class ColorContrast
         ['muted', 'page'], ['muted', 'surface'], ['muted', 'band'], ['muted', 'primary-tint'],
         ['primary', 'page'], ['primary', 'surface'], ['primary', 'band'], ['primary', 'primary-tint'],
         ['on-primary', 'primary'], ['on-primary', 'primary-hover'], ['on-primary', 'primary-pressed'],
-        ['on-accent', 'accent'], ['accent-ink', 'page'], ['accent-ink', 'surface'], ['accent-ink', 'band'],
+        ['on-accent', 'accent'], ['on-accent', 'accent-hover'], ['accent-ink', 'page'], ['accent-ink', 'surface'], ['accent-ink', 'band'],
         ['ok', 'ok-bg'], ['ok', 'surface'], ['ok', 'page'],
         ['hold', 'hold-bg'], ['hold', 'surface'], ['hold', 'page'],
         ['danger', 'danger-bg'], ['danger', 'surface'], ['danger', 'page'],
@@ -27,6 +27,7 @@ class ColorContrast
         ['night-primary', 'night'], ['night-primary', 'night-soft'], ['night-accent', 'night'],
         ['focus', 'page', 3.0], ['focus', 'surface', 3.0], ['night-focus', 'night', 3.0],
         ['edge', 'surface', 3.0], ['edge', 'page', 3.0], ['primary', 'page', 3.0],
+        ['edge', 'band', 3.0], ['night-focus', 'night-soft', 3.0], ['page', 'ink'],
     ];
 
     /**
