@@ -64,7 +64,7 @@ class JudgeController extends Controller
             ],
             [
                 'title' => 'Merchant Eligibility',
-                'look_for' => 'Real businesses in the BID, each marked as a candidate, not a participant. The AI says whether each looks independent, how sure it is and why, judging from its own knowledge (no web search); a BID admin approves, rejects or asks for research. Its eval against hand labels is Merchant Eval, in the AI & Evaluation group of the menu.',
+                'look_for' => 'Real businesses in the BID, each marked as a candidate, not a participant. The AI says whether each looks independent, how sure it is and why, judging from its own knowledge (no web search). A BID admin approves, rejects or asks for research. Its eval against hand labels is Merchant Eval, in the AI & Evaluation group of the menu.',
                 'url' => route('bid-admin.merchants'),
                 'available' => true,
             ],
@@ -76,13 +76,13 @@ class JudgeController extends Controller
             ],
             [
                 'title' => 'Employer dashboard',
-                'look_for' => 'What the HR buyer sees: how many of their people got out into the neighborhood, visits, local businesses discovered and dollars spent locally, each with how it is counted. Buying credits (pending until a simulated "Pay now"), giving them out and program setup are shown with their buttons switched off for reviewers.',
+                'look_for' => 'What the HR buyer sees: how many of their people got out into the neighborhood, visits, local businesses discovered and dollars spent locally, each with how it is counted. Buying credits, giving them out and program setup are shown with their buttons switched off for reviewers. Credits are paid through Stripe test mode, or simulated when Stripe is off.',
                 'url' => route('judge.view-as', Role::EmployerAdmin->value),
                 'available' => true,
             ],
             [
                 'title' => 'Merchant dashboard',
-                'look_for' => 'What a coffee shop sees: redemptions received, what it is owed (cleared redemptions only; held ones wait for review and are not owed yet) and its payouts, simulated until Stripe test mode.',
+                'look_for' => 'What a coffee shop sees: redemptions received, what it is owed and its payouts, simulated until Stripe test mode. Only cleared redemptions are owed; held ones wait for review.',
                 'url' => route('judge.view-as', Role::Merchant->value),
                 'available' => true,
             ],

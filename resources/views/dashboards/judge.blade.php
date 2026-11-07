@@ -5,7 +5,7 @@
             <h1 class="mt-3 text-center text-title font-semibold text-primary">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
             @include('partials.one-minute-summary', ['class' => 'mt-6 text-base leading-7'])
             <p class="mt-4 text-base leading-7 text-muted">
-                Thank you for reviewing Local Goods. Your login is read-only: look at anything, change nothing.
+                Thank you for reviewing Local Goods. Your login is read-only, so you can open any page but can't change anything.
                 Use the Feedback button on any page to tell me what works and what doesn't.
             </p>
         </header>
@@ -31,7 +31,7 @@
             <x-card as="section" aria-labelledby="independent-check-heading" class="border-l-4 border-l-primary">
                 <h2 id="independent-check-heading" class="text-2xl font-semibold text-primary">Independent check of the AI</h2>
                 <p class="mt-2">
-                    Where my hand labels and the AI disagree, invited BID staff and contest judges rate each disputed case blind: they see the redemption's facts, never my label or the AI's call.
+                    Where my hand labels and the AI disagree, invited BID staff and contest judges rate each disputed case blind. They see the redemption's facts, but never my label or the AI's call.
                     Cases where we agreed are mixed in as hidden controls, to check how reliable the raters themselves are.
                 </p>
                 <p class="mt-3 font-semibold">
@@ -54,8 +54,8 @@
                 <a href="{{ route('money') }}" class="text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Where the Money Is</a>
             </h2>
             <p class="mt-2">
-                Employers' money held for their staff is kept apart from anything Local Goods earns, and a check over the whole ledger history
-                shows that every promise has always had money behind it.
+                Employers' money held for their staff is kept apart from anything Local Goods earns. A check runs over the whole ledger history
+                to test whether every promise has always had money behind it.
             </p>
         </section>
 
@@ -64,8 +64,8 @@
                 <a href="{{ route('business-model') }}" class="text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Business Model</a>
             </h2>
             <p class="mt-2">
-                How Local Goods could pay for itself in the Golden Triangle, DC-wide and nationally: a projected P&amp;L, what one district needs
-                to break even, and every assumption with its source. A projection, not results.
+                This page shows how Local Goods could pay for itself in the Golden Triangle, across DC and nationally. It includes a projected
+                P&amp;L, what one district needs to break even, and every assumption with its source. A projection, not results.
             </p>
         </section>
 
@@ -105,14 +105,14 @@
             <div class="mt-3 space-y-3 text-lg">
                 <p>
                     People who work downtown follow the same loop: commute in, sit at a desk, commute out, and their spending goes home with them.
-                    Local Goods lets an employer give staff credits that can only be spent at independent businesses in the district around the office,
-                    so the neighborhood gains from the people who are there every day.
+                    Local Goods lets an employer give staff credits that can only be spent at independent businesses in the district around the office.
+                    The neighborhood then gains from the people who are there every day.
                 </p>
                 <p>
                     Employers inside a Business Improvement District buy the credits, and employees spend them using their phone as the card.
-                    Payments and merchant payouts run on Stripe Connect in test mode (real Stripe transactions, no real money), and Local Goods tracks every credit in its own append-only ledger and enforces the rules.
+                    Payments and merchant payouts run on Stripe Connect in test mode (real Stripe transactions, no real money). Local Goods tracks every credit in its own append-only ledger and enforces the rules.
                     Every redemption is checked by an AI, Redemption Fraud Detection, and anything suspicious is held until a person at the BID decides.
-                    Both AI functions, Redemption Fraud Detection and Merchant Eligibility Matching, assist human decisions; neither makes them.
+                    Both AI functions, Redemption Fraud Detection and Merchant Eligibility Matching, flag and explain; people decide every held redemption and every new merchant.
                     This demo covers one district, the Golden Triangle in Washington, DC, and every business, person and transaction in it is fictional.
                 </p>
             </div>
