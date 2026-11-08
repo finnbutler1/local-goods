@@ -8,35 +8,35 @@
 
 <x-app-shell title="Impact" active="impact"
              :context="($bid?->name ?? 'Golden Triangle').' BID · '.($bid?->city ?? 'Washington, DC')">
-<div class="space-y-10">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">{{ $bid?->name ?? 'Golden Triangle' }} BID · Impact</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Impact</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">What the program did for the district</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-14">
+    <header>
+        <x-station-sign as="p">{{ $bid?->name ?? 'Golden Triangle' }} BID · Impact</x-station-sign>
+        <h1 class="page-title">Impact</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">What the program did for the district</p>
+        <p class="page-lede">
             Dollars spent at independent merchants, and who took part. Every number is read from the credit ledger and uses
             the same definitions as the employer dashboards, so the two always agree. Employees are counted, never named.
         </p>
-        <p class="mt-3 inline-block text-sm font-semibold text-ink">
+        <p class="mt-4 inline-block border border-frame px-2 py-1 text-sm font-semibold text-ink">
             Demo data: all people and transactions are fictional.
         </p>
-        <p class="mt-3 text-sm">
+        <p class="mt-4 max-w-[42rem] text-sm">
             Looking ahead:
             <a href="{{ route('projection') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">the impact projection</a>
             for this district, DC and nationally, and the
             <a href="{{ route('business-model') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">business model</a>
             behind it (both projections, not results).
         </p>
-        <p class="mt-3 text-sm">
+        <p class="mt-2 max-w-[42rem] text-sm">
             <a href="{{ route('bid-admin.impact.csv') }}" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Download the district's aggregate data (CSV)</a>:
             counts and totals only, no names. The BID can export it at any time.
         </p>
     </header>
 
     @if (! $impact['has_activity'])
-        <x-card as="section" aria-labelledby="empty-heading" class="border-2 border-dashed border-line ring-0! text-center" padding="px-6 py-12">
-            <h2 id="empty-heading" class="text-2xl font-semibold text-primary">No cleared redemptions yet</h2>
-            <p class="mx-auto mt-2 max-w-md text-muted">
+        <section aria-labelledby="empty-heading" class="ledger-note border-dashed px-6 py-12">
+            <h2 id="empty-heading" class="stop-subtitle">No cleared redemptions yet</h2>
+            <p class="mt-2 max-w-md text-muted">
                 Once employees spend their credits and the redemptions clear, the dollars spent, merchants reached and
                 weekly trend appear here.
                 @if ($impact['held_count'] > 0)
@@ -48,10 +48,10 @@
                 {{ $impact['enrolled'] }} enrolled {{ Str::plural('employee', $impact['enrolled']) }} and
                 {{ $impact['merchants_total'] }} participating {{ Str::plural('merchant', $impact['merchants_total']) }} so far.
             </p>
-        </x-card>
+        </section>
     @else
-        <section aria-labelledby="totals-heading" class="space-y-4">
-            <h2 id="totals-heading" class="text-2xl font-semibold text-primary">{{ $monthName }} so far, and since launch</h2>
+        <section aria-labelledby="totals-heading">
+            <h2 id="totals-heading" class="stop-subtitle text-2xl">{{ $monthName }} so far, and since launch</h2>
 
             @php
                 $tiles = [
@@ -85,61 +85,61 @@
                     ],
                 ];
             @endphp
-            <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <dl class="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ($tiles as $tile)
                     @php $night = $tile['night'] ?? false; @endphp
-                    <x-card :tone="$night ? 'night' : 'surface'" class="flex flex-col">
-                        <dt class="text-sm font-semibold {{ $night ? 'text-night-muted' : 'text-muted' }}">{{ $tile['label'] }}</dt>
-                        <dd class="mt-2 {{ $night ? 'text-night-accent' : 'text-primary' }}">
-                            <span class="tabular font-display text-4xl font-semibold">{{ $tile['value'] }}</span>
-                            @if (isset($tile['unit']))<span class="font-semibold"> {{ $tile['unit'] }}</span>@endif
+                    <div @class(['flex flex-col pt-4', 'rule-heavy' => $night, 'rule-top' => ! $night])>
+                        <dt class="figure-label">{{ $tile['label'] }}</dt>
+                        <dd class="mt-2">
+                            <span @class(['money', 'text-5xl text-primary' => $night, 'text-4xl' => ! $night])>{{ $tile['value'] }}</span>
+                            @if (isset($tile['unit']))<span class="font-semibold text-muted"> {{ $tile['unit'] }}</span>@endif
                         </dd>
-                        <dd class="mt-1 text-sm {{ $night ? 'text-night-muted' : 'text-muted' }}">{{ $monthName }} so far · {{ $tile['detail'] }}</dd>
-                        <dd class="mt-3 border-t {{ $night ? 'border-night-line/40' : 'border-line/70' }} pt-2 text-sm">
+                        <dd class="mt-1 text-sm text-muted">{{ $monthName }} so far · {{ $tile['detail'] }}</dd>
+                        <dd class="mt-3 border-t border-line pt-2 text-sm">
                             <details>
-                                <summary class="cursor-pointer font-semibold {{ $night ? 'text-on-night' : 'text-primary' }}">How we count this</summary>
-                                <p class="mt-1 {{ $night ? 'text-night-muted' : 'text-muted' }}">{{ $tile['how'] }}</p>
+                                <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
+                                <p class="mt-1 text-muted">{{ $tile['how'] }}</p>
                             </details>
                         </dd>
-                    </x-card>
+                    </div>
                 @endforeach
             </dl>
         </section>
 
-        <x-card as="section" aria-labelledby="trend-heading">
+        <section aria-labelledby="trend-heading" class="rule-heavy">
             @php
                 $weeks = $impact['weeks'];
                 $max = max(1, max(array_column($weeks, 'cents')));
             @endphp
-            <h2 id="trend-heading" class="text-xl font-semibold">Spent at independent merchants per week, last {{ count($weeks) }} weeks</h2>
+            <h2 id="trend-heading" class="stop-subtitle">Spent at independent merchants per week, last {{ count($weeks) }} weeks</h2>
             <p class="mt-1 text-sm text-muted">Monday to Sunday. The last bar is this week so far.</p>
 
             @if (array_sum(array_column($weeks, 'cents')) === 0)
-                <p class="mt-6 rounded-xl bg-band p-4 text-muted">No cleared redemptions in the last {{ count($weeks) }} weeks.</p>
+                <p class="ledger-note mt-6 text-muted">No cleared redemptions in the last {{ count($weeks) }} weeks.</p>
             @else
                 {{-- Bars are hidden from screen readers: the sentence under them sums them up and
                      "Show as a table" has every week's numbers. Hover or tap a bar for its week. --}}
-                <div class="mt-6 flex h-44 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
+                <div class="mt-6 flex h-52 items-end gap-1.5 border-b border-muted/40 sm:gap-3" aria-hidden="true">
                     @foreach ($weeks as $week)
                         <div class="group relative flex h-full flex-1 items-end justify-center" data-bar>
-                            <div class="w-full max-w-12 rounded-t-[4px] bg-primary transition-colors group-hover:bg-primary-hover group-data-open:bg-primary-hover"
+                            <div class="w-full max-w-14 bg-primary transition-colors group-hover:bg-primary-hover group-data-open:bg-primary-hover"
                                  style="height: {{ max(2, round(100 * $week['cents'] / $max)) }}%"></div>
-                            <div @class(['pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night shadow group-hover:block group-data-open:block', 'left-0' => $loop->first, 'right-0' => $loop->last, 'left-1/2 -translate-x-1/2' => ! $loop->first && ! $loop->last])>
+                            <div @class(['pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max rounded-lg bg-night px-2.5 py-1.5 text-xs text-on-night group-hover:block group-data-open:block', 'left-0' => $loop->first, 'right-0' => $loop->last, 'left-1/2 -translate-x-1/2' => ! $loop->first && ! $loop->last])>
                                 <span class="font-semibold">Week of {{ $week['start']->format('M j') }}</span><br>
                                 {{ Money::format($week['cents']) }}{{ $week['refunded_cents'] > 0 ? ' net of refunds' : '' }} · {{ $week['visits'] }} {{ Str::plural('visit', $week['visits']) }}
                             </div>
                         </div>
                     @endforeach
                 </div>
-                <div class="mt-1.5 flex gap-1.5 text-center text-xs text-muted sm:gap-3" aria-hidden="true">
+                <div class="tabular mt-1.5 flex gap-1.5 text-center text-xs text-muted sm:gap-3" aria-hidden="true">
                     @foreach ($weeks as $i => $week)
                         <span class="flex-1">{{ $i % 2 === count($weeks) % 2 ? '' : $week['start']->format('M j') }}</span>
                     @endforeach
                 </div>
                 @php $peak = collect($weeks)->sortByDesc('cents')->first(); @endphp
                 <p class="mt-3 text-sm">
-                    <span class="font-semibold">{{ Money::format($weeks[count($weeks) - 1]['cents']) }}</span> so far this week,
-                    out of a peak of <span class="font-semibold">{{ Money::format($peak['cents']) }}</span> (week of {{ $peak['start']->format('M j') }}).
+                    <span class="money">{{ Money::format($weeks[count($weeks) - 1]['cents']) }}</span> so far this week,
+                    out of a peak of <span class="money">{{ Money::format($peak['cents']) }}</span> (week of {{ $peak['start']->format('M j') }}).
                 </p>
             @endif
 
@@ -159,10 +159,10 @@
                 <summary class="cursor-pointer font-semibold text-primary">How we count this</summary>
                 <p class="mt-1 text-muted">Cleared redemptions by the week they happened, in Washington, DC time, less refunds in the week they completed: the employer dashboards' weekly trend, added up across employers.</p>
             </details>
-        </x-card>
+        </section>
 
-        <section aria-labelledby="employers-heading">
-            <h2 id="employers-heading" class="text-2xl font-semibold text-primary">Employer engagement, {{ $monthName }} so far</h2>
+        <section aria-labelledby="employers-heading" class="rule-heavy">
+            <h2 id="employers-heading" class="stop-subtitle">Employer engagement, {{ $monthName }} so far</h2>
             <p class="mt-1 text-sm text-muted">Each row is the employer's own HR dashboard, unchanged, so the numbers match what HR sees.</p>
 
             <x-rtable class="mt-3" label="Employer engagement table">
@@ -203,14 +203,14 @@
         </section>
 
         @if ($impact['recirculation_cents'] !== null)
-            <section aria-labelledby="estimate-heading" class="rounded-3xl border-2 border-dashed border-muted bg-band p-6 sm:p-8" data-recirculation-estimate>
-                <h2 id="estimate-heading" class="text-2xl font-semibold text-primary">How much of this spending might stay local</h2>
+            <section aria-labelledby="estimate-heading" class="border-2 border-dashed border-edge bg-band p-6 sm:p-8" data-recirculation-estimate>
+                <h2 id="estimate-heading" class="stop-subtitle">How much of this spending might stay local</h2>
                 <div class="mt-3">
                     @include('partials.recirculation-evidence')
                 </div>
                 <p class="mt-3 max-w-3xl text-lg">
                     If the national study's rate held here, about
-                    <strong class="tabular font-semibold">{{ Money::format($impact['recirculation_cents']) }}</strong>
+                    <strong class="money">{{ Money::format($impact['recirculation_cents']) }}</strong>
                     of this spending would recirculate locally. We multiply the {{ Money::format($all['spent_cents']) }} spent since launch{{ $impact['refunded']['all_time'] > 0 ? ' (net of refunds)' : '' }} by
                     {{ round(100 * $source['independent_rate'], 1) }}%; the real share here could be higher or lower.
                 </p>

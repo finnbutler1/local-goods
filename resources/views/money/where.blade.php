@@ -14,70 +14,70 @@
 @endphp
 
 <x-app-shell title="Where the Money Is" active="money" context="Customer funds and the solvency rule">
-<div class="mx-auto max-w-6xl space-y-10">
-    <header class="mx-auto max-w-3xl">
-        <x-eyebrow :center="true" class="text-accent-ink">Customer funds and the solvency rule</x-eyebrow>
-        <h1 class="mt-1 text-center text-title font-semibold text-primary">Where the Money Is</h1>
-        <p class="mt-2 text-center text-xl font-semibold text-ink">Where the money is</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-14">
+    <header>
+        <x-station-sign as="p">Customer funds and the solvency rule</x-station-sign>
+        <h1 class="page-title">Where the Money Is</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Where the money is</p>
+        <p class="page-lede">
             Employers pay for credits before anyone spends them. Until an employee spends them at a local merchant and the merchant is paid,
             that money is a promise Local Goods has made. The money has to be there. This page shows where every cent is,
             and a check of whether the money held has always covered every promise.
         </p>
-        <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
+        <p class="mt-4 flex max-w-[52rem] flex-wrap items-center gap-2 text-sm text-muted">
             <x-money-mode />
             <span>Demo data: all people and transactions are fictional. Seeded history is simulated, never actual money.</span>
         </p>
     </header>
 
-    <section aria-labelledby="tranches-heading" class="space-y-4">
-        <h2 id="tranches-heading" class="text-2xl font-semibold text-primary">Two accounts, never mixed</h2>
-        <p class="max-w-3xl text-muted">Employer money and Local Goods' own money are held in two separate Stripe test-mode accounts. Money moves from the first to the second only by a recorded sweep.</p>
-        <div class="grid gap-4 lg:grid-cols-2">
-            <x-card padding="p-5 sm:p-6" data-account="customer-funds">
-                <h3 class="text-lg font-semibold">Customer funds account</h3>
-                <p class="text-sm text-muted">Employer money only: a promise to pay. None of it is ours.</p>
-                <p class="mt-3 text-sm"><span class="font-semibold">May be used for:</span> paying merchants for what staff spent, and refunding employers. Nothing else.</p>
-                <p class="mt-3 text-sm font-semibold">Customer funds held</p>
-                <p class="mt-3 font-display text-4xl font-semibold text-primary tabular" data-customer-funds>{{ Money::format($now->customerFundsCents()) }}</p>
-                <x-rtable class="mt-4" label="Customer funds held, by where they are">
-                    <table data-rtable="stack" class="w-full text-left text-sm">
+    <section aria-labelledby="tranches-heading" class="rule-heavy">
+        <h2 id="tranches-heading" class="stop-subtitle text-2xl">Two accounts, never mixed</h2>
+        <p class="mt-2 max-w-[52rem] text-muted">Employer money and Local Goods' own money are held in two separate Stripe test-mode accounts. Money moves from the first to the second only by a recorded sweep.</p>
+        <div class="mt-10 grid gap-y-14 lg:grid-cols-2 lg:gap-x-12">
+            <section aria-labelledby="customer-funds-heading" data-account="customer-funds">
+                <h3 id="customer-funds-heading" class="statement-head text-xl font-bold tracking-tight">Customer funds account</h3>
+                <p class="mt-3 text-sm text-muted">Employer money only: a promise to pay. None of it is ours.</p>
+                <p class="mt-2 text-sm"><span class="font-semibold">May be used for:</span> paying merchants for what staff spent, and refunding employers. Nothing else.</p>
+                <p class="figure-label mt-6">Customer funds held</p>
+                <p class="money mt-1 text-5xl text-primary" data-customer-funds>{{ Money::format($now->customerFundsCents()) }}</p>
+                <x-rtable class="mt-6" label="Customer funds held, by where they are">
+                    <table data-rtable="fit" class="statement text-left text-sm">
                         <caption class="sr-only">Customer funds held, by where they are</caption>
-                        <thead class="text-muted">
-                            <tr><th scope="col" class="py-2 pr-4 font-semibold">Where</th><th scope="col" class="py-2 text-right font-semibold">Amount</th></tr>
+                        <thead>
+                            <tr><th scope="col" class="text-left">Where</th><th scope="col" class="text-right">Amount</th></tr>
                         </thead>
-                        <tbody class="divide-y divide-line">
+                        <tbody>
                             <tr>
-                                <th scope="row" data-primary class="py-2.5 pr-4 font-normal">Employer credits bought, not yet given out</th>
-                                <td data-label="Amount" class="py-2.5 text-right tabular">{{ Money::format($now->employerCents) }}</td>
+                                <th scope="row" data-primary class="font-normal">Employer credits bought, not yet given out</th>
+                                <td data-label="Amount" class="tabular">{{ Money::format($now->employerCents) }}</td>
                             </tr>
                             <tr>
-                                <th scope="row" data-primary class="py-2.5 pr-4 font-normal">Employee balances, not yet spent</th>
-                                <td data-label="Amount" class="py-2.5 text-right tabular">{{ Money::format($now->employeeCents) }}</td>
+                                <th scope="row" data-primary class="font-normal">Employee balances, not yet spent</th>
+                                <td data-label="Amount" class="tabular">{{ Money::format($now->employeeCents) }}</td>
                             </tr>
                             <tr>
-                                <th scope="row" data-primary class="py-2.5 pr-4 font-normal">Owed to merchants, not yet transferred</th>
-                                <td data-label="Amount" class="py-2.5 text-right tabular">{{ Money::format($now->merchantCents) }}</td>
+                                <th scope="row" data-primary class="font-normal">Owed to merchants, not yet transferred</th>
+                                <td data-label="Amount" class="tabular">{{ Money::format($now->merchantCents) }}</td>
                             </tr>
                             <tr>
-                                <th scope="row" data-primary class="py-2.5 pr-4 font-normal">
+                                <th scope="row" data-primary class="font-normal">
                                     Held waiting for a person:
                                     {{ $now->heldRedemptions }} {{ Str::plural('redemption', $now->heldRedemptions) }} held by Redemption Fraud Detection,
                                     {{ $now->refundHolds }} employer {{ Str::plural('refund', $now->refundHolds) }} going through
                                 </th>
-                                <td data-label="Amount" class="py-2.5 text-right tabular">{{ Money::format($now->heldPendingCents()) }}</td>
+                                <td data-label="Amount" class="tabular">{{ Money::format($now->heldPendingCents()) }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </x-rtable>
-                <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2" data-customer-funds-split>
-                    <div>
+                <dl class="mt-6 grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2" data-customer-funds-split>
+                    <div class="border-t border-ink pt-2">
                         <dt class="font-semibold">Paid through Stripe (test mode)</dt>
-                        <dd class="tabular" data-stripe-backed>{{ Money::format($stripeBacked) }}</dd>
+                        <dd class="ledger-num mt-1 text-lg" data-stripe-backed>{{ Money::format($stripeBacked) }}</dd>
                     </div>
-                    <div>
+                    <div class="border-t border-ink pt-2">
                         <dt class="font-semibold">Simulated, no money behind it</dt>
-                        <dd class="tabular" data-simulated>{{ Money::format($simulated) }}</dd>
+                        <dd class="ledger-num mt-1 text-lg" data-simulated>{{ Money::format($simulated) }}</dd>
                     </div>
                 </dl>
                 @if ($simulated > 0)
@@ -99,19 +99,19 @@
                         @endif
                     </p>
                 @endif
-                <p class="mt-4 rounded-xl bg-band p-3 text-sm"><span class="font-semibold">Unspent credits always remain the employer's money, never ours.</span>
+                <p class="mt-6 border-t-[3px] border-ink bg-band px-4 py-3 text-sm"><span class="font-semibold">Unspent credits always remain the employer's money, never ours.</span>
                     Local Goods never counts them as income, never spends or invests them, and an employer can ask for them back.</p>
-            </x-card>
+            </section>
 
-            <x-card padding="p-5 sm:p-6" data-account="operating">
-                <h3 class="text-lg font-semibold">Local Goods Operating</h3>
-                <p class="text-sm text-muted">Local Goods' own money: what it has earned and may spend.</p>
-                <p class="mt-3 text-sm"><span class="font-semibold">May hold:</span> only money Local Goods has earned, moved here from the customer funds account by a recorded sweep. Never customer money.</p>
+            <section aria-labelledby="operating-heading" class="lg:border-l lg:border-ink lg:pl-12" data-account="operating">
+                <h3 id="operating-heading" class="statement-head text-xl font-bold tracking-tight">Local Goods Operating</h3>
+                <p class="mt-3 text-sm text-muted">Local Goods' own money: what it has earned and may spend.</p>
+                <p class="mt-2 text-sm"><span class="font-semibold">May hold:</span> only money Local Goods has earned, moved here from the customer funds account by a recorded sweep. Never customer money.</p>
                 @if ($showsFigures)
-                    <dl class="mt-3 space-y-2 text-sm">
-                        <div>
+                    <dl class="mt-6 space-y-5 text-sm">
+                        <div class="border-t border-ink pt-2">
                             <dt class="font-semibold">In Stripe (Local Goods Operating's own balance)</dt>
-                            <dd data-operating-stripe-balance>
+                            <dd class="mt-1" data-operating-stripe-balance>
                                 @if ($balances === null || ! $balances['stripe'])
                                     Stripe test mode is off on this server, so there is no Stripe balance; sweeps are simulated.
                                 @elseif (! $balances['operating_set_up'])
@@ -119,19 +119,19 @@
                                 @elseif ($balances['operating_cents'] === null)
                                     Couldn't read it from Stripe just now.
                                 @else
-                                    <span class="font-display text-3xl font-semibold text-primary tabular">{{ Money::format($balances['operating_cents']) }}</span>
+                                    <span class="money text-4xl text-primary">{{ Money::format($balances['operating_cents']) }}</span>
                                 @endif
                             </dd>
                         </div>
-                        <div>
+                        <div class="border-t border-ink pt-2">
                             <dt class="font-semibold">Earned, not yet swept (still in the customer funds account)</dt>
-                            <dd class="tabular" data-operating-funds>{{ Money::format($now->operatingCents) }}</dd>
+                            <dd class="ledger-num mt-1 text-lg" data-operating-funds>{{ Money::format($now->operatingCents) }}</dd>
                         </div>
                     </dl>
                 @else
-                    <p class="mt-3 text-lg font-semibold" data-operating-funds="hidden">Shown to Local Goods staff only.</p>
+                    <p class="mt-6 border-t border-ink pt-2 text-lg font-semibold" data-operating-funds="hidden">Shown to Local Goods staff only.</p>
                 @endif
-                <div class="mt-3 space-y-2 text-sm" data-earned-origin="{{ $hasEarned ? 'some' : 'none' }}">
+                <div class="mt-5 space-y-2 text-sm" data-earned-origin="{{ $hasEarned ? 'some' : 'none' }}">
                     @if ($hasEarned)
                         <p><span class="font-semibold">Where it came from:</span>
                             @if ($earned['merchant_fee_sales'] > 0)
@@ -153,36 +153,36 @@
                         @endif
                     </p>
                 </div>
-            </x-card>
+            </section>
         </div>
 
         @if ($showsFigures)
-            <x-card padding="p-5 sm:p-6">
-                <h3 class="text-lg font-semibold">Money in hand</h3>
-                <p class="text-sm text-muted">The money in the customer funds account, from the ledger: simulated and Stripe test-mode money together.</p>
-                <x-rtable class="mt-3" label="Money in hand">
-                    <table data-rtable="stack" class="w-full max-w-2xl text-left text-sm">
+            <section aria-labelledby="in-hand-heading" class="mt-14 border-2 border-frame bg-surface p-5 sm:p-8">
+                <h3 id="in-hand-heading" class="statement-head text-xl font-bold tracking-tight">Money in hand</h3>
+                <p class="mt-3 max-w-[52rem] text-sm text-muted">The money in the customer funds account, from the ledger: simulated and Stripe test-mode money together.</p>
+                <x-rtable class="mt-6 max-w-3xl" label="Money in hand">
+                    <table data-rtable="fit" class="statement text-left text-sm">
                         <caption class="sr-only">Money in hand: paid in, less paid out and refunded</caption>
-                        <thead class="sr-only"><tr><th scope="col">Line</th><th scope="col">Amount</th></tr></thead>
-                        <tbody class="divide-y divide-line">
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Paid in by employers for credits</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->creditsPaidInCents) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Paid in as platform fees</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->feesPaidInCents) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Paid out to merchants</th><td data-label="Amount" class="py-2 text-right tabular">−{{ Money::format($now->paidOutCents) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Pulled back from merchants for refunds and reversals</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->pulledBackCents) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Refunded to employers</th><td data-label="Amount" class="py-2 text-right tabular">−{{ Money::format($now->refundedCents) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Swept to Local Goods Operating</th><td data-label="Amount" class="py-2 text-right tabular" data-swept>−{{ Money::format($now->sweptCents) }}</td></tr>
-                            <tr class="font-semibold"><th scope="row" data-primary class="py-2 pr-4">Money in hand</th><td data-label="Amount" class="py-2 text-right tabular" data-in-hand>{{ Money::format($now->inHandCents()) }}</td></tr>
-                            <tr><th scope="row" data-primary class="py-2 pr-4 font-normal">Promised: customer funds plus earned money not yet swept</th><td data-label="Amount" class="py-2 text-right tabular">{{ Money::format($now->promisedCents()) }}</td></tr>
+                        <thead><tr><th scope="col" class="text-left">Line</th><th scope="col" class="text-right">Amount</th></tr></thead>
+                        <tbody>
+                            <tr><th scope="row" data-primary class="font-normal">Paid in by employers for credits</th><td data-label="Amount" class="tabular">{{ Money::format($now->creditsPaidInCents) }}</td></tr>
+                            <tr><th scope="row" data-primary class="font-normal">Paid in as platform fees</th><td data-label="Amount" class="tabular">{{ Money::format($now->feesPaidInCents) }}</td></tr>
+                            <tr><th scope="row" data-primary class="font-normal">Paid out to merchants</th><td data-label="Amount" class="tabular">−{{ Money::format($now->paidOutCents) }}</td></tr>
+                            <tr><th scope="row" data-primary class="font-normal">Pulled back from merchants for refunds and reversals</th><td data-label="Amount" class="tabular">{{ Money::format($now->pulledBackCents) }}</td></tr>
+                            <tr><th scope="row" data-primary class="font-normal">Refunded to employers</th><td data-label="Amount" class="tabular">−{{ Money::format($now->refundedCents) }}</td></tr>
+                            <tr><th scope="row" data-primary class="font-normal">Swept to Local Goods Operating</th><td data-label="Amount" class="tabular" data-swept>−{{ Money::format($now->sweptCents) }}</td></tr>
+                            <tr class="statement-total"><th scope="row" data-primary>Money in hand</th><td data-label="Amount" class="tabular" data-in-hand>{{ Money::format($now->inHandCents()) }}</td></tr>
+                            <tr class="statement-after"><th scope="row" data-primary class="font-normal">Promised: customer funds plus earned money not yet swept</th><td data-label="Amount" class="tabular">{{ Money::format($now->promisedCents()) }}</td></tr>
                         </tbody>
                     </table>
                 </x-rtable>
-                <p class="mt-3 text-sm text-muted">Of that, Stripe test mode: {{ Money::format($now->stripeInCents) }} paid in, {{ Money::format($now->stripeOutCents) }} paid out.</p>
-            </x-card>
+                <p class="mt-4 text-sm text-muted">Of that, Stripe test mode: <span class="ledger-num">{{ Money::format($now->stripeInCents) }}</span> paid in, <span class="ledger-num">{{ Money::format($now->stripeOutCents) }}</span> paid out.</p>
+            </section>
         @endif
     </section>
 
-    <section id="sweep" aria-labelledby="sweep-heading" class="scroll-mt-24 max-w-3xl space-y-3">
-        <h2 id="sweep-heading" class="text-2xl font-semibold text-primary">Moving earned money to Local Goods Operating</h2>
+    <section id="sweep" aria-labelledby="sweep-heading" class="rule-heavy scroll-mt-24 space-y-4 [&>p]:max-w-[52rem]">
+        <h2 id="sweep-heading" class="stop-subtitle text-2xl">Moving earned money to Local Goods Operating</h2>
         <p>
             Money Local Goods has earned leaves the customer funds account in only one way: a sweep, decided by the platform admin with a reason,
             recorded and never edited. The solvency check refuses a sweep that would leave customer funds short.
@@ -190,12 +190,12 @@
         @if (! $showsFigures)
             <p class="text-sm text-muted" data-sweep="words">Amounts are shown to Local Goods staff only. Only the platform admin can sweep.</p>
         @elseif ($sweepable === 0)
-            <p class="rounded-2xl bg-band p-4" data-sweep="nothing">
+            <p class="ledger-note" data-sweep="nothing">
                 <span class="font-semibold">Nothing to sweep.</span> Local Goods has no earned money left in the customer funds account,
                 so every cent there belongs to employers, their staff or merchants.
             </p>
         @else
-            <p data-sweep="available"><span class="font-semibold">Earned, not yet swept:</span> <span class="tabular" data-sweepable>{{ Money::format($sweepable) }}</span>
+            <p data-sweep="available"><span class="font-semibold">Earned, not yet swept:</span> <span class="ledger-num" data-sweepable>{{ Money::format($sweepable) }}</span>
                 ({{ $sweepChannel === 'stripe' ? 'swept by a Stripe test-mode transfer' : 'simulated, no real money' }}).</p>
             @if (! $maySweep)
                 <p class="text-sm text-muted">Read-only: only the platform admin can sweep.</p>
@@ -204,18 +204,18 @@
                     @csrf
                     <x-field name="amount" label="Amount in dollars" hint="At most the amount earned and not yet swept.">
                         <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" required value="{{ old('amount', Money::toDollars($sweepable)) }}"
-                               class="w-40 rounded-lg border-2 border-muted bg-surface px-3 py-2 text-base tabular" aria-describedby="amount-hint @error('amount') amount-error @enderror" @error('amount') aria-invalid="true" @enderror>
+                               class="w-40 rounded-lg border-2 border-edge bg-surface px-3 py-2 text-base tabular" aria-describedby="amount-hint @error('amount') amount-error @enderror" @error('amount') aria-invalid="true" @enderror>
                     </x-field>
                     <x-field name="reason" label="Reason" hint="Kept with the sweep for good. 5 to 500 characters.">
-                        <textarea id="reason" name="reason" rows="2" required maxlength="500" class="w-full rounded-lg border-2 border-muted bg-surface px-3 py-2 text-base"
+                        <textarea id="reason" name="reason" rows="2" required maxlength="500" class="w-full max-w-3xl rounded-lg border-2 border-edge bg-surface px-3 py-2 text-base"
                                   aria-describedby="reason-hint @error('reason') reason-error @enderror" @error('reason') aria-invalid="true" @enderror>{{ old('reason') }}</textarea>
                     </x-field>
                     <x-button type="submit">Review the sweep</x-button>
                 </form>
             @else
-                <form method="POST" action="{{ route('admin.operating.sweep') }}" data-busy="Sweeping…" class="space-y-3 rounded-2xl border-2 border-accent bg-band p-4" data-sweep-review>
+                <form method="POST" action="{{ route('admin.operating.sweep') }}" data-busy="Sweeping…" class="decision-panel max-w-3xl space-y-3 p-4 sm:p-5" data-sweep-review>
                     @csrf
-                    <p><span class="font-semibold">Review:</span> move <span class="tabular font-semibold">{{ Money::format($sweepReview['cents']) }}</span>
+                    <p><span class="font-semibold">Review:</span> move <span class="money">{{ Money::format($sweepReview['cents']) }}</span>
                         from the customer funds account to Local Goods Operating, {{ $sweepChannel === 'stripe' ? 'by a Stripe test-mode transfer' : 'simulated, no real money' }}.</p>
                     <p class="text-sm">Reason: {{ $sweepReview['reason'] }}</p>
                     <input type="hidden" name="amount_cents" value="{{ $sweepReview['cents'] }}">
@@ -230,7 +230,7 @@
             @endif
         @endif
 
-        <h3 class="pt-2 text-lg font-semibold">Sweep history</h3>
+        <h3 class="statement-head pt-4 text-xl font-bold tracking-tight">Sweep history</h3>
         @if ($sweeps->isEmpty())
             <p class="text-sm text-muted" data-sweep-history="empty">No sweeps yet. Every one will be listed here, with its date, amount, reason and who decided it.</p>
         @elseif (! $showsFigures)
@@ -239,7 +239,7 @@
             <x-rtable label="Sweeps to Local Goods Operating">
                 <table data-rtable="stack" class="w-full text-left text-sm" data-sweep-history="table">
                     <caption class="sr-only">Every sweep from the customer funds account to Local Goods Operating, newest first</caption>
-                    <thead class="border-b border-line text-muted">
+                    <thead>
                         <tr>
                             <th scope="col" class="py-2 pr-4 font-semibold">When</th>
                             <th scope="col" class="py-2 pr-4 text-right font-semibold">Amount</th>
@@ -251,8 +251,8 @@
                     <tbody class="divide-y divide-line">
                         @foreach ($sweeps as $sweep)
                             <tr data-sweep="{{ $sweep->status }}">
-                                <td data-primary class="py-2.5 pr-4">{{ $dc($sweep->swept_at ?? $sweep->created_at) }}</td>
-                                <td data-label="Amount" class="py-2.5 pr-4 text-right tabular">{{ Money::format($sweep->amount_cents) }}</td>
+                                <td data-primary class="py-2.5 pr-4 [font-variant-numeric:tabular-nums]">{{ $dc($sweep->swept_at ?? $sweep->created_at) }}</td>
+                                <td data-label="Amount" class="tabular py-2.5 pr-4 text-right">{{ Money::format($sweep->amount_cents) }}</td>
                                 <td data-label="How" class="py-2.5 pr-4">
                                     @switch ($sweep->status)
                                         @case ('sent') <x-badge tone="ok">Stripe test-mode transfer</x-badge><code class="wrap-anywhere-safe block font-mono text-xs text-muted">{{ $sweep->stripe_transfer_id }}</code> @break
@@ -271,20 +271,20 @@
         @endif
     </section>
 
-    <section id="solvency-check" aria-labelledby="check-heading" class="space-y-4">
-        <h2 id="check-heading" class="text-2xl font-semibold text-primary">The solvency check</h2>
+    <section id="solvency-check" aria-labelledby="check-heading" class="rule-heavy space-y-6">
+        <h2 id="check-heading" class="stop-subtitle text-2xl">The solvency check</h2>
 
         @if ($run === null)
-            <p class="rounded-2xl bg-band p-4" data-solvency="not-run">
+            <p class="ledger-note max-w-[52rem]" data-solvency="not-run">
                 <span class="font-semibold">Not run yet.</span> It runs after every deploy, after every tick of the demo activity generator,
                 and when the platform admin presses Run the check now.
             </p>
         @elseif ($run->passed)
-            <p class="rounded-2xl border-2 border-ok bg-ok-bg p-4 font-semibold text-ok" data-solvency="pass">
+            <p class="max-w-[52rem] border-t-[3px] border-ok bg-ok-bg px-4 py-3 font-semibold text-ok" data-solvency="pass">
                 <span aria-hidden="true">✓</span> Pass: at every moment in the ledger's history, the money held covered every promise.
             </p>
         @else
-            <section role="alert" aria-labelledby="fail-heading" class="rounded-2xl border-2 border-danger bg-danger-bg p-5 text-danger" data-solvency="fail">
+            <section role="alert" aria-labelledby="fail-heading" class="border-t-[3px] border-danger bg-danger-bg p-5 text-danger" data-solvency="fail">
                 <h3 id="fail-heading" class="text-xl font-semibold"><span aria-hidden="true">⚑</span> Fail: there were moments when the money held did not cover every promise</h3>
                 <ul class="mt-3 list-disc space-y-2 pl-5">
                     @foreach ($windows as $window)
@@ -306,26 +306,26 @@
         @endif
 
         @if ($run !== null)
-            <dl class="grid gap-3 sm:grid-cols-3">
-                <x-card padding="p-4 sm:p-5">
-                    <dt class="text-sm font-semibold text-muted">Last run</dt>
-                    <dd class="mt-1 text-lg font-semibold" data-last-run>{{ $dc($run->created_at) }}</dd>
+            <dl class="grid gap-x-6 gap-y-8 sm:grid-cols-3">
+                <div class="rule-top">
+                    <dt class="figure-label">Last run</dt>
+                    <dd class="tabular mt-2 text-xl font-bold" data-last-run>{{ $dc($run->created_at) }}</dd>
                     <dd class="mt-1 text-sm text-muted">By {{ $run->triggerLabel() }}, in {{ number_format($run->duration_ms) }} ms.</dd>
-                </x-card>
-                <x-card padding="p-4 sm:p-5">
-                    <dt class="text-sm font-semibold text-muted">What it checked</dt>
-                    <dd class="mt-1 text-lg font-semibold" data-entries-checked>{{ number_format($run->entries_checked) }} ledger {{ Str::plural('entry', $run->entries_checked) }}</dd>
+                </div>
+                <div class="rule-top">
+                    <dt class="figure-label">What it checked</dt>
+                    <dd class="tabular mt-2 text-xl font-bold" data-entries-checked>{{ number_format($run->entries_checked) }} ledger {{ Str::plural('entry', $run->entries_checked) }}</dd>
                     <dd class="mt-1 text-sm text-muted">At {{ number_format($run->moments_checked) }} {{ Str::plural('moment', $run->moments_checked) }}, one after each change, never just at the end.</dd>
-                </x-card>
-                <x-card padding="p-4 sm:p-5">
-                    <dt class="text-sm font-semibold text-muted">Over</dt>
-                    <dd class="mt-1 text-lg font-semibold" data-date-range>{{ $day($run->first_entry_at) }} to {{ $day($run->last_entry_at) }}</dd>
+                </div>
+                <div class="rule-top">
+                    <dt class="figure-label">Over</dt>
+                    <dd class="tabular mt-2 text-xl font-bold" data-date-range>{{ $day($run->first_entry_at) }} to {{ $day($run->last_entry_at) }}</dd>
                     <dd class="mt-1 text-sm text-muted">The whole history, from the first ledger entry.</dd>
-                </x-card>
+                </div>
             </dl>
         @endif
 
-        <p class="text-sm" data-solvency-now="{{ $now->passes() ? 'pass' : 'fail' }}">
+        <p class="border-t border-ink pt-3 text-sm" data-solvency-now="{{ $now->passes() ? 'pass' : 'fail' }}">
             <span class="font-semibold">Right now:</span>
             @if ($now->passes())
                 <x-badge tone="ok">Pass</x-badge> the money held equals everything promised, to the cent.
@@ -344,8 +344,8 @@
         @endif
     </section>
 
-    <section aria-labelledby="meaning-heading" class="max-w-3xl space-y-3">
-        <h2 id="meaning-heading" class="text-2xl font-semibold text-primary">What the rule means</h2>
+    <section aria-labelledby="meaning-heading" class="rule-heavy space-y-4 [&>p]:max-w-[52rem]">
+        <h2 id="meaning-heading" class="stop-subtitle text-2xl">What the rule means</h2>
         <p>
             <span class="font-semibold">The rule:</span> the money employers have paid in, less what has been paid out to merchants and refunded to employers,
             must always cover every promise still open. The open promises are every employer's unspent credits, every employee's balance, everything owed to merchants,
@@ -368,17 +368,17 @@
             A real deployment would hold customer funds at a bank or a regulated payments partner, and money-transmission rules may apply.
             What exactly is required needs legal advice, which we have not had.
         </p>
-        <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-                <h3 class="font-semibold">What it makes sure of</h3>
+        <div class="grid max-w-[60rem] gap-x-10 gap-y-8 pt-2 sm:grid-cols-2">
+            <div class="rule-top">
+                <h3 class="font-bold">What it makes sure of</h3>
                 <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
                     <li>At every recorded moment, every promise had money behind it, and no account was below zero.</li>
                     <li>Simulated money never paid for a Stripe test-mode transfer.</li>
                     <li>The ledger agrees with the purchase, payout and refund records it was written from.</li>
                 </ul>
             </div>
-            <div>
-                <h3 class="font-semibold">What it doesn't cover</h3>
+            <div class="rule-top">
+                <h3 class="font-bold">What it doesn't cover</h3>
                 <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
                     <li>That customer money is held the way a real deployment would need: it is in a Stripe test-mode balance Local Goods controls, not a bank FBO or trust account.</li>
                     <li>That Stripe's own balance matches: that is the reconciliation check, in Stripe test mode only.</li>

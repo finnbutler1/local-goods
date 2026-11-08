@@ -1,7 +1,7 @@
 @php
     use App\Models\MerchantApplication;
 
-    $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
+    $link = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover';
     $tone = fn (MerchantApplication $a) => match ($a->status) {
         MerchantApplication::LIVE, MerchantApplication::BID_APPROVED, MerchantApplication::STRIPE_ONBOARDING => 'ok',
         MerchantApplication::DECLINED => 'neutral',
@@ -10,25 +10,25 @@
 @endphp
 
 <x-app-shell title="Merchant Applications" active="applications" context="Golden Triangle BID · Washington, DC">
-<div class="space-y-8">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Applications</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Merchant Applications</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">Shops asking to join</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-12">
+    <header>
+        <x-station-sign as="p">Applications</x-station-sign>
+        <h1 class="page-title">Merchant Applications</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Shops asking to join</p>
+        <p class="page-lede">
             Independent shops apply on the public <a href="{{ route('apply') }}" class="{{ $link }}">Apply to join</a> page. For each one,
             run the eligibility check (address and AI suggestion), then approve or decline with a reason the shop will see.
             The AI never decides.
         </p>
-        <p class="mt-3 text-sm text-muted">{{ MerchantApplication::APPLICANT_LABEL }} Shops become participants only once approved and set up with Stripe.</p>
+        <p class="mt-4 max-w-[52rem] text-sm text-muted">{{ MerchantApplication::APPLICANT_LABEL }} Shops become participants only once approved and set up with Stripe.</p>
     </header>
 
-    <p class="text-lg"><span class="font-semibold tabular">{{ $waiting }}</span> waiting for the BID.</p>
+    <p class="rule-top flex items-baseline gap-3 text-lg"><span class="money text-5xl">{{ $waiting }}</span> waiting for the BID.</p>
 
     @if ($applications->isEmpty())
-        <x-card><p class="text-muted">No applications yet. Shops apply at <a href="{{ route('apply') }}" class="{{ $link }}">/apply</a>.</p></x-card>
+        <p class="ledger-note text-muted">No applications yet. Shops apply at <a href="{{ route('apply') }}" class="{{ $link }}">/apply</a>.</p>
     @else
-        <x-rtable label="Applications table">
+        <x-rtable label="Applications table" class="-mt-4">
             <table data-rtable="stack" class="w-full text-left">
                 <caption class="sr-only">Applications, waiting first</caption>
                 <thead class="border-b border-line/70 text-sm text-muted">
@@ -55,7 +55,7 @@
                                 <span class="block text-sm text-muted">{{ match ($application->inside_district) { true => 'Inside the district', false => 'Outside the district', default => $application->status === MerchantApplication::APPLIED ? 'Not checked yet' : 'Not found' } }}</span>
                             </td>
                             <td data-label="AI suggestion" class="px-5 py-3">{{ $application->ai_classification ? str_replace('_', ' ', ucfirst($application->ai_classification)) : 'Not asked yet' }}</td>
-                            <td data-label="Applied" class="px-5 py-3 tabular">{{ $application->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y') }}</td>
+                            <td data-label="Applied" class="px-5 py-3 whitespace-nowrap [font-variant-numeric:tabular-nums]">{{ $application->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y') }}</td>
                             <td data-label="" class="px-5 py-3"><a href="{{ route('bid-admin.applications.show', $application) }}" class="tap-target {{ $link }}">Open<span class="sr-only"> {{ $application->business_name }}</span></a></td>
                         </tr>
                     @endforeach

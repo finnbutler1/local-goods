@@ -2,9 +2,9 @@
 
 <x-app-shell title="My wallet" active="wallet"
              :context="$employee->employer->name.' · Golden Triangle BID'">
-<div class="mx-auto max-w-xl space-y-6">
+<div class="wallet-desk max-w-2xl space-y-6">
     {{-- Confirmation of the redemption just made, announced to screen readers. Show it at the counter. --}}
-    <div aria-live="polite">
+    <div aria-live="polite" class="wallet-live">
         @if ($result)
             @php
                 $approved = $result->isApproved();
@@ -72,38 +72,38 @@
         @endif
     </div>
 
-    <section aria-labelledby="balance-heading" class="relative overflow-hidden rounded-3xl bg-night p-6 text-on-night shadow-[0_12px_30px_-12px_rgb(18_24_32/0.6)] sm:p-8">
-        <div class="flex items-start justify-between gap-4">
-            <h1 id="balance-heading" class="font-sans text-sm font-semibold uppercase tracking-widest text-night-muted">Available balance</h1>
-            <span class="font-display text-sm font-semibold whitespace-nowrap text-on-night">Local Goods</span>
+    <section aria-labelledby="balance-heading" class="wallet-balance">
+        <div class="flex items-center justify-between gap-4">
+            <h1 id="balance-heading" class="text-[0.8125rem] leading-none font-bold tracking-[0.14em] text-night-muted uppercase">Available balance</h1>
+            <span class="text-[0.9375rem] font-extrabold whitespace-nowrap text-on-night">Local Goods</span>
         </div>
-        <p class="tabular mt-3 font-display text-6xl font-semibold tracking-tight text-night-accent" data-testid="balance">{{ Money::format($balance) }}</p>
+        <p class="money mt-3 text-[clamp(2.75rem,2.2rem+2.4vw,3.5rem)] leading-none text-on-night" data-testid="balance">{{ Money::format($balance) }}</p>
         <p class="mt-4 text-sm text-night-muted">{{ Money::format($employee->employer->monthly_allowance_cents) }} added each month by {{ $employee->employer->name }}</p>
         <p class="mt-1 text-sm text-night-muted">Demo account</p>
     </section>
 
     {{-- Two ways to pay (ADR 0026). Real tabs with arrow keys when JavaScript runs; plain links to ?tab= without it. --}}
-    <div id="wallet-tabs" class="scroll-mt-24" data-tabs>
-        <div role="tablist" aria-label="How to pay" class="grid grid-cols-2 gap-2 rounded-2xl border-2 border-edge bg-surface p-2">
+    <div id="wallet-tabs" class="wallet-tabs scroll-mt-24" data-tabs>
+        <div role="tablist" aria-label="How to pay" class="grid grid-cols-2 overflow-hidden rounded-2xl border-2 border-frame bg-surface">
             @foreach ([
                 'to-go' => ['Order to go', 'Order ahead, pick it up', '<path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/>'],
                 'in-person' => ['Pay in person', 'Show a code at the counter', '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M10 7h4M10 12h4M10 16h4"/>'],
             ] as $key => [$label, $description, $icon])
                 <a role="tab" id="tab-{{ $key }}" href="{{ route('employee.wallet', ['tab' => $key]) }}#wallet-tabs"
                    aria-controls="panel-{{ $key }}" aria-selected="{{ $tab === $key ? 'true' : 'false' }}" tabindex="{{ $tab === $key ? '0' : '-1' }}"
-                   class="group relative flex min-h-20 flex-col items-center justify-center gap-1 rounded-xl border-2 border-edge px-2 py-3 text-center text-primary hover:bg-primary-tint aria-selected:border-primary aria-selected:bg-primary aria-selected:text-on-primary aria-selected:shadow-[inset_0_-6px_0_0_var(--color-on-primary)]">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-7" aria-hidden="true">{!! $icon !!}</svg>
-                    <span class="text-lg leading-tight font-bold group-aria-selected:underline group-aria-selected:decoration-2 group-aria-selected:underline-offset-4">{{ $label }}</span>
-                    <span class="text-sm leading-snug font-normal">{{ $description }}</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="absolute top-2 right-2 hidden size-5 group-aria-selected:block" aria-hidden="true" data-selected-mark><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.5 3 3 6-7"/></svg>
+                   class="group relative flex min-h-20 flex-col items-start justify-center gap-0.5 px-3.5 py-3 text-left text-ink not-first:border-l-2 not-first:border-frame hover:bg-primary-tint aria-selected:bg-primary aria-selected:text-on-primary aria-selected:shadow-[inset_0_-6px_0_0_var(--color-on-primary)] sm:min-h-22 sm:px-4">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6" aria-hidden="true">{!! $icon !!}</svg>
+                    <span class="mt-1 text-[1.0625rem] leading-tight font-extrabold group-aria-selected:underline group-aria-selected:decoration-2 group-aria-selected:underline-offset-4">{{ $label }}</span>
+                    <span class="text-[0.8125rem] leading-snug font-normal">{{ $description }}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="absolute top-2.5 right-2.5 hidden size-5 group-aria-selected:block" aria-hidden="true" data-selected-mark><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.5 3 3 6-7"/></svg>
                 </a>
             @endforeach
         </div>
 
         <div role="tabpanel" id="panel-to-go" aria-labelledby="tab-to-go" tabindex="0" class="mt-6 space-y-6" @if ($tab !== 'to-go') hidden @endif>
         <x-card as="section" id="redeem" aria-labelledby="redeem-heading" class="scroll-mt-24">
-            <h2 id="redeem-heading" class="text-2xl font-semibold text-primary">Redeem credits</h2>
-            <p class="mt-1 text-sm text-muted">Every redemption is checked by Redemption Fraud Detection before the merchant is paid.</p>
+            <h2 id="redeem-heading" class="text-2xl font-extrabold tracking-tight text-ink">Redeem credits</h2>
+            <p class="mt-2 text-[0.9375rem]">Every redemption is checked by Redemption Fraud Detection before the merchant is paid.</p>
             <p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
                 <x-money-mode />
                 {{ \App\Support\StripeMode::active()
@@ -112,7 +112,7 @@
             </p>
 
             @if ($suspicious)
-                <p class="mt-4 rounded-xl bg-hold-bg p-3 text-sm text-hold">
+                <p class="mt-4 border-t-[3px] border-hold bg-hold-bg p-3 text-sm text-hold">
                     Pre-filled with a suspicious pattern: the whole balance, as a round number. Confirm it to watch Redemption Fraud Detection hold it.
                 </p>
             @endif
@@ -165,10 +165,10 @@
         </x-card>
 
         <section id="browse" aria-labelledby="browse-heading" class="scroll-mt-24">
-            <h2 id="browse-heading" class="text-2xl font-semibold text-primary">Where you can spend</h2>
-            <p class="mt-1 text-sm text-muted">Independent businesses in the Golden Triangle BID. All are fictional in this demo.</p>
+            <h2 id="browse-heading" class="text-2xl font-extrabold tracking-tight text-ink">Where you can spend</h2>
+            <p class="mt-1.5 text-[0.9375rem] text-muted">Independent businesses in the Golden Triangle BID. All are fictional in this demo.</p>
 
-            <form method="GET" action="{{ route('employee.wallet') }}#browse" role="search" class="mt-3 flex gap-2">
+            <form method="GET" action="{{ route('employee.wallet') }}#browse" role="search" class="mt-4 flex gap-2">
                 @if ($category !== '')<input type="hidden" name="category" value="{{ $category }}">@endif
                 <label for="merchant-search" class="sr-only">Search merchants</label>
                 <input id="merchant-search" name="q" type="search" value="{{ $search }}" placeholder="Search by name or street"
@@ -181,27 +181,27 @@
                     <li>
                         <a href="{{ route('employee.wallet', array_filter(['category' => $value, 'q' => $search])) }}#browse"
                            @if ($category === (string) $value) aria-current="true" @endif
-                           class="tap-target inline-block rounded-full border-2 border-primary px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-tint aria-[current=true]:bg-primary aria-[current=true]:text-on-primary">{{ $label }}</a>
+                           class="tap-target inline-block rounded-full border-2 border-frame px-4 py-1.5 text-[0.9375rem] font-bold text-ink hover:bg-band aria-[current=true]:bg-ink aria-[current=true]:text-page">{{ $label }}</a>
                     </li>
                 @endforeach
             </ul>
 
             @if ($browse->isEmpty())
-                <x-card class="mt-3 text-muted">
+                <p class="ledger-note mt-4 border-dashed text-muted">
                     No merchants match{{ $search !== '' ? ' "'.$search.'"' : '' }}{{ $category !== '' ? ' in '.$category : '' }}.
                     <a href="{{ route('employee.wallet') }}#browse" class="font-semibold text-primary underline underline-offset-4">Show all merchants</a>
-                </x-card>
+                </p>
             @else
-                <ul class="mt-3 grid gap-3 sm:grid-cols-2">
+                <ul class="merchant-line mt-5">
                     @foreach ($browse as $merchant)
-                        <x-card as="li" padding="p-4 pl-6" class="merchant-rail flex flex-col">
-                            <p class="font-semibold">{{ $merchant->name }}</p>
+                        <li>
+                            <p class="text-[1.0625rem] font-extrabold">{{ $merchant->name }}</p>
                             <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
                             <a href="{{ route('employee.wallet', ['merchant' => $merchant->id]) }}#redeem"
-                               class="tap-target mt-2 min-h-6 self-start text-sm font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">
+                               class="tap-target mt-2 min-h-6 self-start text-[0.9375rem] font-bold text-primary underline decoration-2 underline-offset-4 hover:decoration-accent">
                                 Redeem here<span class="sr-only"> at {{ $merchant->name }}</span>
                             </a>
-                        </x-card>
+                        </li>
                     @endforeach
                 </ul>
             @endif
@@ -213,13 +213,13 @@
         </div>
     </div>
 
-    <section aria-labelledby="recent-heading">
-        <h2 id="recent-heading" class="text-2xl font-semibold text-primary">Recent redemptions</h2>
-        <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
+    <section aria-labelledby="recent-heading" class="wallet-recent pt-4">
+        <h2 id="recent-heading" class="text-2xl font-extrabold tracking-tight text-ink">Recent redemptions</h2>
+        <ul class="ruled-rows mt-3">
             @forelse ($recent as $redemption)
-                <li class="flex items-start justify-between gap-3 px-5 py-4">
+                <li class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                        <p class="font-semibold break-words">{{ $redemption->merchant->name }} @if ($redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</p>
+                        <p class="font-extrabold break-words">{{ $redemption->merchant->name }} @if ($redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</p>
                         @if ($for = $redemption->itemsSummary())
                             <p class="text-sm break-words" data-items>{{ $for }}</p>
                         @endif
@@ -232,7 +232,7 @@
                         ])
                     </div>
                     <div class="shrink-0 text-right">
-                        <p class="tabular font-semibold">{{ Money::format($redemption->amount_cents) }}</p>
+                        <p class="ledger-num text-lg font-semibold">{{ Money::format($redemption->amount_cents) }}</p>
                         <x-status-badge :redemption="$redemption" class="mt-1" />
                         @if ($redemption->isRejected())
                             <p class="mt-1 max-w-36 text-xs text-muted">{{ $redemption->isCancelled() ? 'Cancelled, credits returned' : ($redemption->decision?->credit_returned_to === 'employer' ? 'Credit returned to your employer' : 'Credit back in your balance') }}</p>
@@ -240,35 +240,35 @@
                     </div>
                 </li>
             @empty
-                <li class="px-5 py-4 text-muted">No redemptions yet.</li>
+                <li class="text-muted">No redemptions yet.</li>
             @endforelse
-        </x-card>
+        </ul>
     </section>
 
-    <section id="history" aria-labelledby="history-heading" class="scroll-mt-24">
-        <h2 id="history-heading" class="text-2xl font-semibold text-primary">Transaction history</h2>
-        <p class="mt-1 text-sm text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
-        <x-card as="ul" padding="p-0" class="mt-3 divide-y divide-line/70">
+    <section id="history" aria-labelledby="history-heading" class="wallet-history scroll-mt-24 pt-4">
+        <h2 id="history-heading" class="text-2xl font-extrabold tracking-tight text-ink">Transaction history</h2>
+        <p class="mt-1.5 text-[0.9375rem] text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
+        <ul class="ruled-rows mt-3">
             @forelse ($history as $row)
-                <li class="flex items-start justify-between gap-3 px-5 py-3">
+                <li class="flex items-start justify-between gap-3 py-3!">
                     <div class="min-w-0">
-                        <p class="font-semibold">{{ $row['entry']->description }}</p>
+                        <p class="text-[0.9375rem] font-bold">{{ $row['entry']->description }}</p>
                         @if ($row['entry']->type === \App\Models\CreditLedgerEntry::TYPE_REDEMPTION && $row['entry']->redemption)
                             <p class="text-sm text-muted" data-channel>{{ $row['entry']->redemption->channelLabel() }}</p>
                         @endif
                         <p class="text-sm text-muted">{{ $row['entry']->created_at->setTimezone('America/New_York')->format('M j, Y, g:i A') }}</p>
                     </div>
                     <div class="shrink-0 text-right">
-                        <p @class(['tabular font-semibold', 'text-ok' => $row['entry']->amount_cents > 0])>
+                        <p @class(['ledger-num font-semibold', 'font-bold text-ok' => $row['entry']->amount_cents > 0])>
                             {{ $row['entry']->amount_cents > 0 ? '+' : '' }}{{ Money::format($row['entry']->amount_cents) }}
                         </p>
-                        <p class="tabular text-sm text-muted">Balance {{ Money::format($row['balance_after']) }}</p>
+                        <p class="ledger-num text-sm text-muted">Balance {{ Money::format($row['balance_after']) }}</p>
                     </div>
                 </li>
             @empty
-                <li class="px-5 py-4 text-muted">No transactions yet. Your employer's first allowance will show here.</li>
+                <li class="text-muted">No transactions yet. Your employer's first allowance will show here.</li>
             @endforelse
-        </x-card>
+        </ul>
         @if (! $showAllHistory && $historyCount > $history->count())
             <p class="mt-3"><a href="{{ route('employee.wallet', ['history' => 1]) }}#history" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $historyCount }} transactions</a></p>
         @endif

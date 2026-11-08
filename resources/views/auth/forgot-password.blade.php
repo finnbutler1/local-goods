@@ -1,7 +1,7 @@
 @php use App\Support\PasswordResets; @endphp
 
 <x-guest-shell title="Forgot password">
-    <h1 class="text-3xl font-semibold text-primary">Forgot password</h1>
+    <h1 class="text-[2.5rem] leading-none font-extrabold tracking-[-0.035em] sm:text-5xl">Forgot password</h1>
 
     @if (PasswordResets::byEmail())
         <p class="mt-1 text-muted">Enter the email you log in with and we'll send you a link to choose a new password.</p>

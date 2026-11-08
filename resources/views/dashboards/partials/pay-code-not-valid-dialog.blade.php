@@ -2,9 +2,9 @@
      reason, so it can never say which one applies or whether the code exists for another shop.
      Without JavaScript the dialog stays closed and the inline message under the field is the fallback. --}}
 <dialog id="pay-code-dialog" aria-labelledby="pay-code-dialog-heading" data-open-on-load data-return-to="pay_code"
-        class="m-auto w-[min(100%-2rem,32rem)] rounded-2xl bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/50">
+        class="m-auto w-[min(100%-2rem,32rem)] rounded-2xl border-2 border-frame bg-surface p-0 text-ink backdrop:bg-night/60">
     <div class="space-y-4 p-6">
-        <h2 id="pay-code-dialog-heading" class="text-2xl font-semibold text-primary">That code didn't work</h2>
+        <h2 id="pay-code-dialog-heading" class="text-2xl font-extrabold tracking-tight text-ink">That code didn't work</h2>
         <div>
             <p>A pay code can be refused for a few ordinary reasons:</p>
             <ul class="mt-2 list-disc space-y-1 pl-5">

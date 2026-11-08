@@ -2,24 +2,10 @@
 
 /* Self-hosted fonts: Vite copies the .woff2 files from these npm packages into
    public/build, so browsers never contact Google or any other font server.
-   Transit lines brand (ADR 0025): Overpass for headings, Atkinson Hyperlegible
-   Next for text. */
-@import '@fontsource-variable/overpass/wght.css';
-@import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
-
-/* Plain zeros: Atkinson Hyperlegible Next only has a slashed zero, so its
-   digits 0-9 come from Overpass (plain zero, tabular figures). Declared after
-   the imports with the same descriptors as Atkinson's own face (weight
-   200 800), so browsers treat both as one family and this face wins for
-   digits. */
-@font-face {
-    font-family: 'Atkinson Hyperlegible Next Variable';
-    font-style: normal;
-    font-display: swap;
-    font-weight: 200 800;
-    src: url('../../node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2') format('woff2-variations');
-    unicode-range: U+0030-0039;
-}
+   Wayfinding (ADR 0038): Public Sans for everything, including large money
+   figures; Overpass Mono only for ledger tables and transaction amounts. */
+@import '@fontsource-variable/public-sans/wght.css';
+@import '@fontsource-variable/overpass-mono/wght.css';
 
 /* A control that can't be used right now: disabled, or aria-disabled (kept
    focusable so its explanation can be read). A button that is loading is
@@ -30,56 +16,71 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Atkinson Hyperlegible Next Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Overpass Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    /* One corner radius, 8px, for cards, panels, fields and buttons (DESIGN.md Shapes).
-       Pills (rounded-full) are only for small badges and round controls. */
-    --radius-lg: 0.5rem;
-    --radius-xl: 0.5rem;
-    --radius-2xl: 0.5rem;
-    --radius-3xl: 0.5rem;
+    /* Two corners: 4px for buttons, fields, badges and menus; 6px for cards
+       and panels. Pills (rounded-full) only for small round controls. */
+    --radius-lg: 0.25rem;
+    --radius-xl: 0.25rem;
+    --radius-2xl: 0.375rem;
+    --radius-3xl: 0.375rem;
 
-    /* Transit lines palette, light mode. Dark mode redefines the same names
-       below, so every class switches with the theme. Approved text/background
-       pairs are checked against WCAG AA in both modes by
-       tests/Unit/ColorContrastTest.php (App\Support\ColorContrast::PAIRS). */
-    --color-page: #f4f6f5;            /* page background */
-    --color-surface: #ffffff;         /* cards */
-    --color-band: #e6ecea;            /* section bands */
-    --color-ink: #121820;             /* body text */
-    --color-muted: #4d5666;           /* secondary text */
-    --color-line: #d3dad8;            /* decorative rules only, never a UI boundary */
-    --color-edge: #7a8494;            /* control borders (3:1) */
-    --color-primary: #0a6b67;         /* teal route line: primary actions, links */
-    --color-primary-hover: #085754;
+    /* Wayfinding palette, light mode: warm map paper, ink, the logo's teal
+       line and coral local stop (ADR 0038). Dark mode redefines the same
+       names below (the night palette), so every class switches with the
+       theme. Approved text/background pairs are checked against WCAG AA in
+       both modes by tests/Unit/ColorContrastTest.php
+       (App\Support\ColorContrast::PAIRS). The logo is drawn with primary,
+       ink and accent (and the night- versions), so those keep the logo
+       files' exact colors (docs/redesign-rules.md). */
+    --color-page: #ede8da;            /* map paper: page background */
+    --color-surface: #f8f5ec;         /* raised paper: cards and panels */
+    --color-band: #e3ddcd;            /* section bands, quiet fills */
+    --color-ink: #121820;             /* body text (logo ink) */
+    --color-muted: #4a5058;           /* secondary text */
+    --color-line: #c8bfa8;            /* decorative rules only, never a UI boundary */
+    --color-frame: #121820;           /* panel and card borders */
+    --color-edge: #7d7564;            /* control borders (3:1) */
+    --color-primary: #0a6b67;         /* teal line (logo): primary actions, links */
+    --color-primary-hover: #08524f;
     --color-primary-pressed: #064441;
     --color-on-primary: #ffffff;
-    --color-primary-tint: #e0f0ee;
-    --color-accent: #e2603a;          /* coral local stop: highlights; ink text on it */
+    --color-primary-tint: #d6e6e1;
+    --color-accent: #e2603a;          /* coral local stop (logo); ink text on it */
+    --color-accent-hover: #ec7d5a;
     --color-on-accent: #121820;
-    --color-accent-ink: #a83c1b;      /* coral-toned text */
+    --color-accent-ink: #a13a1b;      /* coral where it is text */
     --color-route-2: #7a3f9a;         /* plum second line, decoration only */
-    --color-ok: #196a3e;
-    --color-ok-bg: #e0f1e6;
-    --color-hold: #8a4b00;
-    --color-hold-bg: #fcefd9;
-    --color-danger: #b3261e;
-    --color-danger-bg: #fbe5e3;
+    --color-ok: #1e6a3e;
+    --color-ok-bg: #dcebdd;
+    --color-hold: #834700;
+    --color-hold-bg: #f6e5c4;
+    --color-danger: #a8261e;
+    --color-danger-bg: #f6dcd6;
     --color-focus: #5a2d86;
-    --color-disabled-ink: #4d5462;
-    --color-disabled-bg: #dde1e6;
-    /* Night panels (sidebar, footer, tab bar): dark in both modes. */
+    --color-disabled-ink: #4a5058;
+    --color-disabled-bg: #d9d2c0;
+    /* Station signs (sidebar, footer, tab bar, section bands): dark in both modes. */
     --color-night: #121820;
     --color-night-soft: #1f2832;
     --color-night-line: #2f3a45;
     --color-on-night: #edf1f4;
-    --color-night-muted: #a9b2bf;
+    --color-night-muted: #b9c0c5;
     --color-night-primary: #42c4b9;
     --color-night-accent: #ff8a63;
     --color-night-focus: #d7b4ff;
-
+    /* The district diagram (<x-district-diagram>): the district, its streets
+       and street labels. The route, stops and local stop use primary, ink,
+       surface and accent. */
+    --color-map-district: #f7f3e8;
+    --color-map-street: #fffdf7;
+    --color-map-street-case: #bdb39b;
+    --color-map-label: #5f5a4c;
+    /* Station sign bands: the night ink in light mode, lifted off the page in dark. */
+    --color-sign: #121820;
 }
 
 /* Dark mode: the system setting, unless the header toggle chose light; or
@@ -87,20 +88,22 @@
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
         color-scheme: dark;
-        --color-page: #0d1216;
-        --color-surface: #161d23;
-        --color-band: #1b242b;
+        --color-page: #0e1621;
+        --color-surface: #172230;
+        --color-band: #1d2a3a;
         --color-ink: #edf1f4;
-        --color-muted: #a4adba;
-        --color-line: #2a333c;
-        --color-edge: #68737f;
+        --color-muted: #a7b3c0;
+        --color-line: #2c3a4b;
+        --color-frame: #3d4c5e;
+        --color-edge: #6f7f92;
         --color-primary: #42c4b9;
         --color-primary-hover: #6ad4cb;
         --color-primary-pressed: #2ea89e;
-        --color-on-primary: #0d1216;
-        --color-primary-tint: #10302d;
+        --color-on-primary: #0e1621;
+        --color-primary-tint: #12302f;
         --color-accent: #ff8a63;
-        --color-on-accent: #0d1216;
+        --color-accent-hover: #ffa181;
+        --color-on-accent: #0e1621;
         --color-accent-ink: #ff9c7a;
         --color-route-2: #c08ae0;
         --color-ok: #6fd49a;
@@ -111,29 +114,36 @@
         --color-danger-bg: #3a1512;
         --color-focus: #d7b4ff;
         --color-disabled-ink: #b6bec9;
-        --color-disabled-bg: #2a333c;
-        --color-night: #080b0e;
-        --color-night-soft: #161d23;
-        --color-night-line: #252e36;
+        --color-disabled-bg: #2a3646;
+        --color-night: #070b10;
+        --color-night-soft: #172230;
+        --color-night-line: #26313d;
+        --color-map-district: #172230;
+        --color-map-street: #26364b;
+        --color-map-street-case: #3a4b60;
+        --color-map-label: #a7b3c0;
+        --color-sign: #1d2a3a;
     }
 }
 
 :root[data-theme='dark'] {
     color-scheme: dark;
-    --color-page: #0d1216;
-    --color-surface: #161d23;
-    --color-band: #1b242b;
+    --color-page: #0e1621;
+    --color-surface: #172230;
+    --color-band: #1d2a3a;
     --color-ink: #edf1f4;
-    --color-muted: #a4adba;
-    --color-line: #2a333c;
-    --color-edge: #68737f;
+    --color-muted: #a7b3c0;
+    --color-line: #2c3a4b;
+    --color-frame: #3d4c5e;
+    --color-edge: #6f7f92;
     --color-primary: #42c4b9;
     --color-primary-hover: #6ad4cb;
     --color-primary-pressed: #2ea89e;
-    --color-on-primary: #0d1216;
-    --color-primary-tint: #10302d;
+    --color-on-primary: #0e1621;
+    --color-primary-tint: #12302f;
     --color-accent: #ff8a63;
-    --color-on-accent: #0d1216;
+    --color-accent-hover: #ffa181;
+    --color-on-accent: #0e1621;
     --color-accent-ink: #ff9c7a;
     --color-route-2: #c08ae0;
     --color-ok: #6fd49a;
@@ -144,10 +154,15 @@
     --color-danger-bg: #3a1512;
     --color-focus: #d7b4ff;
     --color-disabled-ink: #b6bec9;
-    --color-disabled-bg: #2a333c;
-    --color-night: #080b0e;
-    --color-night-soft: #161d23;
-    --color-night-line: #252e36;
+    --color-disabled-bg: #2a3646;
+    --color-night: #070b10;
+    --color-night-soft: #172230;
+    --color-night-line: #26313d;
+    --color-map-district: #172230;
+    --color-map-street: #26364b;
+    --color-map-street-case: #3a4b60;
+    --color-map-label: #a7b3c0;
+    --color-sign: #1d2a3a;
 }
 
 :root {
@@ -169,14 +184,48 @@
         }
     }
 
+    html {
+        scrollbar-color: var(--color-edge) var(--color-page);
+    }
+
     body {
         font-feature-settings: 'kern', 'liga';
+        caret-color: var(--color-primary);
+    }
+
+    ::selection {
+        background: var(--color-primary);
+        color: var(--color-on-primary);
     }
 
     h1, h2, h3, h4, .font-display {
         font-family: var(--font-display);
-        letter-spacing: -0.015em;
+        letter-spacing: -0.025em;
         text-wrap: balance;
+    }
+
+    a {
+        text-underline-offset: 0.2em;
+    }
+
+    /* Figures in tables line up. */
+    table {
+        font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    /* Text fields and selects: the control edge, raised paper, at least 44px.
+       Classes on a field still win. */
+    :is(input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range']), select, textarea) {
+        border-color: var(--color-edge);
+        background-color: var(--color-surface);
+    }
+
+    :is(input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range']), select) {
+        min-height: 2.75rem;
+    }
+
+    input::placeholder, textarea::placeholder {
+        color: var(--color-muted);
     }
 
     /* Every enabled button looks pressable. */
@@ -225,14 +274,14 @@
         overflow-x: auto;
     }
 
-    /* Transit motif, used in three places only (ADR 0025): section eyebrows
-       (<x-eyebrow>), the landing hero's route line and merchant cards. */
+    /* The route motif (ADR 0038): a short teal line ending in a ringed stop,
+       before a section's small label (<x-eyebrow>). Decorative only. */
     .route-stop {
         position: relative;
         display: inline-block;
         flex: none;
-        width: 1.5rem;
-        height: 0.75rem;
+        width: 1.75rem;
+        height: 0.875rem;
     }
 
     .route-stop::before {
@@ -240,9 +289,9 @@
         position: absolute;
         top: 50%;
         left: 0;
-        right: 0.375rem;
-        height: 3px;
-        margin-top: -1.5px;
+        right: 0.5rem;
+        height: 4px;
+        margin-top: -2px;
         border-radius: 2px;
         background: var(--color-primary);
     }
@@ -252,84 +301,972 @@
         position: absolute;
         top: 50%;
         right: 0;
-        width: 0.625rem;
-        height: 0.625rem;
-        margin-top: -0.3125rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        margin-top: -0.4375rem;
         border-radius: 50%;
-        background: var(--color-accent);
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 3px var(--color-ink);
     }
 
-    /* The day as a route: <ol class="route-line"> with one li.route-line-local.
-       The local stop is bigger and says "local stop", not only a color. */
+    /* Station sign (<x-station-sign>): a section title on a dark band. */
+    .station-sign {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 3rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        background: var(--color-sign);
+        color: var(--color-on-night);
+    }
+
+    .station-sign-label {
+        font-family: var(--font-display);
+        font-size: 1.0625rem;
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-wrap: balance;
+    }
+
+    .station-sign-dots {
+        display: flex;
+        flex: none;
+        gap: 0.375rem;
+    }
+
+    .station-sign-dots i {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 50%;
+        background: var(--color-on-night);
+    }
+
+    .station-sign-dots i.is-local {
+        background: var(--color-night-accent);
+    }
+
+    /* Decoration only: on phones the title needs the room. */
+    @media (width < 40rem) {
+        .station-sign-dots {
+            display: none;
+        }
+    }
+
+    /* Sidebar menus: the pages sit on a teal line, and the current page is
+       the coral stop on it (<x-nav-groups>, app-shell). */
+    .side-nav-line {
+        position: relative;
+    }
+
+    .side-nav-line::before {
+        content: '';
+        position: absolute;
+        top: 0.375rem;
+        bottom: 0.375rem;
+        left: 0;
+        width: 4px;
+        border-radius: 2px;
+        background: var(--color-night-primary);
+    }
+
+    .side-nav-line .side-nav-item[aria-current='page']::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -1.1875rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        margin-top: -0.4375rem;
+        border-radius: 50%;
+        background: var(--color-night-accent);
+        box-shadow: 0 0 0 3px var(--color-night);
+    }
+
+    /* Route stop number (<x-stop-number>): a ringed stop with its number. */
+    .stop-number {
+        display: inline-grid;
+        flex: none;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 6px var(--color-ink);
+        color: var(--color-ink);
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    /* The workday as a strip map, like the line diagram above a train door:
+       <ol class="route-line"> with termini at both ends and one
+       li.route-line-local, which is bigger and says "local stop", not only a
+       color (landing hero, ADR 0038). */
     .route-line {
+        position: relative;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr);
-        font-size: 0.8125rem;
-        color: var(--color-muted);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        max-width: 34rem;
+        padding-top: 4px;
+    }
+
+    .route-line::before {
+        content: '';
+        position: absolute;
+        top: 13px;
+        left: 12.5%;
+        right: 12.5%;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--color-primary);
     }
 
     .route-line li {
         position: relative;
-        padding-top: 1.6rem;
-        padding-right: 0.25rem;
+        padding-top: 2.25rem;
+        text-align: center;
+        font-size: 0.9375rem;
+        font-weight: 600;
         line-height: 1.25;
     }
 
     .route-line li::before {
         content: '';
         position: absolute;
-        top: 0.5rem;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: var(--color-primary);
-    }
-
-    .route-line li:last-child::before {
-        right: auto;
-        width: 0.75rem;
-    }
-
-    .route-line li::after {
-        content: '';
-        position: absolute;
-        top: 0.3rem;
-        left: 0;
-        width: 0.8rem;
-        height: 0.8rem;
+        top: 4px;
+        left: 50%;
+        width: 26px;
+        height: 26px;
+        margin-left: -13px;
         border-radius: 50%;
-        background: var(--color-ink);
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 5px var(--color-ink);
     }
 
-    .route-line .route-line-local {
+    .route-line li:first-child::before,
+    .route-line li:last-child::before {
+        width: 12px;
+        margin-left: -6px;
+        border-radius: 4px;
+        background: var(--color-ink);
+        box-shadow: none;
+    }
+
+    .route-line .route-line-local::before {
+        top: -2px;
+        width: 38px;
+        height: 38px;
+        margin-left: -19px;
+        background: var(--color-accent);
+        box-shadow: inset 0 0 0 5px var(--color-ink), 0 0 0 4px var(--color-page);
+    }
+
+    .route-line strong {
+        display: block;
+        font-weight: 800;
+    }
+
+    .route-line .local-tag {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--color-accent-ink);
+    }
+
+    /* Landing hero: the headline on two lines, the second in teal. */
+    .hero-title {
+        font-size: clamp(2.75rem, 1.4rem + 5.4vw, 6rem);
+        font-weight: 800;
+        line-height: 0.92;
+        letter-spacing: -0.04em;
         color: var(--color-ink);
     }
 
-    .route-line .route-line-local::after {
-        top: 0;
-        left: -0.25rem;
-        width: 1.4rem;
-        height: 1.4rem;
-        background: var(--color-accent);
-        box-shadow: 0 0 0 3px var(--color-page);
+    .hero-title span {
+        display: block;
+        white-space: nowrap;
     }
 
-    /* Merchant card: a teal rail on the left with a stop on it. */
-    .merchant-rail {
-        position: relative;
-        border-left: 5px solid var(--color-primary);
+    .hero-title span + span {
+        color: var(--color-primary);
     }
 
-    .merchant-rail::before {
+    @media (width >= 64rem) {
+        .hero-title {
+            font-size: clamp(3.5rem, 6vw, 5.375rem);
+        }
+    }
+
+    /* A line of signage: an ink rule with the coral stop on it. */
+    .sign-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        border-top: 3px solid var(--color-ink);
+        font-size: 0.9375rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+
+    .sign-line::before {
         content: '';
-        position: absolute;
-        top: 1.4rem;
-        left: -0.7rem;
-        width: 1rem;
-        height: 1rem;
+        flex: none;
+        width: 14px;
+        height: 14px;
+        margin-left: 3px;
         border-radius: 50%;
         background: var(--color-accent);
-        box-shadow: 0 0 0 3px var(--color-surface);
+        box-shadow: 0 0 0 3px var(--color-ink);
+    }
+
+    /* The district diagram (<x-district-diagram>). */
+    .dd-map {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .dd-district {
+        fill: var(--color-map-district);
+    }
+
+    .dd-boundary {
+        fill: none;
+        stroke: var(--color-ink);
+        stroke-width: 3;
+        stroke-dasharray: 14 8;
+        stroke-linejoin: round;
+    }
+
+    .dd-street-case,
+    .dd-street {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .dd-street-case {
+        stroke: var(--color-map-street-case);
+        stroke-width: 16;
+    }
+
+    .dd-street {
+        stroke: var(--color-map-street);
+        stroke-width: 12;
+    }
+
+    .dd-street-label {
+        font: 800 22px var(--font-sans);
+        letter-spacing: 0.12em;
+        fill: var(--color-map-label);
+        paint-order: stroke;
+        stroke: var(--color-map-district);
+        stroke-width: 6;
+    }
+
+    .dd-route {
+        fill: none;
+        stroke: var(--color-primary);
+        stroke-width: 13;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .dd-stop {
+        fill: var(--color-surface);
+        stroke: var(--color-ink);
+        stroke-width: 6;
+    }
+
+    .dd-local {
+        fill: var(--color-accent);
+        stroke: var(--color-ink);
+        stroke-width: 7;
+    }
+
+    .dd-label,
+    .dd-label-sub {
+        paint-order: stroke;
+        stroke: var(--color-map-district);
+        stroke-width: 7;
+        stroke-linejoin: round;
+    }
+
+    .dd-label {
+        font: 700 27px var(--font-sans);
+        fill: var(--color-ink);
+    }
+
+    .dd-label-local {
+        font-size: 31px;
+        font-weight: 800;
+    }
+
+    .dd-label-sub {
+        font: 700 23px var(--font-sans);
+        fill: var(--color-accent-ink);
+    }
+
+    /* The one authored motion on the landing page: the line draws itself
+       once. Only for people who allow motion; otherwise it is simply there. */
+    @media (prefers-reduced-motion: no-preference) {
+        .dd-draw {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+            animation: dd-draw 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes dd-draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    }
+
+    /* Phones: the labels would be too small to read, so the key and the
+       workday strip carry the same facts; the local stop grows instead. */
+    @media (width < 48rem) {
+        .dd-label,
+        .dd-label-sub,
+        .dd-street-label {
+            display: none;
+        }
+
+        .dd-local {
+            r: 34px;
+        }
+    }
+
+    .dd-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.25rem;
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .dd-legend li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dd-key {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    .dd-key-stop {
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 4px var(--color-ink);
+    }
+
+    .dd-key-local {
+        background: var(--color-accent);
+        box-shadow: inset 0 0 0 4px var(--color-ink);
+    }
+
+    .dd-key-boundary {
+        width: 26px;
+        height: 0;
+        border-radius: 0;
+        border-top: 3px dashed var(--color-ink);
+    }
+
+    /* The example wallet as a fare card: an ink frame, a night head, and no
+       shadow, so it sits on the page under the map rather than over it. */
+    .fare-card {
+        max-width: 22rem;
+        margin-top: 1.75rem;
+        overflow: hidden;
+        border: 2px solid var(--color-frame);
+        border-radius: 0.375rem;
+        background: var(--color-surface);
+    }
+
+    .fare-card-head {
+        padding: 1rem 1.25rem;
+        background: var(--color-night);
+        color: var(--color-on-night);
+    }
+
+    @media (width >= 64rem) {
+        .fare-card {
+            display: grid;
+            grid-template-columns: minmax(12.5rem, 46%) 1fr;
+            max-width: none;
+            margin-top: 1.25rem;
+        }
+
+        .fare-card-check {
+            grid-column: 1 / -1;
+        }
+    }
+
+    /* One line down the page: each section is a numbered stop on it
+       (<x-stop-number>), under a station sign (ADR 0038). Each stop draws
+       its own length of line, so the line ends at the last stop. */
+    .stop-line {
+        position: relative;
+        padding-top: 4.5rem;
+    }
+
+    .stop-line::before,
+    .stop::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        width: 10px;
+        background: var(--color-primary);
+    }
+
+    .stop-line::before {
+        top: 0;
+        height: 4.5rem;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .stop {
+        position: relative;
+        padding-bottom: 5.5rem;
+        padding-left: 4rem;
+        scroll-margin-top: 1.5rem;
+    }
+
+    .stop::before {
+        top: 0;
+        bottom: 0;
+    }
+
+    .stop:last-child {
+        padding-bottom: 4.5rem;
+    }
+
+    .stop:last-child::before {
+        bottom: auto;
+        height: 1.5rem;
+    }
+
+    .stop > .stop-number {
+        position: absolute;
+        top: 4px;
+        left: 0;
+        z-index: 1;
+    }
+
+    .stop-title {
+        margin-top: 1.75rem;
+        max-width: 18ch;
+        font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+    }
+
+    .stop-body {
+        margin-top: 1.25rem;
+        max-width: 40rem;
+        font-size: 1.1875rem;
+        line-height: 1.6;
+    }
+
+    @media (width >= 64rem) {
+        .stop {
+            display: grid;
+            grid-template-columns: repeat(11, minmax(0, 1fr));
+            column-gap: 1.5rem;
+            align-content: start;
+            padding-left: 6rem;
+        }
+
+        .stop > * {
+            grid-column: 1 / -1;
+        }
+
+        /* Placed on the line, not in a grid area. */
+        .stop > .stop-number {
+            grid-column: auto;
+        }
+
+        .stop > .stop-title {
+            grid-column: 1 / 6;
+        }
+
+        .stop > .stop-body {
+            grid-column: 6 / 12;
+            margin-top: 1.875rem;
+        }
+    }
+
+    /* How it works: a three-stop branch off the line. */
+    .steps {
+        display: grid;
+        gap: 2.25rem;
+        margin-top: 2.5rem;
+    }
+
+    .steps li {
+        position: relative;
+        padding-left: 4rem;
+    }
+
+    .steps li::before {
+        content: '';
+        position: absolute;
+        top: 2.75rem;
+        bottom: -2.25rem;
+        left: 21px;
+        width: 6px;
+        background: var(--color-ink);
+    }
+
+    .steps li:last-child::before {
+        display: none;
+    }
+
+    .step-number {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: grid;
+        place-items: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+        font: 700 1.25rem/1 var(--font-mono);
+    }
+
+    @media (width >= 64rem) {
+        .steps {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+
+        .steps li {
+            padding-top: 4.5rem;
+            padding-left: 0;
+        }
+
+        .steps li::before {
+            top: 21px;
+            right: -1.5rem;
+            bottom: auto;
+            left: 24px;
+            width: auto;
+            height: 6px;
+        }
+
+        /* The line runs on past step 3, into the neighborhood. */
+        .steps li:last-child::before {
+            display: block;
+            right: 50%;
+            height: 0;
+            background: none;
+            border-top: 6px dashed var(--color-ink);
+        }
+    }
+
+    /* A heavy rule over a block, instead of a card: a printed timetable's
+       section break. */
+    .rule-top {
+        border-top: 3px solid var(--color-ink);
+        padding-top: 1rem;
+    }
+
+    .rule-heavy {
+        border-top: 6px solid var(--color-ink);
+        padding-top: 1.25rem;
+    }
+
+    /* A block's label as a tab hanging from its top rule, not a floating
+       line above the heading. */
+    .rule-tag {
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+        margin-top: -1rem;
+        padding: 0.25rem 0.5rem 0.3rem;
+        border-radius: 0 0 3px 3px;
+        background: var(--color-ink);
+        color: var(--color-page);
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .rule-heavy > .rule-tag {
+        margin-top: -1.25rem;
+    }
+
+    /* Inner pages (ADR 0038): the page's station sign, then its title on
+       the container's left edge, then the lede. */
+    .page-head {
+        padding-top: 2.5rem;
+    }
+
+    .page-title {
+        margin-top: 1.75rem;
+        max-width: 22ch;
+        font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+        color: var(--color-ink);
+    }
+
+    .page-lede {
+        margin-top: 1.25rem;
+        max-width: 42rem;
+        font-size: 1.1875rem;
+        line-height: 1.6;
+    }
+
+    /* Inner pages are denser than the landing page: less air between stops,
+       and on phones a slimmer line so tables keep their width. */
+    .stop-line-dense {
+        margin-top: 2rem;
+        padding-top: 3rem;
+    }
+
+    .stop-line-dense::before {
+        height: 3rem;
+    }
+
+    .stop-line-dense > .stop {
+        padding-bottom: 4rem;
+    }
+
+    .stop-line-dense > .stop:last-child {
+        padding-bottom: 1rem;
+    }
+
+    @media (width < 48rem) {
+        .stop-line-dense::before,
+        .stop-line-dense > .stop::before {
+            left: 12px;
+            width: 6px;
+        }
+
+        .stop-line-dense > .stop {
+            padding-left: 2.75rem;
+        }
+
+        .stop-line-dense > .stop > .stop-number {
+            width: 1.875rem;
+            height: 1.875rem;
+            box-shadow: inset 0 0 0 5px var(--color-ink);
+            font-size: 0.8125rem;
+            top: 9px;
+        }
+    }
+
+    /* A stop's own sub-heading, under its station sign. */
+    .stop-subtitle {
+        font-size: 1.375rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+    }
+
+    /* Ruled rows instead of a pile of cards: a heavy ink rule on top, thin
+       rules between rows. */
+    .ruled-rows {
+        border-top: 3px solid var(--color-ink);
+    }
+
+    .ruled-rows > li,
+    .ruled-rows > div {
+        border-bottom: 1px solid var(--color-line);
+        padding-block: 1rem;
+    }
+
+    /* The judge's guided tour as a line diagram: every step is a stop on one
+       teal line, with the step's number in the stop. */
+    .tour-line {
+        border-top: 3px solid var(--color-ink);
+    }
+
+    .tour-line > li {
+        position: relative;
+        display: grid;
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+        column-gap: 1.25rem;
+        padding-block: 1.125rem;
+        border-bottom: 1px solid var(--color-line);
+    }
+
+    .tour-line > li::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: -1px;
+        left: 15px;
+        width: 10px;
+        background: var(--color-primary);
+    }
+
+    .tour-line > li:first-child::before {
+        top: 1.75rem;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .tour-line > li:last-child::before {
+        bottom: auto;
+        height: 1.75rem;
+    }
+
+    .tour-line .stop-number {
+        position: relative;
+        z-index: 1;
+        margin-top: 0.125rem;
+    }
+
+    /* Who does what: the eight steps as a strip map. On phones the stops run
+       down one line; from 64rem across it, like the line diagram over a
+       train door. The selected step is the coral stop. */
+    .step-line {
+        position: relative;
+        display: grid;
+    }
+
+    .step-line [role='tab'] {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        min-height: 2.75rem;
+        padding: 0.375rem 0.5rem 0.375rem 0;
+        border-radius: 0.25rem;
+        font-weight: 700;
+        color: var(--color-ink);
+    }
+
+    .step-line [role='tab']::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 13px;
+        width: 6px;
+        background: var(--color-primary);
+    }
+
+    .step-line [role='tab']:first-child::before {
+        top: 50%;
+    }
+
+    .step-line [role='tab']:last-child::before {
+        bottom: 50%;
+    }
+
+    .step-line [role='tab']:hover .step-line-name {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.2em;
+    }
+
+    .step-line-stop {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 4px var(--color-ink);
+        font: 700 0.8125rem/1 var(--font-mono);
+    }
+
+    .step-line [aria-selected='true'] .step-line-stop {
+        background: var(--color-accent);
+        color: var(--color-on-accent);
+        box-shadow: inset 0 0 0 4px var(--color-ink), 0 0 0 3px var(--color-page);
+    }
+
+    .step-line [aria-selected='true'] .step-line-name {
+        text-decoration: underline;
+        text-decoration-color: var(--color-accent);
+        text-decoration-thickness: 3px;
+        text-underline-offset: 0.25em;
+    }
+
+    @media (width >= 64rem) {
+        .step-line {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            column-gap: 0.5rem;
+        }
+
+        .step-line [role='tab'] {
+            flex-direction: column;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0 0.25rem 0.5rem;
+            text-align: center;
+            line-height: 1.25;
+        }
+
+        .step-line [role='tab']::before {
+            top: 13px;
+            bottom: auto;
+            left: -0.25rem;
+            right: -0.25rem;
+            width: auto;
+            height: 6px;
+        }
+
+        .step-line [role='tab']:first-child::before {
+            top: 13px;
+            left: 50%;
+        }
+
+        .step-line [role='tab']:last-child::before {
+            bottom: auto;
+            right: 50%;
+        }
+    }
+
+    /* Scenario and case pickers: square-cornered keys, the chosen one filled. */
+    .picker {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--color-edge);
+        border-radius: 0.25rem;
+        background: var(--color-surface);
+        color: var(--color-primary);
+        font-size: 0.875rem;
+        font-weight: 700;
+        transition: background-color 150ms, border-color 150ms;
+    }
+
+    .picker:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-tint);
+    }
+
+    .picker[aria-current] {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+    }
+
+    /* Participating merchants as stops on one teal line (the wallet's
+       "Where you can spend", ADR 0038). Each stop draws its own length of
+       line, so in two columns each column has its own line. Never used for
+       candidates. */
+    .merchant-line {
+        isolation: isolate;
+    }
+
+    .merchant-line > li {
+        position: relative;
+        padding: 0.75rem 0 0.875rem 2.75rem;
+        border-bottom: 1px solid var(--color-line);
+        break-inside: avoid;
+    }
+
+    .merchant-line > li::after {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        bottom: -1px;
+        left: 11px;
+        width: 8px;
+        background: var(--color-primary);
+    }
+
+    .merchant-line > li:first-child::after {
+        top: 1rem;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .merchant-line > li:last-child::after {
+        bottom: 0.75rem;
+        border-radius: 0 0 4px 4px;
+    }
+
+    .merchant-line > li::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        left: 4px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 5px var(--color-ink);
+    }
+
+    @media (width >= 48rem) {
+        .merchant-line {
+            columns: 2;
+            column-gap: 1.5rem;
+        }
+
+        /* In two columns the line runs the full height of every stop, so
+           each column's line is unbroken from top to bottom. */
+        .merchant-line > li:first-child::after,
+        .merchant-line > li:last-child::after {
+            top: 0;
+            bottom: -1px;
+            border-radius: 0;
+        }
+    }
+
+    /* The wallet's balance: a fare card, dark in both modes. */
+    .wallet-balance {
+        border-radius: 0.375rem;
+        background: var(--color-sign);
+        color: var(--color-on-night);
+        padding: 1.25rem;
+    }
+
+    @media (width >= 40rem) {
+        .wallet-balance {
+            padding: 1.5rem;
+        }
+    }
+
+    .wallet-balance :focus-visible {
+        outline-color: var(--color-night-focus);
+    }
+
+    /* The merchant's counter: the one panel a cashier needs, with a teal
+       head like a platform sign. */
+    .counter-panel {
+        border: 2px solid var(--color-primary);
+        border-radius: 0.375rem;
+        background: var(--color-surface);
+    }
+
+    .counter-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+    }
+
+    .counter-panel-head :focus-visible {
+        outline-color: var(--color-on-primary);
     }
 
     .bg-night .route-stop::before {
@@ -337,7 +1274,8 @@
     }
 
     .bg-night .route-stop::after {
-        background: var(--color-night-accent);
+        background: var(--color-night);
+        box-shadow: inset 0 0 0 3px var(--color-on-night);
     }
 }
 
@@ -358,6 +1296,268 @@
     .spinner {
         display: inline-block;
         animation: spin 0.8s linear infinite;
+    }
+}
+
+/* Plain ruled tables (ADR 0038): small uppercase column names over a heavy
+   ink rule, thin rules between rows, amounts in Overpass Mono. Unlayered,
+   so it wins over the cells' utility classes. */
+table[data-rtable] > thead > tr > th {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    border-bottom: 3px solid var(--color-frame);
+}
+
+table[data-rtable] > :is(tbody, tfoot) > tr > :is(td, th).tabular {
+    font-family: var(--font-mono);
+    letter-spacing: -0.01em;
+}
+
+/* A bank statement (Where the Money Is, ADR 0038, from comp B): an ink rule
+   over the column names and a double rule under them, thin rules between
+   lines, and the total between a single and a double ink rule. Amounts
+   are right-aligned in Overpass Mono. */
+table.statement {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.statement[data-rtable] > thead > tr > th {
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--color-ink);
+    border-bottom: 3px double var(--color-ink);
+}
+
+table.statement > tbody > tr > :is(th, td) {
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--color-line);
+    vertical-align: top;
+}
+
+table.statement > :is(tbody, tfoot) > tr > :is(th, td) + td {
+    padding-left: 1rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+table.statement > :is(tbody, tfoot) > tr.statement-total > :is(th, td) {
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--color-ink);
+    border-bottom: 3px double var(--color-ink);
+    font-size: 1.0625rem;
+    font-weight: 700;
+}
+
+table.statement > :is(tbody, tfoot) > tr.statement-after > :is(th, td) {
+    padding: 0.625rem 0;
+    color: var(--color-muted);
+}
+
+table.statement > :is(tbody, tfoot) > tr.statement-total > td,
+table.statement > :is(tbody, tfoot) > tr.statement-after > td {
+    padding-left: 1rem;
+}
+
+/* A statement's own heading: the account name over a double ink rule. */
+.statement-head {
+    padding-bottom: 0.75rem;
+    border-bottom: 3px double var(--color-ink);
+}
+
+/* A plain note: a thin frame on raised paper, square, instead of a
+   rounded tinted bubble. */
+.ledger-note {
+    border: 1px solid var(--color-frame);
+    background: var(--color-surface);
+    padding: 1rem 1.25rem;
+}
+
+/* A label over its figure, used by the key-figure rows on admin pages. */
+.figure-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+/* A list of entries (held redemptions, corrections, candidates) as ruled
+   rows under one heavy ink rule, not a pile of cards. */
+.entry-list {
+    border-top: 3px solid var(--color-ink);
+}
+
+.entry-list > li {
+    border-bottom: 1px solid var(--color-line);
+    padding-block: 1.5rem;
+}
+
+/* The person's decision: a framed panel on raised paper with a status band
+   on top, so it reads as the next step after the AI's flag. */
+.decision-panel {
+    border: 2px solid var(--color-frame);
+    background: var(--color-surface);
+}
+
+.decision-panel-head {
+    border-bottom: 1px solid var(--color-frame);
+    background: var(--color-hold-bg);
+    color: var(--color-hold);
+    padding: 0.75rem 1rem;
+}
+
+/* A small uppercase label over a block inside an entry ("AI explanation"). */
+.entry-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+/* The wallet on a wide screen (batch 4b, from the comp): paying on the
+   left (balance, the two tabs, the chosen tab's form), where you can spend
+   on the right, then recent redemptions and the history side by side. The
+   page keeps its phone order: "Where you can spend" stays inside the Order
+   to go panel, so the tabs share the page grid (subgrid) and the panel's
+   own box covers both columns. That box lets clicks through to what's
+   under it, and its keyboard focus ring goes on its two parts instead.
+   Unlayered, so it wins over the panels' own spacing utilities. */
+@media (width >= 80rem) {
+    .wallet-desk {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-rows: auto auto auto 1fr auto;
+        column-gap: 1.5rem;
+        row-gap: 1rem;
+        max-width: none;
+    }
+
+    .wallet-desk > * {
+        margin: 0;
+    }
+
+    .wallet-desk > .wallet-live {
+        grid-column: 1 / -1;
+    }
+
+    .wallet-desk > .wallet-balance {
+        grid-column: 1 / 6;
+        grid-row: 2;
+    }
+
+    .wallet-desk > .wallet-tabs {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 2 / span 3;
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid;
+        pointer-events: none;
+    }
+
+    .wallet-tabs > [role='tablist'] {
+        grid-column: 1 / 6;
+        grid-row: 2;
+        pointer-events: auto;
+    }
+
+    .wallet-tabs > [role='tabpanel'] {
+        margin: 0;
+    }
+
+    .wallet-tabs > [role='tabpanel'] > * {
+        margin: 0;
+        pointer-events: auto;
+    }
+
+    .wallet-tabs > #panel-to-go {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 1 / span 3;
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid;
+    }
+
+    #panel-to-go > #redeem {
+        grid-column: 1 / 6;
+        grid-row: 3;
+        align-self: start;
+    }
+
+    #panel-to-go > #browse {
+        grid-column: 6 / -1;
+        grid-row: 1 / span 3;
+        align-self: start;
+    }
+
+    /* Pay in person has no right-hand column of its own, so its panel takes
+       the full width: the heading and intro on the left five columns, the
+       steps and the pay code on the right seven, like the page grid. */
+    .wallet-tabs > #panel-in-person {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        align-self: start;
+    }
+
+    #panel-in-person > #pay {
+        display: grid;
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        grid-template-rows: auto auto 1fr;
+        column-gap: 3rem;
+    }
+
+    #pay > #pay-heading {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    #pay > #pay-heading + p {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    #pay > .pay-body {
+        grid-column: 2;
+        grid-row: 1 / span 3;
+        max-width: 40rem;
+    }
+
+    #pay > .pay-body > :first-child {
+        margin-top: 0;
+    }
+
+    .wallet-tabs > [role='tabpanel']:focus-visible {
+        outline: none;
+    }
+
+    .wallet-tabs > [role='tabpanel']:focus-visible > * {
+        outline: 3px solid var(--color-focus);
+        outline-offset: 4px;
+    }
+
+    .wallet-desk > .wallet-recent {
+        grid-column: 1 / 6;
+        grid-row: 5;
+        margin-top: 2.5rem;
+    }
+
+    .wallet-desk > .wallet-history {
+        grid-column: 6 / -1;
+        grid-row: 5;
+        margin-top: 2.5rem;
+    }
+}
+
+/* Admin and money desks (batch 4a): ruled tables sit on the page's left
+   edge, so the first column lines up with the headings above them. */
+@media (width >= 40rem) {
+    .admin-desk table[data-rtable] > :is(thead, tbody, tfoot) > tr > :first-child {
+        padding-left: 0;
+    }
+
+    .admin-desk table[data-rtable] > :is(thead, tbody, tfoot) > tr > :last-child {
+        padding-right: 0;
     }
 }
 
@@ -400,12 +1600,12 @@
     }
 
     table[data-rtable='stack'] > :is(tbody, tfoot) > tr {
-        margin-bottom: 0.75rem;
         border: 0;
-        border-radius: 0.5rem;
-        padding: 0.75rem 1rem;
-        background: var(--color-surface);
-        box-shadow: 0 0 0 1px var(--color-line);
+        border-top: 2px solid var(--color-frame);
+        border-radius: 0;
+        padding: 0.75rem 0 1rem;
+        background: transparent;
+        box-shadow: none;
     }
 
     table[data-rtable='stack'] > :is(tbody, tfoot) > tr > :is(td, th) {
@@ -426,8 +1626,11 @@
         max-width: 50%;
         padding-right: 0.75rem;
         text-align: left;
+        font-family: var(--font-sans);
         font-size: 0.875rem;
         font-weight: 600;
+        letter-spacing: normal;
+        white-space: normal;
         color: var(--color-muted);
     }
 
@@ -439,6 +1642,19 @@
         padding-top: 0;
         font-size: 1.0625rem;
         font-weight: 600;
+    }
+
+    /* A cell with several lines of its own (an order, how a payout was
+       paid): its column name on a line above it, then the text left-aligned. */
+    table[data-rtable='stack'] > :is(tbody, tfoot) > tr > td.stack-block {
+        text-align: left;
+    }
+
+    table[data-rtable='stack'] > :is(tbody, tfoot) > tr > td.stack-block[data-label]::before {
+        float: none;
+        display: block;
+        max-width: none;
+        padding: 0 0 0.25rem;
     }
 
     /* A wrapper card (<x-rtable>) steps back so the rows are the cards. */
@@ -478,10 +1694,11 @@
     width: 100%;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 0.5rem;
+    min-height: 2.75rem;
+    border-radius: 0.25rem;
     padding: 0.625rem 0.75rem;
     text-align: left;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-ink);
 }
@@ -493,11 +1710,12 @@
 
 .menu-item[aria-current]::before {
     content: '';
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.625rem;
+    height: 0.625rem;
     flex: none;
     border-radius: 9999px;
     background: var(--color-accent);
+    box-shadow: inset 0 0 0 2px var(--color-ink);
 }
 
 /* Theme toggle icon: a moon offers dark mode, a sun offers light mode. */
@@ -536,6 +1754,41 @@
 
 @utility tabular {
     font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Large money figures (balances, totals): Public Sans bold, tabular. */
+@utility money {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.02em;
+}
+
+/* Ledger tables and transaction amounts: Overpass Mono, tabular. */
+@utility ledger-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.01em;
+}
+
+/* The page container: centered, 1240px at most, with one strong left edge
+   that headings, text, tables and forms all align to. */
+@utility wrap {
+    width: 100%;
+    max-width: 77.5rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+
+    @media (width >= 48rem) {
+        padding-inline: 2rem;
+    }
+}
+
+/* Twelve columns inside the container. */
+@utility grid-12 {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
 }
 
 /* A standalone text link (not one inside a sentence) that must be 44px tall

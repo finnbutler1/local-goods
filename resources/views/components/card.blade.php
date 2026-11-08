@@ -2,8 +2,9 @@
 
 @php
     $tones = [
-        'surface' => 'bg-surface text-ink ring-1 ring-line shadow-[0_1px_0_0_var(--color-line)]',
-        // Dark in both modes, like the sidebar: headline numbers.
+        // Raised paper with an ink frame, like a panel on a station wall.
+        'surface' => 'bg-surface text-ink border-2 border-frame',
+        // A station sign, dark in both modes, like the sidebar: headline numbers.
         'night' => 'bg-night text-on-night',
         'tint' => 'bg-primary-tint text-ink',
         'band' => 'bg-band text-ink',

@@ -4,7 +4,7 @@
     use App\Models\User;
     use App\Support\Money;
 
-    $input = 'block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2 focus-visible:border-primary';
+    $input = 'block w-full rounded-lg border-2 border-edge bg-surface px-3 py-2 focus-visible:border-primary';
     $date = fn ($value) => $value ? \Illuminate\Support\Carbon::parse($value)->format('M j, Y') : 'No end date';
     $termText = function (string $term, $value) use ($figures, $date) {
         return match ($term) {
@@ -18,40 +18,40 @@
 @endphp
 
 <x-app-shell title="Partnership" active="partnership" context="Golden Triangle BID · Washington, DC">
-<div class="space-y-10">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Partnership</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Partnership</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">The BID partnership for {{ $district->name }}</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-12">
+    <header>
+        <x-station-sign as="p">Partnership</x-station-sign>
+        <h1 class="page-title">Partnership</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">The BID partnership for {{ $district->name }}</p>
+        <p class="page-lede">
             The Business Improvement District introduces Local Goods to employers and merchants in its district. This page
             records what the BID and Local Goods agreed: whether it is exclusive, for how long, any revenue share and what
             data the BID gets.
         </p>
-        <ul class="mt-4 list-disc space-y-1 pl-5 text-muted">
+        <ul class="mt-5 max-w-[42rem] border-t border-ink text-muted [&>li]:border-b [&>li]:border-line [&>li]:py-2">
             <li>A district can have only one active exclusive partnership at a time. The database refuses a second one.</li>
             <li>Every change is logged below: who, when and why.</li>
             <li>The revenue share is worked out from activity in the district for display only. No money moves to the BID in this prototype.</li>
         </ul>
         @unless ($change)
-            <p id="partnership-read-only" class="mt-4 rounded-2xl bg-band p-4 text-sm"><span class="font-semibold">Read-only.</span> Only a BID admin or the Local Goods platform admin changes the partnership.</p>
+            <p id="partnership-read-only" class="ledger-note mt-5 max-w-[42rem] text-sm"><span class="font-semibold">Read-only.</span> Only a BID admin or the Local Goods platform admin changes the partnership.</p>
         @endunless
     </header>
 
     @if (! $partnership)
-        <x-card><p class="text-muted" data-no-partnership>No partnership is recorded for this district yet.@if ($change) Start one below: it begins as a draft, and every step is logged with your initials.@endif</p></x-card>
+        <div class="ledger-note"><p class="text-muted" data-no-partnership>No partnership is recorded for this district yet.@if ($change) Start one below: it begins as a draft, and every step is logged with your initials.@endif</p></div>
     @else
         @if ($partnership->is_demo)
-            <p class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold" data-demo-partnership>{{ Partnership::DEMO_LABEL }}</p>
+            <p class="border-t-[3px] border-hold bg-hold-bg px-4 py-3 font-semibold text-hold" data-demo-partnership>{{ Partnership::DEMO_LABEL }}</p>
         @endif
 
-        <x-card as="section" aria-labelledby="terms-heading">
+        <section aria-labelledby="terms-heading" class="rule-heavy">
             <div class="flex flex-wrap items-center gap-3">
-                <h2 id="terms-heading" class="text-xl font-semibold text-primary">Terms</h2>
+                <h2 id="terms-heading" class="stop-subtitle">Terms</h2>
                 <x-badge :tone="$partnership->status === Partnership::STATUS_ACTIVE ? 'ok' : 'neutral'">{{ $partnership->statusLabel() }}</x-badge>
                 @if ($partnership->exclusive) <x-badge tone="primary">Exclusive</x-badge> @endif
             </div>
-            <dl class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-[max-content_1fr]">
+            <dl class="mt-4 grid max-w-[60rem] border-t border-ink sm:grid-cols-[12rem_1fr] [&>dd]:border-b [&>dd]:border-line [&>dd]:py-2.5 [&>dt]:pt-2.5 sm:[&>dt]:border-b sm:[&>dt]:border-line sm:[&>dt]:pb-2.5">
                 <dt class="text-muted">BID</dt><dd class="font-semibold">{{ $partnership->bid->name }} BID</dd>
                 <dt class="text-muted">District</dt><dd>{{ $district->name }}</dd>
                 <dt class="text-muted">Exclusive</dt>
@@ -60,24 +60,24 @@
                 <dt class="text-muted">Revenue share</dt>
                 <dd data-revenue-share>{{ $figures ? Partnership::percent($partnership->revenue_share_bps).' of what Local Goods earns in the district' : $partnership->revenueShareWords() }}</dd>
                 <dt class="text-muted">Data terms</dt>
-                <dd class="max-w-prose">{{ $partnership->data_terms }}
-                    <a href="{{ route('bid-admin.impact.csv') }}" class="tap-target block font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Download the aggregate data (CSV)</a>
+                <dd><span class="block max-w-prose">{{ $partnership->data_terms }}</span>
+                    <a href="{{ route('bid-admin.impact.csv') }}" class="tap-target block font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Download the aggregate data (CSV)</a>
                 </dd>
             </dl>
-        </x-card>
+        </section>
 
-        <x-card as="section" aria-labelledby="share-heading">
-            <h2 id="share-heading" class="text-xl font-semibold text-primary">What the revenue share comes to</h2>
+        <section aria-labelledby="share-heading" class="rule-heavy">
+            <h2 id="share-heading" class="stop-subtitle">What the revenue share comes to</h2>
             @if ($figures)
-                <dl class="mt-4 grid gap-4 sm:grid-cols-2">
-                    <div class="rounded-2xl bg-band p-4">
-                        <dt class="text-sm text-muted">This month (DC time)</dt>
-                        <dd class="mt-1 text-2xl font-semibold tabular" data-share-month>{{ Money::format($month['share_cents']) }}</dd>
+                <dl class="mt-6 grid max-w-[60rem] gap-x-6 gap-y-8 sm:grid-cols-2">
+                    <div class="rule-top">
+                        <dt class="figure-label">This month (DC time)</dt>
+                        <dd class="money mt-2 text-4xl" data-share-month>{{ Money::format($month['share_cents']) }}</dd>
                         <dd class="text-sm text-muted">of {{ Money::format($month['revenue_cents']) }} Local Goods earned in the district</dd>
                     </div>
-                    <div class="rounded-2xl bg-band p-4">
-                        <dt class="text-sm text-muted">Since the partnership started</dt>
-                        <dd class="mt-1 text-2xl font-semibold tabular" data-share-since>{{ Money::format($since['share_cents']) }}</dd>
+                    <div class="rule-top">
+                        <dt class="figure-label">Since the partnership started</dt>
+                        <dd class="money mt-2 text-4xl" data-share-since>{{ Money::format($since['share_cents']) }}</dd>
                         <dd class="text-sm text-muted">of {{ Money::format($since['revenue_cents']) }} Local Goods earned in the district</dd>
                     </div>
                 </dl>
@@ -94,7 +94,7 @@
             @else
                 <p class="mt-2 text-muted">Judges see this page without amounts, like every public page. The share is worked out from the district's activity and is display only.</p>
             @endif
-        </x-card>
+        </section>
     @endif
 
     {{-- Start (no partnership yet) or change one: a BID admin or the platform admin, in two steps. --}}
@@ -102,8 +102,8 @@
         @if ($change)
             @if ($review)
                 @php($new = $review['terms'])
-                <x-card as="section" aria-labelledby="review-heading" data-partnership-review>
-                    <h2 id="review-heading" class="text-xl font-semibold text-primary">{{ $starting ? 'Check the new partnership' : 'Check the change' }}</h2>
+                <section aria-labelledby="review-heading" class="decision-panel p-5 sm:p-6" data-partnership-review>
+                    <h2 id="review-heading" class="stop-subtitle">{{ $starting ? 'Check the new partnership' : 'Check the change' }}</h2>
                     <x-rtable label="Partnership change table" class="mt-3">
                         <table data-rtable="stack" class="w-full text-left">
                             <caption class="sr-only">Each term now and after the change</caption>
@@ -139,17 +139,17 @@
                         </label>
                         <div class="flex flex-wrap gap-3">
                             <x-button type="submit">{{ $starting ? 'Start the partnership' : 'Confirm the change' }}</x-button>
-                            <a href="{{ route('bid-admin.partnership') }}" class="tap-target self-center font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Cancel</a>
+                            <a href="{{ route('bid-admin.partnership') }}" class="tap-target self-center font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover">Cancel</a>
                         </div>
                     </form>
-                </x-card>
+                </section>
             @else
                 @php($t = $partnership?->terms() ?? [
                     'status' => Partnership::STATUS_DRAFT, 'exclusive' => true, 'starts_on' => now(config('fraud.timezone'))->toDateString(),
                     'ends_on' => null, 'revenue_share_bps' => 0, 'data_terms' => Partnership::DEFAULT_DATA_TERMS,
                 ])
-                <x-card as="section" aria-labelledby="change-heading" data-partnership-form="{{ $starting ? 'start' : 'change' }}">
-                    <h2 id="change-heading" class="text-xl font-semibold text-primary">{{ $starting ? 'Start a partnership' : 'Change the partnership' }}</h2>
+                <section aria-labelledby="change-heading" class="rule-heavy" data-partnership-form="{{ $starting ? 'start' : 'change' }}">
+                    <h2 id="change-heading" class="stop-subtitle">{{ $starting ? 'Start a partnership' : 'Change the partnership' }}</h2>
                     @foreach (['confirm', 'terms'] as $key)
                         @error($key)<p class="mt-2 text-sm font-semibold text-hold"><span aria-hidden="true">⚑</span> {{ $message }}</p>@enderror
                     @endforeach
@@ -195,13 +195,13 @@
                         </x-field>
                         <div><x-button type="submit">{{ $starting ? 'Review the new partnership' : 'Review the change' }}</x-button></div>
                     </form>
-                </x-card>
+                </section>
             @endif
         @endif
 
     @if ($partnership)
-        <section aria-labelledby="log-heading" class="space-y-3">
-            <h2 id="log-heading" class="text-2xl font-semibold text-primary">Every change</h2>
+        <section aria-labelledby="log-heading" class="rule-heavy space-y-3">
+            <h2 id="log-heading" class="stop-subtitle">Every change</h2>
             <x-rtable label="Partnership changes table">
                 <table data-rtable="stack" class="w-full text-left">
                     <caption class="sr-only">Partnership changes, newest first</caption>
@@ -216,7 +216,7 @@
                     <tbody class="divide-y divide-line/70">
                         @foreach ($changes as $row)
                             <tr data-partnership-change>
-                                <td data-primary class="px-5 py-3 tabular sm:px-6">{{ $row->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y g:i A') }}</td>
+                                <td data-primary class="px-5 py-3 whitespace-nowrap [font-variant-numeric:tabular-nums] sm:px-6">{{ $row->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y g:i A') }}</td>
                                 <td data-label="Who" class="px-5 py-3">{{ $row->changedBy ? User::initialsOf($row->changedBy->name) : 'Demo seed' }}</td>
                                 <td data-label="Change" class="px-5 py-3">
                                     @if ($row->before === null)

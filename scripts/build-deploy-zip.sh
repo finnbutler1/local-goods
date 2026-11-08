@@ -42,8 +42,8 @@ php -r '
         foreach ($chunk["assets"] ?? [] as $asset) { $files[] = $asset; }
         foreach ($chunk["css"] ?? [] as $css) { $files[] = $css; }
     }
-    // The self-hosted fonts imported in resources/css/app.css (ADR 0025).
-    foreach (["overpass-latin-wght-normal", "atkinson-hyperlegible-next-latin-wght-normal"] as $font) {
+    // The self-hosted fonts imported in resources/css/app.css (ADR 0038).
+    foreach (["public-sans-latin-wght-normal", "overpass-mono-latin-wght-normal"] as $font) {
         if (! preg_grep("/\/$font-[^\/]+\.woff2$/", $files)) { fwrite(STDERR, "self-hosted font $font.woff2 is not in the build\n"); exit(1); }
     }
     foreach (array_unique($files) as $file) {

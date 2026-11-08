@@ -38,14 +38,14 @@
             <div role="{{ $tones[$tone]['role'] }}" data-toast="{{ $tone }}" @if ($tone !== 'error') data-toast-autohide @endif
                  @if ($focus) tabindex="-1" data-flash @endif
                  {{ $attributes->class([
-                     'flex w-full items-start gap-3 rounded-2xl border-2 py-3 pr-2 pl-4 font-semibold transition-opacity duration-500',
-                     'pointer-events-auto max-w-lg shadow-lg' => $floating,
+                     'flex w-full items-start gap-3 rounded-2xl border-2 py-3 pr-2 pl-4 font-bold transition-opacity duration-500',
+                     'pointer-events-auto max-w-lg shadow-[0_10px_30px_-10px_rgb(18_24_32/0.45)]' => $floating,
                      $tones[$tone]['class'],
                  ]) }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0" aria-hidden="true"><path d="{{ $tones[$tone]['icon'] }}"/></svg>
                 <p class="min-w-0 flex-1 py-px break-words">{{ $text }}</p>
                 <button type="button" data-toast-dismiss aria-label="Dismiss message"
-                        class="-my-2 grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/70">
+                        class="-my-2 grid size-11 shrink-0 place-items-center rounded-lg hover:bg-surface/70">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                 </button>
             </div>
