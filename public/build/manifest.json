@@ -1,34 +1,38 @@
 {
-  "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2": {
-    "file": "assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2",
-    "src": "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/overpass-mono-cyrillic-ext-wght-normal-CM3vVNo5.woff2",
+    "src": "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-cyrillic-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2": {
-    "file": "assets/atkinson-hyperlegible-next-latin-wght-normal-BcXVPD7q.woff2",
-    "src": "node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-cyrillic-wght-normal.woff2": {
+    "file": "assets/overpass-mono-cyrillic-wght-normal-BV0qkOfe.woff2",
+    "src": "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-cyrillic-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-ext-wght-normal.woff2": {
-    "file": "assets/overpass-cyrillic-ext-wght-normal-B1PfurAb.woff2",
-    "src": "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-ext-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-latin-ext-wght-normal.woff2": {
+    "file": "assets/overpass-mono-latin-ext-wght-normal-D14p1K_g.woff2",
+    "src": "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-latin-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-wght-normal.woff2": {
-    "file": "assets/overpass-cyrillic-wght-normal-Bb0oHPsy.woff2",
-    "src": "node_modules/@fontsource-variable/overpass/files/overpass-cyrillic-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-latin-wght-normal.woff2": {
+    "file": "assets/overpass-mono-latin-wght-normal-CujxpGkb.woff2",
+    "src": "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-latin-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2": {
-    "file": "assets/overpass-latin-ext-wght-normal-DvafStyF.woff2",
-    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2"
+  "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-vietnamese-wght-normal.woff2": {
+    "file": "assets/overpass-mono-vietnamese-wght-normal-B_p7sZEm.woff2",
+    "src": "node_modules/@fontsource-variable/overpass-mono/files/overpass-mono-vietnamese-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2": {
-    "file": "assets/overpass-latin-wght-normal-qAR8M_co.woff2",
-    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
+  "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-ext-wght-normal.woff2": {
+    "file": "assets/public-sans-latin-ext-wght-normal-MQgHevqp.woff2",
+    "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/overpass/files/overpass-vietnamese-wght-normal.woff2": {
-    "file": "assets/overpass-vietnamese-wght-normal-BfgOsjc9.woff2",
-    "src": "node_modules/@fontsource-variable/overpass/files/overpass-vietnamese-wght-normal.woff2"
+  "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2": {
+    "file": "assets/public-sans-latin-wght-normal-DdeTHZLK.woff2",
+    "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/public-sans/files/public-sans-vietnamese-wght-normal.woff2": {
+    "file": "assets/public-sans-vietnamese-wght-normal-CtlIRbEm.woff2",
+    "src": "node_modules/@fontsource-variable/public-sans/files/public-sans-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-a9xUIZwy.css",
+    "file": "assets/app-BJ13qvuF.css",
     "name": "app",
     "names": [
       "app.css"
@@ -36,13 +40,14 @@
     "src": "resources/css/app.css",
     "isEntry": true,
     "assets": [
-      "assets/overpass-cyrillic-ext-wght-normal-B1PfurAb.woff2",
-      "assets/overpass-cyrillic-wght-normal-Bb0oHPsy.woff2",
-      "assets/overpass-vietnamese-wght-normal-BfgOsjc9.woff2",
-      "assets/overpass-latin-ext-wght-normal-DvafStyF.woff2",
-      "assets/overpass-latin-wght-normal-qAR8M_co.woff2",
-      "assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2",
-      "assets/atkinson-hyperlegible-next-latin-wght-normal-BcXVPD7q.woff2"
+      "assets/public-sans-vietnamese-wght-normal-CtlIRbEm.woff2",
+      "assets/public-sans-latin-ext-wght-normal-MQgHevqp.woff2",
+      "assets/public-sans-latin-wght-normal-DdeTHZLK.woff2",
+      "assets/overpass-mono-cyrillic-ext-wght-normal-CM3vVNo5.woff2",
+      "assets/overpass-mono-cyrillic-wght-normal-BV0qkOfe.woff2",
+      "assets/overpass-mono-vietnamese-wght-normal-B_p7sZEm.woff2",
+      "assets/overpass-mono-latin-ext-wght-normal-D14p1K_g.woff2",
+      "assets/overpass-mono-latin-wght-normal-CujxpGkb.woff2"
     ]
   },
   "resources/js/app.js": {
