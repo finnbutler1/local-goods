@@ -1,7 +1,7 @@
 {
     "file": "data/merchant_labels.csv",
-    "labeling_commit": "30b610e3825ef56c5bdd8389bc2316bb5c707ad5",
-    "locked_at": "2026-10-15T13:22:30-04:00",
+    "labeling_commit": "37cc90243e108303ae440085a18db0f808ff2f89",
+    "locked_at": "2026-11-07T22:51:01-05:00",
     "row_count": 60,
     "splits": {
         "dev": 40,

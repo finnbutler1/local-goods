@@ -670,7 +670,7 @@ Judges see the queue read-only.
 `data/merchant_labels.csv` (independent, not independent, or undetermined, with
 the reason and a public source), split 40 dev and 20 holdout. The labels were
 locked in `data/merchant_labels_lock.json` (a SHA-256 per row and labeling
-commit `30b610e`) before the AI saw any of them, and CI fails if a labeled row
+commit `37cc902`) before the AI saw any of them, and CI fails if a labeled row
 changes. `php artisan merchant:eval` refuses to run if the labels don't match
 the lock, and:
 
@@ -790,12 +790,18 @@ for the trade name, address, business activity and status only.
   links are shown: on `/eval/merchants`, in the eval reports and in every eval
   output (`EvidenceUrl::withoutTracking`).
 
-**Earlier versions remain in the public git history.** History was not
-rewritten: the merchant label lock and the fraud eval lock point at specific
-commits, and rewriting would break them. Commits before 2026-10-21 still
-contain the AI's original reasoning, the five candidates, the license numbers
-and the old link format. A plan to remove the names from the history, not yet
-carried out, is in [docs/history-rewrite-runbook.md](docs/history-rewrite-runbook.md).
+**The names are gone from the public git history too.** On 2026-11-07 the
+history was rewritten once to replace the four people's names, the five
+person-named candidates and the veterans detail with "[name removed]" in
+every earlier commit ([ADR 0039](docs/adr/0039-history-rewrite.md),
+[runbook](docs/history-rewrite-runbook.md)). Only commits from 2026-10-14 on
+changed; the fraud eval lock's commit `5f594c1` is untouched, and the merchant
+label lock was re-locked at the new labeling commit with every row unchanged.
+The current code is byte-for-byte the same (same tree hash). Earlier commits
+still have the license numbers and the old link format, which are public
+records, not personal details. Old commit links can stay reachable on GitHub
+until GitHub Support purges them, and anyone who cloned before keeps the old
+history.
 
 ### How does the test recognize a named individual?
 
@@ -838,8 +844,8 @@ miss:
 **What a person checks by hand.** Whoever runs `merchant:eval` (Finn) reads
 the new answers before committing them and redacts anything the test flags
 or misses. BID admins read every candidate in the review queue. There is no
-written checklist beyond that, and git history from before 2026-10-21 still
-holds the names that were removed.
+written checklist beyond that. The names removed on 2026-10-21 were also
+removed from the git history on 2026-11-07 (ADR 0039).
 
 Going the other way, a very short name can match inside ordinary text. The
 page check for candidate business names once failed on "Ala", which turned

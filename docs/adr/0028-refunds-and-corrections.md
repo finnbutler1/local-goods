@@ -218,7 +218,7 @@ outside these transactions.
 
 **Method.** Real concurrent PHP processes against a local MySQL 8.4.13 at
 REPEATABLE READ, 60 seconds per run, one run per mix on the code before the
-change (`d8aa1ea`) and one after. Deadlocks come from MySQL's own counter
+change (`9c1a725`) and one after. Deadlocks come from MySQL's own counter
 (InnoDB's `lock_deadlocks` metric). Over-claims come from the purchases'
 `unclaimedCents` after each run.
 

@@ -5,6 +5,22 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Names removed from git history — done (2026-11-07, ADR 0039).** One
+partial history rewrite with Finn's approval; no migration, money, fraud
+prompt, AI input, eval data or holdout change. One lock change: the merchant
+label lock re-locked at the new labeling commit `37cc902` (rows unchanged).
+
+- Partial `git filter-repo` from `2d585fb` on (old hash `6b68968`, before
+  the 2026-11-07 rewrite): 321 of 440 commits got new hashes; the 119
+  before it (fraud lock `5f594c1`, the 3 GitHub-signed commits) are
+  unchanged. HEAD's tree and the labels blob are
+  identical. Old→new table in ADR 0039; the runbook keeps old hashes.
+- **Never rewrite history again without Finn's say-so.** The old working
+  copy holds the old history: never push from it or pull into it.
+- Still open: GitHub Support purge (runbook step 8), old-URL check (step
+  10), deleting the backup and scratch files (step 9), feedback SHAs (Finn,
+  in `/admin/feedback`).
+
 **Custom domain uselocalgoods.com — code done (2026-11-06, ADR 0037);
 switch made by Finn in the consoles.** No migration, money, fraud prompt, AI
 input, eval data or lock change.
@@ -33,9 +49,8 @@ prompt, AI input, eval data, holdout or lock change.
 - "Local Goods in one minute": `partials/one-minute-summary` on `/judge`, same
   text as the README's first section (`OneMinuteSummaryTest`). Change both
   together; never imply the BID endorses or partners with us.
-- History: `docs/history-rewrite-runbook.md` is a plan only (planned Nov 9),
-  needing Finn's explicit approval, including the rule change below and
-  `merchant:lock --force`. Never print the names; the runbook's script
+- History: `docs/history-rewrite-runbook.md` was carried out on 2026-11-07
+  (ADR 0039, milestone above). Never print the names; the runbook's script
   prints counts only.
 - Security: 5 Symfony 8.1 packages patched for 10 advisories (patch
   releases only; table in TRANSPARENCY.md "Symfony security advisories
@@ -636,7 +651,10 @@ only" (keep it true).
 - Evidence links: `EvidenceUrl::withoutTracking` wherever they are shown or
   copied into eval outputs. The locked `merchant_labels.csv` keeps 8 links
   with Finn's own tracking IDs, on purpose (lock intact).
-- History was not rewritten; never rewrite it (both locks name commits).
+- History was rewritten once, on 2026-11-07, to remove the names (ADR
+  0039; the label lock was re-locked, the fraud lock commit is unchanged).
+  Never rewrite it again without Finn's explicit say-so (both locks name
+  commits).
 
 **Confirmation toast after every action — done (2026-10-21).** Display
 only; no migration, money, ledger, prompt or eval change.
@@ -884,8 +902,9 @@ redemption (ADR 0027), refunds and corrections (ADR 0028), the
 merchant fee, ready but at 0 (ADR 0029), the business model with
 impact projections (ADR 0030), districts, partnerships and merchant
 joining (ADR 0031), live demo activity in Stripe test mode (ADR 0032),
-customer funds with the solvency rule (ADR 0033) and two separate Stripe
-balances with recorded sweeps (ADR 0034).
+customer funds with the solvency rule (ADR 0033), two separate Stripe
+balances with recorded sweeps (ADR 0034) and names removed from the git
+history (ADR 0039).
 - Ledger (ADR 0012): one append-only ledger, each entry on exactly one
   account (employee, employer or merchant). `App\Services\CreditLedger` does
   purchases, allocations, merchant earnings and payouts. A merchant earns a
@@ -913,7 +932,7 @@ balances with recorded sweeps (ADR 0034).
   local_chain, franchise, national_chain, outside_control (part 1 of the
   rule). Checked by `App\Services\Eligibility\MerchantLabels`.
 - Label lock: `data/merchant_labels_lock.json` (written by `merchant:lock`)
-  holds a SHA-256 of every labeled row and labeling commit 30b610e. Never
+  holds a SHA-256 of every labeled row and labeling commit 37cc902. Never
   edit a locked row (CI fails via `MerchantLabelLockTest`); a deliberate
   change needs Finn's say-so and `merchant:lock --force`.
 - Blind adjudication (ADR 0011): `/admin/adjudication` builds a set from the

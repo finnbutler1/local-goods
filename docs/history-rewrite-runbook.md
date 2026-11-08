@@ -1,10 +1,15 @@
 # History rewrite runbook: removing redacted names from git history
 
-> **Not done yet.** This is a plan, written 2026-11-06. It needs Finn's
-> explicit approval on the day (planned Monday 2026-11-09, before the
-> 2026-11-13 code freeze), including changing the CLAUDE.md rule "never
-> rewrite history" and running `merchant:lock --force`. Nothing here has
-> been run.
+> **Done on 2026-11-07** (planned for 2026-11-09; Finn approved it on the
+> day, including the CLAUDE.md rule change and `merchant:lock --force`).
+> Steps 1 to 7 are done; steps 8 to 10 (GitHub Support, clean-up, old-URL
+> check) are still open. Results and the old-to-new hash table:
+> [ADR 0039](adr/0039-history-rewrite.md). The backup folder keeps the
+> planned date in its name (`~/lg-backup-2026-11-09.git`).
+>
+> **Every commit hash in this runbook is an old hash (before the 2026-11-07
+> rewrite)**, kept on purpose: the script reads the names from the old
+> history, and Support needs the old hashes. ADR 0039 maps them.
 
 ## Why
 
@@ -45,9 +50,9 @@ counts, paths and commit hashes. **No name appears in this document.**
 - **What a rewrite changes:** 289 of 408 commits on Nov 6 (everything from
   `6b68968` on); 319 of 438 in the Nov 7 dry run at `77a402d` (names and
   snippet counts unchanged). Every new commit adds one: **recount on the day** with the
-  dry run before step 2.
+  dry run before step 2. On the day (2026-11-07, at `7858230`): 321 of 440.
   - The fraud eval lock commit `5f594c1` comes earlier, so it **doesn't
-    change**.
+    change**, but only with the partial rewrite in step 4 (see there).
   - The merchant label commit `30b610e` **does change**.
 
 ## Why it is safe
@@ -109,9 +114,22 @@ keeping the matches where `git cat-file -t` says `commit`.
      It prints only counts: expect `names: 4, anchored non-name edits: 2,
      candidates: 5` and `wrote 11 lines`.
    - Never open, print or commit `~/lg-redactions.txt`.
-4. **Rewrite a fresh clone**, not the working copy:
+4. **Rewrite a fresh clone**, not the working copy, and **only from
+   `6b68968` on**:
    - `git clone https://github.com/finnbutler1/local-goods.git ~/lg-rewrite && cd ~/lg-rewrite`
-   - `git filter-repo --replace-text ~/lg-redactions.txt`
+   - `git filter-repo --refs "$(git rev-parse 6b68968)^..main" --replace-text ~/lg-redactions.txt`
+   - `git remote remove origin`, then `git reflog expire --expire=now --all && git gc --prune=now`.
+     A partial rewrite keeps the old `origin/main` and reflog, which still
+     hold the names; the audit in step 5 fails until they are gone.
+   - Why partial: the first three commits (2026-09-21 to 09-26) were made
+     on GitHub's website and are signed by GitHub. filter-repo always
+     removes signatures, so a full rewrite changes the first commit's hash
+     and with it all 440, including `5f594c1`. This was found on the day in
+     a full rewrite that was then thrown away. Before trusting the range,
+     check on the backup that no commit before `6b68968` has a name or
+     snippet, and that every commit with a hit is inside the range.
+   - Expect exactly 321 rewritten commits (the commit-map lists only
+     those); `5f594c1` and the signed commits keep their hashes.
 5. **Verify before pushing.** In `~/lg-rewrite`:
    - `git rev-parse HEAD^{tree}` equals step 2's value.
    - `git rev-parse HEAD:data/merchant_labels.csv` equals step 2's value.
@@ -144,7 +162,7 @@ keeping the matches where `git cat-file -t` says `commit`.
    repository"):
    - Give the repo URL, and say the history was rewritten and force-pushed
      on <date>.
-   - Attach the list of old commit hashes that held the data (the 100 from
+   - Attach the list of old commit hashes (before the 2026-11-07 rewrite) that held the data (the 100 from
      `6b68968` to `b181ab5`; hashes only, no names).
    - Confirm there are no forks, pull requests or artifacts.
    - Ask them to remove cached views and garbage-collect the unreferenced

@@ -73,30 +73,30 @@ No accessibility test is skipped or marked as a known failure.
 
 | Found | Fix | Commit |
 |---|---|---|
-| `/admin/reviewers` was 714px wide on a 375px phone: a screen-reader-only label inside the scrolling table escaped its box | Wide tables now scroll inside a `.scroll-region` (`position: relative`) | 4349e39 |
-| Tables that scroll sideways could not be reached by keyboard (axe `scrollable-region-focusable`, 6 pages, plus the false positive under Known limits) | Each one is a named, focusable region (`role="region"`, `tabindex="0"`, `aria-label`) | 4349e39 |
-| Button names that didn't start with their visible text (axe `label-content-name-mismatch`): "Needs research" on the merchant queue, "New link" on reviewers | Names now begin with the visible words | 4349e39 |
-| At 375px, keyboard focus landed on fields hidden behind the bottom tab bar or Feedback button (14 tab stops, some repeated, in 5 of the 8 flows) | `scroll-padding` keeps focus clear of the top bar and, on phones, the tab bar | 4349e39 |
-| No reduced-motion handling beyond the wallet's pulsing dots | `prefers-reduced-motion: reduce` turns off all animations and transitions | 4349e39 |
-| After a form error, focus went back to the top of the page | Focus starts on the first field with an error | c1c27f5 |
-| After an action, the result ("Paid", "Approved", "Denied") wasn't announced: messages were rendered six different ways, some not in a live region, and a live region doesn't speak on a new page anyway | One `x-flash` component; focus moves to the message (or to the redemption confirmation), so screen readers read it and Tab continues from there | c1c27f5 |
-| Errors not tied to their fields: give credits, deny reason, feedback, change password, adjudication answers, reviewer type | `aria-invalid` plus `aria-describedby` on each field or radio group | c1c27f5 |
-| No loading state on slow submits (redeem and "Run a collusion example" wait for the AI); a double press could send twice | Every form that posts shows what it is doing and ignores a second press (what is sent is unchanged) | c1c27f5 |
-| Adjudication: each "Save and next" sent keyboard users back past 32 case-number links | Focus moves to the new case's heading: 3 Tab presses per vote instead of about 40 | c1c27f5 |
-| Error pages were the framework's bare defaults | Plain-English 403, 404, 419, 429, 500 and 503 pages with a way back; the 500 page says to check before retrying a payment | 4790ea7 |
-| `/user/confirm-password` was a server error for any signed-in user (a login-library page that had no design) | A simple page in the login style | 458f89d |
-| `/admin/reviewers` crashed in a browser that had opened a judge link before logging in as platform admin (two things shared one session key) | Separate key; regression test | 83353e6 |
-| BID admin "Recent redemptions" showed nothing at all when empty | "No redemptions yet." with what will appear | 458f89d |
-| The BID impact chart had no text summary (the employer chart did) | One-line summary (this week, and the peak week) next to the table | 9064eb0 |
-| `/bid-admin/participation` called measured spending "Dollars recirculated"; ADR 0017 keeps "recirculation" for the outside estimate | "Spent at independent merchants" | 9064eb0 |
-| Wallet: merchant names cut off ("Connecticut Noo…") next to a Denied badge at 375px | Names wrap | 7d64000 |
-| Impact: the employer table squeezed to one word per line at 375px | Readable column widths; the table scrolls sideways | 7d64000 |
-| Deny-reason radio buttons were the browser's tiny default | Same size as every other radio | 7d64000 |
-| The 404 page showed the framework's message ("The route … could not be found") | Extra detail only for our own 403 reasons | 7d64000 |
-| `/bid-admin/merchants` was 30px too wide at 320px (a long badge that couldn't wrap) | `x-badge :wrap="true"` | e19f070 |
-| Every new pattern needed a home | `/styleguide` has a States section: result messages, busy button, empty state, errors | 7d64000 |
+| `/admin/reviewers` was 714px wide on a 375px phone: a screen-reader-only label inside the scrolling table escaped its box | Wide tables now scroll inside a `.scroll-region` (`position: relative`) | 120c9ca |
+| Tables that scroll sideways could not be reached by keyboard (axe `scrollable-region-focusable`, 6 pages, plus the false positive under Known limits) | Each one is a named, focusable region (`role="region"`, `tabindex="0"`, `aria-label`) | 120c9ca |
+| Button names that didn't start with their visible text (axe `label-content-name-mismatch`): "Needs research" on the merchant queue, "New link" on reviewers | Names now begin with the visible words | 120c9ca |
+| At 375px, keyboard focus landed on fields hidden behind the bottom tab bar or Feedback button (14 tab stops, some repeated, in 5 of the 8 flows) | `scroll-padding` keeps focus clear of the top bar and, on phones, the tab bar | 120c9ca |
+| No reduced-motion handling beyond the wallet's pulsing dots | `prefers-reduced-motion: reduce` turns off all animations and transitions | 120c9ca |
+| After a form error, focus went back to the top of the page | Focus starts on the first field with an error | 5c5394e |
+| After an action, the result ("Paid", "Approved", "Denied") wasn't announced: messages were rendered six different ways, some not in a live region, and a live region doesn't speak on a new page anyway | One `x-flash` component; focus moves to the message (or to the redemption confirmation), so screen readers read it and Tab continues from there | 5c5394e |
+| Errors not tied to their fields: give credits, deny reason, feedback, change password, adjudication answers, reviewer type | `aria-invalid` plus `aria-describedby` on each field or radio group | 5c5394e |
+| No loading state on slow submits (redeem and "Run a collusion example" wait for the AI); a double press could send twice | Every form that posts shows what it is doing and ignores a second press (what is sent is unchanged) | 5c5394e |
+| Adjudication: each "Save and next" sent keyboard users back past 32 case-number links | Focus moves to the new case's heading: 3 Tab presses per vote instead of about 40 | 5c5394e |
+| Error pages were the framework's bare defaults | Plain-English 403, 404, 419, 429, 500 and 503 pages with a way back; the 500 page says to check before retrying a payment | b65c76c |
+| `/user/confirm-password` was a server error for any signed-in user (a login-library page that had no design) | A simple page in the login style | 2d4866a |
+| `/admin/reviewers` crashed in a browser that had opened a judge link before logging in as platform admin (two things shared one session key) | Separate key; regression test | 5159052 |
+| BID admin "Recent redemptions" showed nothing at all when empty | "No redemptions yet." with what will appear | 2d4866a |
+| The BID impact chart had no text summary (the employer chart did) | One-line summary (this week, and the peak week) next to the table | 65bea6e |
+| `/bid-admin/participation` called measured spending "Dollars recirculated"; ADR 0017 keeps "recirculation" for the outside estimate | "Spent at independent merchants" | 65bea6e |
+| Wallet: merchant names cut off ("Connecticut Noo…") next to a Denied badge at 375px | Names wrap | f8c0ff3 |
+| Impact: the employer table squeezed to one word per line at 375px | Readable column widths; the table scrolls sideways | f8c0ff3 |
+| Deny-reason radio buttons were the browser's tiny default | Same size as every other radio | f8c0ff3 |
+| The 404 page showed the framework's message ("The route … could not be found") | Extra detail only for our own 403 reasons | f8c0ff3 |
+| `/bid-admin/merchants` was 30px too wide at 320px (a long badge that couldn't wrap) | `x-badge :wrap="true"` | 8a80cae |
+| Every new pattern needed a home | `/styleguide` has a States section: result messages, busy button, empty state, errors | f8c0ff3 |
 
-The `/admin` accounts table also got its missing caption (80e1157).
+The `/admin` accounts table also got its missing caption (1fb4507).
 
 ## Results after the fixes
 

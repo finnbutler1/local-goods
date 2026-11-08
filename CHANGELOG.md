@@ -3,6 +3,16 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-07: Names removed from the git history
+
+- **The names removed from the code in October are now gone from every
+  earlier commit too.** The four people the AI named and the five
+  person-named candidates read "[name removed]" throughout the history.
+  The current code didn't change (same tree hash), the merchant labels are
+  byte-for-byte the same and were re-locked at their new commit, and the
+  fraud eval lock didn't change at all. Commit hashes from Oct 14 on are new;
+  [ADR 0039](docs/adr/0039-history-rewrite.md) maps old to new.
+
 ## 2026-11-06: A new address, uselocalgoods.com
 
 - **Local Goods now lives at https://uselocalgoods.com.** The old address
