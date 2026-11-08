@@ -2,8 +2,8 @@
     use App\Models\MerchantApplication;
     use App\Services\Districts\MerchantApplications;
 
-    $input = 'block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2 focus-visible:border-primary';
-    $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
+    $input = 'block w-full rounded-lg border-2 border-edge bg-surface px-3 py-2 focus-visible:border-primary';
+    $link = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover';
     $a = $application;
     $canCheck = in_array($a->status, [MerchantApplication::APPLIED, MerchantApplication::ELIGIBILITY_CHECKED], true);
     $canApprove = $a->status === MerchantApplication::ELIGIBILITY_CHECKED && $a->inside_district === true;
@@ -12,36 +12,36 @@
 @endphp
 
 <x-app-shell :title="$a->business_name.' · Merchant Applications'" active="applications" context="Golden Triangle BID · Washington, DC">
-<div class="space-y-8">
-    <header class="max-w-3xl">
-        <p><a href="{{ route('bid-admin.applications') }}" class="tap-target {{ $link }}"><span aria-hidden="true">←</span> All applications</a></p>
-        <x-eyebrow class="mt-2 text-accent-ink">Application</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">{{ $a->business_name }}</h1>
-        <p class="mt-2 flex flex-wrap items-center gap-2">
+<div class="admin-desk space-y-12">
+    <header>
+        <p class="mb-4"><a href="{{ route('bid-admin.applications') }}" class="tap-target {{ $link }}"><span aria-hidden="true">←</span> All applications</a></p>
+        <x-station-sign as="p">Application</x-station-sign>
+        <h1 class="page-title">{{ $a->business_name }}</h1>
+        <p class="mt-4 flex flex-wrap items-center gap-2">
             <x-badge :wrap="true">{{ $a->statusLabel() }}</x-badge>
             @if ($a->is_sample) <x-badge :wrap="true">{{ MerchantApplication::SAMPLE_LABEL }}</x-badge> @endif
         </p>
-        <p class="mt-3 text-sm text-muted">{{ MerchantApplication::APPLICANT_LABEL }}</p>
+        <p class="mt-3 max-w-[52rem] text-sm text-muted">{{ MerchantApplication::APPLICANT_LABEL }}</p>
         @unless ($decide)
-            <p id="application-read-only" class="mt-4 rounded-2xl bg-band p-4 text-sm"><span class="font-semibold">Read-only.</span> Only a BID admin or the platform admin checks and decides applications.</p>
+            <p id="application-read-only" class="ledger-note mt-4 max-w-[52rem] text-sm"><span class="font-semibold">Read-only.</span> Only a BID admin or the platform admin checks and decides applications.</p>
         @endunless
     </header>
 
-    <div class="grid gap-8 lg:grid-cols-2">
-        <x-card as="section" aria-labelledby="facts-heading">
-            <h2 id="facts-heading" class="text-xl font-semibold text-primary">What the shop told us</h2>
-            <dl class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-[max-content_1fr]">
+    <div class="grid gap-x-10 gap-y-12 lg:grid-cols-2">
+        <section aria-labelledby="facts-heading" class="rule-heavy">
+            <h2 id="facts-heading" class="stop-subtitle">What the shop told us</h2>
+            <dl class="mt-4 grid gap-x-6 gap-y-3 border-t border-ink pt-3 sm:grid-cols-[max-content_1fr]">
                 <dt class="text-muted">Address</dt><dd>{{ $a->address }}</dd>
                 <dt class="text-muted">Category</dt><dd>{{ $a->categoryLabel() }}</dd>
                 <dt class="text-muted">Contact</dt><dd>@if ($seesEmail)<x-breakable :value="$a->contact_email" />@else{{ $a->maskedEmail() }}@endif</dd>
                 <dt class="text-muted">Why independent</dt><dd class="max-w-prose whitespace-pre-line">{{ $a->independence_answer }}</dd>
-                <dt class="text-muted">Applied</dt><dd>{{ $a->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y g:i A') }} (DC time)</dd>
+                <dt class="text-muted">Applied</dt><dd class="tabular">{{ $a->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y g:i A') }} (DC time)</dd>
             </dl>
             <p class="mt-3 text-sm text-muted">The shop's own answer is for people only: it is never sent to the AI.</p>
-        </x-card>
+        </section>
 
-        <x-card as="section" aria-labelledby="where-heading">
-            <h2 id="where-heading" class="text-xl font-semibold text-primary">Where it is</h2>
+        <section aria-labelledby="where-heading" class="rule-heavy">
+            <h2 id="where-heading" class="stop-subtitle">Where it is</h2>
             @if ($a->status === MerchantApplication::APPLIED)
                 <p class="mt-2 text-muted">Not checked yet. Run the eligibility check to look the address up.</p>
             @elseif ($a->latitude === null)
@@ -53,30 +53,30 @@
                 <div class="mt-3"><x-district-map :map="$map" :pins="$pins" labelled-by="where-summary" /></div>
                 <p class="mt-2 text-sm text-muted"><a href="{{ route('district') }}" class="{{ $link }}">The full district map</a></p>
             @endif
-        </x-card>
+        </section>
     </div>
 
-    <x-card as="section" aria-labelledby="ai-heading">
-        <h2 id="ai-heading" class="text-xl font-semibold text-primary">Merchant Eligibility Matching: a suggestion</h2>
+    <section aria-labelledby="ai-heading" class="rule-heavy">
+        <h2 id="ai-heading" class="stop-subtitle">Merchant Eligibility Matching: a suggestion</h2>
         @if ($a->ai_classification === null)
             <p class="mt-2 text-muted">Not asked yet.</p>
         @else
-            <dl class="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
+            <dl class="mt-4 grid max-w-[60rem] gap-x-6 gap-y-2 border-t border-ink pt-3 sm:grid-cols-[max-content_1fr]">
                 <dt class="text-muted">Suggestion</dt><dd class="font-semibold">{{ str_replace('_', ' ', ucfirst($a->ai_classification)) }}{{ $a->ai_eligible ? ' (looks eligible)' : ' (does not look eligible)' }}</dd>
                 <dt class="text-muted">Confidence</dt><dd class="tabular">{{ round(100 * $a->ai_confidence) }}% ({{ $confidenceWords($a->ai_confidence) }}){{ $a->ai_needs_review ? ' · flagged for a closer look' : '' }}</dd>
                 <dt class="text-muted">Reasoning</dt><dd class="max-w-prose">{{ $a->ai_reasoning }}</dd>
                 <dt class="text-muted">Source</dt><dd class="tabular">{{ $a->ai_model === \Database\Seeders\DatabaseSeeder::SEEDED_SUGGESTION ? 'Seeded example, not an AI answer' : 'Prompt '.$a->ai_prompt_version.' · '.$a->ai_model }}</dd>
             </dl>
-            <p class="mt-3 rounded-2xl bg-primary-tint p-4 text-sm">
+            <p class="mt-4 max-w-[60rem] border-t-[3px] border-primary bg-primary-tint px-4 py-3 text-sm">
                 <span class="font-semibold">Suggestion only: a BID admin decides.</span> The AI saw only the name, address and category the shop gave
                 (no license activity, no email, not the shop's own answer). It judged from its own training knowledge and did not search the web,
                 so it may not know about recent sales, closures or new owners.
             </p>
         @endif
-    </x-card>
+    </section>
 
-    <x-card as="section" aria-labelledby="decide-heading">
-        <h2 id="decide-heading" class="text-xl font-semibold text-primary">Decide</h2>
+    <section aria-labelledby="decide-heading" class="decision-panel p-5 sm:p-6">
+        <h2 id="decide-heading" class="stop-subtitle">Decide</h2>
         <fieldset class="contents" @disabled(! $decide)>
             <div class="mt-4 space-y-6">
                 @if ($canCheck)
@@ -121,10 +121,10 @@
                 @endif
             </div>
         </fieldset>
-    </x-card>
+    </section>
 
-    <section aria-labelledby="history-heading" class="space-y-3">
-        <h2 id="history-heading" class="text-2xl font-semibold text-primary">Every step</h2>
+    <section aria-labelledby="history-heading" class="rule-heavy space-y-3">
+        <h2 id="history-heading" class="stop-subtitle">Every step</h2>
         <x-rtable label="Application steps table">
             <table data-rtable="stack" class="w-full text-left">
                 <caption class="sr-only">Every step of this application, oldest first</caption>
@@ -139,7 +139,7 @@
                 <tbody class="divide-y divide-line/70">
                     @foreach ($a->events as $event)
                         <tr data-application-event>
-                            <td data-primary class="px-5 py-3 tabular sm:px-6">{{ $event->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y g:i A') }}</td>
+                            <td data-primary class="px-5 py-3 whitespace-nowrap [font-variant-numeric:tabular-nums] sm:px-6">{{ $event->created_at->setTimezone(config('fraud.timezone'))->format('M j, Y g:i A') }}</td>
                             <td data-label="Step" class="px-5 py-3">{{ MerchantApplication::STEPS[$event->to_status] ?? 'Declined' }}</td>
                             <td data-label="Who" class="px-5 py-3">{{ $event->actorLabel() === 'You (the applicant)' ? 'Applicant' : $event->actorLabel() }}</td>
                             <td data-label="Why" class="px-5 py-3">{{ $event->reason }}</td>

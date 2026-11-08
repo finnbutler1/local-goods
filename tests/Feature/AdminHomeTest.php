@@ -38,7 +38,7 @@ class AdminHomeTest extends TestCase
             $this->assertStringContainsString('href="'.route($route).'"', $main, $route);
         }
         $this->assertStringNotContainsString('Invite reviewers', $main, 'The row of shortcut links is gone.');
-        $this->assertStringContainsString('<h1 class="mt-1 text-title font-semibold text-primary">Home</h1>', $html);
+        $this->assertStringContainsString('<h1 class="page-title">Home</h1>', $html);
     }
 
     public function test_the_solvency_card_shows_pass_or_fail_and_when(): void
@@ -81,7 +81,7 @@ class AdminHomeTest extends TestCase
         $this->assertStringNotContainsString('data-home-card="feedback"', $html);
         $this->assertStringNotContainsString('Operating', $html, 'No figures the BID admin cannot see.');
 
-        $this->get('/bid-admin')->assertOk()->assertSee('<h1 class="mt-1 text-title font-semibold text-primary">Fraud Review</h1>', false);
+        $this->get('/bid-admin')->assertOk()->assertSee('<h1 class="page-title">Fraud Review</h1>', false);
         $this->get(route('admin.dashboard'))->assertForbidden();
     }
 
