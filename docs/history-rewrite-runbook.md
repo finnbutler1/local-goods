@@ -35,13 +35,17 @@ counts, paths and commit hashes. **No name appears in this document.**
   - Candidate names in 100 commits, `6b68968` (Oct 14) to `b181ab5` (Oct 21).
   - None in HEAD, none in any commit message.
 - **Nowhere else:**
-  - One branch (`main`); no tags, stashes or notes.
+  - One branch (`main`) on Nov 6; no tags, stashes or notes. By Nov 7
+    `redesign-a` and `design-pass` existed (both merged, 0 commits not in
+    `main`) and were deleted locally; see step 1 for GitHub.
   - On GitHub: 0 forks, 0 issues, 0 pull requests, 0 releases, 0 Actions
     artifacts.
   - All 60 CI runs from Oct 14 to 22 were scanned, and none of their logs
     contains a name.
-- **What a rewrite changes:** 289 of 408 commits (everything from `6b68968`
-  on).
+- **What a rewrite changes:** 289 of 408 commits on Nov 6 (everything from
+  `6b68968` on); 319 of 438 in the Nov 7 dry run at `77a402d` (names and
+  snippet counts unchanged). Every new commit adds one: **recount on the day** with the
+  dry run before step 2.
   - The fraud eval lock commit `5f594c1` comes earlier, so it **doesn't
     change**.
   - The merchant label commit `30b610e` **does change**.
@@ -67,11 +71,17 @@ Map each old hash with filter-repo's `.git/filter-repo/commit-map`
 | `docs/accessibility.md` | `4349e39` `458f89d` `4790ea7` `7d64000` `80e1157` `83353e6` `9064eb0` `c1c27f5` `e19f070` | map each |
 | `docs/adr/0028-refunds-and-corrections.md` | `d8aa1ea` | map |
 | fraud lock, CLAUDE.md, TRANSPARENCY.md, `docs/evals/fraud-*`, `docs/evals/runs/*` | `5f594c1` | **unchanged**: check it still resolves |
-| `.last-deploy-commit`, `.deploy-zip-commit` (git-ignored) | last deployed commit | replace with the mapped hash, so `scripts/deploy-migrations.sh` still works |
+| `.last-deploy-commit`, `.deploy-zip-commit` (git-ignored) | last deployed / last zipped commit | replace **both** with the mapped full hash from the commit-map, so `scripts/deploy-migrations.sh` still works |
+| `docs/history-rewrite-runbook.md` (this file) | the hashes it cites | map each |
+| `4c6ac43` in `resources/views/admin/feedback.blade.php` | placeholder text, not a citation | none |
 | Live database `feedback.fixed_commit_sha` (judges see "Fixed in commit") | each one | Finn edits them in `/admin/feedback`. Never by script, never by Claude |
 | `/eval/merchants` and fraud results links | from the locks | follow the lock change; live after the next deploy |
 | Old GitHub Actions runs | old hashes | leave them (they show timing); explain in the ADR |
 | `4c6ac43` in `FeedbackInboxController` | example text, not a citation | none |
+
+Every cited hash and both deploy markers are mapped through the
+commit-map, never by hand. A hash with no line in the commit-map is written
+as "old hash (before Nov 9 rewrite)" next to the old short hash.
 
 Rerun the scan before the day, in case new citations were added since:
 `git grep -n -o -I -w -E '[0-9a-f]{7,40}' -- ':!composer.lock' ':!package-lock.json' ':!public/build' ':!data/sources'`,
@@ -81,6 +91,11 @@ keeping the matches where `git cat-file -t` says `commit`.
 
 1. **Approve.** Finn changes the CLAUDE.md rule and okays `merchant:lock --force`.
    - CI is green on `main`.
+   - `main` is the only branch, locally and on GitHub
+     (`git ls-remote --heads origin` shows only `refs/heads/main`). Any
+     other branch is deleted first, after `git rev-list --count main..<branch>`
+     says 0; otherwise it would keep the old history reachable after the
+     force-push.
    - Nobody pushes until step 7 is done.
    - `brew install git-filter-repo`.
 2. **Back up.**
@@ -117,7 +132,7 @@ keeping the matches where `git cat-file -t` says `commit`.
    don't pull into it):
    - Update every hash in the table above.
    - Re-lock the merchant labels.
-   - Add ADR 0037 with a table mapping old hashes to new ones for every
+   - Add ADR 0039 (0037 and 0038 are taken) with a table mapping old hashes to new ones for every
      cited commit.
    - Rewrite TRANSPARENCY.md's "Earlier versions remain in the public git
      history" paragraph and the history sentence under "What a person checks
@@ -136,6 +151,12 @@ keeping the matches where `git cat-file -t` says `commit`.
      commits, so old hashes no longer open on github.com.
 9. **Clean up** after Support confirms: delete `~/lg-backup-2026-11-09.git`,
    `~/lg-redactions.txt` and `~/lg-rewrite`.
+10. **Check GitHub by direct URL.** A few days after Support's reply, open
+    `https://github.com/finnbutler1/local-goods/commit/<old hash>` for a
+    sample of the old hashes from step 8 (first, last and a few between)
+    while logged out. If any still opens, reply to the Support ticket with
+    those hashes and ask again for the cached views to be purged. Done when
+    none of them opens.
 
 Consequences to accept:
 - All 289 later commit hashes change.
