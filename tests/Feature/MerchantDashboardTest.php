@@ -129,6 +129,6 @@ class MerchantDashboardTest extends TestCase
     {
         $start = strpos($html, 'id="received-heading"');
 
-        return substr_count(substr($html, $start, strpos($html, 'id="payouts-heading"') - $start), '<li class="flex items-center justify-between');
+        return substr_count(substr($html, $start, strpos($html, 'id="payouts-heading"') - $start), 'data-received-row');
     }
 }

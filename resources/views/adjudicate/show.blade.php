@@ -12,9 +12,9 @@
 <x-app-shell title="Help check the AI" active="dashboard" context="CUA Busch School AI Vibe Coding Contest">
 <div class="max-w-3xl space-y-8">
     <header>
-        <x-eyebrow class="text-accent-ink">Blind adjudication</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Help check the AI</h1>
-        <p class="mt-3 text-lg text-muted">
+        <x-station-sign as="p">Blind adjudication</x-station-sign>
+        <h1 class="page-title">Help check the AI</h1>
+        <p class="page-lede">
             Our fraud check was tested against cases a person labeled by hand. Where the person and the AI disagree,
             the person may be the one who got it wrong. You'll see synthetic redemptions one at a time, with only the facts,
             and decide whether each looks <strong class="text-ink">normal</strong> or <strong class="text-ink">suspicious</strong>,
@@ -25,21 +25,21 @@
 
     <div aria-live="polite">
         @if ($errors->any())
-            <p id="adjudicate-error" role="alert" class="rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">Not saved: {{ $errors->first() }}</p>
+            <p id="adjudicate-error" role="alert" class="border-t-[3px] border-hold bg-hold-bg p-4 font-semibold text-hold">Not saved: {{ $errors->first() }}</p>
         @endif
     </div>
 
     @switch ($state)
         @case('none')
             <x-card>
-                <h2 class="text-2xl font-semibold text-primary">Nothing to check right now</h2>
+                <h2 class="text-2xl font-extrabold tracking-tight">Nothing to check right now</h2>
                 <p class="mt-2 text-muted">There is no set of cases open for voting. Thank you for looking.</p>
             </x-card>
             @break
 
         @case('closed')
             <x-card>
-                <h2 class="text-2xl font-semibold text-primary">Voting has closed</h2>
+                <h2 class="text-2xl font-extrabold tracking-tight">Voting has closed</h2>
                 <p class="mt-2 text-muted">
                     Votes you saved but didn't submit are not counted.
                     @if ($votingOnly)
@@ -53,7 +53,7 @@
 
         @case('submitted')
             <x-card class="border-2 border-ok">
-                <h2 class="text-2xl font-semibold text-primary">Thank you, your votes are in</h2>
+                <h2 class="text-2xl font-extrabold tracking-tight">Thank you, your votes are in</h2>
                 <p class="mt-2">
                     @if ($had === 0)
                         You voted on all {{ $totalCases }} cases.
@@ -75,7 +75,7 @@
 
         @case('more')
             <x-card as="section" aria-labelledby="more-heading" class="border-2 border-ok">
-                <h2 id="more-heading" tabindex="-1" data-flash class="text-2xl font-semibold text-primary">Thanks! Want to do {{ $nextBatchSize }} more?</h2>
+                <h2 id="more-heading" tabindex="-1" data-flash class="text-2xl font-extrabold tracking-tight">Thanks! Want to do {{ $nextBatchSize }} more?</h2>
                 <p class="mt-2">
                     Your {{ $counted }} {{ Str::plural('vote', $counted) }} already count. More is optional: another {{ $nextBatchSize }} takes about 5 minutes,
                     and you'll never see a case twice ({{ $had }} of {{ $totalCases }} seen so far).
@@ -95,7 +95,7 @@
 
         @case('question')
             <x-card as="section" aria-labelledby="question-heading">
-                <h2 id="question-heading" class="text-2xl font-semibold text-primary">Before you start</h2>
+                <h2 id="question-heading" class="text-2xl font-extrabold tracking-tight">Before you start</h2>
                 <p class="mt-2 text-muted">
                     Please don't open the AI eval page until you've submitted: it shows the answers.
                     This question helps us report results fairly; any answer is fine.
@@ -122,7 +122,7 @@
         @default
             {{-- voting, or view-only for reviewers who can look but not vote --}}
             @if ($state === 'view-only')
-                <p class="rounded-2xl border-2 border-line bg-band p-4">
+                <p class="ledger-note">
                     <strong>You can look, but not vote.</strong> Votes come only from named BID staff and contest judges who
                     signed in with their own link, so every vote can be attributed. The form below is switched off.
                 </p>
@@ -133,9 +133,9 @@
             <nav aria-label="Cases" class="space-y-2">
                 <p class="font-semibold">
                     @if ($case)
-                        <span class="tabular text-2xl text-primary">{{ $n }} of {{ $total }}</span>
+                        <span class="money text-2xl">{{ $n }} of {{ $total }}</span>
                     @else
-                        <span class="text-2xl text-primary">Review and submit</span>
+                        <span class="text-2xl font-extrabold tracking-tight">Review and submit</span>
                     @endif
                     @if ($state === 'voting')
                         <span class="ml-2 text-muted">· {{ $answered }} answered</span>
@@ -145,21 +145,21 @@
                     @foreach ($cases as $i => $c)
                         <li>
                             <a href="{{ route('adjudication.show', ['n' => $i + 1]) }}" @if ($case && $c->id === $case->id) aria-current="step" @endif
-                               @class(['tabular grid size-9 place-items-center rounded-full text-sm font-semibold ring-1 ring-line aria-[current=step]:ring-2 aria-[current=step]:ring-primary',
+                               @class(['tabular grid size-11 place-items-center rounded-full text-sm font-semibold ring-[1.5px] ring-edge aria-[current=step]:ring-[3px] aria-[current=step]:ring-ink sm:size-10',
                                        'bg-primary text-on-night' => $votes->has($c->id), 'bg-surface text-ink' => ! $votes->has($c->id)])>
                                 {{ $i + 1 }}<span class="sr-only">{{ $votes->has($c->id) ? ', answered' : ', not answered' }}</span>
                             </a>
                         </li>
                     @endforeach
                     @if ($state === 'voting')
-                        <li><a href="{{ route('adjudication.show', ['n' => $total + 1]) }}" class="grid h-9 place-items-center rounded-full px-3 text-sm font-semibold text-primary ring-1 ring-line">Submit</a></li>
+                        <li><a href="{{ route('adjudication.show', ['n' => $total + 1]) }}" class="grid h-11 place-items-center rounded-full px-4 text-sm font-semibold text-primary ring-[1.5px] ring-edge sm:h-10">Submit</a></li>
                     @endif
                 </ol>
             </nav>
 
             @if ($case)
                 <x-card as="section" aria-labelledby="case-heading">
-                    <h2 id="case-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-primary">Redemption {{ $n }}</h2>
+                    <h2 id="case-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-extrabold tracking-tight">Redemption {{ $n }}</h2>
                     <dl class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
                         @foreach (AdjudicationCase::FACTS as $key => $label)
                             @php $value = $case->facts[$key] ?? ''; @endphp
@@ -211,7 +211,7 @@
             @else
                 @php $missing = $cases->keys()->filter(fn ($i) => ! $votes->has($cases[$i]->id))->map(fn ($i) => $i + 1); @endphp
                 <x-card as="section" aria-labelledby="submit-heading">
-                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-semibold text-primary">Submit these {{ $total }}</h2>
+                    <h2 id="submit-heading" @if (request()->has('n')) tabindex="-1" data-flash @endif class="text-2xl font-extrabold tracking-tight">Submit these {{ $total }}</h2>
                     @if ($missing->isNotEmpty())
                         <p class="mt-2">Still to answer: {{ $missing->implode(', ') }}. You can submit once every case has an answer.</p>
                     @else

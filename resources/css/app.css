@@ -1166,22 +1166,107 @@
         color: var(--color-on-primary);
     }
 
-    /* Merchant card: a teal rail on the left with a stop on it. */
-    .merchant-rail {
-        position: relative;
-        border-left: 5px solid var(--color-primary);
+    /* Participating merchants as stops on one teal line (the wallet's
+       "Where you can spend", ADR 0038). Each stop draws its own length of
+       line, so in two columns each column has its own line. Never used for
+       candidates. */
+    .merchant-line {
+        isolation: isolate;
     }
 
-    .merchant-rail::before {
+    .merchant-line > li {
+        position: relative;
+        padding: 0.75rem 0 0.875rem 2.75rem;
+        border-bottom: 1px solid var(--color-line);
+        break-inside: avoid;
+    }
+
+    .merchant-line > li::after {
         content: '';
         position: absolute;
-        top: 1.4rem;
-        left: -0.7rem;
-        width: 1rem;
-        height: 1rem;
+        z-index: -1;
+        top: 0;
+        bottom: -1px;
+        left: 11px;
+        width: 8px;
+        background: var(--color-primary);
+    }
+
+    .merchant-line > li:first-child::after {
+        top: 1rem;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .merchant-line > li:last-child::after {
+        bottom: 0.75rem;
+        border-radius: 0 0 4px 4px;
+    }
+
+    .merchant-line > li::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        left: 4px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
-        background: var(--color-accent);
-        box-shadow: 0 0 0 3px var(--color-surface);
+        background: var(--color-surface);
+        box-shadow: inset 0 0 0 5px var(--color-ink);
+    }
+
+    @media (width >= 48rem) {
+        .merchant-line {
+            columns: 2;
+            column-gap: 1.5rem;
+        }
+
+        /* In two columns the line runs the full height of every stop, so
+           each column's line is unbroken from top to bottom. */
+        .merchant-line > li:first-child::after,
+        .merchant-line > li:last-child::after {
+            top: 0;
+            bottom: -1px;
+            border-radius: 0;
+        }
+    }
+
+    /* The wallet's balance: a fare card, dark in both modes. */
+    .wallet-balance {
+        border-radius: 0.375rem;
+        background: var(--color-sign);
+        color: var(--color-on-night);
+        padding: 1.25rem;
+    }
+
+    @media (width >= 40rem) {
+        .wallet-balance {
+            padding: 1.5rem;
+        }
+    }
+
+    .wallet-balance :focus-visible {
+        outline-color: var(--color-night-focus);
+    }
+
+    /* The merchant's counter: the one panel a cashier needs, with a teal
+       head like a platform sign. */
+    .counter-panel {
+        border: 2px solid var(--color-primary);
+        border-radius: 0.375rem;
+        background: var(--color-surface);
+    }
+
+    .counter-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+    }
+
+    .counter-panel-head :focus-visible {
+        outline-color: var(--color-on-primary);
     }
 
     .bg-night .route-stop::before {
@@ -1331,6 +1416,139 @@ table.statement > :is(tbody, tfoot) > tr.statement-after > td {
     color: var(--color-muted);
 }
 
+/* The wallet on a wide screen (batch 4b, from the comp): paying on the
+   left (balance, the two tabs, the chosen tab's form), where you can spend
+   on the right, then recent redemptions and the history side by side. The
+   page keeps its phone order: "Where you can spend" stays inside the Order
+   to go panel, so the tabs share the page grid (subgrid) and the panel's
+   own box covers both columns. That box lets clicks through to what's
+   under it, and its keyboard focus ring goes on its two parts instead.
+   Unlayered, so it wins over the panels' own spacing utilities. */
+@media (width >= 80rem) {
+    .wallet-desk {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-rows: auto auto auto 1fr auto;
+        column-gap: 1.5rem;
+        row-gap: 1rem;
+        max-width: none;
+    }
+
+    .wallet-desk > * {
+        margin: 0;
+    }
+
+    .wallet-desk > .wallet-live {
+        grid-column: 1 / -1;
+    }
+
+    .wallet-desk > .wallet-balance {
+        grid-column: 1 / 6;
+        grid-row: 2;
+    }
+
+    .wallet-desk > .wallet-tabs {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 2 / span 3;
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid;
+        pointer-events: none;
+    }
+
+    .wallet-tabs > [role='tablist'] {
+        grid-column: 1 / 6;
+        grid-row: 2;
+        pointer-events: auto;
+    }
+
+    .wallet-tabs > [role='tabpanel'] {
+        margin: 0;
+    }
+
+    .wallet-tabs > [role='tabpanel'] > * {
+        margin: 0;
+        pointer-events: auto;
+    }
+
+    .wallet-tabs > #panel-to-go {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 1 / span 3;
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid;
+    }
+
+    #panel-to-go > #redeem {
+        grid-column: 1 / 6;
+        grid-row: 3;
+        align-self: start;
+    }
+
+    #panel-to-go > #browse {
+        grid-column: 6 / -1;
+        grid-row: 1 / span 3;
+        align-self: start;
+    }
+
+    /* Pay in person has no right-hand column of its own, so its panel takes
+       the full width: the heading and intro on the left five columns, the
+       steps and the pay code on the right seven, like the page grid. */
+    .wallet-tabs > #panel-in-person {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        align-self: start;
+    }
+
+    #panel-in-person > #pay {
+        display: grid;
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        grid-template-rows: auto auto 1fr;
+        column-gap: 3rem;
+    }
+
+    #pay > #pay-heading {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    #pay > #pay-heading + p {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    #pay > .pay-body {
+        grid-column: 2;
+        grid-row: 1 / span 3;
+        max-width: 40rem;
+    }
+
+    #pay > .pay-body > :first-child {
+        margin-top: 0;
+    }
+
+    .wallet-tabs > [role='tabpanel']:focus-visible {
+        outline: none;
+    }
+
+    .wallet-tabs > [role='tabpanel']:focus-visible > * {
+        outline: 3px solid var(--color-focus);
+        outline-offset: 4px;
+    }
+
+    .wallet-desk > .wallet-recent {
+        grid-column: 1 / 6;
+        grid-row: 5;
+        margin-top: 2.5rem;
+    }
+
+    .wallet-desk > .wallet-history {
+        grid-column: 6 / -1;
+        grid-row: 5;
+        margin-top: 2.5rem;
+    }
+}
+
 /* Admin and money desks (batch 4a): ruled tables sit on the page's left
    edge, so the first column lines up with the headings above them. */
 @media (width >= 40rem) {
@@ -1424,6 +1642,19 @@ table.statement > :is(tbody, tfoot) > tr.statement-after > td {
         padding-top: 0;
         font-size: 1.0625rem;
         font-weight: 600;
+    }
+
+    /* A cell with several lines of its own (an order, how a payout was
+       paid): its column name on a line above it, then the text left-aligned. */
+    table[data-rtable='stack'] > :is(tbody, tfoot) > tr > td.stack-block {
+        text-align: left;
+    }
+
+    table[data-rtable='stack'] > :is(tbody, tfoot) > tr > td.stack-block[data-label]::before {
+        float: none;
+        display: block;
+        max-width: none;
+        padding: 0 0 0.25rem;
     }
 
     /* A wrapper card (<x-rtable>) steps back so the rows are the cards. */

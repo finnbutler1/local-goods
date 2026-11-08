@@ -1,8 +1,10 @@
 {{-- Pay in person (ADR 0026): pick a merchant, the amount or menu items, then get a one-time code for the cashier. --}}
 @php use App\Models\PayCode; use App\Support\Money; use App\Support\SalesTax; @endphp
 <x-card as="section" id="pay" aria-labelledby="pay-heading" class="scroll-mt-24">
-    <h2 id="pay-heading" class="text-2xl font-semibold text-primary">Pay in person</h2>
-    <p class="mt-1 text-sm text-muted">At the counter: get a pay code, the cashier types it in and confirms. Nothing is charged until they do.</p>
+    <h2 id="pay-heading" class="text-2xl font-extrabold tracking-tight text-ink">Pay in person</h2>
+    <p class="mt-2 text-[0.9375rem]">At the counter: get a pay code, the cashier types it in and confirms. Nothing is charged until they do.</p>
+
+    <div class="pay-body">
 
     @if ($liveCode)
         @include('employee.partials.pay-code-card', [
@@ -29,7 +31,7 @@
                     default => 'That pay code was cancelled.',
                 };
             @endphp
-            <p class="mt-4 rounded-xl border-2 border-line p-3" data-pay-outcome>
+            <p class="ledger-note mt-4" data-pay-outcome>
                 {{ $outcome.($payResult->status !== PayCode::STATUS_USED ? ' Nothing was charged.' : '') }}
             </p>
         @endif
@@ -83,7 +85,7 @@
             {{-- Judges: what the code screen looks like. Not a real code; nothing is stored. --}}
             <div class="mt-6">
                 @php $sampleTax = SalesTax::forItems([['name' => 'Latte', 'unit_price_cents' => 575, 'quantity' => 2, 'tax_category' => 'prepared_food']]); @endphp
-                <p class="text-sm font-semibold uppercase tracking-widest text-muted">Sample code screen</p>
+                <p class="entry-label">Sample code screen</p>
                 @include('employee.partials.pay-code-card', [
                     'code' => 'K7M 4PQ',
                     'spoken' => 'K, 7, M, 4, P, Q',
@@ -100,4 +102,5 @@
             </div>
         @endcannot
     @endif
+    </div>
 </x-card>
