@@ -293,7 +293,7 @@ class DemoActivitySafetyTest extends TestCase
         foreach ([
             'RedemptionReviewService', 'CorrectionDecisions', 'RedemptionDecision', 'Adjudication', 'ReviewerLinks', 'MerchantLabels',
             'MerchantReviewDecision', 'MerchantFeeSettings', 'PartnershipSettings', 'CreditLedgerEntry', 'MerchantPayout::create',
-            'DB::table', 'DB::insert', 'DB::update', '->approve(', '->deny(', 'createTransfer', 'Mail::', 'Notification::',
+            'DB::table', 'DB::insert', 'DB::update', '->approve(', '->deny(', 'createTransfer', 'Mail::', 'Notification::', '->notify(', 'Mailable', 'MailMessage',
         ] as $forbidden) {
             $this->assertStringNotContainsString($forbidden, $source, $forbidden);
         }

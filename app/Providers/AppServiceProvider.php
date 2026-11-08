@@ -11,10 +11,13 @@ use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeSdkGateway;
 use App\Services\Solvency\SolvencyGuard;
 use App\Support\AppUrl;
+use App\Support\DemoMailGuard;
 use App\Support\ProductionConfig;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -57,6 +60,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Production never shows debug pages, even if APP_DEBUG slipped through the deploy check.
         ProductionConfig::forceDebugOff();
+
+        // No email ever goes to a demo account's fictional domain, in any
+        // environment (DemoMailGuard). No switch turns this off.
+        Event::listen(MessageSending::class, [DemoMailGuard::class, 'onMessageSending']);
+        Event::listen(NotificationSending::class, [DemoMailGuard::class, 'onNotificationSending']);
 
         // Who may change what. Judges pass none of these; BlockJudgeWrites
         // also stops them at the door, so both layers must agree.

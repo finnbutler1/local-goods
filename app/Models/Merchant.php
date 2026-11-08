@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\Districts\DistrictRules;
 use App\Services\Eligibility\MerchantCandidates;
+use App\Support\DemoMailGuard;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -128,10 +129,16 @@ class Merchant extends Model
         return $this->stripe_account_id !== null && $this->stripe_transfers_active === true;
     }
 
-    /** Stripe requires a contact email on a v2 account that receives transfers. Fictional for the demo merchants. */
+    /**
+     * Stripe requires a contact email on a v2 account that receives transfers.
+     * Fictional for the demo merchants; a demo login's address is never handed
+     * to Stripe (DemoMailGuard). Only read when an account is created.
+     */
     public function stripeContactEmail(): string
     {
-        return $this->user?->email ?? 'merchant-'.$this->id.'@example.com';
+        $email = $this->user?->email;
+
+        return $email !== null && ! DemoMailGuard::isBlocked($email) ? $email : 'merchant-'.$this->id.'@example.com';
     }
 
     /** not_started | in_progress | complete, for badges. */

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ReviewerType;
 use App\Enums\Role;
+use App\Support\DemoMailGuard;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -116,6 +117,14 @@ class User extends Authenticatable
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
+    }
+
+    /** Fortify's "Forgot password?" email: never to a demo account (DemoMailGuard). */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        if (! DemoMailGuard::isBlocked($this->email)) {
+            parent::sendPasswordResetNotification($token);
+        }
     }
 
     public function feedback(): HasMany

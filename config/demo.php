@@ -45,4 +45,16 @@ return [
             'email' => 'public.judge@example.com',
         ],
     ],
+
+    /*
+    | The demo accounts' fictional organisations. Someone else could own these
+    | domains, so no email is ever sent to them, in any environment
+    | (App\Support\DemoMailGuard). Exact domains only: never uselocalgoods.com
+    | itself, a real reviewer's domain or anything else.
+    */
+    'mail_blocked_domains' => [
+        'meridianpolicygroup.com',
+        'farragutgrind.com',
+        'goldentriangle.uselocalgoods.com',
+    ],
 ];

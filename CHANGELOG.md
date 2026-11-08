@@ -3,6 +3,18 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-08: No email ever goes to a demo account
+
+- **A hard mail guard, before the demo logins get realistic addresses.**
+  The demo accounts are moving to fictional organisations' .com addresses
+  that someone else could own, so the mail layer now refuses any message to
+  `meridianpolicygroup.com`, `farragutgrind.com` or
+  `goldentriangle.uselocalgoods.com`, in every environment, production
+  included. Only those exact domains: reviewers' own addresses and
+  uselocalgoods.com itself are never blocked, and magic links (never
+  emailed) work as before. `php artisan demo:check-mail-guard` shows it is on
+  without sending anything.
+
 ## 2026-11-07: Names removed from the git history
 
 - **The names removed from the code in October are now gone from every

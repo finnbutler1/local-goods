@@ -5,6 +5,23 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Demo mail guard — done (2026-11-08); demo addresses change next.** No
+migration, money, fraud prompt, AI input, eval data or lock change.
+
+- `App\Support\DemoMailGuard` (listeners on `MessageSending` and
+  `NotificationSending` in `AppServiceProvider`, every environment, no
+  switch) refuses any mail with a recipient on an exact domain in
+  `config('demo.mail_blocked_domains')`. **Never add uselocalgoods.com, a
+  reviewer's domain or a suffix match.** `User::sendPasswordResetNotification`
+  skips them too; `Merchant::stripeContactEmail` never hands one to Stripe
+  (read only when an account is created). Magic links are never emailed.
+- Live check: `sudo /var/app/current/scripts/artisan-as-webapp.sh
+  demo:check-mail-guard` (the script only allows the commands it lists).
+- Next (after Finn deploys this): demo logins move to
+  first.last@<fictional org> via `demo:update-emails`, which skips every
+  judge, reviewer and the platform admin.
+- Tests: `DemoMailGuardTest`, `ArtisanAsWebappScriptTest`.
+
 **Names removed from git history — done (2026-11-07, ADR 0039).** One
 partial history rewrite with Finn's approval; no migration, money, fraud
 prompt, AI input, eval data or holdout change. One lock change: the merchant
