@@ -32,6 +32,9 @@ money, fraud prompt, AI input, eval data, sign-in or lock change.
 - Shown on the platform admin Home and, logged out only, as the landing
   button `rel="nofollow"`. `brand-head` adds noindex on `judge-access.*` and
   for every read-only user.
+- Signed in as the public judge, the landing button reads "Continue looking
+  around" and goes to `judge.dashboard` (no token; shown even if the link is
+  unset). Other signed-in users get no button.
 - Public account is shared: it sends feedback but never sees or edits past
   feedback (`FeedbackPolicy::update`, `/account`); `auth-forms` counts it per IP.
 - Tests: `PublicJudgeLinkTest`.

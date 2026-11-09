@@ -160,6 +160,51 @@ class PublicJudgeLinkTest extends TestCase
         $this->assertStringNotContainsString(Str::after($url, '#'), $response->getContent());
     }
 
+    private const CONTINUE = 'Continue looking around';
+
+    public function test_logged_out_visitors_do_not_get_the_continue_button(): void
+    {
+        $this->setLink();
+
+        $this->get('/')->assertOk()->assertSee(self::BUTTON)->assertDontSee(self::CONTINUE);
+    }
+
+    public function test_the_public_judge_gets_continue_looking_around_instead(): void
+    {
+        $token = Str::after($this->setLink(), '#');
+        $this->actingAs($this->public);
+
+        $response = $this->get('/')->assertOk()->assertSee(self::CONTINUE)->assertDontSee(self::BUTTON);
+        $this->assertStringContainsString('href="'.route('judge.dashboard').'"', $response->getContent());
+        $this->assertStringNotContainsString($token, $response->getContent());
+    }
+
+    public function test_the_public_judge_gets_it_even_when_the_link_is_not_set(): void
+    {
+        config(['reviewers.public_judge_url' => null]);
+        $this->actingAs($this->public);
+
+        $this->get('/')->assertOk()->assertSee(self::CONTINUE);
+    }
+
+    #[DataProvider('signedInRoles')]
+    public function test_no_other_signed_in_user_gets_the_continue_button(Role $role): void
+    {
+        $this->setLink();
+        // signIn() picks the first judge, which here is the seeded public account (tested above).
+        $role === Role::Judge ? $this->actingAs($this->namedJudge()) : $this->signIn($role);
+
+        $this->get('/')->assertOk()->assertDontSee(self::CONTINUE)->assertDontSee(self::BUTTON);
+    }
+
+    public function test_a_named_judge_does_not_get_the_continue_button(): void
+    {
+        $this->setLink();
+        $this->actingAs($this->namedJudge());
+
+        $this->get('/')->assertOk()->assertDontSee(self::CONTINUE);
+    }
+
     public function test_the_platform_admin_card_shows_the_link_and_the_copy_button(): void
     {
         $url = $this->setLink();

@@ -24,6 +24,8 @@ class LandingController extends Controller
             'demoRefunded' => BidImpactMetrics::refundedCents() > 0,
             // Logged-out visitors only: nobody signed in ever gets the link from this page.
             'publicJudgeUrl' => auth()->guest() ? $publicJudgeLink->url() : null,
+            // The shared public judge account, back on the landing page: a plain link to its own home, no token.
+            'continueLooking' => auth()->user()?->isPublicReviewer() === true,
         ]);
     }
 }
