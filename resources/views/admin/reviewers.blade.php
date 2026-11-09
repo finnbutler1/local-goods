@@ -94,7 +94,7 @@
                 <input id="email" name="email" type="email" required value="{{ old('email') }}" autocomplete="off"
                        class="{{ $input }} @error('email') border-hold @else border-muted @enderror" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
             </x-field>
-            <x-field name="reviewer_type" label="Reviewer type" hint="A personal contact (someone who knows Finn) can only vote in the blind adjudication; their votes are reported separately and never in the headline. They appear here by initials only.">
+            <x-field name="reviewer_type" label="Reviewer type" hint="A personal contact (someone who knows Finn) can only open the voting page, which has closed. They appear here by initials only.">
                 <select id="reviewer_type" name="reviewer_type" required
                         class="{{ $input }} @error('reviewer_type') border-hold @else border-muted @enderror" @error('reviewer_type') aria-invalid="true" aria-describedby="reviewer_type-hint reviewer_type-error" @else aria-describedby="reviewer_type-hint" @enderror>
                     @foreach ($types as $type)

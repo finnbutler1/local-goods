@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -46,25 +45,12 @@ class AdjudicationSet extends Model
     }
 
     /**
-     * True while voting is open and this user may vote but hasn't finished
-     * (seen every case or said they're done): the eval pages then hide the per-case disagreements, which
-     * would show them the person's label and the AI's call.
+     * The adjudication was retired with no votes (ADR 0041). A set stored as
+     * published then behaves as closed, without any change to its row.
      */
-    public static function hidesCaseDetailsFor(?User $user): bool
+    public static function retired(): bool
     {
-        if ($user === null || ! $user->canAdjudicate()) {
-            return false;
-        }
-
-        $set = self::current();
-
-        return $set !== null && $set->isOpen() && ! $set->hasSubmitted($user);
-    }
-
-    /** The voting deadline shown to reviewers, in Washington DC time (config/reviewers.php). */
-    public static function votingEndsAt(): Carbon
-    {
-        return Carbon::parse(config('reviewers.adjudication_ends_at'), config('reviewers.timezone'));
+        return (bool) config('reviewers.adjudication_retired');
     }
 
     public function isDraft(): bool
@@ -74,12 +60,12 @@ class AdjudicationSet extends Model
 
     public function isOpen(): bool
     {
-        return $this->status === self::PUBLISHED;
+        return $this->status === self::PUBLISHED && ! self::retired();
     }
 
     public function isClosed(): bool
     {
-        return $this->status === self::CLOSED;
+        return $this->status === self::CLOSED || ($this->status === self::PUBLISHED && self::retired());
     }
 
     public function cases(): HasMany

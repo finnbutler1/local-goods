@@ -41,7 +41,7 @@
         </x-card>
         <x-card as="section" aria-labelledby="data-votes-heading">
             <h2 id="data-votes-heading" class="text-2xl font-semibold text-primary">Votes in the independent check</h2>
-            <p class="mt-3">If you vote in the blind check of the AI, we keep each vote (the label you chose and your reason), whether you had seen the evaluation before, which cases were assigned to you and when you submitted.</p>
+            <p class="mt-3">Voting in the blind check of the AI has closed. If you voted, we keep each vote (the label you chose and your reason), whether you had seen the evaluation before, which cases were assigned to you and when you submitted.</p>
         </x-card>
     @endif
 

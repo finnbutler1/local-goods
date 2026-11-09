@@ -23,7 +23,7 @@
     $votingOnly = (bool) $user?->isPersonalContact();
     if ($votingOnly) {
         $grouped = false;
-        $nav = ['dashboard' => ['label' => 'Check the AI', 'short' => 'Vote', 'route' => 'adjudication.show', 'icon' => 'M12 3.75v16.5M7.5 20.25h9M4.5 7.5h15M6.75 7.5 3.75 13.5a3 3 0 0 0 6 0L6.75 7.5Zm10.5 0-3 6a3 3 0 0 0 6 0l-3-6Z']];
+        $nav = ['dashboard' => ['label' => 'Voting closed', 'short' => 'Closed', 'route' => 'adjudication.show', 'icon' => 'M12 3.75v16.5M7.5 20.25h9M4.5 7.5h15M6.75 7.5 3.75 13.5a3 3 0 0 0 6 0L6.75 7.5Zm10.5 0-3 6a3 3 0 0 0 6 0l-3-6Z']];
         $groups = ['main' => ['label' => null, 'items' => $nav]];
     }
     if ($role === \App\Enums\Role::Judge && $viewAs) {

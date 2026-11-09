@@ -15,8 +15,8 @@ return [
     // properties. Read through App\Support\PublicJudgeLink, never directly.
     'public_judge_url' => env('PUBLIC_JUDGE_URL'),
 
-    // Blind adjudication of the fraud eval (ADR 0011): the date shown to
-    // reviewers. Voting actually ends when the platform admin presses
-    // Close voting on /admin/adjudication.
-    'adjudication_ends_at' => env('ADJUDICATION_ENDS_AT') ?: '2026-11-13 23:59',
+    // Blind adjudication of the fraud eval was retired with no votes (ADR
+    // 0041): voting is closed and stored data is kept. Deliberately not an
+    // environment setting, so nothing outside the code can reopen it.
+    'adjudication_retired' => true,
 ];

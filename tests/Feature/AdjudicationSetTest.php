@@ -27,6 +27,8 @@ class AdjudicationSetTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // The voting code is retired but kept (ADR 0041); these test it switched on.
+        config(['reviewers.adjudication_retired' => false]);
         $this->builder = app(AdjudicationSetBuilder::class);
         $this->results = app(FraudEvalReport::class)->latest()['results'];
     }

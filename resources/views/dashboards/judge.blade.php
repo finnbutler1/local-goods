@@ -18,47 +18,6 @@
             </div>
         </header>
 
-        @if ($adjudication && $adjudication['can_vote'])
-            <section aria-labelledby="adjudicate-heading" class="col-span-12 rounded-2xl bg-night px-5 py-6 text-on-night sm:px-8 sm:py-7">
-                <h2 id="adjudicate-heading" class="max-w-[30ch] text-2xl font-extrabold sm:text-3xl">
-                    <a href="{{ route('adjudication.show') }}" class="underline decoration-night-accent decoration-[3px] underline-offset-[0.2em] hover:decoration-on-night">Help check the AI, about 5 minutes</a>
-                </h2>
-                <p class="mt-3 max-w-[42rem] text-night-muted">
-                    @if ($adjudication['submitted'])
-                        Thank you: your votes are submitted.
-                    @elseif ($adjudication['answered'] > 0)
-                        {{ $adjudication['answered'] }} of {{ $adjudication['total'] }} answered. Pick up where you left off, then submit them.
-                    @elseif ($adjudication['counted'] > 0)
-                        Thank you: your {{ $adjudication['counted'] }} votes count. You can do 10 more if you like.
-                    @else
-                        Look at {{ $adjudication['total'] }} synthetic redemptions, one at a time, and say whether each looks normal or suspicious. You won't see the AI's answer or ours.
-                    @endif
-                </p>
-            </section>
-        @elseif ($adjudication)
-            <section aria-labelledby="independent-check-heading" class="rule-heavy col-span-12 grid-12 gap-y-4">
-                <h2 id="independent-check-heading" class="stop-subtitle col-span-12 text-2xl lg:col-span-4">Independent check of the AI</h2>
-                <div class="col-span-12 lg:col-span-8">
-                    <p class="max-w-[42rem]">
-                        Where my hand labels and the AI disagree, invited BID staff and contest judges rate each disputed case blind. They see the redemption's facts, but never my label or the AI's call.
-                        Cases where we agreed are mixed in as hidden controls, to check how reliable the raters themselves are.
-                    </p>
-                    <p class="mt-3 font-semibold">
-                        {{ $adjudication['submitted_count'] }} {{ Str::plural('adjudicator', $adjudication['submitted_count']) }} {{ $adjudication['submitted_count'] === 1 ? 'has' : 'have' }} submitted so far.
-                        @if ($adjudication['open'])
-                            Voting closes {{ $adjudication['ends_at']->format('M j') }}.
-                        @else
-                            Voting is closed.
-                        @endif
-                    </p>
-                    <p class="mt-2 text-muted">Voting is limited to invited reviewers, so you can't vote from this login.</p>
-                    <p class="mt-3">
-                        <a href="{{ route('eval') }}#adjudication" class="{{ $link }}">See the adjudication results on the eval page</a>
-                    </p>
-                </div>
-            </section>
-        @endif
-
         <section aria-labelledby="money-heading" class="rule-top col-span-12 md:col-span-6">
             <h2 id="money-heading" class="stop-subtitle">
                 <a href="{{ route('money') }}" class="{{ $link }}">Where the Money Is</a>

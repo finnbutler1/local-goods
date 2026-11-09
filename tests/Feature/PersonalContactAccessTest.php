@@ -71,7 +71,7 @@ class PersonalContactAccessTest extends TestCase
         $this->get('/judge')->assertRedirect('/adjudicate');
         $this->get('/dashboard')->assertRedirect(route('judge.dashboard'));
         $this->get('/')->assertRedirect('/adjudicate');
-        $this->get('/adjudicate')->assertOk()->assertSee('Check the AI')
+        $this->get('/adjudicate')->assertOk()->assertSee('Voting closed')
             ->assertDontSee('View as')->assertDontSee(route('eval'), false);
     }
 

@@ -209,6 +209,8 @@ class EmployeeNamePrivacyTest extends TestCase
      */
     public function test_a_personal_contacts_name_and_email_appear_nowhere(): void
     {
+        // Real votes first (ADR 0041 retired voting), so the sweep below has a personal contact's votes to leak.
+        config(['reviewers.adjudication_retired' => false]);
         $builder = app(AdjudicationSetBuilder::class);
         $set = $builder->newDraft();
         $builder->publish($set);
@@ -229,6 +231,7 @@ class EmployeeNamePrivacyTest extends TestCase
         ]);
         $builder->close($set);
         auth()->logout();
+        config(['reviewers.adjudication_retired' => true]);
 
         $check = function (string $html, string $where) {
             $html = str_replace('<wbr>', '', $html);

@@ -4,17 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\FeedbackStatus;
 use App\Enums\Role;
-use App\Models\AdjudicationSet;
-use App\Models\AdjudicationVote;
 use App\Models\ChangelogEntry;
 use App\Models\Merchant;
 use App\Models\User;
-use App\Services\Adjudication\AdjudicationAssigner;
 use App\Support\ViewAs;
 use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
@@ -27,14 +23,8 @@ class JudgeController extends Controller
      *
      * @return list<array{title: string, look_for: string, url: string, available: bool}>
      */
-    public static function tour(?User $user = null): array
+    public static function tour(): array
     {
-        // Reviewers who can vote go straight to voting; everyone else to the
-        // results section on /eval (ADR 0011).
-        $adjudicationUrl = $user?->canAdjudicate() && AdjudicationSet::current()?->isOpen()
-            ? route('adjudication.show')
-            : route('eval').'#adjudication';
-
         return [
             [
                 'title' => 'Employee wallet',
@@ -66,12 +56,6 @@ class JudgeController extends Controller
                 'title' => 'Merchant Eligibility',
                 'look_for' => 'Real businesses in the BID, each marked as a candidate, not a participant. The AI says whether each looks independent, how sure it is and why, judging from its own knowledge (no web search). A BID admin approves, rejects or asks for research. Its eval against hand labels is Merchant Eval, in the AI & Evaluation group of the menu.',
                 'url' => route('bid-admin.merchants'),
-                'available' => true,
-            ],
-            [
-                'title' => 'Independent check of the AI',
-                'look_for' => 'Where my hand labels and the AI disagree, invited BID staff and contest judges rate the cases blind, with agreed cases mixed in as hidden controls. Their verdict is reported next to the eval, never in place of it.',
-                'url' => $adjudicationUrl,
                 'available' => true,
             ],
             [
@@ -122,42 +106,9 @@ class JudgeController extends Controller
         $request->session()->forget(ViewAs::SESSION_KEY);
 
         return view('dashboards.judge', [
-            'tour' => self::tour($request->user()),
-            'adjudication' => self::adjudicationStatus($request->user()),
+            'tour' => self::tour(),
             ...self::whatsNew($request->user()),
         ]);
-    }
-
-    /**
-     * The adjudication card on the judge home page (ADR 0011). Reviewers who
-     * may vote get "Help check the AI" with their progress while voting is
-     * open; everyone else gets "Independent check of the AI", which explains
-     * the check and counts submissions. Null before any set is published.
-     *
-     * @return array{can_vote: bool, open: bool, total: int, answered: int, counted: int, submitted: bool, submitted_count: int, ends_at: Carbon}|null
-     */
-    public static function adjudicationStatus(User $user): ?array
-    {
-        $set = AdjudicationSet::current();
-
-        if ($set === null) {
-            return null;
-        }
-
-        // Progress in the batch they are on (ADR 0020), or a fresh batch of 10.
-        $participant = $set->participantFor($user);
-        $batch = $participant?->openBatch()->pluck('adjudication_case_id') ?? collect();
-
-        return [
-            'can_vote' => $user->canAdjudicate() && $set->isOpen(),
-            'open' => $set->isOpen(),
-            'total' => $batch->isEmpty() ? min(AdjudicationAssigner::BATCH_SIZE, $set->cases()->count()) : $batch->count(),
-            'answered' => $batch->isEmpty() ? 0 : AdjudicationVote::where('user_id', $user->id)->whereIn('adjudication_case_id', $batch)->count(),
-            'counted' => $participant?->assignments()->whereNotNull('submitted_at')->count() ?? 0,
-            'submitted' => $set->hasSubmitted($user),
-            'submitted_count' => $set->submittedCount(),
-            'ends_at' => AdjudicationSet::votingEndsAt(),
-        ];
     }
 
     /** Switch which role the judge is viewing the app as, then open that role's home page. */

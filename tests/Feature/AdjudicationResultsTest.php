@@ -29,6 +29,8 @@ class AdjudicationResultsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // The voting code is retired but kept (ADR 0041); these test it switched on.
+        config(['reviewers.adjudication_retired' => false]);
         $builder = app(AdjudicationSetBuilder::class);
         $this->set = $builder->newDraft();
         $builder->publish($this->set);
@@ -215,35 +217,22 @@ class AdjudicationResultsTest extends TestCase
         $this->assertSame($tagged, $all['by_tag']['round_amount']['cases'] ?? 0);
     }
 
-    public function test_the_eval_page_shows_the_summary_after_the_first_submission_and_votes_only_after_close(): void
+    public function test_the_admin_page_shows_the_summary_of_the_stored_votes(): void
     {
-        // Before anyone submits: only a placeholder that the judge home page links to.
-        $this->get('/eval')->assertOk()
-            ->assertSee('Results appear here once the first adjudicator submits.')
-            ->assertDontSee('adjudicators sided with the AI');
-
         $this->adjudicator('finn', name: 'Pat Synthetic');
         $this->adjudicator('finn');
         $this->adjudicator('finn');
         $votes = 3 * $this->disputed;
 
-        $this->get('/eval')->assertOk()
+        $this->signIn(Role::PlatformAdmin);
+        $this->get('/admin/adjudication')->assertOk()
             ->assertSee('Blind adjudication of the disagreements')
             ->assertSee("adjudicators sided with the AI in 0 (0 votes), with Finn in {$this->disputed} ({$votes} votes)")
             ->assertSee('3 adjudicators voted')
             ->assertSee("Only adjudicators who hadn't looked at the eval page before")
-            ->assertSee('appear here once voting closes')
-            ->assertDontSee('Reason from Pat Synthetic.');
-
-        app(AdjudicationSetBuilder::class)->close($this->set);
-
-        $this->get('/eval')->assertOk()
             ->assertSee('Reason from Pat Synthetic.')
-            ->assertSee('Adjudicator 1 (BID)')
             ->assertSee('saw eval before: no')
-            ->assertSee('3 votes')
-            ->assertDontSee('Pat Synthetic</span>', false)
-            ->assertDontSee('Pat Synthetic (');
+            ->assertSee('3 votes');
     }
 
     public function test_the_admin_page_shows_names_every_vote_and_the_too_few_flag(): void
@@ -258,34 +247,6 @@ class AdjudicationResultsTest extends TestCase
             ->assertSee("{$this->disputed} had too few votes to call")
             ->assertSee('Too few votes to call')
             ->assertSee('1 vote');
-    }
-
-    public function test_an_eligible_reviewer_who_has_not_finished_sees_no_answers_on_the_eval_pages(): void
-    {
-        $this->adjudicator('ai');
-        $firstDisagreement = collect(app(FraudEvalReport::class)->latest()['results'])->firstWhere('agree', false);
-
-        $user = User::factory()->role(Role::Judge)->create(['reviewer_type' => ReviewerType::ContestJudge]);
-        $this->actingAs($user);
-
-        foreach (['/eval', '/bid-admin/eval'] as $url) {
-            $this->get($url)->assertOk()
-                ->assertSee('Hidden for now')
-                ->assertDontSee(e($firstDisagreement['explanation']), false)
-                ->assertDontSee('Blind adjudication of the disagreements')
-                ->assertSee('Caught 17 of 26 suspicious cases');
-        }
-
-        // After one batch they might do more, so the answers stay hidden until they say they're done.
-        $this->post('/adjudicate/start', ['seen_eval_before' => 'no']);
-        foreach ($this->set->participantFor($user)->openBatch()->pluck('adjudicationCase') as $case) {
-            $this->post("/adjudicate/cases/{$case->id}", ['label' => 'normal', 'reason' => 'Synthetic.']);
-        }
-        $this->post('/adjudicate/submit');
-        $this->get('/eval')->assertOk()->assertSee('Hidden for now');
-
-        $this->post('/adjudicate/finish');
-        $this->get('/eval')->assertOk()->assertDontSee('Hidden for now')->assertSee(e($firstDisagreement['explanation']), false);
     }
 
     public function test_guests_and_reviewers_who_cannot_vote_still_see_every_disagreement(): void
@@ -334,29 +295,14 @@ class AdjudicationResultsTest extends TestCase
         $this->assertSame(4, $this->set->submittedCountForPersonalContacts());
     }
 
-    public function test_personal_contacts_have_their_own_labeled_section_on_eval_and_admin(): void
+    public function test_personal_contacts_have_their_own_labeled_section_on_the_admin_page(): void
     {
         $this->adjudicator('ai', name: 'Riley Fakename', type: ReviewerType::PersonalContact);
-
-        // Only a personal contact has submitted: the headline says so and stays empty.
-        $this->get('/eval')->assertOk()
-            ->assertSee('No BID staff or contest judges have submitted yet.')
-            ->assertSee('0 adjudicators voted')
-            ->assertDontSee('adjudicators sided with the AI')
-            ->assertSee('Personal contacts (know Finn): not counted in the result above')
-            ->assertSee('personal contacts sided with the AI in 0')
-            ->assertDontSee('Riley')->assertDontSee('R.F.');
 
         foreach (range(1, 3) as $ignored) {
             $this->adjudicator('finn', name: 'Pat Synthetic');
         }
         app(AdjudicationSetBuilder::class)->close($this->set);
-
-        $this->get('/eval')->assertOk()
-            ->assertSeeInOrder(["adjudicators sided with the AI in 0 (0 votes), with Finn in {$this->disputed}", 'Personal contacts (know Finn): not counted in the result above', "{$this->disputed} had too few votes to call"])
-            ->assertSee('Contact 1')
-            ->assertSee('Reason from Riley Fakename.')
-            ->assertDontSee('Riley Fakename</span>', false);
 
         $this->signIn(Role::PlatformAdmin);
         $this->get('/admin/adjudication')->assertOk()

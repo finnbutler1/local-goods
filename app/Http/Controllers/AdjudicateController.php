@@ -7,6 +7,7 @@ use App\Models\AdjudicationParticipant;
 use App\Models\AdjudicationSet;
 use App\Models\AdjudicationVote;
 use App\Services\Adjudication\AdjudicationAssigner;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -33,6 +34,10 @@ class AdjudicateController extends Controller
 
     public function show(Request $request): View
     {
+        if (AdjudicationSet::retired()) {
+            return view('adjudicate.closed');
+        }
+
         $user = $request->user();
         $set = AdjudicationSet::current();
         $participant = $set?->participantFor($user);
@@ -198,6 +203,11 @@ class AdjudicateController extends Controller
 
     private function openSet(): AdjudicationSet
     {
+        // Retired (ADR 0041): an old form lands on the closed page, nothing is written.
+        if (AdjudicationSet::retired()) {
+            throw new HttpResponseException(redirect()->route('adjudication.show'));
+        }
+
         $set = AdjudicationSet::current();
         abort_unless($set?->isOpen(), 403, 'Voting is not open.');
 

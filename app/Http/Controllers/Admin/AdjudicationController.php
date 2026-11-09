@@ -53,7 +53,7 @@ class AdjudicationController extends Controller
     {
         Gate::authorize('manage-adjudication');
         $data = $request->validate(['case_id' => ['required', 'string', 'max:16']]);
-        $draft = AdjudicationSet::draft() ?? abort(404);
+        $draft = AdjudicationSet::draft() ?? (AdjudicationSet::retired() ? null : abort(404));
 
         return $this->attempt(fn () => $this->builder->add($draft, $data['case_id']), "Added {$data['case_id']}.");
     }
@@ -61,6 +61,11 @@ class AdjudicationController extends Controller
     public function removeCase(AdjudicationCase $adjudicationCase): RedirectResponse
     {
         Gate::authorize('manage-adjudication');
+
+        if (AdjudicationSet::retired()) {
+            return $this->refuseRetired();
+        }
+
         abort_unless($adjudicationCase->set->isDraft(), 409, 'This set is published and locked. Start a new version to change it.');
 
         $this->builder->remove($adjudicationCase);
@@ -71,22 +76,38 @@ class AdjudicationController extends Controller
     public function publish(): RedirectResponse
     {
         Gate::authorize('manage-adjudication');
-        $draft = AdjudicationSet::draft() ?? abort(404);
+        $draft = AdjudicationSet::draft() ?? (AdjudicationSet::retired() ? null : abort(404));
 
-        return $this->attempt(fn () => $this->builder->publish($draft), "Version {$draft->version} is published and locked. Reviewers can start voting.");
+        return $this->attempt(fn () => $this->builder->publish($draft), "Version {$draft?->version} is published and locked. Reviewers can start voting.");
     }
 
     public function close(): RedirectResponse
     {
         Gate::authorize('manage-adjudication');
         $current = AdjudicationSet::current();
+
+        if (AdjudicationSet::retired()) {
+            return $this->refuseRetired();
+        }
+
         abort_unless($current?->isOpen(), 404);
 
         return $this->attempt(fn () => $this->builder->close($current), 'Voting is closed. Every vote and reason now shows on /eval, without names.');
     }
 
+    /** Retired (ADR 0041): this page is read-only and nothing stored can change. */
+    private function refuseRetired(): RedirectResponse
+    {
+        return redirect()->route('admin.adjudication.index')
+            ->withErrors(['adjudication' => 'The adjudication has been retired, so this page is read-only.']);
+    }
+
     private function attempt(callable $action, string $message): RedirectResponse
     {
+        if (AdjudicationSet::retired()) {
+            return $this->refuseRetired();
+        }
+
         try {
             $action();
         } catch (InvalidArgumentException $e) {

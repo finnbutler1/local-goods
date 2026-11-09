@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AdjudicationSet;
-use App\Services\Adjudication\AdjudicationResults;
 use App\Services\Fraud\FraudEvalLock;
 use App\Services\Fraud\FraudEvalReport;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -17,38 +14,22 @@ use Illuminate\View\View;
  */
 class FraudEvalController extends Controller
 {
-    public function public(Request $request, FraudEvalReport $report, AdjudicationResults $results): View
+    public function public(FraudEvalReport $report): View
     {
-        return view('eval', $this->data($request, $report, $results));
+        return view('eval', $this->data($report));
     }
 
-    public function admin(Request $request, FraudEvalReport $report, AdjudicationResults $results): View
+    public function admin(FraudEvalReport $report): View
     {
-        return view('bid-admin.eval', $this->data($request, $report, $results));
+        return view('bid-admin.eval', $this->data($report));
     }
 
-    /**
-     * While blind adjudication is open (ADR 0011), a reviewer who may vote
-     * but hasn't submitted sees neither the per-case disagreements (they
-     * show Finn's label and the AI's call) nor the adjudication results.
-     * Results appear once someone has submitted; each case's votes only
-     * once voting closes.
-     *
-     * @return array<string, mixed>
-     */
-    private function data(Request $request, FraudEvalReport $report, AdjudicationResults $results): array
+    /** @return array<string, mixed> */
+    private function data(FraudEvalReport $report): array
     {
-        $hide = AdjudicationSet::hidesCaseDetailsFor($request->user());
-        $set = AdjudicationSet::current();
-
         return [
             'run' => $report->latest(),
             'lock' => FraudEvalLock::load(),
-            'hideCaseDetails' => $hide,
-            'adjudicationSet' => $set,
-            'adjudication' => $set && ! $hide ? $results->for($set) : null,
-            'showNames' => false,
-            'showCases' => $set?->isClosed() ?? false,
         ];
     }
 }

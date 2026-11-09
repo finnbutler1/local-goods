@@ -1,6 +1,7 @@
 @php
     $when = fn ($t) => $t ? $t->setTimezone('America/New_York')->format('M j, g:i A') : '—';
     $select = 'block w-full rounded-xl border-2 border-muted bg-surface px-3 py-2.5 focus-visible:border-primary';
+    $retired = \App\Models\AdjudicationSet::retired();
 @endphp
 
 <x-app-shell title="Adjudication" active="adjudication" context="Local Goods platform">
@@ -15,6 +16,9 @@
             Adjudicators see only the facts of each case: never your label or note, the AI's call, or anyone else's vote.
             Results are reported on their own and never change your labels or the headline numbers.
         </p>
+        @if ($retired)
+            <p class="mt-3 text-lg font-semibold text-ink">Retired: voting has closed and this page is read-only. Everything stored is shown below, unchanged (ADR 0041).</p>
+        @endif
     </header>
 
     <div aria-live="polite">
@@ -34,11 +38,13 @@
                         (prompt <code>{{ $draft->prompt_version }}</code>).
                     </p>
                 </div>
-                <form method="POST" action="{{ route('admin.adjudication.publish') }}" data-busy="Publishing…"
-                      onsubmit="return confirm('Publish version {{ $draft->version }}? Its cases are locked once published; changing them needs a new version.');">
-                    @csrf
-                    <x-button type="submit" variant="accent">Publish and lock</x-button>
-                </form>
+                @unless ($retired)
+                    <form method="POST" action="{{ route('admin.adjudication.publish') }}" data-busy="Publishing…"
+                          onsubmit="return confirm('Publish version {{ $draft->version }}? Its cases are locked once published; changing them needs a new version.');">
+                        @csrf
+                        <x-button type="submit" variant="accent">Publish and lock</x-button>
+                    </form>
+                @endunless
             </div>
 
             @foreach (['disputed' => 'Disputed cases (your label and the AI disagree)', 'control' => 'Blind controls (you and the AI agree)'] as $kind => $title)
@@ -71,10 +77,12 @@
                                             <td data-label="Your label" class="px-4 py-2">{{ $case->my_label }}</td>
                                             <td data-label="AI" class="px-4 py-2">{{ $case->ai_label }}</td>
                                             <td data-label="" class="px-4 py-2 text-right">
-                                                <form method="POST" action="{{ route('admin.adjudication.cases.destroy', $case) }}" data-busy="Removing…">
-                                                    @csrf @method('DELETE')
-                                                    <x-button type="submit" variant="ghost" size="sm">Remove<span class="sr-only"> {{ $case->case_id }}</span></x-button>
-                                                </form>
+                                                @unless ($retired)
+                                                    <form method="POST" action="{{ route('admin.adjudication.cases.destroy', $case) }}" data-busy="Removing…">
+                                                        @csrf @method('DELETE')
+                                                        <x-button type="submit" variant="ghost" size="sm">Remove<span class="sr-only"> {{ $case->case_id }}</span></x-button>
+                                                    </form>
+                                                @endunless
                                             </td>
                                         </tr>
                                     @empty
@@ -87,7 +95,7 @@
                 </div>
             @endforeach
 
-            @if ($addable !== [])
+            @if ($addable !== [] && ! $retired)
                 <form method="POST" action="{{ route('admin.adjudication.cases.store') }}" data-busy="Adding…" class="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end">
                     @csrf
                     <x-field name="case_id" label="Add a case" class="grow">
@@ -101,7 +109,7 @@
                 </form>
             @endif
         </section>
-    @elseif (! $current)
+    @elseif (! $current && ! $retired)
         <x-card as="section" aria-labelledby="start-heading">
             <h2 id="start-heading" class="text-2xl font-semibold text-primary">Build the adjudication set</h2>
             <p class="mt-2 max-w-2xl text-muted">
@@ -136,7 +144,7 @@
                             <x-button type="submit" variant="danger">Close voting</x-button>
                         </form>
                     @endif
-                    @unless ($draft)
+                    @unless ($draft || $retired)
                         <form method="POST" action="{{ route('admin.adjudication.store') }}" data-busy="Building the set…">
                             @csrf
                             <x-button type="submit" variant="secondary">Start version {{ $current->version + 1 }}</x-button>
@@ -151,7 +159,7 @@
         @if ($adjudication)
             @include('partials.adjudication-results', ['adjudicationSet' => $current, 'showNames' => true, 'showCases' => true])
         @else
-            <p class="text-muted">Results appear here once a reviewer submits their first batch.</p>
+            <p class="text-muted">{{ $retired ? 'No reviewer submitted a batch.' : 'Results appear here once a reviewer submits their first batch.' }}</p>
         @endif
     @endif
 </div>

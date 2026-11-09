@@ -48,7 +48,7 @@ class KeepPersonalContactsToAdjudication
             return redirect()->route('adjudication.show');
         }
 
-        abort_unless(in_array($route, self::ALLOWED_ROUTES, true), 403, 'Your link is only for checking the AI\'s cases.');
+        abort_unless(in_array($route, self::ALLOWED_ROUTES, true), 403, 'This link only opens the voting page, which has closed.');
 
         return $next($request);
     }

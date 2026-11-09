@@ -12,6 +12,13 @@ class AdjudicationAdminTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // The voting code is retired but kept (ADR 0041); these test it switched on.
+        config(['reviewers.adjudication_retired' => false]);
+    }
+
     public function test_the_admin_builds_edits_and_publishes_a_set(): void
     {
         $this->signIn(Role::PlatformAdmin);

@@ -1,6 +1,6 @@
 {{-- The Redemption Fraud Detection eval results. Shown publicly at /eval and
-     inside the app shell at /bid-admin/eval. Needs $run, $lock, $hideCaseDetails
-     and the blind adjudication data (FraudEvalController::data). --}}
+     inside the app shell at /bid-admin/eval. Needs $run and $lock
+     (FraudEvalController::data). --}}
 @php
     use App\Services\Fraud\FraudEvalPatterns;
     use App\Services\Fraud\FraudEvalReport;
@@ -97,8 +97,7 @@
                                         <td data-label="Labeled suspicious" class="ledger-num px-4 py-2.5 text-right">{{ $r['suspicious'] }}</td>
                                         <td data-label="Missed" class="ledger-num px-4 py-2.5 text-right">{{ $r['missed'] }}</td>
                                         <td data-label="False alarms" class="ledger-num px-4 py-2.5 text-right">{{ $r['false_alarms'] }}</td>
-                                        {{-- The notes name cases and the AI's calls, so they wait until a blind adjudicator has voted. --}}
-                                        <td data-label="Why" class="py-2.5 pl-4 text-sm">{{ $hideCaseDetails ? 'Shown after you submit your votes.' : ($headline['pattern_notes'][$name] ?? '') }}</td>
+                                        <td data-label="Why" class="py-2.5 pl-4 text-sm">{{ $headline['pattern_notes'][$name] ?? '' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -167,42 +166,11 @@
             </div>
         </section>
 
-        @if ($adjudication)
-            <div class="stop">
-                @php $stop++; @endphp
-                <x-stop-number :n="$stop" />
-                @include('partials.adjudication-results')
-            </div>
-        @elseif (! $hideCaseDetails)
-            {{-- Where the judge home page's "Independent check of the AI" links to, before anyone has submitted. --}}
-            <section id="adjudication" aria-labelledby="adjudication-heading" class="stop scroll-mt-24">
-                @php $stop++; @endphp
-                <x-stop-number :n="$stop" />
-                <x-station-sign heading-id="adjudication-heading">Blind adjudication of the disagreements</x-station-sign>
-                <p class="mt-4 max-w-[42rem] text-muted">
-                    Where the person's label and the AI disagree, invited BID staff and contest judges rate each case blind, with agreed cases mixed in as hidden controls.
-                    @if ($adjudicationSet?->isOpen())
-                        Voting is open until {{ \App\Models\AdjudicationSet::votingEndsAt()->format('M j') }}. Results appear here once the first adjudicator submits.
-                    @elseif ($adjudicationSet?->isClosed())
-                        Voting closed before anyone submitted.
-                    @else
-                        Voting hasn't started yet.
-                    @endif
-                </p>
-            </section>
-        @endif
-
         <section aria-labelledby="disagree-heading" class="stop">
             @php $stop++; @endphp
             <x-stop-number :n="$stop" />
             <x-station-sign heading-id="disagree-heading">Every disagreement ({{ count($disagreements) }})</x-station-sign>
-            @if ($hideCaseDetails)
-                <p class="rule-heavy mt-6 bg-band px-4 pb-4">
-                    Hidden for now: you're invited to
-                    <a href="{{ route('adjudication.show') }}" class="font-semibold text-primary underline underline-offset-4">help check the AI</a>,
-                    and this list would show you the answers. It appears here once you say you're done (or have seen every case).
-                </p>
-            @elseif ($disagreements === [])
+            @if ($disagreements === [])
                 <p class="mt-5">The AI agreed with the person on every case.</p>
             @else
                 <ul class="mt-6 border-t-[3px] border-ink">
