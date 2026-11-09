@@ -81,6 +81,24 @@
         @endif
     </div>
 
+    @if ($platform)
+        <section aria-labelledby="home-public-link-heading" class="rule-top" data-home-card="public-judge-link">
+            <h2 id="home-public-link-heading" class="figure-label">Public judge link</h2>
+            @if ($publicJudgeUrl)
+                <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <label for="public-judge-link" class="sr-only">Public judge link</label>
+                    <input id="public-judge-link" type="text" readonly value="{{ $publicJudgeUrl }}"
+                           class="block w-full rounded-xl border-2 border-muted bg-surface px-3 py-3 font-mono focus-visible:border-primary" onfocus="this.select()">
+                    <x-button data-copy="#public-judge-link" data-copy-status="#public-judge-link-status" class="shrink-0">Copy</x-button>
+                </div>
+                <p id="public-judge-link-status" role="status" class="sr-only"></p>
+                <p class="mt-2 text-sm text-muted">Read-only access for judges and guests. Anyone with this link can look around but can't change anything.</p>
+            @else
+                <p class="mt-2 text-sm text-muted">Not set: add PUBLIC_JUDGE_URL in the Beanstalk environment properties.</p>
+            @endif
+        </section>
+    @endif
+
     <section aria-labelledby="home-recent-heading" class="rule-heavy" data-home-card="recent">
         <h2 id="home-recent-heading" class="stop-subtitle">Recent Activity</h2>
         @if ($recent->isEmpty())

@@ -11,6 +11,10 @@ return [
     'judging_ends_at' => env('JUDGING_ENDS_AT') ?: '2026-11-30 23:59',
     'timezone' => 'America/New_York',
 
+    // The full public judge link, set only in the Beanstalk environment
+    // properties. Read through App\Support\PublicJudgeLink, never directly.
+    'public_judge_url' => env('PUBLIC_JUDGE_URL'),
+
     // Blind adjudication of the fraud eval (ADR 0011): the date shown to
     // reviewers. Voting actually ends when the platform admin presses
     // Close voting on /admin/adjudication.

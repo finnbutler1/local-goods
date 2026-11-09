@@ -3,6 +3,10 @@
      JavaScript (or no storage) the page follows the system light/dark setting.
      This applies a choice saved by the header toggle before the first paint,
      and marks the page as having JavaScript (menus start closed only then). --}}
+@if (request()->routeIs('judge-access.*') || auth()->user()?->isReadOnly())
+    {{-- The public judge link is on the open web: keep search engines out of what it opens. --}}
+    <meta name="robots" content="noindex, nofollow">
+@endif
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">

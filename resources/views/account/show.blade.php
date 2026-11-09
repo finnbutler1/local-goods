@@ -38,7 +38,9 @@
 
     <section id="feedback" aria-labelledby="my-feedback-heading" class="scroll-mt-24">
         <h2 id="my-feedback-heading" class="text-2xl font-semibold text-primary">Your feedback</h2>
-        @if ($feedback->isEmpty())
+        @if (auth()->user()->isPublicReviewer())
+            <p class="mt-2 text-muted">Use the Feedback button on any page. This account is shared, so past feedback isn't shown here.</p>
+        @elseif ($feedback->isEmpty())
             <p class="mt-2 text-muted">Nothing yet. Use the Feedback button on any page.</p>
         @else
             <ul class="mt-3 space-y-3">

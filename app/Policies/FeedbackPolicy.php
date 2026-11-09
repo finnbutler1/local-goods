@@ -13,9 +13,13 @@ class FeedbackPolicy
         return ! $user->isRevoked();
     }
 
-    /** Reviewers can edit their own feedback, never anyone else's. */
+    /**
+     * Reviewers can edit their own feedback, never anyone else's. Everyone
+     * using the public link shares one account, so "their own" means nothing
+     * there: it can send feedback but never edit it.
+     */
     public function update(User $user, Feedback $feedback): bool
     {
-        return ! $user->isRevoked() && $feedback->user_id === $user->id;
+        return ! $user->isRevoked() && ! $user->isPublicReviewer() && $feedback->user_id === $user->id;
     }
 }

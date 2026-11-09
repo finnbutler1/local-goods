@@ -41,6 +41,9 @@
                 <div class="mt-8 flex flex-wrap gap-3">
                     <x-button variant="accent" size="lg" href="#request-demo">Request a demo</x-button>
                     <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
+                    @if ($publicJudgeUrl)
+                        <x-button variant="secondary" size="lg" rel="nofollow" :href="$publicJudgeUrl">Look around (read-only)</x-button>
+                    @endif
                 </div>
                 <p class="mt-3.5 max-w-[34rem] text-sm text-muted">A working prototype: payments run on Stripe in test mode, and every person and business in the demo is fictional.</p>
             </div>

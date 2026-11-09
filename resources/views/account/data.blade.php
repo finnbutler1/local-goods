@@ -82,7 +82,7 @@
 
     <x-card as="section" aria-labelledby="data-feedback-heading">
         <h2 id="data-feedback-heading" class="text-2xl font-semibold text-primary">Your feedback</h2>
-        <p class="mt-3">Each note you send through the Feedback button: the page you were on, your category, rating, severity and comment, and its status. You can <a href="{{ route('account') }}#feedback" class="font-semibold underline">see and edit it here</a>.</p>
+        <p class="mt-3">Each note you send through the Feedback button: the page you were on, your category, rating, severity and comment, and its status.@unless (auth()->user()->isPublicReviewer()) You can <a href="{{ route('account') }}#feedback" class="font-semibold underline">see and edit it here</a>.@endunless</p>
     </x-card>
 
     <x-card as="section" aria-labelledby="data-not-heading">

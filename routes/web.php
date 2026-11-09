@@ -89,7 +89,8 @@ Route::middleware('auth')->group(function () {
 
     // Every role: change your own password (the form posts to Fortify's user-password.update).
     Route::get('/account', fn (Request $request) => view('account.show', [
-        'feedback' => $request->user()->feedback()->latest()->latest('id')->get(),
+        // Everyone on the public judge link shares one account, so its past feedback stays private.
+        'feedback' => $request->user()->isPublicReviewer() ? collect() : $request->user()->feedback()->latest()->latest('id')->get(),
     ]))->name('account');
 
     // Plain words about what is stored about the signed-in person (read-only).

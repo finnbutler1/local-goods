@@ -5,6 +5,21 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Public judge link on the landing page — done (2026-11-09).** No migration,
+money, fraud prompt, AI input, eval data, sign-in or lock change.
+
+- `App\Support\PublicJudgeLink::url()` reads `PUBLIC_JUDGE_URL` (Beanstalk
+  only; **never ask for, print or commit it**). Not set unless it is exactly
+  `https://uselocalgoods.com/judge-access#<id>.<token>` and that token opens
+  the public account, so it hides itself after `JUDGING_ENDS_AT` (Finn chose
+  to keep that end date for this link too).
+- Shown on the platform admin Home and, logged out only, as the landing
+  button `rel="nofollow"`. `brand-head` adds noindex on `judge-access.*` and
+  for every read-only user.
+- Public account is shared: it sends feedback but never sees or edits past
+  feedback (`FeedbackPolicy::update`, `/account`); `auth-forms` counts it per IP.
+- Tests: `PublicJudgeLinkTest`.
+
 **Demo logins' new addresses — code done (2026-11-08, ADR 0040); Finn runs
 the update on live.** No migration, money, fraud prompt, AI input, eval data
 or lock change.

@@ -6,7 +6,7 @@
     <div class="grid-12 gap-y-14">
         <header class="col-span-12">
             <x-station-sign as="p">Reviewer home</x-station-sign>
-            <h1 class="page-title">Welcome, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+            <h1 class="page-title">{{ auth()->user()->isPublicReviewer() ? 'Welcome' : 'Welcome, '.Str::before(auth()->user()->name, ' ').'.' }}</h1>
             <div class="grid-12">
                 <div class="col-span-12 lg:col-span-8">
                     @include('partials.one-minute-summary', ['class' => 'page-lede'])

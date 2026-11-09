@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\BidImpactMetrics;
 use App\Services\Fraud\FraudEvalReport;
+use App\Support\PublicJudgeLink;
 use Illuminate\View\View;
 
 /**
@@ -14,13 +15,15 @@ use Illuminate\View\View;
  */
 class LandingController extends Controller
 {
-    public function __invoke(FraudEvalReport $report, BidImpactMetrics $impact): View
+    public function __invoke(FraudEvalReport $report, BidImpactMetrics $impact, PublicJudgeLink $publicJudgeLink): View
     {
         return view('welcome', [
             'evalHeadline' => $report->latest()['headline'] ?? null,
             'demoTotals' => $impact->totals(),
             // Completed refunds come off the spending total (ADR 0028); the label says so when there are any.
             'demoRefunded' => BidImpactMetrics::refundedCents() > 0,
+            // Logged-out visitors only: nobody signed in ever gets the link from this page.
+            'publicJudgeUrl' => auth()->guest() ? $publicJudgeLink->url() : null,
         ]);
     }
 }

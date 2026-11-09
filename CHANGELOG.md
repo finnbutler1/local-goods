@@ -3,6 +3,18 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-09: A public judge link people can find
+
+- **"Look around (read-only)" on the landing page.** Logged-out visitors get
+  a button to the public judge link, and the platform admin gets it on Home
+  with a Copy button. It comes from `PUBLIC_JUDGE_URL` and is hidden unless
+  that is a working uselocalgoods.com link to the public account. It ends
+  with judging, like every reviewer link.
+- **Safer now the link is public.** Reviewer pages tell search engines to
+  stay out. Everyone on the link shares one account, so it can still send
+  feedback but can no longer see or edit past feedback. Its greeting is now
+  just "Welcome".
+
 ## 2026-11-08: Demo logins get realistic fictional addresses
 
 - **The four demo logins move off `@example.com`.** The BID admin, employer

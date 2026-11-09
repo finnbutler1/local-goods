@@ -96,11 +96,13 @@ document.addEventListener('click', (event) => {
 });
 
 // Copy buttons: <button data-copy="#input-id"> copies that input's value.
+// An optional data-copy-status="#id" also tells screen readers, through a role="status" element.
 document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-copy]');
     if (!button) return;
 
     const input = document.querySelector(button.dataset.copy);
+    const status = button.dataset.copyStatus ? document.querySelector(button.dataset.copyStatus) : null;
     const label = button.textContent;
     try {
         await navigator.clipboard.writeText(input.value);
@@ -109,7 +111,11 @@ document.addEventListener('click', async (event) => {
         input.select();
         button.textContent = 'Press Ctrl+C or ⌘C';
     }
-    setTimeout(() => (button.textContent = label), 2000);
+    if (status) status.textContent = button.textContent;
+    setTimeout(() => {
+        button.textContent = label;
+        if (status) status.textContent = '';
+    }, 2000);
 });
 
 // Dialogs: <button data-dialog-open="id"> opens <dialog id="id">; [data-dialog-close] closes it.

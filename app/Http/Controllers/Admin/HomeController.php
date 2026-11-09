@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Feedback;
 use App\Models\SolvencyCheckRun;
 use App\Services\DemoActivity\ActivityStatus;
+use App\Support\PublicJudgeLink;
 use App\Support\RecentActivity;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,7 +21,7 @@ use Illuminate\View\View;
  */
 class HomeController extends Controller
 {
-    public function __invoke(Request $request, ActivityStatus $activity): View
+    public function __invoke(Request $request, ActivityStatus $activity, PublicJudgeLink $publicJudgeLink): View
     {
         $platform = $request->user()->role === Role::PlatformAdmin;
         $summary = $activity->summary();
@@ -31,6 +32,7 @@ class HomeController extends Controller
             'activity' => $summary,
             'recent' => RecentActivity::for($platform),
             'unreadFeedback' => $platform ? Feedback::where('status', FeedbackStatus::New)->count() : 0,
+            'publicJudgeUrl' => $platform ? $publicJudgeLink->url() : null,
         ]);
     }
 }

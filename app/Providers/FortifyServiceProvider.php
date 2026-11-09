@@ -49,9 +49,11 @@ class FortifyServiceProvider extends ServiceProvider
 
         // Every Fortify form post (password change and confirm, reset, logout,
         // and login on top of the limit above): ten a minute per person, or
-        // per IP address when signed out. Pages (GET) are not limited.
+        // per IP address when signed out, or on the shared public judge account
+        // (one count per person there would lock out everyone using the link).
+        // Pages (GET) are not limited.
         RateLimiter::for('auth-forms', fn (Request $request) => $request->isMethodSafe()
             ? Limit::none()
-            : Limit::perMinute(self::AUTH_FORMS_PER_MINUTE)->by('auth-forms|'.($request->user()?->id ?: $request->ip())));
+            : Limit::perMinute(self::AUTH_FORMS_PER_MINUTE)->by('auth-forms|'.($request->user()?->isPublicReviewer() ? $request->ip() : ($request->user()?->id ?: $request->ip()))));
     }
 }
