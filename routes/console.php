@@ -71,6 +71,10 @@ Artisan::command('demo:seed-accounts', function () {
             ? "Skipped {$role}: that demo login is retired."
             : "Skipped {$role}: DEMO_PASSWORD_".strtoupper($role).' is not set.');
     }
+
+    foreach ($result['needs_email_update'] as $role) {
+        $this->warn("Skipped {$role}: still on its previous address; run demo:update-emails.");
+    }
 })->purpose('Create or update the demo login for each role from DEMO_PASSWORD_* settings');
 
 // The demo activity generator (ADR 0032): every five minutes on weekdays,

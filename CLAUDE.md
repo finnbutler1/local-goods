@@ -5,7 +5,24 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
-**Demo mail guard — done (2026-11-08); demo addresses change next.** No
+**Demo logins' new addresses — code done (2026-11-08, ADR 0040); Finn runs
+the update on live.** No migration, money, fraud prompt, AI input, eval data
+or lock change.
+
+- `config('demo.previous_emails')` (role → old address, four roles).
+  `demo:update-emails` (dry run; `--apply`) writes `email` only, matched by
+  role and exact previous address; judges and the platform admin are excluded
+  in the query. Link check before and after (8-hex check, never the hash);
+  a difference rolls back and exits 1.
+- Until it has run, `demo:seed-accounts` skips that role and warns
+  (`needs_email_update`), so a deploy makes no duplicates. Old addresses work
+  until `--apply`.
+- Live, after deploy: RDS snapshot `before-demo-emails`, then
+  `sudo /var/app/current/scripts/artisan-as-webapp.sh demo:update-emails`,
+  then the same with `--apply`.
+- Tests: `UpdateDemoEmailsTest`.
+
+**Demo mail guard — done (2026-11-08).** No
 migration, money, fraud prompt, AI input, eval data or lock change.
 
 - `App\Support\DemoMailGuard` (listeners on `MessageSending` and
@@ -17,9 +34,6 @@ migration, money, fraud prompt, AI input, eval data or lock change.
   (read only when an account is created). Magic links are never emailed.
 - Live check: `sudo /var/app/current/scripts/artisan-as-webapp.sh
   demo:check-mail-guard` (the script only allows the commands it lists).
-- Next (after Finn deploys this): demo logins move to
-  first.last@<fictional org> via `demo:update-emails`, which skips every
-  judge, reviewer and the platform admin.
 - Tests: `DemoMailGuardTest`, `ArtisanAsWebappScriptTest`.
 
 **Names removed from git history — done (2026-11-07, ADR 0039).** One

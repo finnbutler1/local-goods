@@ -22,12 +22,13 @@ use Illuminate\Support\Str;
 class DemoAccountSeeder extends Seeder
 {
     /**
-     * @return array{saved: list<string>, skipped: list<string>}
+     * @return array{saved: list<string>, skipped: list<string>, needs_email_update: list<string>}
      */
     public function run(): array
     {
         $saved = [];
         $skipped = [];
+        $needsEmailUpdate = [];
 
         foreach (config('demo.accounts') as $role => $account) {
             // Retired logins (the old Casey Brooks judge) are never created again.
@@ -50,6 +51,12 @@ class DemoAccountSeeder extends Seeder
                 continue;
             }
 
+            if (self::stillOnPreviousEmail($role, $account['email'])) {
+                $needsEmailUpdate[] = $role;
+
+                continue;
+            }
+
             $user = User::firstOrNew(['email' => $account['email']]);
             $user->forceFill(['name' => $account['name'], 'role' => Role::from($role)]);
 
@@ -64,7 +71,17 @@ class DemoAccountSeeder extends Seeder
         self::linkDemoEmployee();
         self::linkDemoMerchant();
 
-        return ['saved' => $saved, 'skipped' => $skipped];
+        return ['saved' => $saved, 'skipped' => $skipped, 'needs_email_update' => $needsEmailUpdate];
+    }
+
+    /** This role's login hasn't been moved by demo:update-emails yet: creating one at the new address would duplicate it. */
+    private static function stillOnPreviousEmail(string $role, string $email): bool
+    {
+        $previous = config("demo.previous_emails.$role");
+
+        return $previous !== null
+            && ! User::where('email', $email)->exists()
+            && User::where('role', $role)->where('email', $previous)->exists();
     }
 
     /**

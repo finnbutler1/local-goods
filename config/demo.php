@@ -20,22 +20,22 @@ return [
         ],
         'bid_admin' => [
             'name' => 'Sam Taylor',
-            'email' => 'sam.taylor@example.com',
+            'email' => 'sam.taylor@goldentriangle.uselocalgoods.com',
             'password' => env('DEMO_PASSWORD_BID_ADMIN'),
         ],
         'employer_admin' => [
             'name' => 'Alex Morgan',
-            'email' => 'alex.morgan@example.com',
+            'email' => 'alex.morgan@meridianpolicygroup.com',
             'password' => env('DEMO_PASSWORD_EMPLOYER_ADMIN'),
         ],
         'employee' => [
             'name' => 'Jordan Rivera',
-            'email' => 'jordan.rivera@example.com',
+            'email' => 'jordan.rivera@meridianpolicygroup.com',
             'password' => env('DEMO_PASSWORD_EMPLOYEE'),
         ],
         'merchant' => [
             'name' => 'Priya Natarajan',
-            'email' => 'priya.natarajan@example.com',
+            'email' => 'priya.natarajan@farragutgrind.com',
             'password' => env('DEMO_PASSWORD_MERCHANT'),
             // The fictional demo merchant this login runs (DatabaseSeeder).
             'business' => 'Farragut Grind',
@@ -44,6 +44,18 @@ return [
             'name' => 'Public judge access',
             'email' => 'public.judge@example.com',
         ],
+    ],
+
+    /*
+    | The address each of these logins had before, by role. demo:update-emails
+    | moves them; until it has run, demo:seed-accounts skips the role instead
+    | of creating a second login. Platform admin and judge are never in here.
+    */
+    'previous_emails' => [
+        'bid_admin' => 'sam.taylor@example.com',
+        'employer_admin' => 'alex.morgan@example.com',
+        'employee' => 'jordan.rivera@example.com',
+        'merchant' => 'priya.natarajan@example.com',
     ],
 
     /*

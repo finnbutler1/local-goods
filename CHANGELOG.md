@@ -3,6 +3,16 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-08: Demo logins get realistic fictional addresses
+
+- **The four demo logins move off `@example.com`.** The BID admin, employer
+  admin, employee and merchant logins now use addresses at their fictional
+  organisations; names don't change. `php artisan demo:update-emails` shows
+  what it would do, and `--apply` makes the change: the email column on those
+  four rows only. Judges, reviewers and the platform admin are never touched,
+  and if any reviewer link differs afterwards the whole change is undone.
+  Until it has run, deploys skip those logins instead of creating duplicates.
+
 ## 2026-11-08: No email ever goes to a demo account
 
 - **A hard mail guard, before the demo logins get realistic addresses.**
