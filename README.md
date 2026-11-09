@@ -17,9 +17,11 @@ Stripe's test mode with no real money, built and tested in the open.
 
 ## For judges
 
-**Public judge link:** *coming with the next deploy. The link will go here.*
-It signs you straight into a read-only reviewer view of the live app: no
-account, no password. Works until judging closes on November 30, 2026.
+**Public judge link:** on the home page of
+[uselocalgoods.com](https://uselocalgoods.com), press **Look around
+(read-only)**. It signs you straight into a read-only reviewer view of the
+live app: no account, no password. Works until judging closes on November 30,
+2026.
 
 **Demo video (2–3 min):** *coming soon.*
 
@@ -345,22 +347,63 @@ php artisan test
 
 ## What's next
 
-- Merchant Eligibility Matching, checked against manual review of the seeded
-  merchants (target: at least 90% agreement)
-- A check across redemptions for collusion rings (new signals, so a new
-  prompt version and a fresh holdout)
-- An employer/HR dashboard
-- **Where this goes next: an employer-funded prepaid card.** Today staff pay
-  with credits through pay codes. The next step is a prepaid card the employer
-  funds for its staff, which approved Golden Triangle shops could accept like
-  any other card while the card itself refuses everywhere else. We tested this
-  in a Stripe sandbox: card issuing switches on instantly in test mode, but
-  funding cards required a verified business account in our sandbox, which we
-  chose not to open with invented details. A real card program would likely
-  also need a fraud check that decides within seconds at the counter, a bank or
-  regulated partner holding the funds, and legal advice on prepaid card rules.
-  It's on the roadmap, not built. Details in
-  [ADR 0036](docs/adr/0036-no-card-preview-yet.md).
+### Where it is today
+
+- **A working prototype** at [uselocalgoods.com](https://uselocalgoods.com),
+  designed around Washington, DC's Golden Triangle as the example district.
+  That is a design choice, not a partnership: no district has endorsed or
+  joined it.
+- **Stripe Connect in test mode.** Employers buy credits, staff spend them at
+  approved independent shops, and shops are paid out through Stripe. No real
+  money moves.
+- **Two AI functions, with people in charge.** Redemption Fraud Detection
+  holds unusual payments, and Merchant Eligibility Matching recommends which
+  businesses qualify. People decide every held redemption and every new
+  merchant ([TRANSPARENCY.md](TRANSPARENCY.md)).
+- **An append-only ledger** records who is owed what. It is checked against
+  the real Stripe test balances, and a solvency check confirms that the money
+  in hand covers what has been promised.
+- **A read-only look-around link** lets visitors see every role in the live
+  app without an account (available through judging, until November 30, 2026).
+
+### Where it's going
+
+None of this is built. There are no dates.
+
+- **A pilot with real independent merchants and one employer.** It takes
+  merchants who agree to join, an employer willing to fund a small program,
+  and a first look at what they actually do, not a projection.
+- **A reusable employer-funded prepaid card.** Staff would pay with a card
+  that works only at approved shops. It takes Stripe Issuing approval, a
+  verified business account, a bank or regulated partner holding the funds,
+  and legal advice on prepaid card rules
+  ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)).
+- **A mobile app.** Today it is a phone-friendly website. A native app would
+  add things like a wallet card and notifications.
+- **More districts.** A new Business Improvement District is a boundary plus
+  its merchants, since the rules live in one place
+  ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)).
+  It also takes a district that wants to take part.
+- **Real email delivery** for demo requests, receipts and notifications. It
+  takes setting up a mail service. Until then "Request a demo" opens your own
+  email program.
+- **More BID reporting exports.** There is a summary download today. This
+  would add richer reports for a district's own use.
+- **Testing with screen readers and real phones.** The pages are checked with
+  automated tools and a keyboard, but not yet with a screen reader or on a
+  range of real phones ([docs/accessibility.md](docs/accessibility.md)).
+- **Stronger account security,** such as two-factor sign-in, for a real
+  deployment with real staff accounts.
+- **Smarter fraud checks.** The planted collusion patterns look ordinary one
+  payment at a time. Catching them needs new signals, so a new prompt version
+  and a fresh unseen test set.
+- **Web search for Merchant Eligibility Matching,** which also needs a new
+  prompt version and a fresh test set.
+
+### Get involved
+
+Click **Request a demo** on [uselocalgoods.com](https://uselocalgoods.com), or
+email [butlerf@cua.edu](mailto:butlerf@cua.edu).
 
 ---
 
