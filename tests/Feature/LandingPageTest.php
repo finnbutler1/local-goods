@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CreditLedgerEntry;
 use App\Services\BidImpactMetrics;
+use App\Support\DemoRequestLink;
 use App\Support\Money;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +31,7 @@ class LandingPageTest extends TestCase
     {
         $html = $this->get('/')
             ->assertSee('Request a demo')
-            ->assertSee('href="#request-demo"', false)
+            ->assertSee(e(DemoRequestLink::url()), false)
             ->assertSee('id="request-demo"', false)
             ->getContent();
 

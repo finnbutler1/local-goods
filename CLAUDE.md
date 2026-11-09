@@ -5,6 +5,15 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Request a demo opens an email — code done (2026-11-09), not deployed.**
+Front end only: no migration, money, mail setting, mail guard, sign-in,
+fraud prompt, AI input, eval data or lock change.
+
+- All three landing "Request a demo" buttons use `App\Support\DemoRequestLink::url()`
+  (mailto to `config('localgoods.demo_email')`, default butlerf@cua.edu,
+  encoded subject and body). The final section also shows the address as
+  plain text. Nothing is sent from the server. Test: `DemoRequestLinkTest`.
+
 **Platform admin Home with live data, errors outside the app folder — code
 done (2026-11-09), not deployed.** No migration, money, fraud prompt, AI
 input, eval data or lock change.
