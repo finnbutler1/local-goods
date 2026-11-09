@@ -1,5 +1,7 @@
 # Accessibility and UX check
 
+Note (2026-11-09): the adjudication voting page is no longer shown (ADR 0041); a "Voting has closed" page replaces it. Mentions of it below are the record of checks that ran at the time.
+
 What was checked on every page of Local Goods, what was fixed, and what
 was not checked or could not be fixed. Done on 2026-10-19 (Prompt 9B).
 This page lists only checks that actually ran.

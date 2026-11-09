@@ -247,7 +247,6 @@ These were built in from the first version of each feature, not added afterwards
 - **Pay codes stored hashed and never logged.** Never in a URL, never shown back after a mistake ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md), [`PayCodes`](app/Services/PayCodes.php), [`PayCodeTest`](tests/Feature/PayCodeTest.php)).
 - **Idempotent webhooks.** Stripe events are verified by signature and each one is applied once ([`StripeWebhookHandler`](app/Services/Payments/StripeWebhookHandler.php), [docs/STRIPE.md](docs/STRIPE.md)).
 - **An over-refund guard.** Each refund is re-checked against what was paid, what was already refunded and the tax, before any money moves ([ADR 0028](docs/adr/0028-refunds-and-corrections.md), [`CorrectionLimits`](app/Services/Corrections/CorrectionLimits.php)).
-- **Blind adjudication.** Reviewers vote on the AI's disagreements with the labels hidden ([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md)).
 - **A locked eval set.** The held-out cases are fixed by a SHA-256 per row before the AI sees them, and CI fails if one changes ([`fraud_eval_lock.json`](data/fraud_eval_lock.json), [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it)).
 - **CI on two databases.** Every push runs the suite (1,475 tests as of 2026-10-30, of which 5 need MySQL and are skipped on a plain local run) on both SQLite and MySQL ([`ci.yml`](.github/workflows/ci.yml)).
 

@@ -1,5 +1,7 @@
 # 0019. Personal contacts vote in the blind adjudication, reported separately
 
+**Retired by [ADR 0041](0041-blind-adjudication-retired.md) (2026-11-09).** Decision below left as written.
+
 **Status:** Accepted, implemented.
 
 ## Context

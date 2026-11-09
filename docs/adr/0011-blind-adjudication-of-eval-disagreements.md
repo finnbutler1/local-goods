@@ -1,5 +1,7 @@
 # 0011. Blind adjudication of eval disagreements
 
+**Retired by [ADR 0041](0041-blind-adjudication-retired.md) (2026-11-09).** Decision below left as written.
+
 **Status:** Accepted, implemented. Voting in batches of 10 and the minimum of
 3 votes per case: [ADR 0020](0020-adjudication-in-balanced-batches-of-10.md).
 

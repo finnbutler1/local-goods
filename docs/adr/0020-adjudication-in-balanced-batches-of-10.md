@@ -1,5 +1,7 @@
 # 0020. Blind adjudication in balanced batches of 10
 
+**Retired by [ADR 0041](0041-blind-adjudication-retired.md) (2026-11-09).** Decision below left as written.
+
 **Status:** Accepted, implemented.
 
 ## Context

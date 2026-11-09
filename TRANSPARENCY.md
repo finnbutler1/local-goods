@@ -536,70 +536,23 @@ sample (the confidence intervals above are wide), the cases are synthetic, and
 one person's labels are one opinion. Agreement shows how closely the AI matches
 that person, not whether either of them is right about real fraud.
 
-### Checking the person's labels: blind adjudication
+### Checking the person's labels: blind adjudication (retired)
 
-One person's labels are one opinion, and where the person and the AI
-disagree, the person may be the one who is wrong. So BID staff and contest
-judges check the disagreements, blind
-([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md)):
+A blind human review of the disagreement cases was offered to BID staff,
+judges and personal contacts but received no votes before it was retired, so
+the evaluation results stand on the hand labels. One person's labels are one
+opinion: agreement shows how closely the AI matches that person, not whether
+either of them is right.
 
-- **What they vote on:** every case, in every split, where Finn's label and the
-  AI's call disagree, mixed with the same number of randomly chosen cases where
-  both agreed, so nobody can tell which cases are disputed. Finn can adjust the
-  set before publishing it; after that it is locked.
-- **What they see:** only the facts of each redemption, one at a time, in a
-  random order of their own. Never Finn's label or note, the AI's decision,
-  score or explanation, or anyone else's vote. They choose normal or
-  suspicious and write a short reason, and can change their mind until they
-  submit the batch.
-- **How cases are assigned:** each person gets a batch of 10 cases (about 5
-  minutes): 7 disputed and 3 controls while enough are left, never a case they
-  have had before, shown in an order of their own. Within each kind, the
-  batch takes the cases with the fewest votes so far in that person's group,
-  so votes spread evenly. BID staff and contest judges are balanced among
-  themselves, and personal contacts separately. A batch counts as soon as it
-  is submitted. Then "Thanks! Want to do 10 more?" is optional; it stops
-  when they have seen all 32. Cases handed out but never submitted still count
-  towards the balance, so an abandoned batch can leave a few cases slightly
-  short. Disputed cases get more votes than controls on purpose: they are what
-  the check is for. Anyone who pressed Submit all before batches existed keeps
-  every vote they made.
-- **Who votes:** BID staff and contest judges, each with their own personal
-  link; their votes make the result. Personal contacts (friends, family and
-  classmates who know Finn) also vote, each with their own link and one vote
-  per case, on the same cases and just as blind
-  ([ADR 0019](docs/adr/0019-personal-contacts-vote-separately.md)). Because
-  they know Finn, their votes are **never counted in the result**: they are
-  reported on their own (see below). Their link opens only the voting page and
-  the feedback button: no reviewer tour, no "view as", no eval or admin pages.
-  The public judge link, reviewers of the "Friend" type and Finn can't vote.
-  Reviewers who can't vote see an "Independent check of the AI" card on the
-  reviewer home page instead: what the check is, how many BID and
-  contest-judge adjudicators have submitted, when voting closes (shown as
-  November 13, 2026; Finn ends voting by pressing Close voting) and a link to
-  the results on `/eval`.
-- **One question first:** "Have you looked at the Local Goods eval results
-  page before today?" (personal contacts too). Someone who has may already
-  know the answers, so results are shown for everyone and again for only those
-  who said no, in each group. While voting is
-  open, the eval pages hide the per-case answers from adjudicators who haven't
-  submitted. Anyone not signed in can still see them, which is why the question
-  is asked.
-- **How it's reported:** a separate section on `/eval`, never mixed into the
-  headline. "On N disputed cases, adjudicators sided with the AI in X, with
-  Finn in Y, split in Z", how many adjudicators voted, how often they agreed
-  with the shared label on the control cases (a reliability check), and
-  results by split and by pattern. Each number shows how many votes are behind
-  it, and each case shows its vote count. A case with fewer than 3 votes in a
-  group is marked **"too few votes to call"** and isn't counted as siding with
-  anyone. This counts **only BID staff and contest judges.** Below it, a section headed "Personal contacts (know Finn): not
-  counted in the result above" gives the same numbers for personal contacts
-  alone (their own "sided with the AI / with Finn" tallies, controls and
-  "hadn't seen the eval page" view). The two groups are never added together
-  in any total. Each case's votes and reasons, without names, appear once
-  voting closes. Personal contacts' names never appear on public or reviewer
-  pages; the admin pages show only their initials. **Adjudication never
-  changes Finn's labels or any headline number.**
+Reviewers would have rated the disputed cases seeing only each redemption's
+facts, with agreed cases mixed in as hidden controls. Voting is closed and old
+voting links show a "Voting has closed" page. The stored cases are kept, and
+the platform admin can read them on a read-only page. It never changed a label
+or a headline number
+([ADR 0011](docs/adr/0011-blind-adjudication-of-eval-disagreements.md),
+[ADR 0019](docs/adr/0019-personal-contacts-vote-separately.md),
+[ADR 0020](docs/adr/0020-adjudication-in-balanced-batches-of-10.md),
+[ADR 0041](docs/adr/0041-blind-adjudication-retired.md)).
 
 ### Which merchants are eligible
 

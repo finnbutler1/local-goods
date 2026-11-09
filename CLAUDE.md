@@ -5,6 +5,22 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Blind adjudication retired — code done (2026-11-09, ADR 0041), not
+deployed.** No migration, money, fraud prompt, AI input, eval data, sign-in or
+lock change; no adjudication row is written.
+
+- `config('reviewers.adjudication_retired')` is true and has no env override.
+  `AdjudicationSet::retired()`; `isOpen()`/`isClosed()` read it, so the stored
+  `published` set behaves as closed. **Never write to the adjudication tables
+  to close it.**
+- `/adjudicate` shows `adjudicate/closed` (200). Voting POSTs redirect there
+  after the gate; `/admin/adjudication` is read-only and its POSTs refuse.
+  Removed from `/judge`, the tour (8 steps) and the eval pages. Personal
+  contacts land on the closed page; links unchanged.
+- The notes below on adjudication describe the retired feature. Tests of the
+  dormant voting code switch the setting off in `setUp`. Test:
+  `AdjudicationRetiredTest`.
+
 **Request a demo opens an email — code done (2026-11-09), not deployed.**
 Front end only: no migration, money, mail setting, mail guard, sign-in,
 fraud prompt, AI input, eval data or lock change.
@@ -493,7 +509,7 @@ Fraud prompt (`8d5e1e70`), signals, eval data, locks, adjudication,
 - Never send corrections to the AI (`FraudInputCorrectionsTest`).
   Seed: one completed partial refund (Cold brew + tax) and one rejected
   request at Farragut Grind, never Jordan; tables in `DEMO_TABLES` and
-  `EMPTY_AFTER_SEED`. Tour step 9. Stripe trial fixtures in
+  `EMPTY_AFTER_SEED`. Tour step 8. Stripe trial fixtures in
   `tests/Fixtures/stripe/corrections/` (scrubbed; `StripeTrialFixturesTest`).
   Tests: `CorrectionRequestTest`, `RedemptionRefundTest`,
   `EmployerRefundTest`, `MerchantAdjustmentTest`, `CorrectionRetryTest`,

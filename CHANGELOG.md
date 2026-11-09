@@ -3,6 +3,15 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-09: Blind adjudication retired
+
+- **"Help check the AI" is gone from the judge home, the tour and the eval
+  pages.** Nobody had voted, and every disagreement is now visible to everyone.
+- **Old voting links show a calm "Voting has closed" page.** Personal contacts
+  land there; their links are unchanged.
+- **Nothing stored changed.** The platform admin can still read it all on a
+  read-only page ([ADR 0041](docs/adr/0041-blind-adjudication-retired.md)).
+
 ## 2026-11-09: Platform admin Home survives live data
 
 - **Home no longer crashes once demo activity has run that day.** The

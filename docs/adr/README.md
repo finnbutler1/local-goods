@@ -16,7 +16,7 @@ trade-off in under a minute.
 | [0008](0008-read-only-reviewers-with-single-use-invite-links.md) | Read-only reviewers with single-use invite links | Partly superseded by 0010 |
 | [0009](0009-https-through-cloudfront.md) | HTTPS through CloudFront in front of Beanstalk | Accepted, implemented |
 | [0010](0010-magic-links-for-reviewers.md) | Magic links for reviewers, and one public judge account | Accepted, implemented |
-| [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Accepted, implemented; batches in 0020 |
+| [0011](0011-blind-adjudication-of-eval-disagreements.md) | Blind adjudication of eval disagreements by BID staff and contest judges | Retired by 0041; batches in 0020 |
 | [0012](0012-one-ledger-three-account-kinds.md) | One ledger with three kinds of account: employee, employer, merchant | Accepted, implemented; platform account added in 0021 |
 | [0013](0013-merchant-eligibility-matching.md) | Merchant Eligibility Matching: an AI suggestion, a person's decision, measured against locked labels | Accepted, implemented |
 | [0014](0014-employer-program-pending-purchases-and-initials.md) | Employer program, purchases locked until paid, and initials only outside an employee's own wallet | Accepted, implemented |
@@ -24,8 +24,8 @@ trade-off in under a minute.
 | [0016](0016-fraud-detection-gates-stripe-transfers.md) | Redemption Fraud Detection gates Stripe transfers: one gate, recorded human decisions, denied credit to the employer for suspected abuse | Accepted, implemented |
 | [0017](0017-bid-impact-from-the-ledger.md) | BID impact numbers come from the ledger and roll up the HR dashboards; an outside study's recirculation rate shown only as a labelled estimate | Accepted, implemented |
 | [0018](0018-only-cloudfront-reaches-beanstalk.md) | Only CloudFront reaches Beanstalk (with a kill switch); unsafe production settings stop a deploy | Accepted, implemented |
-| [0019](0019-personal-contacts-vote-separately.md) | Personal contacts vote in the blind adjudication, reported separately and never in the headline | Accepted, implemented |
-| [0020](0020-adjudication-in-balanced-batches-of-10.md) | Blind adjudication in balanced batches of 10, with vote counts and "too few votes to call" | Accepted, implemented |
+| [0019](0019-personal-contacts-vote-separately.md) | Personal contacts vote in the blind adjudication, reported separately and never in the headline | Retired by 0041 |
+| [0020](0020-adjudication-in-balanced-batches-of-10.md) | Blind adjudication in balanced batches of 10, with vote counts and "too few votes to call" | Retired by 0041 |
 | [0021](0021-one-step-buy-credits-and-a-platform-fee-account.md) | One-step Buy credits with embedded Checkout, and a platform fee (off) on its own platform account | Accepted, implemented |
 | [0022](0022-platform-set-up-stripe-accounts-for-demo-merchants.md) | Platform-set-up Stripe test accounts for the fictional demo merchants with no login (Express can't be prefilled), honestly labelled | Accepted, implemented |
 | [0023](0023-product-menus-are-display-only.md) | Product menus for the demo merchants: the amount is the total, items are display only and never sent to the fraud AI | Accepted, implemented |
@@ -46,3 +46,4 @@ trade-off in under a minute.
 | [0038](0038-redesign-allowed.md) | Redesign allowed: new fonts, palette, layout and components around the metro line and stop; the name, logo files, taglines, honesty rules and content stay; logo teal and coral are the anchors (supersedes the visual parts of 0025); direction A, Wayfinding: a transit-diagram district map, sections as stops on one line, Public Sans with Overpass Mono for ledgers | Accepted, not yet built |
 | [0039](0039-history-rewrite.md) | Names removed from git history: one partial rewrite from `2d585fb` (old hash `6b68968`, before the 2026-11-07 rewrite; 321 of 440 commits) replaces the redacted names with "[name removed]"; HEAD's tree, the labels and the fraud lock commit unchanged; label lock re-locked at the new labeling commit; never again without Finn's say-so | Accepted, implemented |
 | [0040](0040-demo-account-addresses.md) | The four demo logins move to fictional organisations' addresses with `demo:update-emails` (dry run by default, email column only, judges and platform admin excluded, rolls back if a reviewer link differs); the seeder skips a role until it has moved | Accepted, implemented |
+| [0041](0041-blind-adjudication-retired.md) | Blind adjudication retired with no votes: a code setting closes voting, old links show a closed page, stored data kept and read-only for the platform admin | Accepted, implemented |

@@ -37,7 +37,7 @@ The local-spend mission is the why; this is the proof.
 - Independence rule (verbatim in CLAUDE.md): never paraphrase it in copy or prompts.
 - The fraud check fails closed. Any AI error means hold.
 - No card program in the MVP.
-- Judges are read-only. Personal contacts see only the voting pages.
+- Judges are read-only. Personal contacts see only the closed voting page.
 - No fee, revenue or interchange figures on public pages. The "3x" line appears only with its outside-study label and source. Never imply the BID endorses or partners with Local Goods.
 - **Content is locked.** Keep every page, tab, menu item, section, label and piece of information that exists today. Design changes are visual only: layout, spacing, typography, color, hierarchy and alignment. Never remove, merge, hide or rename content or navigation without asking Finn first.
 
@@ -53,7 +53,7 @@ Redesign allowed (ADR 0038, supersedes the visual parts of ADR 0025). The goal i
 ## Evidence on Hand
 
 - Redemption Fraud Detection holdout (`holdout_3`, 50 cases): caught 17 of 26 suspicious; 17 of 19 holds were suspicious.
-- Merchant Eligibility Matching eval and blind adjudication results, at `/eval` and `/eval/merchants`.
+- Merchant Eligibility Matching eval results, at `/eval` and `/eval/merchants`.
 - Decision records in `docs/adr/`, `TRANSPARENCY.md`, `docs/accessibility.md`.
 - There are no real testimonials, customers or pricing. Do not fabricate any.
 
