@@ -42,6 +42,48 @@ jobs:
         # update the package (TRANSPARENCY.md "Security" lists past ones).
         run: composer audit --locked --no-interaction
 
+  # General protection: boots the app the way a cached deploy would and loads
+  # the platform admin Home. Separate from the test jobs so a cached config
+  # never reaches them. Production does not cache config (DeployHookTest), and
+  # this seed has no demo activity day, so it would NOT have caught the
+  # Nov 9 /admin error; AdminHomeLiveDataTest covers that.
+  cached-boot-smoke:
+    name: Cached boot smoke (general protection)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install JS dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build front-end assets
+        run: npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Sign in as platform admin and load /admin with everything cached
+        run: bash scripts/ci-cached-boot-smoke.sh
+
   # Local development and tests use SQLite (see phpunit.xml).
   tests-sqlite:
     name: Tests (SQLite)
