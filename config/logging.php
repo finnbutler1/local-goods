@@ -5,6 +5,8 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 
+$channel = env('LOG_CHANNEL', 'stack');
+
 return [
 
     /*
@@ -18,7 +20,9 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    // In production errors also go to the server's own log, outside the app
+    // folder, so a deploy or rollback can't take them away.
+    'default' => env('APP_ENV') === 'production' ? 'with_system_log' : $channel,
 
     /*
     |--------------------------------------------------------------------------
@@ -51,6 +55,20 @@ return [
     */
 
     'channels' => [
+
+        // LOG_CHANNEL as usual, plus ERROR and above to the system log. With
+        // ignore_exceptions, a problem writing to one can't block the other.
+        'with_system_log' => [
+            'driver' => 'stack',
+            'channels' => ['system_errors', $channel],
+            'ignore_exceptions' => true,
+        ],
+
+        'system_errors' => [
+            'driver' => 'errorlog',
+            'level' => 'error',
+            'replace_placeholders' => true,
+        ],
 
         'stack' => [
             'driver' => 'stack',
