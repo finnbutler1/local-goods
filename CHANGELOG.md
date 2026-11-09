@@ -3,6 +3,17 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-09: Platform admin Home survives live data
+
+- **Home no longer crashes once demo activity has run that day.** The
+  reconciliation card couldn't read the stored result.
+- **A bad public judge link setting can't take Home down.** The card says
+  "Not set" and the error is logged.
+- **Production errors also go to the server's own log**, outside the app
+  folder, so a deploy or rollback can't remove them.
+- **New CI check:** signs in as the platform admin and loads Home with
+  everything cached, as general protection.
+
 ## 2026-11-09: A public judge link people can find
 
 - **"Look around (read-only)" on the landing page.** Logged-out visitors get

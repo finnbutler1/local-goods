@@ -7,6 +7,8 @@
     $dc = fn ($at) => Carbon::parse($at)->setTimezone('America/New_York');
     $state = $activity['state'];
     $today = $activity['today'];
+    // The stored check is an array, and the demo activity page needs all of it. Here only its result matters.
+    $reconciled = $today['reconciliation'] === null ? null : (bool) ($today['reconciliation']['matches'] ?? false);
     $name = Str::before(auth()->user()->name, ' ');
 @endphp
 
@@ -46,11 +48,11 @@
         @if ($platform)
             <section aria-labelledby="home-reconciliation-heading" class="rule-top flex flex-col" data-home-card="reconciliation">
                 <h2 id="home-reconciliation-heading" class="figure-label">Reconciliation</h2>
-                @if ($today['reconciliation'] === null)
+                @if ($reconciled === null)
                     <p class="mt-2"><span class="{{ $status(null) }}">Not checked today</span></p>
                     <p class="mt-2 text-sm text-muted">The page reads Stripe only when you open it.</p>
                 @else
-                    <p class="mt-2"><span class="{{ $status($today['reconciliation']) }}">{{ $today['reconciliation'] ? 'Matches' : 'Mismatch' }}</span></p>
+                    <p class="mt-2"><span class="{{ $status($reconciled) }}">{{ $reconciled ? 'Matches' : 'Mismatch' }}</span></p>
                     <p class="mt-2 text-sm text-muted">The latest check by the demo activity generator today.</p>
                 @endif
                 <p class="mt-auto pt-3"><a href="{{ route('admin.reconciliation') }}" class="{{ $link }}">Reconciliation <span aria-hidden="true">→</span></a></p>

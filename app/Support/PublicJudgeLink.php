@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Services\ReviewerLinks;
+use Carbon\Exceptions\InvalidFormatException;
+use ValueError;
 
 /**
  * The full public judge link, read from PUBLIC_JUDGE_URL (only a hash of a
@@ -25,6 +27,14 @@ class PublicJudgeLink
             return null;
         }
 
-        return $this->links->userFor($parts[1])?->isPublicReviewer() ? $url : null;
+        // A bad end date or an unknown role on the row must not take the page
+        // down with it. The error is still logged; neither message holds the link.
+        try {
+            return $this->links->userFor($parts[1])?->isPublicReviewer() ? $url : null;
+        } catch (InvalidFormatException|ValueError $e) {
+            report($e);
+
+            return null;
+        }
     }
 }

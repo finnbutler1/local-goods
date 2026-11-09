@@ -5,6 +5,22 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Platform admin Home with live data, errors outside the app folder — code
+done (2026-11-09), not deployed.** No migration, money, fraud prompt, AI
+input, eval data or lock change.
+
+- `admin-home` read the generator's stored reconciliation (an array) as a
+  `?bool`: a `TypeError` once it had run that day. The view now takes
+  `['matches']`; **`ActivityStatus::today()` stays an array** (the demo
+  activity page needs it). Present since 73aafa1 (Nov 4), not from 8001410.
+- `PublicJudgeLink::url()` reports a bad end date or unknown enum on the row
+  and returns null, so the card says "Not set".
+- Production logs through `with_system_log`: `LOG_CHANNEL` plus ERROR and
+  above via PHP's `errorlog`. Exact file on the host not yet confirmed.
+- Tests: `AdminHomeLiveDataTest`, `LoggingChannelConfigTest`,
+  `CachedBootSmokeScriptTest`. CI job "Cached boot smoke (general
+  protection)" runs `scripts/ci-cached-boot-smoke.sh` (CI only).
+
 **Public judge link on the landing page — done (2026-11-09).** No migration,
 money, fraud prompt, AI input, eval data, sign-in or lock change.
 
