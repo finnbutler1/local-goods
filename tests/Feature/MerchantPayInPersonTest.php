@@ -80,6 +80,7 @@ class MerchantPayInPersonTest extends TestCase
         $html = $this->get('/merchant')->assertOk()
             ->assertSeeInOrder(['Amount', '$11.50', 'Items', '2× Latte', 'Customer', 'J.R.', 'Code expires', '12:10 PM', 'Confirm payment', 'Decline', 'Enter a different code'])
             ->assertSee('data-busy="Checking with Redemption Fraud Detection…"', false)
+            ->assertSee('Quincy Thackeray') // the cashier's own account name
             ->getContent();
         $this->assertStringNotContainsString('Jordan', $html);
         $this->assertStringNotContainsString('Rivera', $html);

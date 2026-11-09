@@ -22,6 +22,9 @@ abstract class TestCase extends BaseTestCase
         $user = User::where('role', $role)->orderBy('id')->first() ?? User::factory()->role($role)->create(match ($role) {
             Role::Employee => ['name' => 'Jordan Rivera'],
             Role::BidAdmin => ['name' => 'Sam Taylor'],
+            // Fixed: a random Faker name could be "Jordan …", which the
+            // merchant page tests must only ever see from the customer.
+            Role::Merchant => ['name' => 'Quincy Thackeray'],
             default => [],
         });
 
