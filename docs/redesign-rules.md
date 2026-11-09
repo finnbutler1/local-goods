@@ -51,8 +51,10 @@ branch. Every batch follows these rules. The look comes from the comp in
 - A scratch SQLite file in the scratchpad, set with environment overrides
   only. No `.env` edits.
 - Stripe and Anthropic keys blanked, `MAIL_MAILER=array`, no scheduler.
-- Laravel's `server.php` router
-  (`php -S … -t public vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php`).
+- Laravel's `server.php` router. From the project root:
+  `php -S 127.0.0.1:8000 -t public vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php`.
+  Or `cd public` first and use `php -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php`.
+  Don't use `php artisan serve` (it ignores the scratch `DB_DATABASE`). Both forms were checked: `/up` answers 200.
 - Stop the server and delete the scratch database afterwards.
 - Never commit `public/build`.
 
