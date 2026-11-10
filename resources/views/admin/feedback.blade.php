@@ -8,12 +8,12 @@
 @endphp
 
 <x-app-shell title="Feedback" active="feedback" context="Local Goods platform">
-<div class="space-y-8">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Feedback</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">Feedback inbox</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-12">
+    <header>
+        <x-station-sign as="p">Platform admin</x-station-sign>
+        <h1 class="page-title">Feedback</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Feedback inbox</p>
+        <p class="page-lede">
             Everything reviewers sent from the Feedback button. Mark items fixed with the commit that fixed them:
             reviewers see their fixed items under "What's new" on their next visit.
             <a href="{{ route('admin.changelog.index') }}" class="font-semibold text-primary underline underline-offset-4 hover:no-underline">Add a changelog entry</a>.

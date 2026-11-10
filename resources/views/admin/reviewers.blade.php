@@ -11,11 +11,11 @@
 @endphp
 
 <x-app-shell title="Reviewers" active="reviewers" context="Local Goods platform">
-<div class="space-y-8">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Reviewers</h1>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-12">
+    <header>
+        <x-station-sign as="p">Platform admin</x-station-sign>
+        <h1 class="page-title">Reviewers</h1>
+        <p class="page-lede">
             Invite contest judges, HR managers, merchants, BID staff and friends. Each gets a personal magic link
             that signs them straight into a read-only reviewer view: no password, no account to set up.
             Links work as often as needed until judging ends on {{ $endsAt->format('M j, Y \a\t g:i A') }} Eastern

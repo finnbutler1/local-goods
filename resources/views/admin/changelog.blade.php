@@ -1,12 +1,12 @@
 @php $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary'; @endphp
 
 <x-app-shell title="Changelog" active="changelog" context="Local Goods platform">
-<div class="space-y-8">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Changelog</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">Changelog for reviewers</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-12">
+    <header>
+        <x-station-sign as="p">Platform admin</x-station-sign>
+        <h1 class="page-title">Changelog</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Changelog for reviewers</p>
+        <p class="page-lede">
             Short notes on what changed. Reviewers see entries published since their last visit on their home page,
             next to their own feedback you marked fixed. Keep it to synthetic, demo-safe details.
         </p>

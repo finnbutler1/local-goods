@@ -25,12 +25,12 @@
 @endphp
 
 <x-app-shell title="Demo Activity" active="demo-activity" context="Golden Triangle BID · Washington, DC">
-<div class="space-y-10">
-    <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Generated demo activity</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">Demo Activity</h1>
-        <p class="mt-2 text-xl font-semibold text-ink">Fictional people, real Stripe test-mode transactions</p>
-        <p class="mt-3 text-lg text-muted">
+<div class="admin-desk space-y-12">
+    <header>
+        <x-station-sign as="p">Generated demo activity</x-station-sign>
+        <h1 class="page-title">Demo Activity</h1>
+        <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Fictional people, real Stripe test-mode transactions</p>
+        <p class="page-lede">
             Between now and judging, a scheduled generator makes a small, realistic slice of activity each weekday, busiest at lunch:
             buying credits, allowances, orders to go and payments in person at the demo merchants, and the occasional refund request.
             It goes through exactly the same steps as a person would: Redemption Fraud Detection scores every payment, Stripe test mode moves the money,

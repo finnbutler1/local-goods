@@ -1,9 +1,9 @@
 <x-app-shell title="Accounts" active="accounts" context="Local Goods platform">
-    <div class="space-y-8">
+    <div class="admin-desk space-y-12">
         <header>
-            <x-eyebrow class="text-accent-ink">Platform admin</x-eyebrow>
-            <h1 class="mt-1 text-title font-semibold text-primary">Accounts</h1>
-            <p class="mt-3 max-w-2xl text-lg text-muted">
+            <x-station-sign as="p">Platform admin</x-station-sign>
+            <h1 class="page-title">Accounts</h1>
+            <p class="page-lede">
                 Every login is created by an admin; there is no public sign-up.
             </p>
         </header>
