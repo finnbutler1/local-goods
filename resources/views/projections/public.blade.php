@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.adaptive')
 
 @section('title', 'Impact projection · Local Goods')
 

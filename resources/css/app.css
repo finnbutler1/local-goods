@@ -1784,6 +1784,13 @@ table.statement > :is(tbody, tfoot) > tr.statement-after > td {
     }
 }
 
+/* A public page shown inside the signed-in shell: the shell's <main> is
+   already the container, so the page's own one adds no second gutter. */
+.shell-page .wrap {
+    max-width: none;
+    padding-inline: 0;
+}
+
 /* Twelve columns inside the container. */
 @utility grid-12 {
     display: grid;

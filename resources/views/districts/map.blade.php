@@ -1,6 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.adaptive')
 
 @section('title', $district->name.' map · Local Goods')
+@section('active', 'district')
 
 @php
     use App\Services\Geo\GeocodeResult;

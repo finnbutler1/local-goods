@@ -1,6 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.adaptive')
 
 @section('title', 'Merchant eligibility eval · Local Goods')
+@section('active', 'merchant-eval')
 
 @php
     use App\Services\Eligibility\EvidenceUrl;

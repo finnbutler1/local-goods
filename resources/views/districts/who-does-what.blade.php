@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.adaptive')
 
 @section('title', 'Who does what · Local Goods')
 
