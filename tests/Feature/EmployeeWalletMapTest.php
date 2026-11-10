@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
+use App\View\Components\DistrictDiagram;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -82,5 +83,20 @@ class EmployeeWalletMapTest extends TestCase
         $html = $this->get('/employee')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('#data-merchant-link[^>]*>Triangle Stems</a>\s*</li>#', $html);
+    }
+
+    public function test_linked_stop_labels_are_placed_clear_of_each_other_and_inside_the_map(): void
+    {
+        $point = fn (string $name, float $x, float $y) => ['name' => $name, 'lines' => [$name], 'x' => $x, 'y' => $y, 'side' => null, 'local' => false, 'href' => '#merchant-1'];
+        $placed = DistrictDiagram::placeLabels([
+            $point('Connecticut Noodle Bar', 800.0, 400.0),
+            $point('Seventeenth Street Kitchen', 860.0, 400.0),
+            $point('Farragut Grind', 1000.0, 500.0),
+        ]);
+
+        $this->assertNotSame($placed[0]['side'], $placed[1]['side']);
+        $this->assertSame('left', $placed[2]['side'], 'a label that would run off the right edge goes to the left');
+        // Stops that are not linked and name no side keep the landing page default.
+        $this->assertSame('right', DistrictDiagram::placeLabels([['name' => 'A', 'lines' => ['A'], 'x' => 10.0, 'y' => 10.0, 'side' => null, 'local' => false, 'href' => null]])[0]['side']);
     }
 }

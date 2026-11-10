@@ -43,14 +43,70 @@ class DistrictDiagram extends Component
     public function __construct(public array $stops, public string $local, public string $title)
     {
         $this->map = new DistrictMap(BidBoundary::fromFile(config('districts.golden_triangle.boundary_path'))->outerRings());
-        $shown = array_filter($stops, fn (array $stop) => $this->map->shows($stop['lat'], $stop['lng']));
-        $this->points = self::loop(array_map(function (array $stop) {
+        $shown = array_values(array_filter($stops, fn (array $stop) => $this->map->shows($stop['lat'], $stop['lng'])));
+        $projected = array_map(function (array $stop) {
             [$x, $y] = $this->map->project($stop['lat'], $stop['lng']);
 
             return ['name' => $stop['name'], 'lines' => $stop['lines'] ?? [$stop['name']], 'x' => $x, 'y' => $y,
-                'side' => $stop['side'] ?? 'right', 'local' => $this->local !== '' && $stop['name'] === $this->local,
+                'side' => $stop['side'] ?? null, 'local' => $this->local !== '' && $stop['name'] === $this->local,
                 'href' => $stop['href'] ?? null];
-        }, array_values($shown)));
+        }, $shown);
+        $this->points = self::loop(self::placeLabels($projected));
+    }
+
+    /**
+     * Stops without a given side get the first side where their label stays
+     * inside the drawing and clear of every stop and of the labels already
+     * placed (a rough box from the text length). Stops that name no side and
+     * are not linked keep the default, right, as on the landing page.
+     *
+     * @param  list<array{name: string, lines: list<string>, x: float, y: float, side: ?string, local: bool, href: ?string}>  $points
+     * @return list<array{name: string, lines: list<string>, x: float, y: float, side: string, local: bool, href: ?string}>
+     */
+    public static function placeLabels(array $points): array
+    {
+        $boxes = [];
+        $box = function (array $point, string $side): array {
+            $point['side'] = $side;
+            [$lx, $ly, $anchor] = self::labelAt($point);
+            $width = 14 * max(array_map('mb_strlen', $point['lines']));
+            $left = match ($anchor) {
+                'end' => $lx - $width,
+                'middle' => $lx - $width / 2,
+                default => $lx,
+            };
+
+            return [$left, $ly - 22, $left + $width, $ly + 6 + 26 * (count($point['lines']) - 1)];
+        };
+        $hits = fn (array $a, array $b) => $a[0] < $b[2] && $b[0] < $a[2] && $a[1] < $b[3] && $b[1] < $a[3];
+        $circles = array_map(fn (array $p) => [$p['x'] - 22, $p['y'] - 22, $p['x'] + 22, $p['y'] + 22], $points);
+
+        foreach ($points as $index => $point) {
+            if ($point['side'] !== null || $point['href'] === null) {
+                $points[$index]['side'] ??= 'right';
+                if ($point['href'] === null) {
+                    continue;
+                }
+                $boxes[] = $box($points[$index], $points[$index]['side']);
+
+                continue;
+            }
+            $chosen = 'right';
+            foreach (['right', 'left', 'above', 'below', 'below-right', 'below-left'] as $side) {
+                $candidate = $box($point, $side);
+                $inside = $candidate[0] >= -self::BLEED && $candidate[2] <= DistrictMap::WIDTH + self::BLEED;
+                $clear = ! array_filter($boxes, fn ($other) => $hits($candidate, $other))
+                    && ! array_filter($circles, fn ($c, $i) => $i !== $index && $hits($candidate, $c), ARRAY_FILTER_USE_BOTH);
+                if ($inside && $clear) {
+                    $chosen = $side;
+                    break;
+                }
+            }
+            $points[$index]['side'] = $chosen;
+            $boxes[] = $box($points[$index], $chosen);
+        }
+
+        return $points;
     }
 
     /**
