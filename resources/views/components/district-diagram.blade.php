@@ -5,7 +5,7 @@
     (aria-hidden) and are hidden on phones, where the key carries the facts.
 --}}
 <figure {{ $attributes->class('district-diagram') }}>
-    <svg class="dd-map" viewBox="{{ $viewBox() }}" role="img" aria-labelledby="{{ $attributes->get('id', 'district-diagram') }}-title" data-district-diagram>
+    <svg class="dd-map" viewBox="{{ $viewBox() }}" role="{{ $linked() ? 'group' : 'img' }}" aria-labelledby="{{ $attributes->get('id', 'district-diagram') }}-title" data-district-diagram>
         <title id="{{ $attributes->get('id', 'district-diagram') }}-title">{{ $title }}</title>
         <path class="dd-district" d="{{ $map->path() }}" />
         @foreach ($streets() as $street)
@@ -19,7 +19,15 @@
         <path class="dd-route dd-draw" d="{{ $route($points) }}" pathLength="1" />
         @foreach ($points as $point)
             @php([$lx, $ly, $anchor] = $labelAt($point))
-            <circle class="{{ $point['local'] ? 'dd-local' : 'dd-stop' }}" cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="{{ $point['local'] ? 22 : 15 }}" data-stop="{{ $point['name'] }}" @if ($point['local']) data-local-stop @endif />
+            @if ($point['href'])
+                {{-- A stop that links to its place in the page's list (a #fragment: no outside request). --}}
+                <a href="{{ $point['href'] }}" class="dd-link" data-stop-link aria-label="{{ $point['name'] }}">
+                    <circle class="dd-hit" cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="40" />
+                    <circle class="{{ $point['local'] ? 'dd-local' : 'dd-stop' }}" cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="{{ $point['local'] ? 22 : 15 }}" data-stop="{{ $point['name'] }}" @if ($point['local']) data-local-stop @endif />
+                </a>
+            @else
+                <circle class="{{ $point['local'] ? 'dd-local' : 'dd-stop' }}" cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="{{ $point['local'] ? 22 : 15 }}" data-stop="{{ $point['name'] }}" @if ($point['local']) data-local-stop @endif />
+            @endif
             <text @class(['dd-label', 'dd-label-local' => $point['local']]) x="{{ $lx }}" y="{{ $ly }}" text-anchor="{{ $anchor }}" aria-hidden="true">@foreach ($point['lines'] as $i => $line)<tspan x="{{ $lx }}" dy="{{ $i === 0 ? 0 : 26 }}">{{ $line }}</tspan>@endforeach</text>
             @if ($point['local'])
                 <text class="dd-label-sub" x="{{ $lx }}" y="{{ $ly + 26 }}" text-anchor="{{ $anchor }}" aria-hidden="true">local stop</text>
@@ -34,7 +42,9 @@
         </ul>
         <ul class="dd-legend" aria-label="Map key">
             <li><span class="dd-key dd-key-stop" aria-hidden="true"></span>Demo merchants</li>
-            <li><span class="dd-key dd-key-local" aria-hidden="true"></span>Local stop</li>
+            @if ($local !== '')
+                <li><span class="dd-key dd-key-local" aria-hidden="true"></span>Local stop</li>
+            @endif
             <li><span class="dd-key dd-key-boundary" aria-hidden="true"></span>District boundary</li>
         </ul>
     </figcaption>

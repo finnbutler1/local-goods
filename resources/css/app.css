@@ -643,6 +643,32 @@
         }
     }
 
+    /* Stops that link to a list (the wallet): a bigger invisible target, a
+       visible focus ring, and 44px on a phone, where the drawing is small. */
+    .dd-hit {
+        fill: transparent;
+    }
+
+    .dd-link {
+        cursor: pointer;
+    }
+
+    .dd-link:focus-visible {
+        outline: none;
+    }
+
+    .dd-link:focus-visible .dd-stop,
+    .dd-link:focus-visible .dd-local {
+        stroke: var(--color-focus);
+        stroke-width: 6;
+    }
+
+    @media (width < 48rem) {
+        .dd-hit {
+            r: 72px;
+        }
+    }
+
     .dd-legend {
         display: flex;
         flex-wrap: wrap;

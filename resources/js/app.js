@@ -456,6 +456,20 @@ document.querySelectorAll('[data-tabs]').forEach((tabs) => {
     });
 });
 
+// District map stops that link to a list item ([data-stop-link], the wallet):
+// scroll to the merchant and focus it, by mouse, touch or keyboard. Without
+// JavaScript the plain #fragment link does the same jump.
+document.querySelectorAll('[data-stop-link], [data-merchant-link]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+        const target = document.getElementById((link.getAttribute('href') || '').slice(1));
+        if (!target) return;
+        event.preventDefault();
+        target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+        target.focus({ preventScroll: true });
+        history.replaceState(history.state, '', link.getAttribute('href'));
+    });
+});
+
 // Pay code screen: [data-pay-code] (ADR 0026). Counts down to data-expires-at
 // (hidden from screen readers; the live region speaks only at one minute
 // left and at expiry) and asks every 3 seconds whether the merchant has

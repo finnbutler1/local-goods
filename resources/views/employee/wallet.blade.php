@@ -168,6 +168,27 @@
             <h2 id="browse-heading" class="text-2xl font-extrabold tracking-tight text-ink">Where you can spend</h2>
             <p class="mt-1.5 text-[0.9375rem] text-muted">Independent businesses in the Golden Triangle BID. All are fictional in this demo.</p>
 
+            @php
+                // The merchants listed below, as stops on the stored district boundary (no outside map service).
+                $mapStops = $browse->filter(fn ($m) => $m->latitude !== null && $m->longitude !== null)->map(fn ($m) => [
+                    'name' => $m->name, 'lat' => (float) $m->latitude, 'lng' => (float) $m->longitude, 'href' => '#merchant-'.$m->id,
+                ])->values()->all();
+            @endphp
+            @if ($mapStops !== [])
+                <x-district-diagram id="wallet-map" class="mt-4" :stops="$mapStops" local=""
+                    :title="'Map of the Golden Triangle district with '.count($mapStops).' demo merchants you can spend at. Each stop links to the merchant in the list below.'">
+                    {{-- The same stops as plain text: each links to its place in the list, with its block when we have one. --}}
+                    <ul class="mt-3 grid gap-x-6 sm:grid-cols-2" aria-label="Merchants on the map" data-map-stops>
+                        @foreach ($mapStops as $stop)
+                            @php($stopMerchant = $browse->firstWhere('id', (int) substr($stop['href'], 10)))
+                            <li>
+                                <a href="{{ $stop['href'] }}" data-merchant-link class="tap-target text-[0.9375rem] font-bold text-primary underline decoration-2 underline-offset-4 hover:decoration-accent">{{ $stop['name'] }}</a>@if (filled($stopMerchant?->address))<span class="text-sm text-muted"> · {{ $stopMerchant->address }}</span>@endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-district-diagram>
+            @endif
+
             <form method="GET" action="{{ route('employee.wallet') }}#browse" role="search" class="mt-4 flex gap-2">
                 @if ($category !== '')<input type="hidden" name="category" value="{{ $category }}">@endif
                 <label for="merchant-search" class="sr-only">Search merchants</label>
@@ -194,7 +215,7 @@
             @else
                 <ul class="merchant-line mt-5">
                     @foreach ($browse as $merchant)
-                        <li>
+                        <li id="merchant-{{ $merchant->id }}" tabindex="-1" class="scroll-mt-24 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-focus">
                             <p class="text-[1.0625rem] font-extrabold">{{ $merchant->name }}</p>
                             <p class="text-sm text-muted"><span class="capitalize">{{ $merchant->category }}</span> · {{ $merchant->address }}</p>
                             <a href="{{ route('employee.wallet', ['merchant' => $merchant->id]) }}#redeem"

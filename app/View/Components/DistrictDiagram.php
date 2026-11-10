@@ -32,22 +32,25 @@ class DistrictDiagram extends Component
 
     public readonly DistrictMap $map;
 
-    /** @var list<array{name: string, lines: list<string>, x: float, y: float, side: string, local: bool}> */
+    /** @var list<array{name: string, lines: list<string>, x: float, y: float, side: string, local: bool, href: ?string}> */
     public readonly array $points;
 
     /**
-     * @param  list<array{name: string, lat: float, lng: float, lines?: list<string>, side?: string}>  $stops
-     *                                                                                                         side: right, left, above, below, below-left or below-right (where the label goes)
+     * @param  list<array{name: string, lat: float, lng: float, lines?: list<string>, side?: string, href?: string}>  $stops
+     *                                                                                                                        href: an optional #fragment that makes the stop a link (the wallet's merchant list)
+     *                                                                                                                        side: right, left, above, below, below-left or below-right (where the label goes)
      */
     public function __construct(public array $stops, public string $local, public string $title)
     {
         $this->map = new DistrictMap(BidBoundary::fromFile(config('districts.golden_triangle.boundary_path'))->outerRings());
+        $shown = array_filter($stops, fn (array $stop) => $this->map->shows($stop['lat'], $stop['lng']));
         $this->points = self::loop(array_map(function (array $stop) {
             [$x, $y] = $this->map->project($stop['lat'], $stop['lng']);
 
             return ['name' => $stop['name'], 'lines' => $stop['lines'] ?? [$stop['name']], 'x' => $x, 'y' => $y,
-                'side' => $stop['side'] ?? 'right', 'local' => $stop['name'] === $this->local];
-        }, $stops));
+                'side' => $stop['side'] ?? 'right', 'local' => $this->local !== '' && $stop['name'] === $this->local,
+                'href' => $stop['href'] ?? null];
+        }, array_values($shown)));
     }
 
     /**
@@ -128,6 +131,12 @@ class DistrictDiagram extends Component
             'below-right' => [$x + $r + 9, $y + $r + 29, 'start'],
             default => [$x + $r + 11, $y + 8, 'start'],
         };
+    }
+
+    /** Does any stop link somewhere? Then the drawing is a group of links, not one image. */
+    public function linked(): bool
+    {
+        return collect($this->points)->contains(fn (array $point) => $point['href'] !== null);
     }
 
     public function viewBox(): string
