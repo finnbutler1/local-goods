@@ -116,7 +116,7 @@
                 <ol class="steps">
                     @foreach ([
                         ['Your company buys credits', 'Fund a monthly allowance for each employee on one invoice. Staff need nothing beyond the app.'],
-                        ['Employees spend them nearby', 'Credits work only at independent restaurants, shops, salons and gyms inside the district. The phone is the card.'],
+                        ['Employees spend them nearby', 'Credits work only at independent restaurants, shops, salons and gyms inside the district. Staff spend them from the app on their phone.'],
                         ['The money stays in the neighborhood', 'Every redemption is checked for abuse before a merchant is paid. Payments and merchant payouts run on Stripe in test mode: real Stripe transactions, no real money.'],
                     ] as $i => [$title, $body])
                         <li>
@@ -155,7 +155,7 @@
                                 'A practical way to improve the streets around your own office.',
                                 'A livelier neighborhood can make an office easier to recruit to, easier to stay at and more worth coming in to; a pilot would measure how much.',
                                 'Participation and spending reports you can bring to leadership.',
-                                'No cards to issue: the employee\'s phone is the card.',
+                                'One dashboard to fund the credits and track how they\'re spent.',
                             ] as $point)
                                 <li class="flex gap-3 border-b border-line py-3">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>

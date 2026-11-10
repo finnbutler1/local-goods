@@ -21,6 +21,18 @@ lock change; no adjudication row is written.
   dormant voting code switch the setting off in `setUp`. Test:
   `AdjudicationRetiredTest`.
 
+**Landing copy no longer rules out a card; roadmap additions — done
+(2026-11-10).** Copy only: no migration, money, fraud prompt, AI input, eval
+data or lock change.
+
+- "No cards to issue" and "The phone is the card" removed from the landing
+  page and the judge tour (a reusable employer-funded prepaid card is on the
+  roadmap). README "Where it's going" gains residential property owners
+  funding credits, Apple Pay/Google Pay for the card, and delivery partners
+  for Order to go, credited to feedback from "a business improvement district
+  director" (never name the person, district or organization).
+  Test: `LandingPageTest`.
+
 **Request a demo opens an email — code done (2026-11-09), not deployed.**
 Front end only: no migration, money, mail setting, mail guard, sign-in,
 fraud prompt, AI input, eval data or lock change.

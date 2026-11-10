@@ -27,6 +27,16 @@ class LandingPageTest extends TestCase
             ->assertDontSee('public records');
     }
 
+    public function test_landing_copy_does_not_rule_out_a_future_card(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('No cards to issue')
+            ->assertDontSee('The phone is the card')
+            ->assertSee('One dashboard to fund the credits')
+            ->assertSee('Staff spend them from the app on their phone.');
+    }
+
     public function test_hero_has_demo_request_and_log_in_actions(): void
     {
         $html = $this->get('/')

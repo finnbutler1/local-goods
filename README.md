@@ -376,7 +376,16 @@ None of this is built. There are no dates.
   that works only at approved shops. It takes Stripe Issuing approval, a
   verified business account, a bank or regulated partner holding the funds,
   and legal advice on prepaid card rules
-  ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)).
+  ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)). The card could also be
+  added to Apple Pay and Google Pay wallets, which needs card-program
+  approval and Apple's and Google's wallet provisioning.
+- **Residential property owners funding credits for their residents** as a
+  building amenity, spent at local shops on evenings and weekends,
+  especially by residents who live downtown but commute elsewhere for work.
+  It takes a second funder type alongside employers, and building owners
+  willing to fund it.
+- **Delivery partners for "Order to go".** We are exploring this; nothing
+  is built.
 - **A mobile app.** Today it is a phone-friendly website. A native app would
   add things like a wallet card and notifications.
 - **More districts.** A new Business Improvement District is a boundary plus
@@ -393,6 +402,9 @@ None of this is built. There are no dates.
   range of real phones ([docs/accessibility.md](docs/accessibility.md)).
 - **Stronger account security,** such as two-factor sign-in, for a real
   deployment with real staff accounts.
+
+The residential, wallet and delivery ideas came from feedback from a
+business improvement district director.
 - **Smarter fraud checks.** The planted collusion patterns look ordinary one
   payment at a time. Catching them needs new signals, so a new prompt version
   and a fresh unseen test set.
