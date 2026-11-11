@@ -1127,6 +1127,19 @@ Update this section whenever the milestone changes.
 
 ### Notes for later
 
+**Dec 1 reminders (after judging closes):**
+
+- **Update laravel/framework (13.33.0 → 13.40.0+, Dependabot PR #4) and
+  laravel/tinker (3.0.2 → 3.1.0, PR #2) after the contest, together:** the
+  tinker bump pulls the framework to 13.42.0 and about 30 other packages
+  (Symfony 8.1.x, Guzzle). They were left out of the Nov freeze on purpose.
+  Framework 13.35 routes the QUERY method, which is why
+  `BlockJudgeWrites` now allows a judge GET, HEAD and OPTIONS only
+  (`BlockJudgeWritesMethodsTest`); with that fix `JudgeReadOnlyTest` was the
+  only failure seen in CI. Re-run the full suite and the cached boot smoke
+  after the update.
+- Renew `/.well-known/security.txt` before 2027-11-10.
+
 - When real Golden Triangle merchant names are seeded from public records,
   update the footer in `resources/views/layouts/app.blade.php` and
   `tests/Feature/LandingPageTest.php` together. Until then the footer must say
