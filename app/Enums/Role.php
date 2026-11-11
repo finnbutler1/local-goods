@@ -159,7 +159,12 @@ enum Role: string
         return match ($this) {
             self::Employee => ['wallet' => ['label' => 'My Wallet', 'short' => 'Wallet', 'route' => 'employee.wallet', 'icon' => $i['wallet']]],
             self::Merchant => ['dashboard' => $dashboard, 'menu' => ['label' => 'Menu', 'short' => 'Menu', 'route' => 'merchant.menu', 'icon' => $i['store']]],
-            self::Judge => ['dashboard' => $dashboard, 'business-model' => $businessModel],
+            self::Judge => [
+                'dashboard' => $dashboard,
+                'business-model' => $businessModel,
+                'district' => ['label' => 'District Map', 'short' => 'Map', 'route' => 'district', 'icon' => $i['store']],
+                'merchant-eval' => ['label' => 'Merchant Eval', 'short' => 'Eval', 'route' => 'eval.merchants', 'icon' => $i['chart']],
+            ],
             self::EmployerAdmin => ['dashboard' => $dashboard],
             default => [],
         };
