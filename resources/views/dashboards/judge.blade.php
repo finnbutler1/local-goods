@@ -18,21 +18,17 @@
             </div>
         </header>
 
-        <section aria-labelledby="money-heading" class="rule-top col-span-12 md:col-span-6">
-            <h2 id="money-heading" class="stop-subtitle">
-                <a href="{{ route('money') }}" class="{{ $link }}">Where the Money Is</a>
-            </h2>
-            <p class="mt-2 max-w-[38rem]">
+        <section aria-labelledby="money-heading" class="col-span-12 md:col-span-6">
+            <x-station-sign heading-id="money-heading"><a href="{{ route('money') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Where the Money Is</a></x-station-sign>
+            <p class="mt-3 max-w-[38rem]">
                 Employers' money held for their staff is kept apart from anything Local Goods earns. A check runs over the whole ledger history
                 to test whether every promise has always had money behind it.
             </p>
         </section>
 
-        <section aria-labelledby="model-heading" class="rule-top col-span-12 md:col-span-6">
-            <h2 id="model-heading" class="stop-subtitle">
-                <a href="{{ route('business-model') }}" class="{{ $link }}">Business Model</a>
-            </h2>
-            <p class="mt-2 max-w-[38rem]">
+        <section aria-labelledby="model-heading" class="col-span-12 md:col-span-6">
+            <x-station-sign heading-id="model-heading"><a href="{{ route('business-model') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Business Model</a></x-station-sign>
+            <p class="mt-3 max-w-[38rem]">
                 This page shows how Local Goods could pay for itself in the Golden Triangle, across DC and nationally. It includes a projected
                 P&amp;L, what one district needs to break even, and every assumption with its source. A projection, not results.
             </p>

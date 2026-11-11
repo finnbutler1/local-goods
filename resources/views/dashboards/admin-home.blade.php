@@ -101,8 +101,8 @@
         </section>
     @endif
 
-    <section aria-labelledby="home-recent-heading" class="rule-heavy" data-home-card="recent">
-        <h2 id="home-recent-heading" class="stop-subtitle">Recent Activity</h2>
+    <section aria-labelledby="home-recent-heading" data-home-card="recent">
+        <x-station-sign heading-id="home-recent-heading">Recent Activity</x-station-sign>
         @if ($recent->isEmpty())
             <p class="mt-3 text-muted">Nothing has been decided or asked for yet.</p>
         @else
