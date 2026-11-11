@@ -116,6 +116,20 @@ jobs:
         # for 5+ minutes before answering. It only ever printed a report.
         run: npm ci --no-audit --no-fund
 
+      - name: No high-severity advisories in production JS packages
+        # npm's audit endpoint has hung before (see above), so give it two
+        # minutes and only warn if it never answers. A real finding at "high"
+        # or above fails the build. Dev-only packages are not checked.
+        run: |
+          set +e
+          timeout 120 npm audit --omit=dev --audit-level=high
+          code=$?
+          if [ "$code" -eq 124 ]; then
+            echo "::warning::npm audit did not answer in 2 minutes; skipped."
+            exit 0
+          fi
+          exit "$code"
+
       - name: Build front-end assets
         run: npm run build
 
