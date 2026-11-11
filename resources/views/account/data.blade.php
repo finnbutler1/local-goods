@@ -7,9 +7,9 @@
 <x-app-shell title="What We Store About You" active="account.data">
 <div class="max-w-3xl space-y-8">
     <header>
-        <x-eyebrow class="text-accent-ink">Your account</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">What We Store About You</h1>
-        <p class="mt-3 text-lg text-muted">In plain words, for the account you are signed in with. All people and transactions in this demo are fictional.</p>
+        <x-station-sign as="p">Your account</x-station-sign>
+        <h1 class="page-title">What We Store About You</h1>
+        <p class="page-lede text-muted">In plain words, for the account you are signed in with. All people and transactions in this demo are fictional.</p>
     </header>
 
     <x-card as="section" aria-labelledby="data-account-heading">

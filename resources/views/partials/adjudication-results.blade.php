@@ -28,7 +28,7 @@
     @if (count($all['adjudicators']) > 0)
         @include('partials.adjudication-group', ['all' => $all, 'unseen' => $unseen, 'noun' => 'Adjudicator', 'plural' => 'adjudicators'])
     @else
-        <p class="text-muted">No BID staff or contest judges have submitted yet.</p>
+        <x-empty-state>No BID staff or contest judges have submitted yet.</x-empty-state>
     @endif
 </section>
 

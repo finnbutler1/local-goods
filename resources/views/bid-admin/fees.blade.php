@@ -101,7 +101,7 @@
     <section aria-labelledby="log-heading" class="space-y-3">
         <h2 id="log-heading" class="text-2xl font-semibold text-primary">Every change</h2>
         @if ($changes->isEmpty())
-            <x-card><p class="text-muted">No changes yet: Local Goods has never charged a fee on merchant sales.</p></x-card>
+            <x-empty-state>No changes yet: Local Goods has never charged a fee on merchant sales.</x-empty-state>
         @else
             <x-rtable label="Fee changes table">
                 <table data-rtable="stack" class="w-full text-left">

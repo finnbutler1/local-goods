@@ -100,7 +100,7 @@
     <section aria-labelledby="days-heading" class="space-y-3">
         <h2 id="days-heading" class="text-2xl font-semibold text-primary">By day</h2>
         @if ($s['days']->isEmpty())
-            <x-card><p class="text-muted">Nothing yet. Once it is switched on, each weekday it runs shows here.</p></x-card>
+            <x-empty-state>Nothing yet. Once it is switched on, each weekday it runs shows here.</x-empty-state>
         @else
             <x-rtable label="Demo activity by day">
                 <table data-rtable="stack" class="w-full text-left">
@@ -142,7 +142,7 @@
     <section aria-labelledby="actions-heading" class="space-y-3">
         <h2 id="actions-heading" class="text-2xl font-semibold text-primary">Latest actions</h2>
         @if ($s['actions']->isEmpty())
-            <x-card><p class="text-muted">No actions yet.</p></x-card>
+            <x-empty-state>No actions yet.</x-empty-state>
         @else
             <x-rtable label="Latest demo activity actions">
                 <table data-rtable="stack" class="w-full text-left">

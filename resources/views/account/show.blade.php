@@ -3,9 +3,9 @@
 <x-app-shell title="Your Account" active="account">
 <div class="space-y-8">
     <header class="max-w-3xl">
-        <x-eyebrow class="text-accent-ink">Your account</x-eyebrow>
-        <h1 class="mt-1 text-title font-semibold text-primary">{{ auth()->user()->name }}</h1>
-        <p class="mt-3 text-lg text-muted"><x-breakable :value="auth()->user()->email" /></p>
+        <x-station-sign as="p">Your account</x-station-sign>
+        <h1 class="page-title">{{ auth()->user()->name }}</h1>
+        <p class="page-lede text-muted"><x-breakable :value="auth()->user()->email" /></p>
     </header>
 
     {{-- Reviewers have no password: they sign in with their magic link. --}}

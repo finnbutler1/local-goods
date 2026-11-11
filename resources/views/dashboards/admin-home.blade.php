@@ -104,7 +104,7 @@
     <section aria-labelledby="home-recent-heading" data-home-card="recent">
         <x-station-sign heading-id="home-recent-heading">Recent Activity</x-station-sign>
         @if ($recent->isEmpty())
-            <p class="mt-3 text-muted">Nothing has been decided or asked for yet.</p>
+            <x-empty-state class="mt-4">Nothing has been decided or asked for yet.</x-empty-state>
         @else
             <ul class="mt-4 border-t border-ink">
                 @foreach ($recent as $row)

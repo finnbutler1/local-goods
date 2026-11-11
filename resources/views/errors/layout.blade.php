@@ -14,9 +14,9 @@
         $signedIn = rescue(fn () => auth()->check(), false, false);
     @endphp
     <section aria-labelledby="error-heading" class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
-        <x-eyebrow class="text-accent-ink">Error {{ $code }}</x-eyebrow>
-        <h1 id="error-heading" class="mt-2 text-title font-semibold text-primary">{{ $heading }}</h1>
-        <p class="mt-4 text-lg text-muted">{{ $explanation }}</p>
+        <x-station-sign as="p">Error {{ $code }}</x-station-sign>
+        <h1 id="error-heading" class="page-title">{{ $heading }}</h1>
+        <p class="page-lede text-muted">{{ $explanation }}</p>
         @unless (in_array($detail, $generic, true))
             <p class="mt-3 rounded-xl bg-band p-4 font-semibold">{{ $detail }}</p>
         @endunless

@@ -13,17 +13,20 @@
         @include('apply.partials.prototype-notice')
 
         @if (! $application)
+            <header>
+                <x-station-sign as="p">Your application</x-station-sign>
+                <h1 id="open-heading" class="page-title">Your application</h1>
+            </header>
             <x-card as="section" aria-labelledby="open-heading">
-                <h1 id="open-heading" class="text-title font-semibold text-primary">Your application</h1>
-                <p class="mt-2 text-muted" id="status-link-intro">
+                <p class="text-muted" id="status-link-intro">
                     Open the private link you saved after applying. If it doesn't open by itself, paste the whole link here.
                 </p>
                 @include('apply.partials.status-link-form')
             </x-card>
         @else
             <header>
-                <x-eyebrow class="text-accent-ink">Your application</x-eyebrow>
-                <h1 class="mt-1 text-title font-semibold text-primary">{{ $application->business_name }}</h1>
+                <x-station-sign as="p">Your application</x-station-sign>
+                <h1 class="page-title">{{ $application->business_name }}</h1>
                 <p class="mt-1 text-muted">{{ $application->address }} · {{ $application->categoryLabel() }}</p>
                 @if ($application->is_sample)
                     <p class="mt-2"><x-badge tone="neutral">{{ MerchantApplication::SAMPLE_LABEL }}</x-badge></p>

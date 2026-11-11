@@ -3,8 +3,9 @@
 <x-app-shell title="Menu" active="menu" :context="$merchant->name.' · Golden Triangle BID'">
 <div class="mx-auto max-w-2xl space-y-8">
     <header>
-        <h1 class="text-3xl font-semibold text-primary">Your menu</h1>
-        <p class="mt-2 text-muted">
+        <x-station-sign as="p">Merchant</x-station-sign>
+        <h1 class="page-title">Your menu</h1>
+        <p class="page-lede text-muted">
             Employees pick from this menu when they pay with Local Goods credits, and can add an other amount for anything not on it.
             A change applies to new redemptions only: past ones keep the name and price they had.
         </p>

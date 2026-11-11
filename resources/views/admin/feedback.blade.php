@@ -81,7 +81,7 @@
         </form>
 
         @if ($items->isEmpty())
-            <p class="text-muted">No feedback matches.</p>
+            <x-empty-state>No feedback matches.</x-empty-state>
         @else
             <ul class="space-y-3">
                 @foreach ($items as $item)
