@@ -6,7 +6,8 @@
 #
 # The optional argument is the raw Elastic Beanstalk address (for example
 # something.elasticbeanstalk.com); it should answer 403 because only CloudFront
-# may reach it. Without it that check is skipped. Exits 1 if any check fails.
+# may reach it. The check uses http:// because that environment has no HTTPS
+# listener (CloudFront terminates TLS). Without it that check is skipped. Exits 1 if any check fails.
 # Explained in docs/security-verification.md.
 
 set -u
@@ -20,7 +21,10 @@ pass() { printf 'PASS  %s\n' "$1"; }
 bad()  { printf 'FAIL  %s\n' "$1"; fail=1; }
 
 status() { # method url
-  curl -sS -o /dev/null --max-time 10 -X "$1" -w '%{http_code}' "$2" 2>/dev/null || echo "000"
+  # curl prints 000 itself when it cannot connect, so don't add a second one.
+  local code
+  code=$(curl -sS -o /dev/null --max-time 10 -X "$1" -w '%{http_code}' "$2" 2>/dev/null) || code="000"
+  printf '%s' "${code:-000}" | tail -c 3
 }
 
 headers=$(curl -sS -D - -o /dev/null --max-time 10 "$SITE/" 2>/dev/null | tr -d '\r')
@@ -40,8 +44,12 @@ code=$(status POST "$OLD_HOST/stripe/webhook")
 
 if [ -n "$BEANSTALK" ]; then
   BEANSTALK="${BEANSTALK#http://}"; BEANSTALK="${BEANSTALK#https://}"
+  # http on purpose: the Beanstalk environment has no HTTPS listener (CloudFront
+  # terminates TLS), so https:// to it would never connect.
   code=$(status GET "http://$BEANSTALK/")
-  [ "$code" = "403" ] && pass "raw Beanstalk address is 403" || bad "raw Beanstalk address returned $code (expected 403)"
+  if [ "$code" = "403" ]; then pass "raw Beanstalk address is 403"
+  elif [ "$code" = "000" ]; then bad "raw Beanstalk address: could not connect"
+  else bad "raw Beanstalk address returned $code (expected 403)"; fi
 else
   printf 'SKIP  raw Beanstalk address (pass it as the first argument)\n'
 fi

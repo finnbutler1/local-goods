@@ -18,6 +18,8 @@ The script only sends plain requests with no credentials and no body, and writes
 | `POST /stripe/webhook` on the old CloudFront address | 400 (the signature check answers; it is not redirected) |
 | The raw Elastic Beanstalk address, if you pass it | 403 (only CloudFront may reach the server) |
 
+The raw-address check uses `http://`, not `https://`: the Elastic Beanstalk environment has no HTTPS listener, because CloudFront terminates TLS in front of it. If the address can't be reached at all, that line says "could not connect" (a network problem, not a statement about the lock). The address is only ever typed on the command line; it is not stored in the repo.
+
 It prints PASS, FAIL or SKIP per line and exits 1 if anything fails.
 
 ## 2. Tests that act as attack checks
