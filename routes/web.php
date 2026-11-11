@@ -60,6 +60,8 @@ Route::get('/district', DistrictMapController::class)->middleware('throttle:dist
 // Who does what, for BIDs (ADR 0031): public, linked from the landing page.
 Route::get('/who-does-what', WhoDoesWhatController::class)->name('who-does-what');
 Route::get('/security', SecurityController::class)->name('security');
+// Roadmap ideas drawn as concepts, none built. Shows a page and does nothing else.
+Route::view('/coming-next', 'coming-next')->name('coming-next');
 // Apply to join (ADR 0031): no account needed. Sending is limited per IP and guarded by a honeypot.
 Route::get('/apply', [ApplyController::class, 'create'])->name('apply');
 Route::post('/apply', [ApplyController::class, 'store'])->middleware('throttle:'.config('applications.per_ten_minutes', 3).',10,apply.store')->name('apply.store');

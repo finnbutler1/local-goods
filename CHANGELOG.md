@@ -3,6 +3,14 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-11: A "Coming next" page
+
+- **`/coming-next`** draws four roadmap ideas as sketches: a Local Goods
+  card in a phone wallet, delivery for Order to go, credits for residents, and
+  AI suggesting merchants for delivery. Every card says "Concept, not built"
+  and what it would take. It says plainly that we have not partnered with any
+  delivery service. Linked from `/judge` and the README.
+
 ## 2026-11-10: Security headers and a Security & Trust page
 
 - **Browser security headers** on every page (not the health check or the

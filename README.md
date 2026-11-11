@@ -369,7 +369,8 @@ php artisan test
 
 ### Where it's going
 
-None of this is built. There are no dates.
+None of this is built. There are no dates. Some of it is drawn as sketches
+on the [Coming next page](https://uselocalgoods.com/coming-next).
 
 - **A pilot with real independent merchants and one employer.** It takes
   merchants who agree to join, an employer willing to fund a small program,

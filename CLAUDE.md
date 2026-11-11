@@ -5,6 +5,19 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**"Coming next" concept page — code done (2026-11-11), not deployed.** View
+and a `Route::view` only: no migration, money, sign-in, fraud prompt, AI
+input, eval data or lock change.
+
+- `/coming-next` (`coming-next`): four drawn cards (wallet card, delivery for
+  Order to go, residents, AI merchant suggestions), each "Concept, not built"
+  at the top and in its `aria-label`. HTML/CSS only; Apple Pay, Google Pay,
+  DoorDash Drive and Uber Direct appear as plain text. It must say "We have
+  not partnered with any delivery service." and never imply a partnership or
+  endorsement; never name the director or the district. Keep `$` figures
+  away from fee/revenue words (`PublicClaimsTest`). Linked from `/judge` and
+  the README. Test: `ComingNextPageTest`.
+
 **Security headers, reporting and a Security & Trust page — code done
 (2026-11-10), not deployed.** No migration, money, sign-in, fraud prompt, AI
 input, eval data or lock change.

@@ -42,6 +42,13 @@
             </p>
         </section>
 
+        <section aria-labelledby="coming-next-heading" class="col-span-12 md:col-span-6 lg:col-span-4">
+            <x-station-sign heading-id="coming-next-heading"><a href="{{ route('coming-next') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Coming next</a></x-station-sign>
+            <p class="mt-3 max-w-[38rem]">
+                Ideas for where Local Goods could go, drawn as sketches. Each is labelled "Concept, not built" and says what it would take.
+            </p>
+        </section>
+
         <section aria-labelledby="new-heading" class="col-span-12 lg:col-span-5">
             <x-station-sign heading-id="new-heading">What's new {{ $since ? 'since your last visit' : 'lately' }}</x-station-sign>
             @if ($since)
