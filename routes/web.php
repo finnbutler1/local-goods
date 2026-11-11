@@ -44,6 +44,7 @@ use App\Http\Controllers\Projections\BusinessModelController;
 use App\Http\Controllers\Projections\ProjectionController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StyleguideController;
+use App\Http\Controllers\VersionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -60,6 +61,8 @@ Route::get('/district', DistrictMapController::class)->middleware('throttle:dist
 // Who does what, for BIDs (ADR 0031): public, linked from the landing page.
 Route::get('/who-does-what', WhoDoesWhatController::class)->name('who-does-what');
 Route::get('/security', SecurityController::class)->name('security');
+// Commit and build time of this copy, from the files the build script wrote. JSON, no-store.
+Route::get('/version', VersionController::class)->name('version');
 // Roadmap ideas drawn as concepts, none built. Shows a page and does nothing else.
 Route::view('/coming-next', 'coming-next')->name('coming-next');
 // Apply to join (ADR 0031): no account needed. Sending is limited per IP and guarded by a honeypot.

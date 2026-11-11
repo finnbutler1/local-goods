@@ -51,6 +51,12 @@ php -r '
     }
 ' || fail "The front-end build is incomplete (see the message above)."
 
+# Markers for /version (and mark-deployed.sh). They go INTO the zip, so write
+# them before zipping. The time is when this zip was built, not when it was
+# uploaded.
+git rev-parse HEAD > .deploy-zip-commit 2>/dev/null || rm -f .deploy-zip-commit
+date -u +%Y-%m-%dT%H:%M:%SZ > .deploy-zip-time
+
 echo "Creating deploy.zip..."
 rm -f deploy.zip
 zip -r -q deploy.zip . \
@@ -62,7 +68,6 @@ zip -r -q deploy.zip . \
     -x "tests/*" \
     -x "deploy.zip" \
     -x ".last-deploy-commit" \
-    -x ".deploy-zip-commit" \
     -x "public/hot" \
     -x "database/*.sqlite*" \
     -x "storage/*.sqlite*" \
@@ -97,6 +102,9 @@ if grep -qEx '\.env|.*\.pem|.*\.key|storage/app/fraud-eval-cache/.+' <<< "$conte
     fail "deploy.zip contains a secret or the eval cache:
 $(grep -Ex '\.env|.*\.pem|.*\.key|storage/app/fraud-eval-cache/.+' <<< "$contents")"
 fi
+for marker in .deploy-zip-time .deploy-zip-commit; do
+    [ -f "$marker" ] && ! grep -qxF "$marker" <<< "$contents" && fail "deploy.zip is missing $marker."
+done
 for file in public/build/manifest.json $(cd public/build && find assets -type f | sed 's|^|public/build/|'); do
     grep -qxF "$file" <<< "$contents" || fail "deploy.zip is missing $file."
 done
@@ -110,7 +118,6 @@ echo "Upload it in the Elastic Beanstalk console (Upload and deploy)."
 
 # Reminder only, never blocks the build: does this deploy include database
 # migrations since the last deployed commit? If so, take an RDS snapshot first.
-git rev-parse HEAD > .deploy-zip-commit 2>/dev/null || true
 set +e
 migrations="$(scripts/deploy-migrations.sh)"
 migration_check=$?

@@ -3,6 +3,15 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-11: What is deployed right now
+
+- **`/version`** shows the commit (short and full) and build time of the
+  running copy as JSON, or "unknown". Nothing else, never cached. The deploy
+  zip now carries the two marker files it reads. Linked from the README and
+  JUDGES.md.
+- The security probe script reports a failed connection once ("could not
+  connect") and its doc says why the raw check uses http.
+
 ## 2026-11-11: A "Coming next" page
 
 - **`/coming-next`** draws four roadmap ideas as sketches: a Local Goods

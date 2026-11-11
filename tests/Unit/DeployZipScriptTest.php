@@ -50,4 +50,15 @@ class DeployZipScriptTest extends TestCase
             $this->assertStringNotContainsString($retired, $script, "{$retired} was replaced in ADR 0038.");
         }
     }
+
+    public function test_script_writes_the_version_markers_before_zipping_and_ships_them(): void
+    {
+        $script = $this->script();
+
+        $this->assertStringNotContainsString('-x ".deploy-zip-commit"', $script, 'The commit marker feeds /version, so it must ship.');
+        $this->assertStringNotContainsString('-x ".deploy-zip-time"', $script);
+        $this->assertLessThan(strpos($script, 'zip -r -q deploy.zip'), strpos($script, '> .deploy-zip-commit'));
+        $this->assertLessThan(strpos($script, 'zip -r -q deploy.zip'), strpos($script, '> .deploy-zip-time'));
+        $this->assertStringContainsString('deploy.zip is missing $marker', $script);
+    }
 }

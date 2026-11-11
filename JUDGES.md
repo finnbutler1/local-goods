@@ -18,6 +18,7 @@ On [uselocalgoods.com](https://uselocalgoods.com), press **Look around (read-onl
 - AI results: [/eval](https://uselocalgoods.com/eval), [/eval/merchants](https://uselocalgoods.com/eval/merchants), [README: How the AI was measured](README.md#how-the-ai-was-measured)
 - Money: [Where the money is](https://uselocalgoods.com/where-the-money-is)
 - Security: [/security](https://uselocalgoods.com/security), [docs/security-verification.md](docs/security-verification.md)
+- [What is deployed right now](https://uselocalgoods.com/version): the commit and build time of the running copy
 - Roadmap concepts: [/coming-next](https://uselocalgoods.com/coming-next)
 - Method and limits: [TRANSPARENCY.md](TRANSPARENCY.md); decisions: [docs/adr/](docs/adr/)
 

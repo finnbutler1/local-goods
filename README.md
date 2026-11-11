@@ -49,6 +49,8 @@ Scored on the official rubric. A short path through the app is in [JUDGES.md](JU
 | Business impact & presentation (10%) | An employer-first pitch, with the outside-study estimate and the projection each labelled as what they are. Feedback from a business improvement district executive director (Nov 10) shaped the roadmap: resident credits from property owners, the card in Apple Pay, delivery partners. | [/coming-next](https://uselocalgoods.com/coming-next), [Where it's going](#wheres-it-going), [Business model](#business-model) |
 | Bonus, up to +5: accessibility and ethical AI | Names never reach the AI, every AI decision is explained, a person approves each hold, and every page is checked for accessibility. | [`AccessibilityTest`](tests/Feature/AccessibilityTest.php), [Security & Trust](https://uselocalgoods.com/security), [docs/accessibility.md](docs/accessibility.md) |
 
+[What is deployed right now](https://uselocalgoods.com/version): the commit this copy was built from and when the build was made.
+
 ---
 
 ## You work here. Spend here.
