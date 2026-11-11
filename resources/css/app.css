@@ -1800,6 +1800,49 @@ table.statement > :is(tbody, tfoot) > tr.statement-after > td {
     letter-spacing: -0.02em;
 }
 
+/* A figure can never run into its neighbour (any width, any value).
+   Every cell that holds a large .money figure is a size container with
+   min-width 0, and the figure is capped at 12% of the cell's width, which
+   fits a 12-character value such as $1,234,567.89 (about 7.7em wide in tabular Public Sans bold).
+   The caps repeat Tailwind's own sizes (text-3xl to text-6xl, and the sm:
+   and lg: steps) so the look is unchanged whenever the cell is wide enough.
+   Numbers have no spaces, so they never break across lines. Unlayered on
+   purpose: it must win over the utilities. */
+:where(.rule-top, .rule-heavy, dl > div):has(.money:not(.text-sm)),
+.figure-cell {
+    container-type: inline-size;
+    min-width: 0;
+}
+
+.money {
+    max-width: 100%;
+    overflow-wrap: normal;
+}
+
+/* The wallet balance has its own clamp(); same ceiling. */
+.wallet-balance {
+    container-type: inline-size;
+}
+
+.wallet-balance .money[data-testid="balance"] {
+    font-size: min(clamp(2.75rem, 2.2rem + 2.4vw, 3.5rem), 12cqw);
+}
+
+.money[class~="text-3xl"] { font-size: min(1.875rem, 12cqw); }
+.money[class~="text-4xl"] { font-size: min(2.25rem, 12cqw); }
+.money[class~="text-5xl"] { font-size: min(3rem, 12cqw); }
+.money[class~="text-6xl"] { font-size: min(3.75rem, 12cqw); }
+
+@media (width >= 40rem) {
+    .money[class~="sm:text-4xl"] { font-size: min(2.25rem, 12cqw); }
+    .money[class~="sm:text-5xl"] { font-size: min(3rem, 12cqw); }
+    .money[class~="sm:text-6xl"] { font-size: min(3.75rem, 12cqw); }
+}
+
+@media (width >= 64rem) {
+    .money[class~="lg:text-5xl"] { font-size: min(3rem, 12cqw); }
+}
+
 /* Ledger tables and transaction amounts: Overpass Mono, tabular. */
 @utility ledger-num {
     font-family: var(--font-mono);

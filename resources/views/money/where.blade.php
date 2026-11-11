@@ -38,8 +38,10 @@
                 <h3 id="customer-funds-heading" class="statement-head text-xl font-bold tracking-tight">Customer funds account</h3>
                 <p class="mt-3 text-sm text-muted">Employer money only: a promise to pay. None of it is ours.</p>
                 <p class="mt-2 text-sm"><span class="font-semibold">May be used for:</span> paying merchants for what staff spent, and refunding employers. Nothing else.</p>
-                <p class="figure-label mt-6">Customer funds held</p>
-                <p class="money mt-1 text-5xl text-primary" data-customer-funds>{{ Money::format($now->customerFundsCents()) }}</p>
+                <div class="figure-cell">
+                    <p class="figure-label mt-6">Customer funds held</p>
+                    <p class="money mt-1 text-5xl text-primary" data-customer-funds>{{ Money::format($now->customerFundsCents()) }}</p>
+                </div>
                 <x-rtable class="mt-6" label="Customer funds held, by where they are">
                     <table data-rtable="fit" class="statement text-left text-sm">
                         <caption class="sr-only">Customer funds held, by where they are</caption>
