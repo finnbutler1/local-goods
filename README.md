@@ -215,6 +215,34 @@ switcher for each role, and a Feedback button on every page
 
 **Data:** the merchant candidates come from public DC business license records. Only business information is kept (name, address, category, license type): no owner names, contact details or personal data. The AI's outputs are tested so they never name individuals ([details](TRANSPARENCY.md#merchant-data-public-business-information-only)).
 
+## How the AI was measured
+
+Each result is on cases held back from prompt writing, with a 95% Wilson confidence interval (`php scripts/eval-intervals.php` prints them). With samples this small the intervals are wide.
+
+| Measure | Result | 95% interval |
+|---|---|---|
+| Fraud: suspicious cases caught | 17 of 26 | 46.2–80.6% |
+| Fraud: holds that were suspicious | 17 of 19 | 68.6–97.1% |
+| Fraud: agreement with the person | 39 of 50 | 64.8–87.2% |
+| Merchant: agreement with the hand labels | 17 of 20 | 64.0–94.8% |
+| Merchant: always-"not eligible" baseline | 17 of 20 | 64.0–94.8% |
+| Merchant: independents found | 0 of 3 | 0–56.1% |
+| Merchant: chains wrongly called eligible | 0 of 17 | 0–18.4% |
+
+**Against the baseline.** Merchant Eligibility Matching agrees with the labels on 17 of 20, which is exactly what answering "not eligible" every time would score. On agreement it shows no gain over that baseline, and it found none of the 3 independents (with 3 cases, that tells us little). What it did do is call none of the 17 chains eligible and send 14 of 20 cases to a person, which is the job of a triage tool. For fraud there is no such simple baseline: a rule of "always clear" would catch 0 of 26.
+
+**Locked before testing.**
+- Fraud: the 50 `holdout_3` cases were labeled by hand in commit `5f594c1` and locked with a SHA-256 per row before the AI saw them. The prompt is frozen at `8d5e1e70`, and CI fails if a locked row changes.
+- Merchant: the 60 hand labels are locked in `data/merchant_labels_lock.json` (labeling commit `37cc902`). The prompt is frozen at `458e8c2d` and the holdout was run once with it.
+
+**Known limits.**
+- The planted collusion rings look ordinary one redemption at a time, so the fraud check does not catch them; that would need new signals and a fresh holdout.
+- The merchant AI has no web search, so it routes most independents to a person.
+- The fraud cases are synthetic, and one person made all the labels. Agreement shows how closely the AI matches that person, not whether either is right about real fraud.
+- A blind review of the disagreements got no votes ([TRANSPARENCY.md](TRANSPARENCY.md#checking-the-persons-labels-blind-adjudication-retired)).
+
+Details: [fraud results](docs/evals/fraud-eval-results.md), [merchant results](docs/evals/merchant-eval-results.md), [method](TRANSPARENCY.md#how-we-measure-it).
+
 ## Fails closed
 
 When the AI call fails, Local Goods holds the redemption instead of approving it. It fails closed, the way a bank's fraud team would design it.
