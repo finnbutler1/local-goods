@@ -14,7 +14,6 @@
 
         @if (! $application)
             <header>
-                <x-station-sign as="p">Your application</x-station-sign>
                 <h1 id="open-heading" class="page-title">Your application</h1>
             </header>
             <x-card as="section" aria-labelledby="open-heading">

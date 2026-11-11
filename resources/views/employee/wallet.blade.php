@@ -236,7 +236,7 @@
 
     <section aria-labelledby="recent-heading" class="wallet-recent pt-4">
         <x-station-sign heading-id="recent-heading">Recent redemptions</x-station-sign>
-        <ul class="ruled-rows mt-4">
+        <ul class="ruled-rows mt-4 border-t-0">
             @forelse ($recent as $redemption)
                 <li class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
@@ -269,7 +269,7 @@
     <section id="history" aria-labelledby="history-heading" class="wallet-history scroll-mt-24 pt-4">
         <x-station-sign heading-id="history-heading">Transaction history</x-station-sign>
         <p class="mt-3 text-[0.9375rem] text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
-        <ul class="ruled-rows mt-4">
+        <ul class="ruled-rows mt-4 border-t-0">
             @forelse ($history as $row)
                 <li class="flex items-start justify-between gap-3 py-3!">
                     <div class="min-w-0">
