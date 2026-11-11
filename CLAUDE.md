@@ -5,6 +5,26 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Security headers, reporting and a Security & Trust page — code done
+(2026-11-10), not deployed.** No migration, money, sign-in, fraud prompt, AI
+input, eval data or lock change.
+
+- `SecurityHeaders` (web group only; `/up` and `/stripe/webhook` get none).
+  The Content-Security-Policy is **report-only and must stay that way
+  before the freeze**; enforcing it needs Finn's say-so. A new outside
+  origin (script, frame, API) goes into its policy. HSTS has no preload.
+- `/.well-known/security.txt` expires **2027-11-10** (`SecurityTxtTest`
+  fails when it lapses); `SECURITY.md` at the root.
+- `/security` (`SecurityController::GROUPS`): every claim cites a file,
+  `SecurityPageTest` checks the files exist; the SPF/DMARC line rests on
+  DNS (Finn checked: SPF `-all`, DMARC `p=reject`). Never add "secure",
+  "guarantee" or "bank-grade"; change the list with the protection.
+- `.github/dependabot.yml` (weekly; composer patch/minor only). **Dependabot
+  PRs are not merged before the Nov 16 freeze.** CI audits production npm
+  packages at "high".
+- Tests: `SecurityHeadersTest`, `SecurityTxtTest`, `SecurityPageTest`,
+  `DependabotConfigTest`.
+
 **Blind adjudication retired — code done (2026-11-09, ADR 0041), not
 deployed.** No migration, money, fraud prompt, AI input, eval data, sign-in or
 lock change; no adjudication row is written.

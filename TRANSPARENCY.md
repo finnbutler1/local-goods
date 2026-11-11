@@ -1026,6 +1026,31 @@ checked or built, and how.
   the PHP packages that day. Since November 6, CI runs `composer audit` on
   every push and fails on any advisory (below).
 
+#### Headers, reporting and package checks (2026-11-10)
+
+- **Browser headers** (`app/Http/Middleware/SecurityHeaders.php`, web group
+  only; `/up` and `/stripe/webhook` get none): `X-Content-Type-Options:
+  nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+  `X-Frame-Options: DENY`, a `Permissions-Policy` turning off camera,
+  microphone and location, and `Strict-Transport-Security` (one year,
+  includeSubDomains, no preload) on HTTPS requests. The
+  `Content-Security-Policy-Report-Only` header allows Stripe's script, frames
+  and API and nothing else outside our own domain. **It is not enforced**: it
+  can't block anything, and it is not turned on before the contest in case it
+  breaks the demo. Test: `SecurityHeadersTest`.
+- **Reporting:** `/.well-known/security.txt` and `SECURITY.md`
+  (`SecurityTxtTest` fails when the Expires date passes: renew it by
+  2027-11-10).
+- **Packages:** `npm audit --omit=dev` found no vulnerabilities on
+  2026-11-10; CI now fails on a high-severity one (skipped with a warning if
+  npm's audit service doesn't answer in two minutes). Dependabot opens weekly
+  PRs; none are merged before the Nov 16 freeze.
+- **Plain-English page:** `/security`, each claim tied to a file
+  (`SecurityPageTest` checks the files exist).
+- **Cookies and sessions, as set:** HTTPS-only (production), HttpOnly,
+  SameSite Lax, host-only, 120-minute lifetime, cookie sessions in
+  production (Laravel encrypts the cookie value). Unchanged.
+
 **Not done:** no penetration test or outside security review; the JavaScript
 packages (npm) were not audited; the history scan only finds
 secrets that match its patterns; the server's network rules don't yet block

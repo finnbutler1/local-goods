@@ -3,6 +3,19 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-10: Security headers and a Security & Trust page
+
+- **Browser security headers** on every page (not the health check or the
+  Stripe webhook): no content sniffing, no framing, a strict referrer policy,
+  HTTPS-only for a year, and a Content Security Policy in report-only mode
+  (it reports, blocks nothing).
+- **`/security`** explains the real protections in plain language, with the
+  file behind each one and a list of what is not done yet. Linked from the
+  footer.
+- **security.txt and SECURITY.md** say how to report a problem.
+- **Dependabot** opens weekly update PRs, and CI now audits production
+  JavaScript packages for high-severity problems.
+
 ## 2026-11-10: Demo Tools
 
 - **"Try a suspicious redemption" moved off the wallet** to a new Demo Tools
