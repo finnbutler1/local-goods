@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Http\Controllers\JudgeController;
+use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\DemoAccountSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -35,6 +38,20 @@ class JudgeLandingTest extends TestCase
 
         foreach ($links[1] as $link) {
             $this->followingRedirects()->get($link)->assertOk();
+        }
+    }
+
+    public function test_judge_home_links_to_security_and_trust_for_the_public_and_a_named_judge(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        DemoAccountSeeder::seedPublicReviewer(config('demo.accounts.judge'));
+        $public = User::where('reviewer_type', ReviewerType::Public)->sole();
+        $named = User::factory()->role(Role::Judge)->create(['reviewer_type' => ReviewerType::ContestJudge]);
+
+        foreach ([$public, $named] as $judge) {
+            $this->actingAs($judge)->get('/judge')->assertOk()
+                ->assertSee('href="'.route('security').'"', false)
+                ->assertSee('Security &amp; Trust', false);
         }
     }
 

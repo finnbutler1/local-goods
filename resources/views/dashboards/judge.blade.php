@@ -18,7 +18,7 @@
             </div>
         </header>
 
-        <section aria-labelledby="money-heading" class="col-span-12 md:col-span-6">
+        <section aria-labelledby="money-heading" class="col-span-12 md:col-span-6 lg:col-span-4">
             <x-station-sign heading-id="money-heading"><a href="{{ route('money') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Where the Money Is</a></x-station-sign>
             <p class="mt-3 max-w-[38rem]">
                 Employers' money held for their staff is kept apart from anything Local Goods earns. A check runs over the whole ledger history
@@ -26,11 +26,19 @@
             </p>
         </section>
 
-        <section aria-labelledby="model-heading" class="col-span-12 md:col-span-6">
+        <section aria-labelledby="model-heading" class="col-span-12 md:col-span-6 lg:col-span-4">
             <x-station-sign heading-id="model-heading"><a href="{{ route('business-model') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Business Model</a></x-station-sign>
             <p class="mt-3 max-w-[38rem]">
                 This page shows how Local Goods could pay for itself in the Golden Triangle, across DC and nationally. It includes a projected
                 P&amp;L, what one district needs to break even, and every assumption with its source. A projection, not results.
+            </p>
+        </section>
+
+        <section aria-labelledby="security-heading" class="col-span-12 md:col-span-6 lg:col-span-4">
+            <x-station-sign heading-id="security-heading"><a href="{{ route('security') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Security &amp; Trust</a></x-station-sign>
+            <p class="mt-3 max-w-[38rem]">
+                What protects the money, access, data and AI decisions, in plain language, with the file behind each protection.
+                It also lists what isn't done yet.
             </p>
         </section>
 
