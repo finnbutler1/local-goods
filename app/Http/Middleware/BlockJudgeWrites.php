@@ -34,10 +34,16 @@ class BlockJudgeWrites
         'adjudication.finish',
     ];
 
+    /**
+     * Not isMethodSafe(): Symfony also counts TRACE and QUERY as "safe", and
+     * Laravel 13.35+ routes QUERY. A judge gets GET, HEAD and OPTIONS only.
+     */
+    public const READ_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user()?->isReadOnly()
-            && ! $request->isMethodSafe()
+            && ! in_array($request->getMethod(), self::READ_METHODS, true)
             && ! in_array($request->route()?->getName(), self::ALLOWED_ROUTES, true)) {
             abort(403, 'Your account is read-only.');
         }
