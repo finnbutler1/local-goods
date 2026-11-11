@@ -357,6 +357,10 @@ php artisan test
 - **Stripe Connect in test mode.** Employers buy credits, staff spend them at
   approved independent shops, and shops are paid out through Stripe. No real
   money moves.
+- **Employers can pay by card, Apple Pay or Google Pay.** Stripe Checkout
+  shows the wallets on devices that support them, in test mode. They are
+  switched on in Stripe's payment-method settings, not in our code, and
+  payment methods are limited to those three on purpose.
 - **Two AI functions, with people in charge.** Redemption Fraud Detection
   holds unusual payments, and Merchant Eligibility Matching recommends which
   businesses qualify. People decide every held redemption and every new
@@ -382,6 +386,8 @@ on the [Coming next page](https://uselocalgoods.com/coming-next).
   ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)). The card could also be
   added to Apple Pay and Google Pay wallets, which needs card-program
   approval and Apple's and Google's wallet provisioning.
+- **Paying for credits by bank transfer (ACH),** once returned and failed
+  payments are handled.
 - **Residential property owners funding credits for their residents** as a
   building amenity, spent at local shops on evenings and weekends,
   especially by residents who live downtown but commute elsewhere for work.

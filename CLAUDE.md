@@ -5,6 +5,17 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Apple Pay / Google Pay wording and the dispute gap — docs and copy only
+(2026-11-11), not deployed.** No code logic, migration, money or Stripe change.
+
+- Employers can pay for credits by card, Apple Pay or Google Pay through
+  Stripe Checkout (enabled in the Stripe Dashboard); bank debits and other
+  delayed methods stay off on purpose. README bullet, a `/security` Money
+  item (`SecurityController::GROUPS` paths may now be a list), a
+  `/coming-next` wallet-card sentence and a "What's not done yet" line:
+  card disputes and returned payments aren't handled yet (test mode only).
+  Tests: `SecurityPageTest`, `ComingNextPageTest`.
+
 **"Coming next" concept page — code done (2026-11-11), not deployed.** View
 and a `Route::view` only: no migration, money, sign-in, fraud prompt, AI
 input, eval data or lock change.
@@ -1141,6 +1152,12 @@ Update this section whenever the milestone changes.
 ### Notes for later
 
 **Dec 1 reminders (after judging closes):**
+
+- Handle `charge.dispute.*` and returned or failed payments, and show a clear
+  pending or failed state for employers, before enabling any bank debit or
+  other delayed payment method. Stripe payment methods are limited to cards,
+  Apple Pay and Google Pay on purpose (a Dashboard setting, not code; the
+  webhook credits only on `payment_intent.succeeded`).
 
 - **Update laravel/framework (13.33.0 → 13.40.0+, Dependabot PR #4) and
   laravel/tinker (3.0.2 → 3.1.0, PR #2) after the contest, together:** the

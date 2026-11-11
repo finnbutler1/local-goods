@@ -55,7 +55,7 @@
                         <h3 class="text-lg font-bold">What it would take</h3>
                         <ul class="mt-2 max-w-[42rem]">
                             <li class="border-b border-line py-3">A card program through Stripe Issuing, which needs approval and a verified business account (<a href="https://github.com/finnbutler1/local-goods/blob/main/docs/adr/0036-no-card-preview-yet.md" class="font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover" rel="noopener">why we haven't built it</a>).</li>
-                            <li class="border-b border-line py-3">Approval to add the cards to Apple Pay and Google Pay.</li>
+                            <li class="border-b border-line py-3">Approval to add the cards to Apple Pay and Google Pay. Employers can already pay for credits with Apple Pay today; adding the employee's card to Apple Pay is the next step.</li>
                             <li class="border-b border-line py-3">A card that works only at approved local shops, so staff keep paying locally.</li>
                         </ul>
                     </div>

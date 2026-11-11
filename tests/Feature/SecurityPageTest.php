@@ -25,12 +25,24 @@ class SecurityPageTest extends TestCase
         $r->assertSee('SPF and DMARC');
     }
 
+    public function test_it_states_the_payment_methods_and_the_dispute_gap(): void
+    {
+        $r = $this->get('/security')->assertOk();
+
+        $r->assertSee('Apple Pay or Google Pay through Stripe Checkout');
+        $r->assertSee('Bank debits and other delayed payment methods are deliberately switched off');
+        $r->assertSee('payment_intent.succeeded');
+        $r->assertSee('app/Services/Payments/StripeCheckout.php');
+        $r->assertSee('app/Services/Payments/StripeWebhookHandler.php');
+        $r->assertSee("Card disputes and returned payments aren't handled automatically yet (test mode only).");
+    }
+
     public function test_every_cited_file_exists(): void
     {
         foreach (SecurityController::GROUPS as $group) {
             foreach ($group['items'] as [, , $path]) {
-                if ($path !== null) {
-                    $this->assertFileExists(base_path($path), "Cited on /security: $path");
+                foreach ((array) $path as $file) {
+                    $this->assertFileExists(base_path($file), "Cited on /security: $file");
                 }
             }
         }

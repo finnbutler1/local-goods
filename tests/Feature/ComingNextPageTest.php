@@ -45,6 +45,14 @@ class ComingNextPageTest extends TestCase
         $this->assertSame(4, preg_match_all('/role="img"[^>]*aria-label="Concept, not built: /', $html));
     }
 
+    public function test_wallet_card_says_what_exists_today_and_what_is_next(): void
+    {
+        $this->assertStringContainsString(
+            "Employers can already pay for credits with Apple Pay today; adding the employee's card to Apple Pay is the next step.",
+            $this->text(),
+        );
+    }
+
     public function test_it_names_no_partnership_or_endorsement(): void
     {
         $text = $this->text();

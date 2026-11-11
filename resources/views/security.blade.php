@@ -28,7 +28,7 @@
                             <li class="border-b border-line py-3">
                                 <p>{{ $what }}</p>
                                 <p class="mt-1 text-sm text-muted">
-                                    {{ $label }}@if ($path): <a href="https://github.com/finnbutler1/local-goods/blob/main/{{ $path }}" class="{{ $link }}" rel="noopener"><code class="wrap-anywhere-safe">{{ $path }}</code></a>@endif
+                                    {{ $label }}@foreach ((array) $path as $p)@if ($loop->first): @else, @endif<a href="https://github.com/finnbutler1/local-goods/blob/main/{{ $p }}" class="{{ $link }}" rel="noopener"><code class="wrap-anywhere-safe">{{ $p }}</code></a>@endforeach
                                 </p>
                             </li>
                         @endforeach

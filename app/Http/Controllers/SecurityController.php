@@ -27,6 +27,7 @@ class SecurityController extends Controller
                 ['A solvency check refuses any money step that would leave Local Goods owing more than it holds, and a public page shows the result.', 'Solvency guard', 'app/Services/Solvency/SolvencyGuard.php'],
                 ['Where the Money Is shows where the funds sit and whether the records agree. Judges see words and counts, not balances.', 'The page', 'resources/views/money'],
                 ['Stripe runs in test mode only. Live keys are refused, and with no keys the app simulates payments instead.', 'Stripe mode', 'app/Support/StripeMode.php'],
+                ['Employers can pay by card, Apple Pay or Google Pay through Stripe Checkout. Bank debits and other delayed payment methods are deliberately switched off, and credits are added only when Stripe reports the payment succeeded (payment_intent.succeeded).', 'Checkout and webhook', ['app/Services/Payments/StripeCheckout.php', 'app/Services/Payments/StripeWebhookHandler.php']],
                 ['A payment the fraud check holds can never be paid out until a person approves it.', 'Transfer gate', 'app/Services/Payments/TransferGate.php'],
                 ['Employees can\'t spend more than their balance. The check includes sales tax, happens inside a locked transaction so two purchases at once can\'t use the same credits, and payments held for review keep their credits set aside.', 'Balance tests', 'tests/Feature/EmployeeBalanceSafetyTest.php'],
             ],
@@ -84,6 +85,7 @@ class SecurityController extends Controller
         'The browser content policy only reports for now; it is not enforced.',
         'Rate limits are counted on one server and start again after each deploy.',
         'Package checks cover production packages only, and only known problems.',
+        'Card disputes and returned payments aren\'t handled automatically yet (test mode only).',
     ];
 
     public function __invoke(): View
