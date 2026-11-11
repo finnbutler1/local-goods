@@ -28,6 +28,7 @@ class SecurityController extends Controller
                 ['Where the Money Is shows where the funds sit and whether the records agree. Judges see words and counts, not balances.', 'The page', 'resources/views/money'],
                 ['Stripe runs in test mode only. Live keys are refused, and with no keys the app simulates payments instead.', 'Stripe mode', 'app/Support/StripeMode.php'],
                 ['A payment the fraud check holds can never be paid out until a person approves it.', 'Transfer gate', 'app/Services/Payments/TransferGate.php'],
+                ['Employees can\'t spend more than their balance. The check includes sales tax, happens inside a locked transaction so two purchases at once can\'t use the same credits, and payments held for review keep their credits set aside.', 'Balance tests', 'tests/Feature/EmployeeBalanceSafetyTest.php'],
             ],
         ],
         'access' => [

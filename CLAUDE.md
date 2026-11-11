@@ -1139,6 +1139,18 @@ Update this section whenever the milestone changes.
   only failure seen in CI. Re-run the full suite and the cached boot smoke
   after the update.
 - Renew `/.well-known/security.txt` before 2027-11-10.
+- Balance-safety gaps left open after `EmployeeBalanceSafetyTest` (tests
+  only, no app change was made):
+  - A real two-connection race test on MySQL for pay-code issue/confirm and
+    `redeem` (two connections, both reaching the balance check at once). The
+    existing `MysqlRedemptionLockTest` only shows a redemption waits for a
+    held employee lock; the two-codes race in the new test is simulated.
+  - A database-level guard against negative employee balances. Today the
+    check is in application code only (inside the locked transaction); the
+    database would accept an entry that overdraws.
+  - `CreditLedger::refundRedemption` only requires a positive amount; the
+    "no more than was spent" cap is in `CorrectionLimits`, called by
+    `CorrectionDecisions`. Consider a check at the ledger layer too.
 
 - When real Golden Triangle merchant names are seeded from public records,
   update the footer in `resources/views/layouts/app.blade.php` and
