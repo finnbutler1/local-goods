@@ -23,7 +23,7 @@ Stripe's test mode with no real money, built and tested in the open.
 live app: no account, no password. Works until judging closes on November 30,
 2026.
 
-**Security:** the plain-English [Security & Trust](https://uselocalgoods.com/security) page lists the protections in place and what isn't done yet.
+**Security:** the plain-English [Security & Trust](https://uselocalgoods.com/security) page lists the protections in place and what isn't done yet. To check it yourself, see [security verification](docs/security-verification.md) (a read-only probe script and the tests that act as attack checks).
 
 **Demo video (2–3 min):** *coming Nov 20.*
 
