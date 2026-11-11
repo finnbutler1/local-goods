@@ -5,6 +5,7 @@ use App\Http\Middleware\EndReviewerSessions;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\KeepPersonalContactsToAdjudication;
 use App\Http\Middleware\RequireCloudFrontOrigin;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackLastSeen;
 use App\Http\Middleware\TrustCloudFront;
 use App\Http\Middleware\UseAppUrl;
@@ -31,7 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(RequireCloudFrontOrigin::class);
         $middleware->replace(TrustProxies::class, TrustCloudFront::class);
         $middleware->alias(['role' => EnsureUserHasRole::class]);
-        $middleware->appendToGroup('web', [EndReviewerSessions::class, BlockJudgeWrites::class, KeepPersonalContactsToAdjudication::class, TrackLastSeen::class]);
+        $middleware->appendToGroup('web', [EndReviewerSessions::class, BlockJudgeWrites::class, KeepPersonalContactsToAdjudication::class, TrackLastSeen::class, SecurityHeaders::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // A pay code is never sent back to the page as old input (ADR 0026).
