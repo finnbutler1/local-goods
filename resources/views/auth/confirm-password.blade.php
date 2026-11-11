@@ -1,5 +1,5 @@
 <x-guest-shell title="Confirm your password">
-    <h1 class="text-[2.5rem] leading-none font-extrabold tracking-[-0.035em] sm:text-5xl">Confirm your password</h1>
+    <h1 class="guest-title">Confirm your password</h1>
     <p class="mt-1 text-muted">This is a protected step. Enter your password to continue.</p>
 
     <form method="POST" action="{{ route('password.confirm') }}" data-busy="Checking…" class="mt-6 space-y-5">

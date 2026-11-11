@@ -1,7 +1,7 @@
 @php use App\Support\PasswordResets; @endphp
 
 <x-guest-shell title="Log in">
-    <h1 class="text-[2.5rem] leading-none font-extrabold tracking-[-0.035em] sm:text-5xl">Log in</h1>
+    <h1 class="guest-title">Log in</h1>
     <p class="mt-3 text-muted">Accounts are created by the Local Goods team. There is no public sign-up.</p>
     <p class="rule-top mt-5 bg-band px-4 pb-3 text-sm">
         <span class="font-semibold">Reviewing Local Goods?</span>

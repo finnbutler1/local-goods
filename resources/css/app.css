@@ -953,6 +953,16 @@
         color: var(--color-ink);
     }
 
+    /* The same title for the narrow guest pages (log in, judge access): one
+       step below .page-title so it fits the 28rem column. */
+    .guest-title {
+        font-size: clamp(2.25rem, 1.7rem + 2.4vw, 3rem);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+        color: var(--color-ink);
+    }
+
     .page-lede {
         margin-top: 1.25rem;
         max-width: 42rem;
