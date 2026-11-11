@@ -42,6 +42,7 @@ use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\Money\WhereTheMoneyIsController;
 use App\Http\Controllers\Projections\BusinessModelController;
 use App\Http\Controllers\Projections\ProjectionController;
+use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StyleguideController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +59,7 @@ Route::get('/projection', ProjectionController::class)->name('projection');
 Route::get('/district', DistrictMapController::class)->middleware('throttle:district-check')->name('district');
 // Who does what, for BIDs (ADR 0031): public, linked from the landing page.
 Route::get('/who-does-what', WhoDoesWhatController::class)->name('who-does-what');
+Route::get('/security', SecurityController::class)->name('security');
 // Apply to join (ADR 0031): no account needed. Sending is limited per IP and guarded by a honeypot.
 Route::get('/apply', [ApplyController::class, 'create'])->name('apply');
 Route::post('/apply', [ApplyController::class, 'store'])->middleware('throttle:'.config('applications.per_ten_minutes', 3).',10,apply.store')->name('apply.store');

@@ -62,6 +62,7 @@
                 <p>Demonstration project for the CUA Busch School AI Vibe Coding Contest.</p>
                 <p>All businesses, people, and transactions are fictional.</p>
                 <p>Not affiliated with the Golden Triangle BID.</p>
+                <p><a href="{{ route('security') }}" class="tap-target font-semibold text-on-night underline underline-offset-4">Security &amp; Trust</a></p>
             </div>
         </div>
     </footer>
