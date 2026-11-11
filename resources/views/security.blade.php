@@ -4,7 +4,6 @@
 
 @php
     $link = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover';
-    $n = 1;
 @endphp
 
 @section('content')
@@ -21,7 +20,7 @@
         <div class="stop-line stop-line-dense">
             @foreach ($groups as $key => $group)
                 <section aria-labelledby="{{ $key }}-heading" id="{{ $key }}" class="stop scroll-mt-24">
-                    <x-stop-number :n="$n++" />
+                    <x-stop-number :n="$loop->iteration" />
                     <x-station-sign heading-id="{{ $key }}-heading">{{ $group['title'] }}</x-station-sign>
                     <p class="mt-4 max-w-[42rem] text-muted">{{ $group['intro'] }}</p>
                     <ul class="mt-4 max-w-[42rem]">
@@ -38,7 +37,7 @@
             @endforeach
 
             <section aria-labelledby="not-done-heading" id="not-done" class="stop scroll-mt-24">
-                <x-stop-number :n="$n" />
+                <x-stop-number :n="count($groups) + 1" />
                 <x-station-sign heading-id="not-done-heading">What's not done yet</x-station-sign>
                 <ul class="mt-4 max-w-[42rem]">
                     @foreach ($notDone as $item)
