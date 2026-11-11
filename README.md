@@ -25,13 +25,29 @@ live app: no account, no password. Works until judging closes on November 30,
 
 **Security:** the plain-English [Security & Trust](https://uselocalgoods.com/security) page lists the protections in place and what isn't done yet.
 
-**Demo video (2–3 min):** *coming soon.*
+**Demo video (2–3 min):** *coming Nov 20.*
 
 Inside, a guided tour walks through each role, **View as** shows the app as an
 employee, BID admin, employer or merchant, and the **Feedback** button on every
 page sends notes scored against the rubric. Named reviewers get a personal link
 instead, so their feedback carries their name
 ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
+
+---
+
+## Judges, start here
+
+Scored on the official rubric. A short path through the app is in [JUDGES.md](JUDGES.md).
+
+| Category (weight) | What to look for in Local Goods | Verify it |
+|---|---|---|
+| Functionality & technical execution (25%) | The money loop works end to end in Stripe test mode: an employer buys credits, an employee spends them, a held payment waits for a person, and the merchant is paid. Employers can pay by card, Apple Pay or Google Pay through Stripe Checkout (test mode). The books are checked after every step. | [Where the money is](https://uselocalgoods.com/where-the-money-is), [`FraudGateTest`](tests/Feature/FraudGateTest.php), [Where the money is (README)](#where-the-money-is) |
+| Problem identification & relevance (20%) | A specific buyer (employer HR), place (Golden Triangle BID) and leak (perk dollars leaving the neighborhood). | [The problem](#the-problem), [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md) |
+| AI integration & innovation (20%) | Two AI functions, each with a person making the decision and a measured result. Fraud detection fails closed and gates real transfers. A blind human review of the disagreement cases was offered to BID staff and judges; it received no votes, so results stand on the locked hand labels. | [/eval](https://uselocalgoods.com/eval), [/eval/merchants](https://uselocalgoods.com/eval/merchants), [How the AI was measured](#how-the-ai-was-measured), [TRANSPARENCY.md](TRANSPARENCY.md#checking-the-persons-labels-blind-adjudication-retired) |
+| Code quality & GitHub transparency (15%) | Tests on two databases, decision records, a locked eval set, and a scan of the whole history for secrets. | [CI](.github/workflows/ci.yml), [`docs/adr/`](docs/adr/), [TRANSPARENCY.md](TRANSPARENCY.md), [security verification](docs/security-verification.md) |
+| UX & design (10%) | Phone-first screens, plain-English AI explanations, honest empty states and a design system applied across the app (DESIGN.md). | [DESIGN.md](DESIGN.md), [accessibility and UX check](docs/accessibility.md), [uselocalgoods.com/judge](https://uselocalgoods.com/judge) |
+| Business impact & presentation (10%) | An employer-first pitch, with the outside-study estimate and the projection each labelled as what they are. Feedback from a business improvement district executive director (Nov 10) shaped the roadmap: resident credits from property owners, the card in Apple Pay, delivery partners. | [/coming-next](https://uselocalgoods.com/coming-next), [Where it's going](#wheres-it-going), [Business model](#business-model) |
+| Bonus, up to +5: accessibility and ethical AI | Names never reach the AI, every AI decision is explained, a person approves each hold, and every page is checked for accessibility. | [`AccessibilityTest`](tests/Feature/AccessibilityTest.php), [Security & Trust](https://uselocalgoods.com/security), [docs/accessibility.md](docs/accessibility.md) |
 
 ---
 

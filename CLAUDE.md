@@ -1334,15 +1334,15 @@ snapshot step by name when the build says the deploy includes migrations.
 
 CUA Busch School AI Vibe Coding Contest, judged the **week of Nov 23, 2026**.
 
-| Criterion | Points |
+| Criterion | Weight |
 |---|---|
-| Functionality | 25 |
-| Problem | 20 |
-| AI | 20 |
-| Code quality / GitHub | 15 |
-| UX | 10 |
-| Business impact | 10 |
-| Bonus | Accessibility and ethical AI |
+| Functionality & technical execution | 25% |
+| Problem identification & relevance | 20% |
+| AI integration & innovation | 20% |
+| Code quality & GitHub transparency | 15% |
+| UX & design | 10% |
+| Business impact & presentation | 10% |
+| Bonus: accessibility and ethical AI | up to +5 |
 
 Keep accessibility (labels, contrast, keyboard use) and ethical AI (explain
 AI decisions, let a human override, show confidence) in mind on every screen.
