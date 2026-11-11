@@ -1,38 +1,180 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T12:00:00Z",
+  "generatedAt": "2026-11-10T12:00:00Z",
   "title": "Design System: Local Goods",
   "extensions": {
     "colorMeta": {
-      "primary": { "role": "primary", "displayName": "Route Teal", "canonical": "#0a6b67", "tonalRamp": ["#032b29", "#064441", "#085754", "#0a6b67", "#2f8e89", "#6fb5b0", "#b6dbd8", "#e0f0ee"] },
-      "accent": { "role": "secondary", "displayName": "Local Stop Coral", "canonical": "#e2603a", "tonalRamp": ["#4a1a0c", "#7a2e17", "#a83c1b", "#e2603a", "#ea8363", "#f2a58e", "#f8cfc2", "#fdebe5"] },
-      "route-2": { "role": "tertiary", "displayName": "Second Line Plum", "canonical": "#7a3f9a", "tonalRamp": ["#26142f", "#3f2150", "#5a2d86", "#7a3f9a", "#9c69b6", "#bd97d1", "#dcc6e8", "#f1e8f6"] },
-      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#121820", "tonalRamp": ["#121820", "#2a313b", "#4d5666", "#7a8494", "#a3abb6", "#d3dad8", "#e6ecea", "#f4f6f5"] },
-      "page": { "role": "neutral", "displayName": "Page Mist", "canonical": "#f4f6f5", "tonalRamp": ["#d3dad8", "#dde3e1", "#e6ecea", "#eef2f1", "#f4f6f5", "#f8faf9", "#fcfdfc", "#ffffff"] }
+      "primary": {
+        "role": "primary",
+        "displayName": "Route Teal",
+        "canonical": "#0a6b67",
+        "tonalRamp": [
+          "#032b29",
+          "#064441",
+          "#08524f",
+          "#0a6b67",
+          "#2f8e89",
+          "#6fb5b0",
+          "#b6dbd8",
+          "#d6e6e1"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Local Stop Coral",
+        "canonical": "#e2603a",
+        "tonalRamp": [
+          "#4a1a0c",
+          "#7a2e17",
+          "#a13a1b",
+          "#e2603a",
+          "#ec7d5a",
+          "#f2a58e",
+          "#f8cfc2",
+          "#fdebe5"
+        ]
+      },
+      "route-2": {
+        "role": "tertiary",
+        "displayName": "Second Line Plum",
+        "canonical": "#7a3f9a",
+        "tonalRamp": [
+          "#26142f",
+          "#3f2150",
+          "#5a2d86",
+          "#7a3f9a",
+          "#9c69b6",
+          "#bd97d1",
+          "#dcc6e8",
+          "#f1e8f6"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#121820",
+        "tonalRamp": [
+          "#121820",
+          "#2a313b",
+          "#4a5058",
+          "#7d7564",
+          "#a79f8c",
+          "#c8bfa8",
+          "#e3ddcd",
+          "#ede8da"
+        ]
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Map Paper",
+        "canonical": "#ede8da",
+        "tonalRamp": [
+          "#c8bfa8",
+          "#d9d2c0",
+          "#e3ddcd",
+          "#ede8da",
+          "#f2eee2",
+          "#f8f5ec",
+          "#fcfaf4",
+          "#ffffff"
+        ]
+      }
     },
     "typographyMeta": {
-      "title": { "displayName": "Title", "purpose": "Page titles (text-title), clamp 32px to 48px." },
-      "headline": { "displayName": "Headline", "purpose": "Section headings (text-2xl)." },
-      "subhead": { "displayName": "Subhead", "purpose": "Card and group headings." },
-      "body": { "displayName": "Body", "purpose": "Running text in the max-w-3xl column." },
-      "body-small": { "displayName": "Body small", "purpose": "Tables, hints, meta lines; the most used size." },
-      "label": { "displayName": "Label", "purpose": "Uppercase eyebrow after the route stop." }
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": ".page-title, h1 on inner pages: 800, clamp 36px to 64px."
+      },
+      "page-lede": {
+        "displayName": "Page lede",
+        "purpose": ".page-lede, the sentence under the title: 19px."
+      },
+      "station-sign": {
+        "displayName": "Station sign",
+        "purpose": "Section heading in a station sign: 800 caps."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "text-title utility, clamp 32px to 48px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Tables, hints, meta lines; the most used size."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Small caps label after a route stop."
+      },
+      "table-head": {
+        "displayName": "Table head",
+        "purpose": "Uppercase 12px column heads over a 3px rule."
+      },
+      "ledger-number": {
+        "displayName": "Ledger number",
+        "purpose": "Overpass Mono for ledger tables and amounts."
+      }
     },
     "shadows": [
-      { "name": "hairline-card-rule", "value": "0 1px 0 0 #d3dad8", "purpose": "Card bottom edge, with a 1px hairline ring." },
-      { "name": "accent-press-edge", "value": "0 2px 0 0 #064441", "purpose": "Keycap edge under the coral button; 1px on hover." },
-      { "name": "stop-halo", "value": "0 0 0 3px #f4f6f5", "purpose": "Cuts the local stop out of its line." },
-      { "name": "focus-ring", "value": "outline: 3px solid #5a2d86; outline-offset: 2px", "purpose": "Keyboard focus; Night Focus #d7b4ff on night panels." }
+      {
+        "name": "ink-ring",
+        "value": "inset 0 0 0 3px #121820 (stop numbers 6px)",
+        "purpose": "Draws stops, scroll regions and frames; not depth."
+      },
+      {
+        "name": "stop-halo",
+        "value": "0 0 0 3px #ede8da",
+        "purpose": "Cuts a stop out of its line."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 3px solid #5a2d86; outline-offset: 2px",
+        "purpose": "Keyboard focus; #d7b4ff on night panels."
+      }
     ],
     "motion": [
-      { "name": "colour-transition", "value": "150ms color, background-color", "purpose": "Hover and pressed states." },
-      { "name": "press", "value": "translateY(1px)", "purpose": "Active state on buttons and triggers." },
-      { "name": "spinner", "value": "0.8s linear infinite", "purpose": "Busy buttons, only when motion is allowed." },
-      { "name": "reduced-motion", "value": "0.01ms durations", "purpose": "prefers-reduced-motion removes animation and smooth scroll." }
+      {
+        "name": "colour-transition",
+        "value": "150ms color, background-color",
+        "purpose": "Hover and pressed states."
+      },
+      {
+        "name": "press",
+        "value": "translateY(1px)",
+        "purpose": "Active state on buttons and triggers."
+      },
+      {
+        "name": "spinner",
+        "value": "0.8s linear infinite",
+        "purpose": "Busy buttons, only when motion is allowed."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms durations",
+        "purpose": "prefers-reduced-motion removes animation and smooth scroll."
+      },
+      {
+        "name": "route-draw",
+        "value": "district diagram route draws once",
+        "purpose": "Only when motion is allowed."
+      }
     ],
     "breakpoints": [
-      { "name": "sm (tables stack below)", "value": "640px" },
-      { "name": "lg (sidebar appears)", "value": "1024px" }
+      {
+        "name": "sm (tables stack below, station sign dots hide)",
+        "value": "640px"
+      },
+      {
+        "name": "md (wider gutters, two-column lists)",
+        "value": "768px"
+      },
+      {
+        "name": "lg (sidebar appears)",
+        "value": "1024px"
+      }
     ]
   },
   "components": [
@@ -40,9 +182,9 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The default action. Teal, 44px tall, 8px radius.",
+      "description": "The default action. Teal, 44px tall, 4px radius, bold.",
       "html": "<button class=\"ds-btn-primary\">Buy credits</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; border: 0; border-radius: 8px; background: #0a6b67; color: #fff; font-weight: 600; cursor: pointer; transition: background-color 150ms; } .ds-btn-primary:hover { background: #085754; } .ds-btn-primary:active { background: #064441; transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 3px solid #5a2d86; outline-offset: 2px; }"
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 20px;border-radius:4px;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;font-weight:700;cursor:pointer;background:#0a6b67;color:#fff;border:0;transition:background-color 150ms}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:3px solid #5a2d86;outline-offset:2px}.ds-btn-primary:hover{background:#08524f}.ds-btn-primary:active{background:#064441}"
     },
     {
       "name": "Accent Button",
@@ -50,99 +192,143 @@
       "refersTo": "button-accent",
       "description": "The one call to action that matters most; coral with ink text.",
       "html": "<button class=\"ds-btn-accent\">Find a place to spend</button>",
-      "css": ".ds-btn-accent { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; border: 0; border-radius: 8px; background: #e2603a; color: #121820; font-weight: 600; cursor: pointer; box-shadow: 0 2px 0 0 #064441; transition: transform 150ms, box-shadow 150ms; } .ds-btn-accent:hover { box-shadow: 0 1px 0 0 #064441; transform: translateY(1px); } .ds-btn-accent:focus-visible { outline: 3px solid #5a2d86; outline-offset: 2px; }"
+      "css": ".ds-btn-accent{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 20px;border-radius:4px;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;font-weight:700;cursor:pointer;background:#e2603a;color:#121820;border:0;transition:background-color 150ms}.ds-btn-accent:active{transform:translateY(1px)}.ds-btn-accent:focus-visible{outline:3px solid #5a2d86;outline-offset:2px}.ds-btn-accent:hover{background:#ec7d5a}"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Quieter action: white with a 2px teal border.",
+      "description": "Ink outline that fills on hover, like a station sign.",
       "html": "<button class=\"ds-btn-secondary\">View receipt</button>",
-      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; border: 2px solid #0a6b67; border-radius: 8px; background: #fff; color: #0a6b67; font-weight: 600; cursor: pointer; transition: background-color 150ms; } .ds-btn-secondary:hover { background: #e0f0ee; } .ds-btn-secondary:active { transform: translateY(1px); } .ds-btn-secondary:focus-visible { outline: 3px solid #5a2d86; outline-offset: 2px; }"
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 20px;border-radius:4px;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;font-weight:700;cursor:pointer;background:transparent;color:#121820;border:2px solid #121820;transition:background-color 150ms}.ds-btn-secondary:active{transform:translateY(1px)}.ds-btn-secondary:focus-visible{outline:3px solid #5a2d86;outline-offset:2px}.ds-btn-secondary:hover{background:#121820;color:#ede8da}"
+    },
+    {
+      "name": "Station Sign",
+      "kind": "custom",
+      "refersTo": "station-sign",
+      "description": "Section title on a dark band, bold caps; dots on the right are decoration, one coral for the local stop.",
+      "html": "<div class=\"ds-sign\"><h2>How it works</h2><span class=\"ds-dots\" aria-hidden=\"true\"><i></i><i></i><i class=\"l\"></i><i></i></span></div>",
+      "css": ".ds-sign{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 16px;border-radius:4px;background:#121820;color:#edf1f4}.ds-sign h2{margin:0;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;font-size:1.0625rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.ds-dots{display:flex;gap:6px}.ds-dots i{width:12px;height:12px;border-radius:50%;background:#edf1f4}.ds-dots i.l{background:#ff8a63}"
+    },
+    {
+      "name": "Stop Number",
+      "kind": "custom",
+      "refersTo": "station-sign",
+      "description": "A numbered stop on the line down a page: 40px ringed circle, Overpass Mono digit. Decorative.",
+      "html": "<span class=\"ds-stop-n\" aria-hidden=\"true\">2</span>",
+      "css": ".ds-stop-n{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#f8f5ec;box-shadow:inset 0 0 0 6px #121820;color:#121820;font-family:'Overpass Mono Variable',ui-monospace,monospace;font-weight:700;line-height:1}"
     },
     {
       "name": "Surface Card",
       "kind": "card",
       "refersTo": "card-surface",
-      "description": "White card with a hairline ring and bottom rule; flat at rest.",
+      "description": "Raised paper with a 2px ink frame and 6px radius; flat.",
       "html": "<div class=\"ds-card\"><p class=\"ds-card-label\">Credits remaining</p><p class=\"ds-card-figure\">$1,240.00</p></div>",
-      "css": ".ds-card { padding: 20px; border-radius: 8px; background: #fff; color: #121820; box-shadow: 0 0 0 1px #d3dad8, 0 1px 0 0 #d3dad8; } .ds-card-label { margin: 0; font-size: 0.875rem; color: #4d5666; } .ds-card-figure { margin: 4px 0 0; font-family: 'Overpass Variable', system-ui, sans-serif; font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums lining-nums; }"
+      "css": ".ds-card{padding:20px;border:2px solid #121820;border-radius:6px;background:#f8f5ec;color:#121820;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;}.ds-card-label{margin:0;font-size:.875rem;color:#4a5058}.ds-card-figure{margin:4px 0 0;font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.02em}"
     },
     {
       "name": "Status Badge",
       "kind": "chip",
       "refersTo": "badge-ok",
-      "description": "Small status word; never colour alone.",
-      "html": "<span class=\"ds-badge\">Cleared</span>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; background: #e0f1e6; color: #196a3e; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }"
+      "description": "Small status word with a dot; never color alone. 3px radius.",
+      "html": "<span class=\"ds-badge\"><span class=\"d\"></span>Approved</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:3px;background:#dcebdd;color:#1e6a3e;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}.ds-badge .d{width:6px;height:6px;border-radius:50%;background:#1e6a3e}"
     },
     {
       "name": "Text Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "Label, 2px control border, hint underneath.",
+      "description": "Bold label, 2px edge border on raised paper, hint underneath.",
       "html": "<div class=\"ds-field\"><label for=\"ds-amt\">Amount</label><input id=\"ds-amt\" type=\"text\" placeholder=\"12.50\"><p>Helper text sits under the field.</p></div>",
-      "css": ".ds-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #121820; } .ds-field input { display: block; width: 100%; box-sizing: border-box; padding: 12px; border: 2px solid #4d5666; border-radius: 8px; background: #fff; color: #121820; font-size: 1rem; } .ds-field input:focus-visible { border-color: #0a6b67; outline: 3px solid #5a2d86; outline-offset: 2px; } .ds-field p { margin: 6px 0 0; font-size: 0.875rem; color: #4d5666; }"
+      "css": ".ds-field{font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;}.ds-field label{display:block;margin-bottom:6px;font-weight:700;color:#121820}.ds-field input{display:block;width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:2px solid #7d7564;border-radius:4px;background:#f8f5ec;color:#121820;font-size:1rem}.ds-field input:focus-visible{outline:3px solid #5a2d86;outline-offset:2px}.ds-field p{margin:6px 0 0;font-size:.875rem;color:#4a5058}"
+    },
+    {
+      "name": "Ruled Table",
+      "kind": "custom",
+      "refersTo": "table-head",
+      "description": "Heavy rule under small caps heads, thin rows, mono amounts; never boxed.",
+      "html": "<table class=\"ds-table\"><thead><tr><th>Merchant</th><th>Amount</th></tr></thead><tbody><tr><td>Farragut Grind</td><td class=\"n\">$10.00</td></tr></tbody></table>",
+      "css": ".ds-table{width:100%;border-collapse:collapse;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;color:#121820}.ds-table th{padding:8px 0;border-bottom:3px solid #121820;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:left}.ds-table td{padding:10px 0;border-bottom:1px solid #c8bfa8}.ds-table .n{font-family:'Overpass Mono Variable',ui-monospace,monospace;font-variant-numeric:tabular-nums}"
     },
     {
       "name": "Eyebrow",
       "kind": "custom",
-      "refersTo": "label",
-      "description": "Section label after a short teal route line ending in a coral stop.",
+      "refersTo": "eyebrow",
+      "description": "Small caps label after a route stop (coral dot with an ink ring).",
       "html": "<p class=\"ds-eyebrow\"><span class=\"ds-stop\" aria-hidden=\"true\"></span><span>How it works</span></p>",
-      "css": ".ds-eyebrow { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a83c1b; } .ds-stop { position: relative; display: inline-block; flex: none; width: 24px; height: 12px; } .ds-stop::before { content: ''; position: absolute; top: 50%; left: 0; right: 6px; height: 3px; margin-top: -1.5px; border-radius: 2px; background: #0a6b67; } .ds-stop::after { content: ''; position: absolute; top: 50%; right: 0; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #e2603a; }"
-    },
-    {
-      "name": "Merchant Card",
-      "kind": "card",
-      "refersTo": "card-surface",
-      "description": "Participating merchant: teal rail with a coral stop on the left. Never for candidates.",
-      "html": "<div class=\"ds-merchant\"><p class=\"ds-merchant-name\">Farragut Grind</p><p class=\"ds-merchant-meta\">Coffee · Participating</p></div>",
-      "css": ".ds-merchant { position: relative; padding: 20px 20px 20px 24px; border-left: 5px solid #0a6b67; border-radius: 8px; background: #fff; box-shadow: 0 0 0 1px #d3dad8; } .ds-merchant::before { content: ''; position: absolute; top: 1.4rem; left: -0.7rem; width: 1rem; height: 1rem; border-radius: 50%; background: #e2603a; box-shadow: 0 0 0 3px #fff; } .ds-merchant-name { margin: 0; font-family: 'Overpass Variable', system-ui, sans-serif; font-size: 1.25rem; font-weight: 600; color: #121820; } .ds-merchant-meta { margin: 4px 0 0; font-size: 0.875rem; color: #4d5666; }"
+      "css": ".ds-eyebrow{display:flex;align-items:center;gap:8px;margin:0;font-family:'Public Sans Variable',ui-sans-serif,system-ui,sans-serif;font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#a13a1b}.ds-stop{width:10px;height:10px;border-radius:9999px;background:#e2603a;box-shadow:inset 0 0 0 2px #121820}"
     }
   ],
   "narrative": {
-    "northStar": "The Transit Map",
-    "overview": "Clear civic wayfinding. One teal line runs through the product, one coral stop marks the local place you are sending people to, and everything else stays quiet: pale grey-green paper, white cards held by hairlines, ink-dark text. The interface should read as a calm, credible benefits product to an HR manager within ten seconds, and as a place a tired employee can pay for lunch on a phone without thinking.\n\nMoney, fraud-hold and admin screens follow a second rule, Ledger Desk precision: the numbers and the rules lead, figures are tabular, tables are plain and the route motif steps back. The motif is wayfinding, not wallpaper; it appears in three places only (section eyebrows, the landing hero's route line, participating merchant cards).\n\nThe system is deliberately restrained. It rejects generic AI-product decoration: gradients, glows, emoji, piles of cards and badges, rounded-everything. It also rejects the retired earlier look (forest, cream, paper, amber, sage, the awning).",
+    "northStar": "Wayfinding",
+    "overview": "A transit map, not a dashboard. Warm map paper, dark station signs for sections, a drawn line with numbered stops, a district diagram. One teal line and one coral local stop; everything else is ink, rules and plain type. Dark mode is the night palette.",
     "keyCharacteristics": [
-      "Teal for the line and the main action; coral used rarely, for the local stop.",
-      "Flat surfaces: hairline rings, no decorative shadows, tonal night panels for depth.",
-      "Overpass for headings and every digit, Atkinson Hyperlegible Next for text.",
-      "Every state visible: hover, pressed (1px down), busy (spinner), unavailable (grey, not see-through).",
-      "44px tap targets and a 3px focus ring everywhere; dark mode mirrors every token.",
-      "Not yet tried in a real browser with a screen reader or on a real phone."
+      "Flat and ruled: heavy ink rules, 2 to 3px frames, ruled tables; no decorative shadows.",
+      "Station signs head sections; stop numbers and a drawn line connect them.",
+      "Teal is the line and main action; coral is the local stop and the one key call to action.",
+      "Public Sans for everything; Overpass Mono only for ledger figures.",
+      "Every state visible: hover, pressed, busy, unavailable, focus (3px ring).",
+      "44px tap targets and 16px fields on phones; dark mode mirrors every token.",
+      "Not yet tried with a screen reader or on a real phone."
     ],
     "rules": [
-      { "name": "The One Local Stop Rule", "body": "Coral marks the local stop and the single call to action that matters most on a screen. If a screen has two coral things, one is wrong.", "section": "colors" },
-      { "name": "The Line Is Not A Boundary Rule", "body": "`line` is decoration. A control's border uses `edge`, so it meets 3:1.", "section": "colors" },
-      { "name": "The Pairs Are Tested Rule", "body": "Any new text/background pair is added to `ColorContrast::PAIRS` and passes in light and dark before it ships.", "section": "colors" },
-      { "name": "The Plain Figures Rule", "body": "Money is set with `tabular` (tabular, lining figures) so columns align and zeros read as zeros.", "section": "typography" },
-      { "name": "The No Third Font Rule", "body": "Two families, no more. Hierarchy comes from size and weight, not new faces.", "section": "typography" },
-      { "name": "The Phone Is The Card Rule", "body": "Design the 320px phone first; desktop is the same page given room.", "section": "layout" },
-      { "name": "The Honesty Line Rule", "body": "Demo, projection and \"not measured\" labels never sit in anything hidden on phones.", "section": "layout" },
-      { "name": "The Flat At Rest Rule", "body": "No decorative shadow, glow or blur. A shadow, when present, is a part (an edge, a halo, a ring), not an atmosphere.", "section": "elevation" }
+      {
+        "name": "The One Local Stop Rule",
+        "body": "Coral marks the local stop and the single call to action that matters most on a screen. If a screen has two coral things, one is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Line Is Not A Boundary Rule",
+        "body": "`line` is decoration. A control's border uses `edge`, so it meets 3:1.",
+        "section": "colors"
+      },
+      {
+        "name": "The Pairs Are Tested Rule",
+        "body": "Any new text/background pair is added to `ColorContrast::PAIRS` and passes in light and dark before it ships.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plain Figures Rule",
+        "body": "Money is set with `tabular` (tabular, lining figures) so columns align and zeros read as zeros.",
+        "section": "typography"
+      },
+      {
+        "name": "The Phone Is The Card Rule",
+        "body": "Design the 320px phone first; desktop is the same page given room.",
+        "section": "layout"
+      },
+      {
+        "name": "The Honesty Line Rule",
+        "body": "Demo, projection and \"not measured\" labels never sit in anything hidden on phones.",
+        "section": "layout"
+      },
+      {
+        "name": "The Two Families Rule",
+        "body": "Public Sans plus Overpass Mono for figures. No third face; hierarchy from size, weight and caps.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat At Rest Rule",
+        "body": "No decorative shadow, glow or blur. Shadows only draw parts: ink rings, halos, focus.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do keep teal as the line and main action, and coral as the single local stop.",
-      "Do put control borders on `edge` (#7a8494) and decoration on `line`.",
-      "Do use Overpass for headings and digits, Atkinson Hyperlegible Next for text, with `tabular` on money.",
-      "Do show every state: hover, pressed (1px down), busy, unavailable, focus (3px ring).",
-      "Do keep tap targets at 44px and fields at 16px or more on phones.",
-      "Do centre the hero, page titles and main column; keep body text, lists, tables and forms left-aligned.",
-      "Do let ledger, money, fraud-hold and admin screens lead with numbers and plain tables, with the route motif stepped back.",
-      "Do add any new colour pair to `ColorContrast::PAIRS` and keep the two dark blocks in `app.css` identical.",
-      "Do use `<x-rtable>`, `<x-breakable>` and `<x-eyebrow>` rather than hand-rolling their patterns."
+      "Do head sections with a station sign and inner pages with .page-head, .page-title, .page-lede.",
+      "Do keep teal as the line and main action, coral once per screen.",
+      "Do put control borders on `edge` (#7d7564) and decoration on `line` (#c8bfa8).",
+      "Do use ruled tables via <x-rtable>, plus <x-breakable> and <x-eyebrow>.",
+      "Do show every state; keep 44px targets and 16px fields on phones.",
+      "Do add any new color pair to ColorContrast::PAIRS and keep the two dark blocks in app.css identical."
     ],
     "donts": [
-      "Don't reintroduce forest, cream, paper, amber, sage or the awning.",
-      "Don't add a new font, a new colour world or a new tagline; the Transit lines brand (ADR 0025) is binding.",
-      "Don't use gradients, glows, emoji, decorative blur, or heavy shadows; no `shadow-lg` or `shadow-xl` on new work.",
-      "Don't add a second coral call to action on a screen, put coral fills behind figures, or use a pill for anything bigger than a badge.",
-      "Don't stack cards in cards, or add cards and badges where plain text and a rule will do.",
-      "Don't use the route motif beyond eyebrows, the landing route line and participating merchant cards; never put a merchant rail on a candidate.",
-      "Don't use `break-all`; break at `<wbr>` or `wrap-anywhere-safe`.",
-      "Don't hide demo, projection or honesty lines in anything that is hidden on phones.",
-      "Don't convey status by colour alone, and don't remove, merge, hide or rename content or navigation in a design pass: visual changes only."
+      "Don't use gradients, glows, blur, emoji or decorative shadows.",
+      "Don't add a font, or bring back Overpass or Atkinson for text, or forest, cream, paper, amber, sage or the awning.",
+      "Don't use a second coral call to action or pills for anything big.",
+      "Don't stack cards in cards or box a table.",
+      "Don't put the merchant line on a candidate.",
+      "Don't use break-all or hide honesty lines on phones.",
+      "Don't convey status by color alone, and never remove, merge, hide or rename content or navigation in a design pass."
     ]
   }
 }
