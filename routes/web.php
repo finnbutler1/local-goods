@@ -105,6 +105,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:employee')->group(function () {
         Route::get('/employee', [EmployeeWalletController::class, 'show'])->name('employee.wallet');
+        // Demo controls kept off the wallet (ADR 0038 batch): the suspicious-redemption button.
+        Route::get('/employee/demo-tools', fn () => view('employee.demo-tools'))->name('employee.demo-tools');
         // One Redemption Fraud Detection call to Claude each, so rate-limited (AppServiceProvider).
         Route::post('/employee/redeem', [EmployeeWalletController::class, 'redeem'])->middleware('throttle:redeem')->name('employee.redeem');
         // Pay in person (ADR 0026): a one-time code for the merchant to confirm. Getting one moves nothing.

@@ -166,6 +166,7 @@
                                 <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your Account</a></li>
                                 @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Employee)
                                     <li><a href="{{ route('employee.wallet') }}#history" class="menu-item">Your Receipts</a></li>
+                                    <li><a href="{{ route('employee.demo-tools') }}" class="menu-item" @if ($active === 'demo-tools') aria-current="page" @endif>Demo Tools</a></li>
                                 @endif
                                 @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Merchant)
                                     <li><a href="{{ route('merchant.dashboard') }}#payout-history" class="menu-item">Payout History</a></li>

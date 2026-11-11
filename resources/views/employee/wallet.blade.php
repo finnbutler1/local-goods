@@ -158,10 +158,6 @@
                     @endcan
                 </form>
             @endif
-
-            <x-button variant="danger" size="sm" :href="route('employee.wallet', ['suspicious' => 1]).'#redeem'" class="mt-3 w-full">
-                Try a suspicious redemption
-            </x-button>
         </x-card>
 
         <section id="browse" aria-labelledby="browse-heading" class="scroll-mt-24">

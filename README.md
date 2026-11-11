@@ -176,7 +176,7 @@ Stripe test mode. See what it has done on the BID admin's Demo activity page
 
 **Try it:** [log in](https://uselocalgoods.com/login) with a demo account (available on
 request; there is no public sign-up). As the employee, redeem a normal amount,
-then click **Try a suspicious redemption**. To see tax at checkout, order
+then click **Try a suspicious redemption** (under **Demo Tools** in the account menu). To see tax at checkout, order
 from a menu in the wallet. On **Pay in person**, get a pay
 code, then log in as the merchant and enter it under **Take a payment**. As the BID admin, see the AI's
 score, decision and explanation for each one, approve or deny held

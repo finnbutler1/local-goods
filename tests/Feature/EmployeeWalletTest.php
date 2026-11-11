@@ -88,7 +88,13 @@ class EmployeeWalletTest extends TestCase
         $this->get('/employee?suspicious=1')
             ->assertOk()
             ->assertSee('value="120"', false)
-            ->assertSee('Try a suspicious redemption');
+            ->assertSee('Pre-filled with a suspicious pattern');
+    }
+
+    public function test_the_wallet_no_longer_carries_the_suspicious_button(): void
+    {
+        $this->get('/employee')->assertOk()->assertDontSee('Try a suspicious redemption');
+        $this->get('/employee?suspicious=1')->assertOk()->assertDontSee('Try a suspicious redemption');
     }
 
     public function test_the_suspicious_redemption_is_held(): void

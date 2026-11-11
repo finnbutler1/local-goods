@@ -3,6 +3,11 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-10: Demo Tools
+
+- **"Try a suspicious redemption" moved off the wallet** to a new Demo Tools
+  page in the employee's account menu. It does exactly what it did before.
+
 ## 2026-11-09: Blind adjudication retired
 
 - **"Help check the AI" is gone from the judge home, the tour and the eval
