@@ -1,7 +1,7 @@
 {{-- Pay in person (ADR 0026): pick a merchant, the amount or menu items, then get a one-time code for the cashier. --}}
 @php use App\Models\PayCode; use App\Support\Money; use App\Support\SalesTax; @endphp
 <x-card as="section" id="pay" aria-labelledby="pay-heading" class="scroll-mt-24">
-    <h2 id="pay-heading" class="text-2xl font-extrabold tracking-tight text-ink">Pay in person</h2>
+    <x-station-sign heading-id="pay-heading" class="-mx-5 -mt-5 mb-4 rounded-none rounded-t-[4px] sm:-mx-6 sm:-mt-6 sm:mb-5">Pay in person</x-station-sign>
     <p class="mt-2 text-[0.9375rem]">At the counter: get a pay code, the cashier types it in and confirms. Nothing is charged until they do.</p>
 
     <div class="pay-body">

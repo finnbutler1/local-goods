@@ -2,6 +2,10 @@
 
 <x-app-shell title="My wallet" active="wallet"
              :context="$employee->employer->name.' · Golden Triangle BID'">
+<header class="pb-6">
+    <x-station-sign as="p">Employee</x-station-sign>
+    <h1 class="page-title">My wallet</h1>
+</header>
 <div class="wallet-desk max-w-2xl space-y-6">
     {{-- Confirmation of the redemption just made, announced to screen readers. Show it at the counter. --}}
     <div aria-live="polite" class="wallet-live">
@@ -28,7 +32,7 @@
                         @endif
                     </span>
                 </span>
-                <h2 id="confirmation-heading" class="mt-3 font-display text-4xl font-semibold">{{ $approved ? 'Approved' : ($result->isRejected() ? ($result->cancelledLabel() ?? 'Denied') : 'Under review') }}</h2>
+                <h2 id="confirmation-heading" class="mt-3 text-title font-extrabold tracking-[-0.035em]">{{ $approved ? 'Approved' : ($result->isRejected() ? ($result->cancelledLabel() ?? 'Denied') : 'Under review') }}</h2>
                 @if ($approved)
                     <p class="mt-2 inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
                         <span class="relative flex size-2.5" aria-hidden="true">
@@ -74,7 +78,7 @@
 
     <section aria-labelledby="balance-heading" class="wallet-balance">
         <div class="flex items-center justify-between gap-4">
-            <h1 id="balance-heading" class="text-[0.8125rem] leading-none font-bold tracking-[0.14em] text-night-muted uppercase">Available balance</h1>
+            <h2 id="balance-heading" class="text-[0.8125rem] leading-none font-bold tracking-[0.14em] text-night-muted uppercase">Available balance</h2>
             <span class="text-[0.9375rem] font-extrabold whitespace-nowrap text-on-night">Local Goods</span>
         </div>
         <p class="money mt-3 text-[clamp(2.75rem,2.2rem+2.4vw,3.5rem)] leading-none text-on-night" data-testid="balance">{{ Money::format($balance) }}</p>
@@ -102,7 +106,7 @@
 
         <div role="tabpanel" id="panel-to-go" aria-labelledby="tab-to-go" tabindex="0" class="mt-6 space-y-6" @if ($tab !== 'to-go') hidden @endif>
         <x-card as="section" id="redeem" aria-labelledby="redeem-heading" class="scroll-mt-24">
-            <h2 id="redeem-heading" class="text-2xl font-extrabold tracking-tight text-ink">Redeem credits</h2>
+            <x-station-sign heading-id="redeem-heading" class="-mx-5 -mt-5 mb-4 rounded-none rounded-t-[4px] sm:-mx-6 sm:-mt-6 sm:mb-5">Redeem credits</x-station-sign>
             <p class="mt-2 text-[0.9375rem]">Every redemption is checked by Redemption Fraud Detection before the merchant is paid.</p>
             <p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
                 <x-money-mode />
@@ -161,8 +165,8 @@
         </x-card>
 
         <section id="browse" aria-labelledby="browse-heading" class="scroll-mt-24">
-            <h2 id="browse-heading" class="text-2xl font-extrabold tracking-tight text-ink">Where you can spend</h2>
-            <p class="mt-1.5 text-[0.9375rem] text-muted">Independent businesses in the Golden Triangle BID. All are fictional in this demo.</p>
+            <x-station-sign heading-id="browse-heading">Where you can spend</x-station-sign>
+            <p class="mt-3 text-[0.9375rem] text-muted">Independent businesses in the Golden Triangle BID. All are fictional in this demo.</p>
 
             @php
                 // The merchants listed below, as stops on the stored district boundary (no outside map service).
@@ -231,8 +235,8 @@
     </div>
 
     <section aria-labelledby="recent-heading" class="wallet-recent pt-4">
-        <h2 id="recent-heading" class="text-2xl font-extrabold tracking-tight text-ink">Recent redemptions</h2>
-        <ul class="ruled-rows mt-3">
+        <x-station-sign heading-id="recent-heading">Recent redemptions</x-station-sign>
+        <ul class="ruled-rows mt-4">
             @forelse ($recent as $redemption)
                 <li class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
@@ -263,9 +267,9 @@
     </section>
 
     <section id="history" aria-labelledby="history-heading" class="wallet-history scroll-mt-24 pt-4">
-        <h2 id="history-heading" class="text-2xl font-extrabold tracking-tight text-ink">Transaction history</h2>
-        <p class="mt-1.5 text-[0.9375rem] text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
-        <ul class="ruled-rows mt-3">
+        <x-station-sign heading-id="history-heading">Transaction history</x-station-sign>
+        <p class="mt-3 text-[0.9375rem] text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
+        <ul class="ruled-rows mt-4">
             @forelse ($history as $row)
                 <li class="flex items-start justify-between gap-3 py-3!">
                     <div class="min-w-0">
