@@ -5,6 +5,34 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Employer platform fee per participating employee — code done (2026-11-12,
+ADR 0042), on branch `employer-fee`, not merged or deployed; switched off.**
+One additive migration (`2026_11_14_000001_add_employer_platform_fee_to_credit_purchases`,
+snapshot `before-employer-fee`). Fraud gate, AI input, eval data, locks,
+merchant fee and the percent fee's own code unchanged.
+
+- `EMPLOYER_PLATFORM_FEE_ENABLED` must be exactly `true` (unset = off,
+  everywhere); **never set it in a deploy file or seeder** and never turn
+  it on without Finn's say-so. Refused together with `PLATFORM_FEE_PERCENT`
+  (`EmployerPlatformFee::problem`, in `ProductionConfig`).
+- Price = base `projections.assumptions.employer_platform_fee` ($6.00),
+  copied onto the purchase. Participants = `App\Support\ParticipatingEmployees`
+  only (different employees who got credits in the previous calendar month,
+  DC time).
+- Charged in `CreditLedger::requestPurchase` after the employer lock: first
+  purchase of the month, unique `employer_fee_key`; cancelling only through
+  `CreditPurchase::cancelIfPending` (frees the key). Ledger type
+  `employer_platform_fee` (platform account) only on payment;
+  `CreditLedgerEntry::PURCHASE_FEE_TYPES` where purchase fees are summed.
+  Never refundable (refunds cap at credits).
+- Off: `[data-planned-fee-preview]` on the employer dashboard, labelled
+  "Projection, not results"; link to `/business-model#assumptions` only for
+  roles that can open it. `PublicClaimsTest` and `BuyCreditsFlowTest`
+  skip only that element.
+- Tests: `EmployerPlatformFeeTest`, `ParticipatingEmployeesTest`,
+  `EmployerPlatformFeeChargeTest`, `EmployerPlatformFeeDisplayTest`,
+  `MysqlEmployerFeeLockTest`, `EmployerFeeMigrationSafetyTest`.
+
 **"Show all (N)" on long lists — code done (2026-11-12), not deployed.** Views, one
 component and presentation JS only: no migration, money, route, fraud prompt,
 AI input, eval data or lock change.
