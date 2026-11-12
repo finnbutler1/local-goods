@@ -51,6 +51,10 @@ git log --all -p --no-color --no-ext-diff --format='commit %H' | COMMITS="$commi
     if (/^\+\+\+ (?:b\/)?(.*)$/) { $file = $1; next; }
     next unless /^\+/;
     next if $file eq "scripts/scan-history-for-secrets.sh";
+    # The scanner'"'"'s own test holds its fixtures: placeholders, deliberately
+    # wrong placeholders and the masked "****" output it expects. Exactly this
+    # one path; any other file (even one with the same name elsewhere) is scanned.
+    next if $file eq "tests/Unit/SecretScanScriptTest.php";
     for my $p (@patterns) {
         my ($name, $re) = @$p;
         while (/$re/g) {

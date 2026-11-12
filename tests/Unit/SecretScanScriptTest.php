@@ -14,6 +14,36 @@ class SecretScanScriptTest extends TestCase
 {
     private const SCRIPT = __DIR__.'/../../scripts/scan-history-for-secrets.sh';
 
+    /** The one file the scanner skips (its own fixtures live here). */
+    private const EXEMPT = 'tests/Unit/SecretScanScriptTest.php';
+
+    /**
+     * A secret setting's name, put together at run time: no line in this file
+     * is ever a literal NAME=value, so nothing here looks like a committed
+     * password even without the scanner's exemption.
+     */
+    private static function name(string $suffix): string
+    {
+        return match ($suffix) {
+            'db' => 'DB_'.'PASSWORD',
+            'stripe' => 'STRIPE_'.'SECRET',
+            'app' => 'APP_'.'KEY',
+            default => 'DEMO_'.'PASSWORD_'.$suffix,
+        };
+    }
+
+    /** "NAME=value" for a fixture line. */
+    private static function line(string $suffix, string $value): string
+    {
+        return self::name($suffix).'='.$value;
+    }
+
+    /** What the scanner prints for a hit on that setting. */
+    private static function masked(string $suffix): string
+    {
+        return 'value masked: '.self::name($suffix).'='.str_repeat('*', 4);
+    }
+
     private string $repo;
 
     protected function setUp(): void
@@ -64,7 +94,7 @@ class SecretScanScriptTest extends TestCase
         // Built at run time so this file never contains a key-shaped string.
         $key = 'sk_'.'live_'.bin2hex(random_bytes(12));
         $password = 'pw'.bin2hex(random_bytes(8));
-        file_put_contents($this->repo.'/settings.env', "STRIPE_SECRET={$key}\nDB_PASSWORD={$password}\n");
+        file_put_contents($this->repo.'/settings.env', self::line('stripe', $key)."\n".self::line('db', $password)."\n");
         $this->commit($this->repo, 'oops');
         // Deleting it later doesn't hide it: it is still in the history.
         unlink($this->repo.'/settings.env');
@@ -84,7 +114,7 @@ class SecretScanScriptTest extends TestCase
     public function test_known_test_placeholders_are_not_reported(): void
     {
         file_put_contents($this->repo.'/FakeTest.php', "<?php\n\$secret = 'sk_test_SECRETVALUE';\n\$hook = 'whsec_test_local_goods_fake';\n");
-        file_put_contents($this->repo.'/.env.example', "APP_KEY=\nSTRIPE_SECRET=\nDB_PASSWORD=null\n");
+        file_put_contents($this->repo.'/.env.example', self::line('app', '')."\n".self::line('stripe', '')."\n".self::line('db', 'null')."\n");
         $this->commit($this->repo, 'placeholders');
 
         [$code, $output] = $this->scan($this->repo);
@@ -94,7 +124,8 @@ class SecretScanScriptTest extends TestCase
 
     public function test_the_readme_demo_password_placeholder_is_not_reported(): void
     {
-        file_put_contents($this->repo.'/README.md', "DEMO_PASSWORD_BID_ADMIN=choose-a-password\nDEMO_PASSWORD_EMPLOYEE=\"choose-a-password\"\n");
+        $placeholder = 'choose-a-'.'password';
+        file_put_contents($this->repo.'/README.md', self::line('BID_ADMIN', $placeholder)."\n".self::line('EMPLOYEE', '"'.$placeholder.'"')."\n");
         $this->commit($this->repo, 'run it yourself');
 
         [$code, $output] = $this->scan($this->repo);
@@ -106,10 +137,11 @@ class SecretScanScriptTest extends TestCase
     {
         // A realistic password, built at run time so this file never holds one.
         $real = 'Kestrel-'.bin2hex(random_bytes(5)).'!9';
+        $placeholder = 'choose-a-'.'password';
         file_put_contents($this->repo.'/README.md', implode("\n", [
-            "DEMO_PASSWORD_BID_ADMIN={$real}",
-            'DEMO_PASSWORD_MERCHANT=choose-a-password2',
-            'DB_PASSWORD=choose-a-password',
+            self::line('BID_ADMIN', $real),
+            self::line('MERCHANT', $placeholder.'2'),
+            self::line('db', $placeholder),
         ])."\n");
         $this->commit($this->repo, 'not placeholders');
 
@@ -117,9 +149,36 @@ class SecretScanScriptTest extends TestCase
 
         $this->assertSame(1, $code, $output);
         $this->assertStringContainsString('3 possible secret(s)', $output);
-        $this->assertStringContainsString('value masked: DEMO_PASSWORD_BID_ADMIN=****', $output);
-        $this->assertStringContainsString('value masked: DEMO_PASSWORD_MERCHANT=****', $output);
-        $this->assertStringContainsString('value masked: DB_PASSWORD=****', $output);
+        $this->assertStringContainsString(self::masked('BID_ADMIN'), $output);
+        $this->assertStringContainsString(self::masked('MERCHANT'), $output);
+        $this->assertStringContainsString(self::masked('db'), $output);
+        $this->assertStringNotContainsString($real, $output);
+    }
+
+    public function test_only_this_test_file_is_skipped_and_every_other_file_is_still_scanned(): void
+    {
+        $real = 'Kestrel-'.bin2hex(random_bytes(5)).'!9';
+        $others = [
+            'tests/Unit/OtherScriptTest.php',
+            'tests/Feature/SecretScanScriptTest.php',
+            'SecretScanScriptTest.php',
+            self::EXEMPT.'.bak',
+            'tests/Unit/SecretScanScriptTestHelper.php',
+        ];
+        foreach ([self::EXEMPT, ...$others] as $path) {
+            @mkdir(dirname($this->repo.'/'.$path), 0777, true);
+            file_put_contents($this->repo.'/'.$path, self::line('db', $real)."\n");
+        }
+        $this->commit($this->repo, 'same password-like line in several files');
+
+        [$code, $output] = $this->scan($this->repo);
+
+        $this->assertSame(1, $code, $output);
+        $this->assertStringContainsString(count($others).' possible secret(s)', $output);
+        foreach ($others as $path) {
+            $this->assertStringContainsString("file {$path} (".self::masked('db').')', $output);
+        }
+        $this->assertStringNotContainsString('file '.self::EXEMPT.' (', $output);
         $this->assertStringNotContainsString($real, $output);
     }
 
