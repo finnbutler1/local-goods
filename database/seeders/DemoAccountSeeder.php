@@ -7,6 +7,7 @@ use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\User;
+use App\Support\DemoLogins;
 use App\Support\RetiredDemoAccounts;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -62,6 +63,13 @@ class DemoAccountSeeder extends Seeder
 
             if (! $user->exists || ! Hash::check($account['password'], $user->password)) {
                 $user->password = $account['password']; // hashed by the model cast
+            }
+
+            // The four shared demo logins can never have two-step sign-in (one
+            // person turning it on would lock out everyone else). Only these:
+            // the platform admin's and every other account's columns are never touched.
+            if (DemoLogins::isSharedEmail($account['email'])) {
+                $user->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null]);
             }
 
             $user->save();

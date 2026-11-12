@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\GuardTwoStepSignIn;
 use Laravel\Fortify\Features;
 
 return [
@@ -102,7 +103,9 @@ return [
     */
 
     // throttle:auth-forms limits every form post (FortifyServiceProvider).
-    'middleware' => ['web', 'throttle:auth-forms'],
+    // GuardTwoStepSignIn: only real password accounts manage two-step sign-in,
+    // and Fortify's JSON pages that read back the key or recovery codes are off.
+    'middleware' => ['web', 'throttle:auth-forms', GuardTwoStepSignIn::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -117,6 +120,7 @@ return [
 
     'limiters' => [
         'login' => 'login',
+        'two-factor' => 'two-factor',
     ],
 
     /*
@@ -145,10 +149,17 @@ return [
 
     'features' => [
         // Accounts are created by an admin only: no self-registration.
-        // No email verification, profile editing, two-factor or passkeys yet.
+        // No email verification, profile editing or passkeys yet.
         Features::resetPasswords(),
         // Everyone, judges included, can change their own password at /account.
         Features::updatePasswords(),
+        // Optional two-step sign-in for staff password accounts: on only after a
+        // code from the app is confirmed, and turning it on or off, or getting
+        // new recovery codes, needs the password again.
+        Features::twoFactorAuthentication([
+            'confirm' => true,
+            'confirmPassword' => true,
+        ]),
     ],
 
 ];

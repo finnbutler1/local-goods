@@ -39,6 +39,22 @@
     </x-card>
     @endif
 
+    {{-- Optional two-step sign-in: real password accounts only (User::mayUseTwoStepSignIn). --}}
+    @if (\App\Support\DemoLogins::isSharedLogin(auth()->user()))
+    <p class="max-w-xl text-muted">This is a shared demo login, so two-step sign-in can't be turned on.</p>
+    @elseif (auth()->user()->mayUseTwoStepSignIn())
+    <x-card as="section" aria-labelledby="two-step-heading" class="max-w-xl">
+        <h2 id="two-step-heading" class="text-2xl font-semibold text-primary">Two-step sign-in</h2>
+        @if (auth()->user()->hasEnabledTwoFactorAuthentication())
+            <p class="mt-2"><x-badge tone="ok">On</x-badge> Sign-in asks for a code from your authenticator app after your password.</p>
+            <x-button :href="route('account.two-step')" variant="secondary" class="mt-4">Manage two-step sign-in</x-button>
+        @else
+            <p class="mt-2"><x-badge>Off</x-badge> Optional: also ask for a code from an authenticator app on your phone when you log in.</p>
+            <x-button :href="route('account.two-step')" variant="secondary" class="mt-4">Set up two-step sign-in</x-button>
+        @endif
+    </x-card>
+    @endif
+
     <section id="feedback" aria-labelledby="my-feedback-heading" class="scroll-mt-24">
         <h2 id="my-feedback-heading" class="text-2xl font-semibold text-primary">Your feedback</h2>
         @if (auth()->user()->isPublicReviewer())

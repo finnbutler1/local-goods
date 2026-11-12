@@ -20,6 +20,9 @@
                 <li>No password you know. Reviewers sign in with their link, and the account holds a random password nobody knows.</li>
             @else
                 <li>A scrambled copy of your password. We never keep the password itself, and nobody here can read it.</li>
+                @if ($user->two_factor_secret !== null)
+                    <li>For two-step sign-in: the key your authenticator app uses and your recovery codes, both stored encrypted, and when you turned it on.</li>
+                @endif
             @endif
             <li>When you last visited, and the visit before that, so pages can say what is new since you were here. The app does not record which pages you open.</li>
             @if ($isJudge)

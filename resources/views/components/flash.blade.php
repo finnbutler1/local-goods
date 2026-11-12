@@ -20,6 +20,13 @@
     if ($status === 'password-updated') {
         $status = 'Your password was changed.';
     }
+    // The same for two-step sign-in (Laravel\Fortify\Fortify constants).
+    $status = ! is_string($status) ? $status : [
+        'two-factor-authentication-enabled' => 'Now scan the QR code and enter a code from your app to finish.',
+        'two-factor-authentication-confirmed' => 'Two-step sign-in is on. Save your recovery codes now.',
+        'two-factor-authentication-disabled' => 'Two-step sign-in is off.',
+        'recovery-codes-generated' => 'New recovery codes made. The old ones no longer work.',
+    ][$status] ?? $status;
     // Error first, so it is the one that gets focus.
     $messages = array_filter(['error' => $error, 'notice' => $notice, 'status' => $status], 'filled');
     $tones = [

@@ -100,6 +100,16 @@ Route::middleware('auth')->group(function () {
         'feedback' => $request->user()->isPublicReviewer() ? collect() : $request->user()->feedback()->latest()->latest('id')->get(),
     ]))->name('account');
 
+    // Optional two-step sign-in: set up, new recovery codes, turn off. Asks for
+    // the password first (password.confirm). Real password accounts only: never
+    // a judge or one of the four shared demo logins (GuardTwoStepSignIn refuses
+    // the buttons' posts on the server too). The buttons post to Fortify's routes.
+    Route::get('/account/two-step-sign-in', function (Request $request) {
+        abort_unless($request->user()->mayUseTwoStepSignIn(), 403);
+
+        return view('account.two-step');
+    })->middleware('password.confirm')->name('account.two-step');
+
     // Plain words about what is stored about the signed-in person (read-only).
     Route::get('/account/data', fn (Request $request) => view('account.data'))->name('account.data');
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ReviewerType;
 use App\Enums\Role;
+use App\Support\DemoLogins;
 use App\Support\DemoMailGuard;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,14 +14,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 // role is deliberately not fillable: only seeders and admins set it, with forceFill.
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token', 'invite_token_hash'])]
+#[Hidden(['password', 'remember_token', 'invite_token_hash', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -39,6 +41,7 @@ class User extends Authenticatable
             'last_seen_at' => 'datetime',
             'previous_visit_at' => 'datetime',
             'revoked_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
@@ -112,6 +115,17 @@ class User extends Authenticatable
         return $this->isReadOnly()
             && ! $this->isRevoked()
             && ($this->reviewer_type?->mayAdjudicate() ?? false);
+    }
+
+    /**
+     * Optional two-step sign-in (Fortify's two-factor feature) is for real
+     * password accounts only: never a judge (they sign in with a magic link)
+     * and never one of the four shared demo logins, where one person turning
+     * it on would lock out everyone else (DemoLogins).
+     */
+    public function mayUseTwoStepSignIn(): bool
+    {
+        return ! $this->isReadOnly() && ! $this->isRevoked() && ! DemoLogins::isSharedLogin($this);
     }
 
     public function isRevoked(): bool
