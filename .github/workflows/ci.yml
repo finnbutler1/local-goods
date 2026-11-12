@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
 
+# Least privilege: every job only reads the repository. Nothing here pushes,
+# uploads an artifact, comments or writes to GitHub. (The npm cache that
+# setup-node uses needs no extra permission.)
+permissions:
+  contents: read
+
 jobs:
   # composer.json's PHP minimum and composer.lock must agree, so anyone on the
   # declared minimum can install the project.

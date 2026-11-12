@@ -1012,13 +1012,16 @@ table.tokens,table.contrast{border-collapse:collapse;width:100%;font-size:.8125r
 
   // Live loading state on the "Try them" buttons.
   document.querySelectorAll('[data-demo-loading]').forEach(function (btn) {
-    var label = btn.innerHTML;
+    var label = Array.prototype.slice.call(btn.childNodes).map(function (n) { return n.cloneNode(true); });
     btn.addEventListener('click', function () {
       if (btn.getAttribute('aria-disabled') === 'true') return;
       btn.setAttribute('aria-disabled', 'true');
       btn.classList.add('is-loading');
-      btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>' + btn.getAttribute('data-demo-loading');
-      setTimeout(function () { btn.innerHTML = label; btn.classList.remove('is-loading'); btn.removeAttribute('aria-disabled'); }, 1500);
+      var spin = document.createElement('span');
+      spin.className = 'spinner';
+      spin.setAttribute('aria-hidden', 'true');
+      btn.replaceChildren(spin, document.createTextNode(btn.getAttribute('data-demo-loading')));
+      setTimeout(function () { btn.replaceChildren.apply(btn, label); btn.classList.remove('is-loading'); btn.removeAttribute('aria-disabled'); }, 1500);
     });
   });
 
