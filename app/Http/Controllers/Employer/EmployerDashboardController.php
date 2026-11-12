@@ -15,6 +15,7 @@ use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
 use App\Support\DemoLogins;
 use App\Support\Money;
+use App\Support\ShowMore;
 use App\Support\StripeMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -69,9 +70,13 @@ class EmployerDashboardController extends Controller
             'pendingCents' => EmployerProgram::pendingCents($employer),
             'allocatedThisMonth' => EmployerProgram::allocatedInMonthCents($employer),
             'remainingBudget' => EmployerProgram::remainingBudgetCents($employer),
-            'purchases' => $employer->creditPurchases()->with('demoActivity')->latest('purchased_at')->latest('id')->take(8)->get(),
-            'returned' => self::returnedCredit($employer),
-            'allocationGroups' => self::recentAllocationGroups($employer),
+            'purchases' => $employer->creditPurchases()->with('demoActivity')->latest('purchased_at')->latest('id')->when(! $request->boolean('all_purchases'), fn ($q) => $q->take(ShowMore::CAP))->get(),
+            'purchasesCount' => $employer->creditPurchases()->count(),
+            'showAllPurchases' => $request->boolean('all_purchases'),
+            'returned' => self::returnedCredit($employer, $request->boolean('all_purchases') ? PHP_INT_MAX : ShowMore::CAP),
+            'allocationGroups' => $groups = self::recentAllocationGroups($employer, $request->boolean('all_given') ? PHP_INT_MAX : ShowMore::CAP),
+            'allocationGroupsTotal' => self::allocationGroupTotal($employer, $groups),
+            'showAllGiven' => $request->boolean('all_given'),
             'employees' => $employees,
             'refundCorrection' => $employer->latestCorrection,
         ]);
@@ -160,7 +165,7 @@ class EmployerDashboardController extends Controller
     public static function recentAllocationGroups(Employer $employer, int $groups = 8): Collection
     {
         return $employer->creditAllocations()->with('employee')
-            ->latest('allocated_at')->latest('id')->take(500)->get()
+            ->latest('allocated_at')->latest('id')->when($groups !== PHP_INT_MAX, fn ($q) => $q->take(500))->get()
             ->groupBy(fn (CreditAllocation $a) => $a->allocated_at->toIso8601String().'|'.($a->occasion ?? Occasion::Monthly)->value.'|'.$a->amount_cents)
             ->take($groups)
             ->map(fn (Collection $group) => [
@@ -169,6 +174,23 @@ class EmployerDashboardController extends Controller
                 'at' => $group->first()->allocated_at,
                 'allocations' => $group->sortBy('employee_id')->values(),
             ])->values();
+    }
+
+    /**
+     * How many "Recently given" rows exist in all, for "Show all N". Only
+     * looks at every allocation when the page's list may have been cut short
+     * (the page carries at most ShowMore::CAP rows, built from the newest 500
+     * allocations).
+     *
+     * @param  Collection<int, mixed>  $loaded
+     */
+    private static function allocationGroupTotal(Employer $employer, Collection $loaded): int
+    {
+        if ($loaded->count() < ShowMore::CAP && $employer->creditAllocations()->count() <= 500) {
+            return $loaded->count();
+        }
+
+        return self::recentAllocationGroups($employer, PHP_INT_MAX)->count();
     }
 
     public function updateProgram(Request $request): RedirectResponse

@@ -12,6 +12,7 @@ use App\Services\EmployerProgram;
 use App\Services\MerchantTaxSummary;
 use App\Services\PayCodes;
 use App\Support\MerchantFee;
+use App\Support\ShowMore;
 use App\Support\StripeMode;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -28,7 +29,7 @@ use Illuminate\View\View;
 class MerchantDashboardController extends Controller
 {
     /** Redemptions listed before "Show all". */
-    public const RECENT = 10;
+    public const RECENT = ShowMore::CAP;
 
     public function __invoke(Request $request): View
     {
@@ -77,7 +78,10 @@ class MerchantDashboardController extends Controller
             'receivedCount' => (clone $redemptions)->count(),
             'showAll' => $request->boolean('all'),
             // Stripe rows carry their redemption, so each shows its path (ADR 0016).
-            'payouts' => $merchant->payouts()->with(['redemption.employee', 'redemption.decision', 'redemption.stripePayout', 'latestCorrection'])->latest('id')->take(12)->get(),
+            'payouts' => $merchant->payouts()->with(['redemption.employee', 'redemption.decision', 'redemption.stripePayout', 'latestCorrection'])->latest('id')
+                ->when(! $request->boolean('all_payouts'), fn ($q) => $q->take(ShowMore::CAP))->get(),
+            'payoutsCount' => $merchant->payouts()->count(),
+            'showAllPayouts' => $request->boolean('all_payouts'),
         ]);
     }
 }

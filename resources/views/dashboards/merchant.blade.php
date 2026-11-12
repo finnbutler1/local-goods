@@ -232,9 +232,9 @@
                             <th scope="col" class="py-2 text-right">Amount</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="received-rows">
                         @foreach ($received as $redemption)
-                            <tr class="border-b border-line align-top" data-received-row>
+                            <tr class="border-b border-line align-top" data-received-row @if ($loop->index >= \App\Support\ShowMore::RECEIVED) data-more @endif>
                                 <th scope="row" data-primary class="py-3 pr-4 font-bold whitespace-nowrap">{{ $redemption->employee->initials() }} @if ($redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</th>
                                 <td data-label="When" class="py-3 pr-4 whitespace-nowrap text-muted">{{ $redemption->created_at->setTimezone('America/New_York')->format('M j, g:i A') }} <span data-channel>· {{ $redemption->channelLabel() }}</span></td>
                                 <td data-label="Order" class="stack-block min-w-64 py-3 pr-4">
@@ -271,6 +271,7 @@
                     </tbody>
                 </table>
             </x-rtable>
+            <x-show-more target="received-rows" :limit="\App\Support\ShowMore::RECEIVED" :loaded="$received->count()" noun="redemptions" />
         @endif
         @if (! $showAll && $receivedCount > $received->count())
             <p class="mt-3"><a href="{{ route('merchant.dashboard', ['all' => 1]) }}#received" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $receivedCount }} redemptions</a></p>
@@ -347,9 +348,9 @@
                                 <th scope="col" class="py-2 text-right">Amount</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="payout-rows">
                             @foreach ($payouts as $payout)
-                                <tr class="border-b border-line align-top">
+                                <tr class="border-b border-line align-top" @if ($loop->index >= \App\Support\ShowMore::PAYOUTS) data-more @endif>
                                     <th scope="row" data-primary class="py-3 pr-4 font-bold whitespace-nowrap">{{ $payout->paid_at?->setTimezone('America/New_York')->format('D, M j, Y') ?? 'Not paid yet' }}</th>
                                     <td data-label="How it was paid" class="stack-block min-w-64 py-3 pr-4">
                                         <div class="flex flex-wrap items-center gap-1.5">
@@ -396,6 +397,8 @@
                         </tbody>
                     </table>
                 </x-rtable>
+                <x-show-more target="payout-rows" :limit="\App\Support\ShowMore::PAYOUTS" :loaded="$payouts->count()" noun="payouts"
+                    :total="$showAllPayouts ? null : $payoutsCount" :reload="route('merchant.dashboard', ['all_payouts' => 1]).'#payout-history'" />
             @endif
         </div>
     </section>

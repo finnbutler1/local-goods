@@ -10,6 +10,7 @@ use App\Models\SolvencyCheckRun;
 use App\Services\DemoActivity\ActivityStatus;
 use App\Support\PublicJudgeLink;
 use App\Support\RecentActivity;
+use App\Support\ShowMore;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -30,7 +31,7 @@ class HomeController extends Controller
             'platform' => $platform,
             'run' => SolvencyCheckRun::latest(),
             'activity' => $summary,
-            'recent' => RecentActivity::for($platform),
+            'recent' => RecentActivity::for($platform, ShowMore::CAP),
             'unreadFeedback' => $platform ? Feedback::where('status', FeedbackStatus::New)->count() : 0,
             'publicJudgeUrl' => $platform ? $publicJudgeLink->url() : null,
         ]);

@@ -236,9 +236,9 @@
 
     <section aria-labelledby="recent-heading" class="wallet-recent pt-4">
         <x-station-sign heading-id="recent-heading">Recent redemptions</x-station-sign>
-        <ul class="ruled-rows mt-4 border-t-0">
+        <ul id="recent-rows" class="ruled-rows mt-4 border-t-0">
             @forelse ($recent as $redemption)
-                <li class="flex items-start justify-between gap-3">
+                <li class="flex items-start justify-between gap-3" @if ($loop->index >= \App\Support\ShowMore::RECENT_REDEMPTIONS) data-more @endif>
                     <div class="min-w-0">
                         <p class="font-extrabold break-words">{{ $redemption->merchant->name }} @if ($redemption->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</p>
                         @if ($for = $redemption->itemsSummary())
@@ -264,14 +264,16 @@
                 <li class="text-muted">No redemptions yet.</li>
             @endforelse
         </ul>
+        <x-show-more target="recent-rows" :limit="\App\Support\ShowMore::RECENT_REDEMPTIONS" :loaded="$recent->count()" noun="redemptions"
+            :total="$showAllRecent ? null : $recentCount" :reload="route('employee.wallet', ['all_recent' => 1]).'#recent-heading'" />
     </section>
 
     <section id="history" aria-labelledby="history-heading" class="wallet-history scroll-mt-24 pt-4">
         <x-station-sign heading-id="history-heading">Transaction history</x-station-sign>
         <p class="mt-3 text-[0.9375rem] text-muted">Every credit in and out of your wallet, newest first, from the Local Goods ledger.</p>
-        <ul class="ruled-rows mt-4 border-t-0">
+        <ul id="history-rows" class="ruled-rows mt-4 border-t-0">
             @forelse ($history as $row)
-                <li class="flex items-start justify-between gap-3 py-3!">
+                <li class="flex items-start justify-between gap-3 py-3!" @if ($loop->index >= \App\Support\ShowMore::HISTORY) data-more @endif>
                     <div class="min-w-0">
                         <p class="text-[0.9375rem] font-bold">{{ $row['entry']->description }}</p>
                         @if ($row['entry']->type === \App\Models\CreditLedgerEntry::TYPE_REDEMPTION && $row['entry']->redemption)
@@ -290,6 +292,7 @@
                 <li class="text-muted">No transactions yet. Your employer's first allowance will show here.</li>
             @endforelse
         </ul>
+        <x-show-more target="history-rows" :limit="\App\Support\ShowMore::HISTORY" :loaded="$history->count()" noun="transactions" />
         @if (! $showAllHistory && $historyCount > $history->count())
             <p class="mt-3"><a href="{{ route('employee.wallet', ['history' => 1]) }}#history" class="tap-target font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Show all {{ $historyCount }} transactions</a></p>
         @endif

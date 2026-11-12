@@ -5,6 +5,19 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**"Show all (N)" on long lists — code done (2026-11-12), not deployed.** Views, one
+component and presentation JS only: no migration, money, route, fraud prompt,
+AI input, eval data or lock change.
+
+- `App\Support\ShowMore` (`CAP` 50 rows per list; first rows shown: payouts 3,
+  recent redemptions 3, received/history/purchases/recently given/admin Recent
+  Activity 5). `<x-show-more>` + `[data-show-more]` in `app.js`: every row is in
+  the page, rows past the limit carry `data-more`; without JS nothing is hidden.
+  Over 50 the old reload link stays (`?all=1`, `?history=1`; new `all_payouts`,
+  `all_recent`, `all_purchases`, `all_given`). Held payments, Fraud Review,
+  corrections, applications are never folded; a pending purchase never is.
+- Test: `ShowMoreListsTest`.
+
 **Optional two-step sign-in for staff accounts — code done (2026-11-12), not
 deployed.** One additive migration
 (`2026_11_13_000001_add_two_factor_columns_to_users_table`: Fortify's three

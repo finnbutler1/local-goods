@@ -8,6 +8,7 @@ use App\Models\Merchant;
 use App\Models\Redemption;
 use App\Services\Ai\ClaudeClient;
 use App\Support\Money;
+use App\Support\ShowMore;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -200,12 +201,12 @@ class EmployeeWalletTest extends TestCase
                 $entries[1]->description, 'Balance '.Money::format($balance - $entries[0]->amount_cents),
             ]);
 
-        // Jordan has 12 redemptions plus allowances, more than the first 20 shown.
+        // Jordan has more than the five shown first: they are all in the page behind the button.
         $count = $employee->ledgerEntries()->count();
-        if ($count > 20) {
-            $this->get('/employee')->assertSee("Show all {$count} transactions");
-            $this->get('/employee?history=1')->assertDontSee('Show all');
-        }
+        $this->assertGreaterThan(5, $count);
+        $this->assertLessThanOrEqual(ShowMore::CAP, $count);
+        $this->get('/employee')->assertSee("Show all transactions ({$count})")->assertDontSee("Show all {$count} transactions");
+        $this->get('/employee?history=1')->assertDontSee("Show all {$count} transactions");
     }
 
     public function test_the_wallet_card_says_demo_account_without_the_name(): void

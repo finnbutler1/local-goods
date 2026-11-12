@@ -11,6 +11,7 @@ use App\Services\RedemptionBasket;
 use App\Services\RedemptionService;
 use App\Support\Money;
 use App\Support\PayoutOutcome;
+use App\Support\ShowMore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -25,7 +26,7 @@ class EmployeeWalletController extends Controller
     {
         $employee = $this->employee($request);
         $balance = $employee->balanceCents();
-        $recent = $employee->redemptions()->with(['merchant', 'decision', 'items', 'latestCorrection', 'demoActivity'])->latest()->latest('id')->take(8)->get();
+        $recent = $employee->redemptions()->with(['merchant', 'decision', 'items', 'latestCorrection', 'demoActivity'])->latest()->latest('id')->when(! $request->boolean('all_recent'), fn ($q) => $q->take(ShowMore::CAP))->get();
 
         // "Redeem here" on a merchant card picks that merchant in the form.
         $prefill = ['merchant_id' => $request->integer('merchant') ?: null, 'amount' => null];
@@ -64,7 +65,7 @@ class EmployeeWalletController extends Controller
 
         // Newest first, each with the balance right after it (from the ledger).
         $showAll = $request->boolean('history');
-        $entries = $employee->ledgerEntries()->with('redemption')->latest('created_at')->latest('id')->when(! $showAll, fn ($q) => $q->take(20))->get();
+        $entries = $employee->ledgerEntries()->with('redemption')->latest('created_at')->latest('id')->when(! $showAll, fn ($q) => $q->take(ShowMore::CAP))->get();
         $running = $balance;
         $history = $entries->map(function ($entry) use (&$running) {
             $row = ['entry' => $entry, 'balance_after' => $running];
@@ -85,6 +86,8 @@ class EmployeeWalletController extends Controller
             'historyCount' => $employee->ledgerEntries()->count(),
             'showAllHistory' => $showAll,
             'recent' => $recent,
+            'recentCount' => $employee->redemptions()->count(),
+            'showAllRecent' => $request->boolean('all_recent'),
             'prefill' => $prefill,
             'menuMerchant' => $menuMerchant,
             'menu' => $menu,

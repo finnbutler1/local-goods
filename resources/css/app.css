@@ -1920,3 +1920,9 @@ table.statement > :is(tbody, tfoot) > tr.statement-after > td {
         align-items: center;
     }
 }
+
+/* "Show all (N)" (<x-show-more>): a row folded away stays folded even where a
+   table turns its rows into cards. */
+[data-more][hidden] {
+    display: none !important;
+}

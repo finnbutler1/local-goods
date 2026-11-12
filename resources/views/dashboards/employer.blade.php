@@ -324,6 +324,9 @@
                     $activity = $purchases->map(fn ($p) => ['at' => $p->purchased_at, 'purchase' => $p, 'entry' => null])
                         ->concat($returned['entries']->map(fn ($e) => ['at' => $e->created_at, 'purchase' => null, 'entry' => $e]))
                         ->sortByDesc('at')->values();
+                    if (! $showAllPurchases) {
+                        $activity = $activity->take(\App\Support\ShowMore::CAP);
+                    }
                 @endphp
                 @if ($activity->isEmpty())
                     <p class="ledger-note mt-4 border-dashed text-muted">No purchases yet. Buy credits to fund your team's credits.</p>
@@ -338,11 +341,12 @@
                                     <th scope="col" class="py-2">Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="credit-activity-rows">
                                 @foreach ($activity as $item)
+                                    @php $folded = $loop->index >= \App\Support\ShowMore::PURCHASES && ! ($item['purchase']?->isPending()); @endphp
                                     @if ($entry = $item['entry'])
                                         @php $r = $entry->redemption; @endphp
-                                        <tr class="border-b border-line align-top" data-returned-entry="{{ $r?->id }}">
+                                        <tr class="border-b border-line align-top" data-returned-entry="{{ $r?->id }}" @if ($folded) data-more @endif>
                                             <th scope="row" data-primary class="tabular py-3 pr-4 text-right text-base font-semibold whitespace-nowrap">+{{ Money::format($entry->amount_cents) }}</th>
                                             <td data-label="Details" class="stack-block py-3 pr-4 text-muted">
                                                 Denied redemption #{{ $r?->id }}{{ ($for = $r?->itemsSummary()) ? ' ('.$for.')' : '' }} · suspected abuse · decided by {{ $r?->decision?->deciderLabel() ?? 'a BID admin' }}
@@ -353,7 +357,7 @@
                                         @continue
                                     @endif
                                     @php $purchase = $item['purchase']; @endphp
-                                    <tr class="border-b border-line align-top">
+                                    <tr class="border-b border-line align-top" @if ($folded) data-more @endif>
                                         <th scope="row" data-primary class="tabular py-3 pr-4 text-right text-base font-semibold whitespace-nowrap">{{ Money::format($purchase->amount_cents) }} @if ($purchase->isGeneratedDemoActivity()) <x-demo-activity-badge /> @endif</th>
                                         <td data-label="Details" class="stack-block py-3 pr-4">
                                             <p class="text-muted">{{ $purchase->reference }} · {{ $purchase->purchased_at->setTimezone('America/New_York')->format('M j, Y') }}</p>
@@ -402,6 +406,8 @@
                             </tbody>
                         </table>
                     </x-rtable>
+                    <x-show-more target="credit-activity-rows" :limit="\App\Support\ShowMore::PURCHASES" :loaded="$activity->count()" noun="purchases"
+                        :total="$showAllPurchases ? null : $purchasesCount + $returned['count']" :reload="route('employer.dashboard', ['all_purchases' => 1]).'#credit-activity'" />
                 @endif
             </section>
         </div>
@@ -520,14 +526,14 @@
             @if ($allocationGroups->isEmpty())
                 <p class="ledger-note mt-3 border-dashed text-muted">Nothing given yet.</p>
             @else
-                <ul class="mt-3 divide-y divide-line border-t-[3px] border-b border-t-ink border-b-line">
+                <ul id="allocation-rows" class="mt-3 divide-y divide-line border-t-[3px] border-b border-t-ink border-b-line">
                     @foreach ($allocationGroups as $group)
                         @php
                             $count = $group['allocations']->count();
                             $date = $group['at']->setTimezone('America/New_York')->format('M j, Y');
                         @endphp
                         @if ($count === 1)
-                            <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+                            <li class="flex flex-wrap items-center justify-between gap-2 py-3" @if ($loop->index >= \App\Support\ShowMore::GIVEN) data-more @endif>
                                 <div>
                                     <p class="tabular font-semibold">{{ $group['allocations']->first()->employee->publicLabel() }}</p>
                                     <p class="text-sm text-muted">{{ $group['occasion']->label() }} · {{ $date }}</p>
@@ -535,7 +541,7 @@
                                 <p class="ledger-num font-semibold">{{ Money::format($group['amount_cents']) }}</p>
                             </li>
                         @else
-                            <li>
+                            <li @if ($loop->index >= \App\Support\ShowMore::GIVEN) data-more @endif>
                                 <details class="group">
                                     <summary class="flex cursor-pointer list-none items-start justify-between gap-3 py-3 hover:bg-band/50 [&::-webkit-details-marker]:hidden">
                                         <span class="min-w-0">
@@ -557,6 +563,8 @@
                         @endif
                     @endforeach
                 </ul>
+                <x-show-more target="allocation-rows" :limit="\App\Support\ShowMore::GIVEN" :loaded="$allocationGroups->count()" noun="allocations"
+                    :total="$showAllGiven ? null : $allocationGroupsTotal" :reload="route('employer.dashboard', ['all_given' => 1]).'#allocations-heading'" />
             @endif
         </section>
         @endif

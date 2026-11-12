@@ -106,14 +106,15 @@
         @if ($recent->isEmpty())
             <x-empty-state class="mt-4">Nothing has been decided or asked for yet.</x-empty-state>
         @else
-            <ul class="mt-4 border-t border-ink">
+            <ul id="recent-activity-rows" class="mt-4 border-t border-ink">
                 @foreach ($recent as $row)
-                    <li class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line py-2.5">
+                    <li class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line py-2.5" @if ($loop->index >= \App\Support\ShowMore::ACTIVITY) data-more @endif>
                         <a href="{{ $row['url'] }}" class="{{ $link }}">{{ $row['text'] }}</a>
                         <time datetime="{{ $row['at']->toIso8601String() }}" class="tabular text-sm text-muted">{{ $dc($row['at'])->format('M j, g:i A') }}</time>
                     </li>
                 @endforeach
             </ul>
+            <x-show-more target="recent-activity-rows" :limit="\App\Support\ShowMore::ACTIVITY" :loaded="$recent->count()" noun="activity" />
         @endif
     </section>
 </div>

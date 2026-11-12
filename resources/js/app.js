@@ -456,6 +456,26 @@ document.querySelectorAll('[data-tabs]').forEach((tabs) => {
     });
 });
 
+// "Show all (N)" on long lists: <div data-show-more="listId" data-limit="3">
+// holds one button. Rows after the first `limit` carry [data-more]. Without
+// JavaScript the block stays hidden and every row is visible; with it the
+// extra rows are hidden until the button (aria-expanded, aria-controls) is
+// pressed. The button stays where it is, so focus is never lost.
+document.querySelectorAll('[data-show-more]').forEach((block) => {
+    const list = document.getElementById(block.dataset.showMore);
+    const button = block.querySelector('button');
+    if (!list || !button) return;
+    const rows = [...list.children].filter((row) => row.hasAttribute('data-more'));
+    const apply = (open) => {
+        rows.forEach((row) => { row.hidden = !open; });
+        button.setAttribute('aria-expanded', String(open));
+        button.textContent = open ? button.dataset.labelLess : button.dataset.labelMore;
+    };
+    apply(false);
+    block.hidden = false;
+    button.addEventListener('click', () => apply(button.getAttribute('aria-expanded') !== 'true'));
+});
+
 // District map stops that link to a list item ([data-stop-link], the wallet):
 // scroll to the merchant and focus it, by mouse, touch or keyboard. Without
 // JavaScript the plain #fragment link does the same jump.

@@ -13,10 +13,11 @@ use App\Services\CreditLedger;
 use App\Services\RedemptionReviewService;
 use App\Services\RedemptionService;
 use App\Support\Money;
+use App\Support\ShowMore;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Fakes\FakeClaudeClient;
 use Tests\Concerns\PlacesMerchantsInTheDistrict;
+use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
 
 /**
@@ -100,19 +101,32 @@ class MerchantDashboardTest extends TestCase
         $this->get('/merchant')->assertOk()->assertSee('Farragut Grind')->assertDontSee('<form method="POST" action="'.url('/merchant'), false);
     }
 
-    public function test_redemptions_received_shows_the_newest_ten_then_all(): void
+    public function test_redemptions_received_loads_the_newest_fifty_and_keeps_the_reload_link(): void
     {
         $total = $this->merchant->redemptions()->count();
-        $this->assertGreaterThan(10, $total, 'The seed gives Farragut Grind more than ten');
+        $this->assertGreaterThan(5, $total, 'The seed gives Farragut Grind more than five');
+        $this->assertLessThanOrEqual(ShowMore::CAP, $total);
 
-        $html = $this->get('/merchant')->assertSee("The newest 10 of {$total}")->assertSee("Show all {$total} redemptions")->getContent();
-        $this->assertSame(10, $this->receivedRows($html));
-
-        $html = $this->get('/merchant?all=1')->assertSee("All {$total}")->assertDontSee('Show all')->assertSee('Show the newest 10 only')->getContent();
+        // Up to fifty fit in the page: the button reveals them, no reload link.
+        $html = $this->get('/merchant')->assertSee("The newest {$total} of {$total}")->assertDontSee("Show all {$total} redemptions")->getContent();
         $this->assertSame($total, $this->receivedRows($html));
+        $this->assertSame($total - ShowMore::RECEIVED, preg_match_all('/data-received-row\\s+data-more/', $html));
+
+        // Past fifty the page carries fifty and the old link loads the lot.
+        $copy = $this->merchant->redemptions()->orderBy('id')->firstOrFail();
+        for ($i = $total; $i < ShowMore::CAP + 6; $i++) {
+            $copy->replicate()->save();
+        }
+        $all = $this->merchant->redemptions()->count();
+
+        $html = $this->get('/merchant')->assertSee('The newest '.ShowMore::CAP." of {$all}")->assertSee("Show all {$all} redemptions")->getContent();
+        $this->assertSame(ShowMore::CAP, $this->receivedRows($html));
+
+        $html = $this->get('/merchant?all=1')->assertSee("All {$all}")->assertDontSee("Show all {$all} redemptions")->assertSee('Show the newest '.ShowMore::CAP.' only')->getContent();
+        $this->assertSame($all, $this->receivedRows($html));
     }
 
-    public function test_no_show_all_link_with_ten_or_fewer(): void
+    public function test_no_show_all_button_with_five_or_fewer(): void
     {
         $owner = User::factory()->role(Role::Merchant)->create();
         $this->merchant = Merchant::create(['bid_id' => $this->merchant->bid_id, 'name' => 'Test Bakery', 'category' => 'cafe', 'address' => '1 Test St NW', 'user_id' => $owner->id, ...$this->inTheDistrict()]);
