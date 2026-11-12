@@ -108,7 +108,7 @@ class MerchantDashboardTest extends TestCase
         $this->assertLessThanOrEqual(ShowMore::CAP, $total);
 
         // Up to fifty fit in the page: the button reveals them, no reload link.
-        $html = $this->get('/merchant')->assertSee("The newest {$total} of {$total}")->assertDontSee("Show all {$total} redemptions")->getContent();
+        $html = $this->get('/merchant')->assertSee('Newest first. Customers are shown by initials only.')->assertDontSee("The newest {$total} of {$total}")->assertDontSee("Show all {$total} redemptions")->getContent();
         $this->assertSame($total, $this->receivedRows($html));
         $this->assertSame($total - ShowMore::RECEIVED, preg_match_all('/data-received-row\\s+data-more/', $html));
 
@@ -119,10 +119,10 @@ class MerchantDashboardTest extends TestCase
         }
         $all = $this->merchant->redemptions()->count();
 
-        $html = $this->get('/merchant')->assertSee('The newest '.ShowMore::CAP." of {$all}")->assertSee("Show all {$all} redemptions")->getContent();
+        $html = $this->get('/merchant')->assertSee('Newest first. Customers are shown by initials only.')->assertSee("Show all {$all} redemptions")->getContent();
         $this->assertSame(ShowMore::CAP, $this->receivedRows($html));
 
-        $html = $this->get('/merchant?all=1')->assertSee("All {$all}")->assertDontSee("Show all {$all} redemptions")->assertSee('Show the newest '.ShowMore::CAP.' only')->getContent();
+        $html = $this->get('/merchant?all=1')->assertDontSee("Show all {$all} redemptions")->assertSee('Show the newest '.ShowMore::CAP.' only')->getContent();
         $this->assertSame($all, $this->receivedRows($html));
     }
 
@@ -135,7 +135,7 @@ class MerchantDashboardTest extends TestCase
             $this->redeem($cents, 'clear');
         }
 
-        $html = $this->get('/merchant')->assertOk()->assertSee('The newest 3 of 3')->assertDontSee('Show all')->getContent();
+        $html = $this->get('/merchant')->assertOk()->assertSee('Newest first. Customers are shown by initials only.')->assertDontSee('Show all')->getContent();
         $this->assertSame(3, $this->receivedRows($html));
     }
 

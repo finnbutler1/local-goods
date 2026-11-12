@@ -215,7 +215,7 @@
     <section id="received" aria-labelledby="received-heading" class="rule-top scroll-mt-24">
         <h2 id="received-heading" class="stop-subtitle text-2xl">Redemptions received</h2>
         <p class="mt-1.5 text-sm text-muted">
-            {{ $showAll ? 'All '.$receivedCount : 'The newest '.min($receivedCount, \App\Http\Controllers\Merchant\MerchantDashboardController::RECENT).' of '.$receivedCount }}, newest first. Customers are shown by initials only.
+            Newest first. Customers are shown by initials only.
         </p>
         @if ($received->isEmpty())
             <p class="ledger-note mt-4 border-dashed text-muted">No Local Goods redemptions yet. They'll appear here as soon as a customer pays with credits.</p>
