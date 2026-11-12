@@ -6,7 +6,7 @@ building, for whom, and the rules for working in this repo.
 ## Current milestone
 
 **Employer platform fee per participating employee — code done (2026-11-12,
-ADR 0042), on branch `employer-fee`, not merged or deployed; switched off.**
+ADR 0042), merged to main, not deployed; switched off.**
 One additive migration (`2026_11_14_000001_add_employer_platform_fee_to_credit_purchases`,
 snapshot `before-employer-fee`). Fraud gate, AI input, eval data, locks,
 merchant fee and the percent fee's own code unchanged.
