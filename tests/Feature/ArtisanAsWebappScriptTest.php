@@ -35,7 +35,8 @@ class ArtisanAsWebappScriptTest extends TestCase
 
     public static function allowed(): array
     {
-        return [['demo:check-mail-guard'], ['demo:update-emails'], ['demo:update-emails --apply']];
+        return [['demo:check-mail-guard'], ['demo:update-emails'], ['demo:update-emails --apply'],
+            ['auth:disable-two-step staff.person@example.test'], ['auth:disable-two-step Staff_Person+2fa@mail.example.co.uk --apply']];
     }
 
     #[DataProvider('allowed')]
@@ -51,7 +52,15 @@ class ArtisanAsWebappScriptTest extends TestCase
     public static function refused(): array
     {
         return [[[]], [['migrate:fresh']], [['db:wipe']], [['tinker']], [['demo:update-emails', '--force']],
-            [['demo:check-mail-guard;', 'rm', '-rf', '/']], [['demo:update-emails', '--apply', '--env=local']]];
+            [['demo:check-mail-guard;', 'rm', '-rf', '/']], [['demo:update-emails', '--apply', '--env=local']],
+            // auth:disable-two-step: exactly one plain email, then optionally --apply.
+            [['auth:disable-two-step']], [['auth:disable-two-step', '--apply']],
+            [['auth:disable-two-step', 'a@example.test;rm -rf /']], [['auth:disable-two-step', 'a@example.test rm']],
+            [['auth:disable-two-step', 'a@example.test', '--env=local']], [['auth:disable-two-step', 'a@example.test', '--apply', '--env=local']],
+            [['auth:disable-two-step', 'a@example.test', 'b@example.test']], [['auth:disable-two-step', '--env=local@example.test']],
+            [['auth:disable-two-step', '$(id)@example.test']], [['auth:disable-two-step', 'a@*.test']], [['auth:disable-two-step', 'a@example']],
+            [['auth:disable-two-step', "a@example.test\nb@example.test"]], [['auth:disable-two-step', '"a"@example.test']],
+            [['auth:disable-two-step a@example.test']]];
     }
 
     #[DataProvider('refused')]

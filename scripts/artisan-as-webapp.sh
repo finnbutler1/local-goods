@@ -16,12 +16,26 @@ SU_PATHS="${SU_PATHS:-/usr/bin/su /bin/su}"
 SUDO_PATHS="${SUDO_PATHS:-/usr/bin/sudo /bin/sudo}"
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}"
 
+ALLOWED="demo:check-mail-guard, demo:update-emails, demo:update-emails --apply, auth:disable-two-step <email>, auth:disable-two-step <email> --apply"
+
+# An email for auth:disable-two-step: letters, digits and . _ % + - only, one @,
+# a dotted domain, and no leading - (so it can't be read as an option). None of
+# these characters means anything to the shell, so splitting below is safe.
+EMAIL_PATTERN='^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}$'
+
 case "$*" in
     # One of these fixed strings, so splitting it into words below is safe.
     "demo:check-mail-guard" | "demo:update-emails" | "demo:update-emails --apply") command="$*" ;;
     *)
-        echo "Refused: only these are allowed: demo:check-mail-guard, demo:update-emails, demo:update-emails --apply" >&2
-        exit 2
+        # Emergency recovery (CLAUDE.md deploy notes): exactly the command, one
+        # email, and optionally --apply, as separate arguments.
+        if [ "${1:-}" = "auth:disable-two-step" ] && [[ "${2:-}" =~ $EMAIL_PATTERN ]] \
+            && { [ $# -eq 2 ] || { [ $# -eq 3 ] && [ "$3" = "--apply" ]; }; }; then
+            command="auth:disable-two-step $2${3:+ $3}"
+        else
+            echo "Refused: only these are allowed: $ALLOWED" >&2
+            exit 2
+        fi
         ;;
 esac
 
