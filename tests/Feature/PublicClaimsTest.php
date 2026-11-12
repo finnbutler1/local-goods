@@ -35,6 +35,20 @@ class PublicClaimsTest extends TestCase
     /** @var array<string, string> page => raw HTML, filled by publicPages() */
     private array $html = [];
 
+    /**
+     * The one element outside the business model page that may show a fee
+     * figure: the employer dashboard's planned platform fee box while the fee
+     * is switched off (ADR 0042), and only while it carries the projection
+     * label. Removed before the check; test_the_planned_fee_preview_* says
+     * where it may appear and what it must carry.
+     */
+    private const PLANNED_FEE_PREVIEW = '/<aside\b[^>]*\bdata-planned-fee-preview\b[^>]*>.*?<\/aside>/s';
+
+    private const PLANNED_FEE_PAGE = '/employer as judge';
+
+    /** @var array<string, list<string>> page => planned-fee preview elements removed by publicPages() */
+    private array $previews = [];
+
     private const OVERCLAIM = '/local goods\W+(?:\w+\W+){0,3}?(delivers|creates|produces|generates|achieves|causes)\b[^.]{0,40}(\b3\s?x\b|3×|three times|multiplier)|guarantee/i';
 
     /**
@@ -70,7 +84,10 @@ class PublicClaimsTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $pages = [];
         $this->sweepPages(function (string $html, string $where) use (&$pages) {
-            $pages[$where] = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html)));
+            preg_match_all(self::PLANNED_FEE_PREVIEW, $html, $found);
+            $this->previews[$where] = array_values(array_filter($found[0], fn (string $el) => str_contains($el, self::PROJECTION_LABEL)));
+            $checked = preg_replace_callback(self::PLANNED_FEE_PREVIEW, fn ($m) => str_contains($m[0], self::PROJECTION_LABEL) ? '' : $m[0], $html);
+            $pages[$where] = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($checked)));
             $this->html[$where] = $html;
         }, roles: [Role::Judge]);
 
@@ -145,6 +162,19 @@ class PublicClaimsTest extends TestCase
             }
             $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, $text, $where);
         }
+    }
+
+    public function test_the_planned_fee_preview_is_only_on_the_employer_dashboard_with_its_label_and_link(): void
+    {
+        $this->publicPages();
+
+        $this->assertSame([self::PLANNED_FEE_PAGE], array_keys(array_filter($this->previews)), 'Only the employer dashboard has the planned fee preview.');
+        $this->assertCount(1, $this->previews[self::PLANNED_FEE_PAGE]);
+        $preview = $this->previews[self::PLANNED_FEE_PAGE][0];
+        $this->assertStringContainsString('Planned platform fee (not charged during the pilot)', $preview);
+        $this->assertStringContainsString(self::PROJECTION_LABEL, $preview);
+        $this->assertStringContainsString(route('business-model').'#assumptions', $preview, 'Judges can open the business model, so they get the link.');
+        $this->assertMatchesRegularExpression('/\$\d/', $preview, 'The exception is not empty: the preview shows the planned price.');
     }
 
     public function test_business_model_numbers_in_the_readme_only_in_its_labelled_business_model_section(): void
@@ -226,5 +256,13 @@ class PublicClaimsTest extends TestCase
         $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'A profit of $4.02M.');
         $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Our revenue is $1.2M.');
         $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, 'Independent retailers recirculated 52.3% of their revenue locally, against 15.8% for chains.');
+
+        // The planned-fee exception removes only its own labelled element: an unlabelled one, or fee text beside it, is still checked.
+        $labelled = '<aside data-planned-fee-preview><p>'.self::PROJECTION_LABEL.'</p><p>Platform fee $6.00 per employee.</p></aside>';
+        $unlabelled = '<aside data-planned-fee-preview><p>Platform fee $6.00 per employee.</p></aside>';
+        $strip = fn (string $html) => preg_replace_callback(self::PLANNED_FEE_PREVIEW, fn ($m) => str_contains($m[0], self::PROJECTION_LABEL) ? '' : $m[0], $html);
+        $this->assertDoesNotMatchRegularExpression(self::BUSINESS_MODEL_NUMBER, strip_tags($strip($labelled)));
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, strip_tags($strip($unlabelled)));
+        $this->assertMatchesRegularExpression(self::BUSINESS_MODEL_NUMBER, strip_tags($strip($labelled.'<p>A platform fee of $6.00.</p>')));
     }
 }

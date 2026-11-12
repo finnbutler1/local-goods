@@ -14,7 +14,9 @@ use App\Services\EmployerProgram;
 use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
 use App\Support\DemoLogins;
+use App\Support\EmployerPlatformFee;
 use App\Support\Money;
+use App\Support\ParticipatingEmployees;
 use App\Support\ShowMore;
 use App\Support\StripeMode;
 use Illuminate\Http\JsonResponse;
@@ -79,6 +81,7 @@ class EmployerDashboardController extends Controller
             'showAllGiven' => $request->boolean('all_given'),
             'employees' => $employees,
             'refundCorrection' => $employer->latestCorrection,
+            'employerFee' => self::employerFeeState($employer),
         ]);
     }
 
@@ -119,6 +122,33 @@ class EmployerDashboardController extends Controller
         };
     }
 
+    /**
+     * What the Buy credits card says about the employer platform fee (ADR
+     * 0042). On: whether the next purchase adds this month's fee, and how
+     * much (the same rule as CreditLedger::requestPurchase, read without a
+     * lock, so display only). Off: the planned fee as a projection.
+     *
+     * @return array{on: bool, month: string, employees: int, unit_cents: int, cents: int, adds: bool}
+     */
+    public static function employerFeeState(Employer $employer): array
+    {
+        $now = now();
+        $month = EmployerPlatformFee::monthOf($now);
+        $employees = ParticipatingEmployees::lastMonth($employer, $now);
+        $unit = EmployerPlatformFee::unitCents();
+        $on = EmployerPlatformFee::charges();
+        $taken = CreditPurchase::where('employer_fee_key', EmployerPlatformFee::key($employer, $month))->exists();
+
+        return [
+            'on' => $on,
+            'month' => $month,
+            'employees' => $employees,
+            'unit_cents' => $unit,
+            'cents' => $employees * $unit,
+            'adds' => $on && ! $taken && $employees > 0,
+        ];
+    }
+
     private function purchaseFromQuery(Employer $employer, string $key): ?CreditPurchase
     {
         $reference = request()->query($key);
@@ -128,9 +158,18 @@ class EmployerDashboardController extends Controller
             : null;
     }
 
-    /** "; $102.50 charged, including a $2.50 platform fee", or nothing when the purchase has no fee (ADR 0021). */
+    /**
+     * "; $102.50 charged, including a $2.50 platform fee", or nothing when the
+     * purchase has no fee (ADR 0021). The employer platform fee (ADR 0042)
+     * is named as such, with its month.
+     */
     public static function feeClause(CreditPurchase $purchase, string $verb): string
     {
+        if ($purchase->hasEmployerFee()) {
+            return '; '.Money::format($purchase->totalCents()).' '.$verb.', including a '.Money::format($purchase->employer_fee_cents)
+                .' platform fee for '.EmployerPlatformFee::monthLabel($purchase->employer_fee_month);
+        }
+
         return $purchase->platform_fee_cents > 0
             ? '; '.Money::format($purchase->totalCents()).' '.$verb.', including a '.Money::format($purchase->platform_fee_cents).' platform fee'
             : '';
@@ -351,7 +390,7 @@ class EmployerDashboardController extends Controller
             }
         }
 
-        CreditPurchase::whereKey($purchase->id)->where('status', CreditPurchase::STATUS_PENDING)->update(['status' => CreditPurchase::STATUS_CANCELLED]);
+        CreditPurchase::cancelIfPending($purchase->id);
 
         return redirect()->to(route('employer.dashboard', ['cancelled' => $purchase->reference]).'#buy')->with('notice',
             'Payment cancelled. Nothing was charged for '.$purchase->reference.' ('.Money::format($purchase->amount_cents).' in credits).');

@@ -199,8 +199,8 @@ class StripeReconciliation
     }
 
     /**
-     * purchase_cents is what the employer paid: credits plus platform fees
-     * (fees are 0 while the fee is off).
+     * purchase_cents is what the employer paid: credits plus platform fees,
+     * both kinds (ADR 0021, ADR 0042; 0 while the fees are off).
      *
      * transfer_cents is sent transfers less the refund reversals on them
      * (ADR 0028), as Stripe nets them off; refund_cents is card refunds to
@@ -213,7 +213,7 @@ class StripeReconciliation
         $paid = CreditPurchase::where('status', CreditPurchase::STATUS_PAID);
         $sent = MerchantPayout::where('status', MerchantPayout::STATUS_SENT);
         $credits = (int) (clone $paid)->sum('amount_cents');
-        $fees = (int) (clone $paid)->sum('platform_fee_cents');
+        $fees = (int) (clone $paid)->sum('platform_fee_cents') + (int) (clone $paid)->sum('employer_fee_cents');
         $reversed = (int) CorrectionAction::where('kind', CorrectionAction::KIND_TRANSFER_REVERSAL)->where('status', CorrectionAction::STATUS_SUCCEEDED)
             ->whereIn('merchant_payout_id', (clone $sent)->select('id'))->sum('amount_cents');
         $refunds = CorrectionAction::where('kind', CorrectionAction::KIND_CARD_REFUND)->where('status', CorrectionAction::STATUS_SUCCEEDED);
@@ -222,7 +222,7 @@ class StripeReconciliation
             'purchase_cents' => $credits + $fees,
             'credit_cents' => $credits,
             'fee_cents' => $fees,
-            'fee_line_cents' => (int) CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_PLATFORM_FEE)
+            'fee_line_cents' => (int) CreditLedgerEntry::where('platform', true)->whereIn('type', CreditLedgerEntry::PURCHASE_FEE_TYPES)
                 ->whereIn('credit_purchase_id', (clone $paid)->select('id'))->sum('amount_cents'),
             'purchases' => (clone $paid)->count(),
             'transfer_cents' => (int) (clone $sent)->sum('amount_cents') - $reversed,
@@ -286,6 +286,7 @@ class StripeReconciliation
             } elseif (($pi['amount_received'] ?? $pi['amount']) !== $purchase->totalCents()) {
                 $out[] = $purchase->reference.' is '.Money::format($purchase->totalCents()).' in the ledger'
                     .($purchase->platform_fee_cents > 0 ? ' (credits '.Money::format($purchase->amount_cents).' + platform fee '.Money::format($purchase->platform_fee_cents).')' : '')
+                    .($purchase->hasEmployerFee() ? ' (credits '.Money::format($purchase->amount_cents).' + employer platform fee '.Money::format($purchase->employer_fee_cents).')' : '')
                     .' but Stripe received '
                     .Money::format($pi['amount_received'] ?? $pi['amount']).' ('.$pi['id'].').';
             }

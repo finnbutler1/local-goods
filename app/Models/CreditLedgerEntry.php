@@ -49,6 +49,12 @@ class CreditLedgerEntry extends Model
     /** Platform account: the platform fee paid on top of a purchase's credits (ADR 0021). Never on the employer's balance. */
     public const TYPE_PLATFORM_FEE = 'platform_fee';
 
+    /** The employer platform fee per participating employee (ADR 0042), on the platform account. Paid with a purchase, never credits. */
+    public const TYPE_EMPLOYER_PLATFORM_FEE = 'employer_platform_fee';
+
+    /** Fees paid on top of a credit purchase, each on the platform account: the percent fee (ADR 0021) and the per-employee fee (ADR 0042). */
+    public const PURCHASE_FEE_TYPES = [self::TYPE_PLATFORM_FEE, self::TYPE_EMPLOYER_PLATFORM_FEE];
+
     /** Merchant account: the Local Goods merchant fee on a cleared redemption (ADR 0029), taken from what the merchant is owed. */
     public const TYPE_MERCHANT_FEE = 'merchant_fee';
 

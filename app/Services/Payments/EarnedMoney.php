@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\CreditLedgerEntry;
 use App\Models\MerchantFeeChange;
 use App\Models\Redemption;
+use App\Support\EmployerPlatformFee;
 use App\Support\MerchantFee;
 use App\Support\PlatformFee;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,7 @@ class EarnedMoney
      *   charges_now: bool,
      *   merchant_fee_sales: int, merchant_fee_cents: int, first_sale_at: ?Carbon, last_sale_at: ?Carbon,
      *   platform_fee_purchases: int, platform_fee_cents: int,
+     *   employer_fee_purchases: int, employer_fee_cents: int,
      *   fee_windows: list<array{from: Carbon, to: ?Carbon}>
      * }
      */
@@ -33,15 +35,18 @@ class EarnedMoney
         $charged = CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE)->pluck('redemption_id')->unique();
         $sales = Redemption::whereIn('id', $charged)->orderBy('created_at')->pluck('created_at');
         $platformFees = CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_PLATFORM_FEE);
+        $employerFees = CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_EMPLOYER_PLATFORM_FEE);
 
         return [
-            'charges_now' => ! MerchantFee::current()->isNone() || PlatformFee::enabled(),
+            'charges_now' => ! MerchantFee::current()->isNone() || PlatformFee::enabled() || EmployerPlatformFee::charges(),
             'merchant_fee_sales' => $charged->count(),
             'merchant_fee_cents' => (int) (clone $merchantFees)->sum('amount_cents'),
             'first_sale_at' => $sales->first(),
             'last_sale_at' => $sales->last(),
             'platform_fee_purchases' => (clone $platformFees)->distinct()->count('credit_purchase_id'),
             'platform_fee_cents' => (int) (clone $platformFees)->sum('amount_cents'),
+            'employer_fee_purchases' => (clone $employerFees)->distinct()->count('credit_purchase_id'),
+            'employer_fee_cents' => (int) (clone $employerFees)->sum('amount_cents'),
             'fee_windows' => self::merchantFeeWindows(),
         ];
     }

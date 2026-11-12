@@ -128,7 +128,7 @@ trait MakesCorrections
     protected function assertLedgerInvariant(): void
     {
         $paid = CreditPurchase::whereIn('status', CreditPurchase::PAID_STATUSES);
-        $moneyIn = (int) (clone $paid)->sum('amount_cents') + (int) (clone $paid)->sum('platform_fee_cents');
+        $moneyIn = (int) (clone $paid)->sum('amount_cents') + (int) (clone $paid)->sum('platform_fee_cents') + (int) (clone $paid)->sum('employer_fee_cents');
         $paidOut = (int) MerchantPayout::paid()->sum('amount_cents') - (int) CreditLedgerEntry::where('type', CreditLedgerEntry::TYPE_REFUND_REVERSAL)->sum('amount_cents');
         $held = (int) Redemption::where('status', Redemption::STATUS_UNDER_REVIEW)->sum('amount_cents');
         // A part that went through always counts; the rest only while the refund is still open (Close releases it).

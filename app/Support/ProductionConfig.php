@@ -40,6 +40,10 @@ class ProductionConfig
         if (($fee = PlatformFee::problem()) !== null) {
             $problems[] = $fee;
         }
+        // Off (the default) is always fine; on, a bad price or both fees on stops the deploy (ADR 0042).
+        if (($fee = EmployerPlatformFee::problem()) !== null) {
+            $problems[] = $fee;
+        }
 
         return $problems;
     }

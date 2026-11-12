@@ -6,7 +6,7 @@
     $dc = fn ($at) => $at === null ? '—' : (is_string($at) ? Carbon::parse($at, 'UTC') : $at)->setTimezone('America/New_York')->format('M j, Y, g:i A');
     $day = fn ($at) => $at === null ? '—' : $at->setTimezone('America/New_York')->format('M j, Y');
     $windows = $run?->failures['windows'] ?? [];
-    $hasEarned = $earned['merchant_fee_sales'] > 0 || $earned['platform_fee_purchases'] > 0;
+    $hasEarned = $earned['merchant_fee_sales'] > 0 || $earned['platform_fee_purchases'] > 0 || $earned['employer_fee_purchases'] > 0;
     $window = fn (array $w) => $dc($w['from']).' to '.($w['to'] === null ? 'now (still on)'
         : ($w['to']->copy()->setTimezone('America/New_York')->isSameDay($w['from']->copy()->setTimezone('America/New_York')) ? $w['to']->setTimezone('America/New_York')->format('g:i A') : $dc($w['to'])));
     $saleDays = $earned['first_sale_at'] === null ? null : ($day($earned['first_sale_at']) === $day($earned['last_sale_at'])
@@ -142,6 +142,9 @@
                             @endif
                             @if ($earned['platform_fee_purchases'] > 0)
                                 {{ $earned['platform_fee_purchases'] }} credit {{ Str::plural('purchase', $earned['platform_fee_purchases']) }} paid a platform fee{{ $showsFigures ? ' ('.Money::format($earned['platform_fee_cents']).' in all)' : '' }}.
+                            @endif
+                            @if ($earned['employer_fee_purchases'] > 0)
+                                {{ $earned['employer_fee_purchases'] }} credit {{ Str::plural('purchase', $earned['employer_fee_purchases']) }} paid the monthly employer platform fee{{ $showsFigures ? ' ('.Money::format($earned['employer_fee_cents']).' in all)' : '' }}.
                             @endif
                         </p>
                     @endif
