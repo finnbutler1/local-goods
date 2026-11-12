@@ -73,6 +73,7 @@ class SecurityController extends Controller
                 ['Every push checks the PHP and JavaScript packages for known problems, and a new one fails the build.', 'CI', '.github/workflows/ci.yml'],
                 ['Browser security headers are on every page. The content policy is in report-only mode: it reports and blocks nothing yet.', 'Headers', 'app/Http/Middleware/SecurityHeaders.php'],
                 ['There is a way to report a problem: a security.txt file and a short policy.', 'Policy', 'SECURITY.md'],
+                ['The code repository has GitHub\'s secret scanning, dependency alerts, private vulnerability reporting and CodeQL turned on, and force pushes to the main branch are blocked. CodeQL doesn\'t cover PHP; the PHP code is covered by our tests and a package audit.', 'Repository protections', 'SECURITY.md'],
             ],
         ],
     ];

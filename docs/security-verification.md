@@ -36,8 +36,18 @@ Run with `php -d memory_limit=2G vendor/bin/phpunit --filter <name>`. CI runs al
 | A forged payment event | Sends a webhook with no or a wrong signature, a replay, and live-mode events | [`StripeWebhookTest`](../tests/Feature/StripeWebhookTest.php) |
 | Missing browser protections | Checks the headers on web pages and their absence on the webhook | [`SecurityHeadersTest`](../tests/Feature/SecurityHeadersTest.php) |
 
-## 3. What this does not prove
+## 3. Repository protections
 
+Settings on the GitHub repository, not files in it, so you can only see them there (Settings → Rules and Code security). Listed in [SECURITY.md](../SECURITY.md):
+
+- Private vulnerability reporting, dependency graph and Dependabot alerts, and secret scanning with push protection.
+- CodeQL default setup. **CodeQL doesn't cover PHP.** The PHP code is covered by our tests and by `composer audit` in CI; CodeQL looks at the JavaScript and workflow files.
+- A ruleset that blocks force pushes and deletion on `main`.
+- Dependabot security updates are off until after the contest freeze.
+
+## 4. What this does not prove
+
+- **The GitHub settings above aren't checked by any test.** They are switched on by hand.
 - **No independent penetration test.** Everything here was written and run by the people who built the app.
 - **The content policy is report-only.** It reports and blocks nothing yet.
 - **A probe is one moment.** It shows the live site as of that run, not that it stays that way.

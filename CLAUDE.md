@@ -1153,6 +1153,7 @@ Update this section whenever the milestone changes.
 
 **Dec 1 reminders (after judging closes):**
 
+- Turn on Dependabot security updates (GitHub settings) after the freeze.
 - Handle `charge.dispute.*` and returned or failed payments, and show a clear
   pending or failed state for employers, before enabling any bank debit or
   other delayed payment method. Stripe payment methods are limited to cards,

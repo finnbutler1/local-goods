@@ -41,7 +41,7 @@ Scored on the official rubric. A short path through the app is in [JUDGES.md](JU
 
 | Category (weight) | What to look for in Local Goods | Verify it |
 |---|---|---|
-| Functionality & technical execution (25%) | The money loop works end to end in Stripe test mode: an employer buys credits, an employee spends them, a held payment waits for a person, and the merchant is paid. Employers can pay by card, Apple Pay or Google Pay through Stripe Checkout (test mode). The books are checked after every step. | [Where the money is](https://uselocalgoods.com/where-the-money-is), [`FraudGateTest`](tests/Feature/FraudGateTest.php), [Where the money is (README)](#where-the-money-is) |
+| Functionality & technical execution (25%) | The money loop works end to end in Stripe test mode: an employer buys credits, an employee spends them, a held payment waits for a person, and the merchant is paid. Employers can pay by card, Apple Pay or Google Pay through Stripe Checkout (test mode). The books are checked after every step. | [Where the money is](https://uselocalgoods.com/where-the-money-is), [`FraudGateTest`](tests/Feature/FraudGateTest.php), [Money safety case](docs/money-safety-case.md), [Where the money is (README)](#where-the-money-is) |
 | Problem identification & relevance (20%) | A specific buyer (employer HR), place (Golden Triangle BID) and leak (perk dollars leaving the neighborhood). | [The problem](#the-problem), [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md) |
 | AI integration & innovation (20%) | Two AI functions, each with a person making the decision and a measured result. Fraud detection fails closed and gates real transfers. A blind human review of the disagreement cases was offered to BID staff and judges; it received no votes, so results stand on the locked hand labels. | [/eval](https://uselocalgoods.com/eval), [/eval/merchants](https://uselocalgoods.com/eval/merchants), [How the AI was measured](#how-the-ai-was-measured), [TRANSPARENCY.md](TRANSPARENCY.md#checking-the-persons-labels-blind-adjudication-retired) |
 | Code quality & GitHub transparency (15%) | Tests on two databases, decision records, a locked eval set, and a scan of the whole history for secrets. | [CI](.github/workflows/ci.yml), [`docs/adr/`](docs/adr/), [TRANSPARENCY.md](TRANSPARENCY.md), [security verification](docs/security-verification.md) |
@@ -474,3 +474,5 @@ email [butlerf@cua.edu](mailto:butlerf@cua.edu).
 ---
 
 Finn Butler · CUA Busch School AI Vibe Coding Contest, Fall 2026
+
+Licensed under the [PolyForm Strict License 1.0.0](LICENSE): the source is public to read and for noncommercial use, but it is not open source.

@@ -6,8 +6,9 @@ transactions are fictional.
 
 ## Reporting a problem
 
-Email **butlerf@cua.edu** with what you found and how to reproduce it.
-Please don't open a public GitHub issue for a vulnerability. I'll reply
+Email **butlerf@cua.edu** with what you found and how to reproduce it, or
+use the **Report a vulnerability** button on the repository's Security tab
+(GitHub private vulnerability reporting). Please don't open a public GitHub issue for a vulnerability. I'll reply
 within about **5 business days**. If you give me a reasonable time to fix it
 before sharing it, I'll credit you if you'd like.
 
@@ -25,6 +26,19 @@ change anyone else's data while testing.
 - Denial-of-service or volume testing
 - Social engineering, phishing or physical attacks
 - Pressing "Reset demo" or other demo-only buttons: they only touch fictional data
+
+## Repository protections
+
+Turned on in the GitHub repository settings:
+
+- Private vulnerability reporting (the **Report a vulnerability** button).
+- Dependency graph and Dependabot alerts. Dependabot security updates are
+  off until after the contest freeze.
+- Secret scanning with push protection.
+- CodeQL default setup. It is enabled; its first scan was still running when
+  this was written. CodeQL doesn't cover PHP, so the PHP code is covered by
+  our tests and `composer audit` in CI.
+- A ruleset that blocks force pushes and deletion on `main`.
 
 ## No bug bounty
 

@@ -51,7 +51,8 @@
             Found a problem? Email <a href="mailto:butlerf@cua.edu" class="{{ $link }}"><x-breakable value="butlerf@cua.edu" /></a>.
             See the <a href="https://github.com/finnbutler1/local-goods/blob/main/SECURITY.md" class="{{ $link }}" rel="noopener">security policy</a>
             and our <a href="{{ url('/.well-known/security.txt') }}" class="{{ $link }}">security.txt</a>. To check these claims yourself, see
-            <a href="https://github.com/finnbutler1/local-goods/blob/main/docs/security-verification.md" class="{{ $link }}" rel="noopener">how to verify</a>.
+            <a href="https://github.com/finnbutler1/local-goods/blob/main/docs/security-verification.md" class="{{ $link }}" rel="noopener">how to verify</a>, and the
+            <a href="https://github.com/finnbutler1/local-goods/blob/main/docs/money-safety-case.md" class="{{ $link }}" rel="noopener">money safety case</a>.
         </p>
     </div>
 @endsection
