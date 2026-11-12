@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Support\DemoLogins;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -21,6 +22,11 @@ class ResetUserPassword implements ResetsUserPasswords
      */
     public function reset(User $user, array $input): void
     {
+        // Reset emails never reach a demo login (DemoMailGuard); refuse here too.
+        if (DemoLogins::isSharedLogin($user)) {
+            throw ValidationException::withMessages(['email' => DemoLogins::PASSWORD_LOCKED]);
+        }
+
         Validator::make($input, [
             'password' => $this->passwordRules(),
         ])->validate();

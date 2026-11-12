@@ -9,7 +9,10 @@
     </header>
 
     {{-- Reviewers have no password: they sign in with their magic link. --}}
-    @unless (auth()->user()->isReadOnly())
+    {{-- Shared demo logins keep their password, so one judge can't lock out the rest. --}}
+    @if (\App\Support\DemoLogins::isSharedLogin(auth()->user()))
+    <p class="max-w-xl text-muted">This is a shared demo login, so its password can't be changed.</p>
+    @elseif (! auth()->user()->isReadOnly())
     <x-card as="section" aria-labelledby="password-heading" class="max-w-xl">
         <h2 id="password-heading" class="text-2xl font-semibold text-primary">Change your password</h2>
         <form method="POST" action="{{ route('user-password.update') }}" data-busy="Saving…" class="mt-4 space-y-5">
@@ -34,7 +37,7 @@
             <x-button type="submit">Change password</x-button>
         </form>
     </x-card>
-    @endunless
+    @endif
 
     <section id="feedback" aria-labelledby="my-feedback-heading" class="scroll-mt-24">
         <h2 id="my-feedback-heading" class="text-2xl font-semibold text-primary">Your feedback</h2>
