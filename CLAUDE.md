@@ -5,6 +5,17 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**README screenshots, "Run it yourself" and an architecture diagram — docs
+only (2026-11-12), not deployed.** No code, migration, money or test change.
+
+- Four PNGs in `docs/screenshots/` (landing map, phone wallet, Fraud Review
+  with a held payment, Where the Money Is), taken from a fresh clone in the
+  scratchpad with a scratch SQLite and no keys. README "Run it yourself" was
+  run from that clone; the full suite needs
+  `php -d memory_limit=2G vendor/bin/phpunit` (about 7 minutes) and the
+  default `APP_URL`. Mermaid diagram and file list under "Architecture".
+  Tests: `PublicClaimsTest`, `OneMinuteSummaryTest` still green.
+
 **Screen-reader names and an axe pass — done (2026-11-11), not deployed.**
 Accessible names only; no visible wording, route, money or data change.
 

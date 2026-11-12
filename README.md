@@ -51,6 +51,26 @@ Scored on the official rubric. A short path through the app is in [JUDGES.md](JU
 
 [What is deployed right now](https://uselocalgoods.com/version): the commit this copy was built from and when the build was made.
 
+### Screenshots
+
+Taken from a fresh local copy with demo data: every person and business is fictional and no real money moves.
+
+![Landing page: the headline "You work here. Spend here." beside a map of the Golden Triangle district with fictional local shops marked as stops.](docs/screenshots/landing-district-map.png)
+
+*The landing page: credits that only work at independent shops inside the district boundary.*
+
+![Employee wallet on a 390-pixel-wide phone screen: available balance, Order to go and Pay in person tabs, and a merchant picker.](docs/screenshots/employee-wallet-phone.png)
+
+*The employee wallet on a phone: balance, two ways to pay, and a menu at each approved shop.*
+
+![Fraud Review page with one held payment: the AI's automatic-hold explanation, the anonymous signals it was given, and a form where a person enters a reason and approves or denies.](docs/screenshots/fraud-review-held-payment.png)
+
+*Fraud Review: a held payment waits for a person, who sees the signals and must give a reason to approve or deny.*
+
+![Where the Money Is page: customer funds held, a table of where each amount sits, and the separate Local Goods Operating account.](docs/screenshots/where-the-money-is.png)
+
+*Where the Money Is: employer money and Local Goods' own money are kept in two accounts, and the page shows where every cent sits.*
+
 ---
 
 ## You work here. Spend here.
@@ -362,35 +382,124 @@ I built Local Goods with [Claude Code](https://claude.com/claude-code):
 I made the product decisions and reviewed and tested every change. Details are
 in [TRANSPARENCY.md](TRANSPARENCY.md).
 
-## Local setup
+## Run it yourself
 
 **Judges don't need to install anything.** The live site and your judge link
-are the way to review Local Goods; this section is only for running it on your
-own computer.
+are the way to review Local Goods; this section is for running it on your own
+computer. Checked from a fresh clone: the install and build took about 15
+seconds with warm caches, and the whole thing is a few minutes on a first run.
 
-Requirements: PHP 8.4.1 or later (CI uses 8.4), Composer, Node 20.19+ or 22.12+ (CI uses 22).
+You need PHP 8.4.1 or later, Composer, and Node 20.19+ or 22.12+ (CI uses 8.4
+and 22). SQLite is the local database, so there is nothing else to install.
 
 ```sh
 git clone https://github.com/finnbutler1/local-goods.git
 cd local-goods
-composer setup          # installs dependencies, creates .env, migrates, builds assets
-php artisan db:seed     # loads the synthetic demo data
-# set the DEMO_PASSWORD_* values in .env, then:
-php artisan demo:seed-accounts   # one demo login per role, plus the public judge account (no password)
-composer dev            # runs the app at http://localhost:8000
+composer setup          # installs packages, creates .env and a SQLite database, migrates, builds the assets
+php artisan db:seed     # loads the synthetic demo data (a fraction of a second)
 ```
 
-To get real AI scoring, set `ANTHROPIC_API_KEY` in `.env`. Without a key, every
-redemption is held (fail closed).
+Now choose a password for each demo login by editing `.env`. These are only
+for your own copy; pick anything:
+
+```sh
+DEMO_PASSWORD_PLATFORM_ADMIN=choose-a-password
+DEMO_PASSWORD_BID_ADMIN=choose-a-password
+DEMO_PASSWORD_EMPLOYER_ADMIN=choose-a-password
+DEMO_PASSWORD_EMPLOYEE=choose-a-password
+DEMO_PASSWORD_MERCHANT=choose-a-password
+```
+
+```sh
+php artisan demo:seed-accounts   # one login per role, plus the read-only public judge account
+composer dev                     # serves the app at http://localhost:8000
+```
+
+Log in at <http://localhost:8000/login> with the addresses in
+[`config/demo.php`](config/demo.php) (all fictional) and the passwords you
+chose. For example, as the employee choose **Demo Tools** in the account menu
+and try a suspicious redemption, then log in as the BID admin to decide it.
+
+### What needs keys, and what happens without them
+
+| You set | You get | Without it |
+|---|---|---|
+| Nothing | The whole app, with simulated payments. Credits are bought in one press and merchant payouts are recorded but never sent. The page says **Simulated**. | |
+| `ANTHROPIC_API_KEY` | Real scoring by Redemption Fraud Detection, and `php artisan merchant:eval` | Every redemption is **held for a person**, never cleared: the check fails closed. |
+| `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` (test keys only) | Stripe Checkout, Connect test accounts and transfers, reconciliation | Payments stay simulated. Live keys are refused. Setup and `stripe listen` are in [docs/STRIPE.md](docs/STRIPE.md). |
+
+Keys go in `.env` only and are never committed. Tests need no keys: they use a
+fake Claude client and a fake Stripe, and an in-memory database.
+
+### Tests
+
+```sh
+php -d memory_limit=2G vendor/bin/phpunit
+```
+
+The full suite is around 1,800 tests and took about seven minutes on a laptop.
+Use `phpunit` directly with the memory flag, because `php artisan test` runs
+out of PHP's default 128 MB partway through. Keep `APP_URL` at its default
+`http://localhost:8000` when you run them (one test expects it). `php artisan
+test --filter=SomeTest` is fine for a single test.
 
 Open `http://localhost:8000/styleguide` to see every color, type style and component
 (local environment only; it returns 404 in production).
 
-Run the tests (no API key needed):
+## Architecture
 
-```sh
-php artisan test
+```mermaid
+flowchart TD
+    browser["Browser<br/>(employee, HR, merchant, BID admin, judge)"]
+    cf["CloudFront<br/>other hostnames get a 301 to uselocalgoods.com;<br/>adds the X-Origin-Verify header"]
+    subgraph eb["Laravel on Elastic Beanstalk"]
+        mw["Middleware: only CloudFront may reach it,<br/>judges read-only, security headers"]
+        app["Controllers and services"]
+        gate["Rules: district boundary, solvency guard,<br/>TransferGate (fraud gate on every transfer)"]
+        ledger[("Append-only ledger<br/>+ solvency check")]
+        hook["POST /stripe/webhook<br/>(signature only, no session)"]
+    end
+    db[("Amazon RDS MySQL")]
+    stripe["Stripe Connect, test mode<br/>Checkout, transfers, refunds"]
+    anth["Anthropic API"]
+    fraud["Redemption Fraud Detection<br/>sends: anonymous signals only<br/>(amount, balance, visit counts, category, hour)<br/>no names; fails closed to a hold"]
+    elig["Merchant Eligibility Matching<br/>sends: name, address, category,<br/>license business activity<br/>suggestion only"]
+    person1{{"A person decides:<br/>BID or platform admin approves or denies<br/>each held redemption, with a reason"}}
+    person2{{"A person decides:<br/>platform admin decides refunds and corrections;<br/>BID admin decides merchant eligibility"}}
+
+    browser --> cf --> mw --> app
+    app --> gate --> ledger --> db
+    app --> db
+    app -->|"every redemption"| fraud --> anth
+    app -->|"new shop applications"| elig --> anth
+    fraud -->|"hold"| person1
+    elig -->|"suggestion"| person2
+    person1 --> app
+    person2 --> app
+    gate -->|"cleared and approved only"| stripe
+    app -->|"purchases, refunds"| stripe
+    stripe -->|"signed events"| cf
+    cf --> hook --> ledger
 ```
+
+Reading it: a request reaches Laravel only through CloudFront. Money is
+recorded on one append-only ledger, and the solvency check confirms the money
+held covers every promise at the end of each money operation. A redemption is
+scored first; a hold waits for a person. The transfer gate re-reads the row
+and lets Stripe move money only for a cleared or approved redemption.
+Merchant Eligibility Matching only suggests: its assessments for the committed
+evaluation are stored in `data/merchant_assessments.json`, and a shop that
+applies gets one suggestion for the BID admin to weigh. Everything runs in
+Stripe test mode with no real money.
+
+Main files:
+
+- **Edge and middleware:** [`infra/cloudfront/canonical-host.js`](infra/cloudfront/canonical-host.js), [`bootstrap/app.php`](bootstrap/app.php), [`RequireCloudFrontOrigin`](app/Http/Middleware/RequireCloudFrontOrigin.php), [`TrustCloudFront`](app/Http/Middleware/TrustCloudFront.php), [`BlockJudgeWrites`](app/Http/Middleware/BlockJudgeWrites.php), [`SecurityHeaders`](app/Http/Middleware/SecurityHeaders.php), [`routes/web.php`](routes/web.php)
+- **Redemption and fraud:** [`RedemptionService`](app/Services/RedemptionService.php), [`RedemptionFraudDetector`](app/Services/Fraud/RedemptionFraudDetector.php), [`SignalCalculator`](app/Services/Fraud/SignalCalculator.php), [`ClaudeClient`](app/Services/Ai/ClaudeClient.php), [`RedemptionReviewService`](app/Services/RedemptionReviewService.php), [`resources/prompts/`](resources/prompts/)
+- **Eligibility:** [`MerchantEligibilityMatcher`](app/Services/Eligibility/MerchantEligibilityMatcher.php), [`MerchantApplications`](app/Services/Districts/MerchantApplications.php)
+- **Ledger and solvency:** [`CreditLedger`](app/Services/CreditLedger.php), [`SolvencyGuard`](app/Services/Solvency/SolvencyGuard.php), [`SolvencyCheck`](app/Services/Solvency/SolvencyCheck.php)
+- **Stripe:** [`StripeGateway`](app/Services/Payments/StripeGateway.php), [`TransferGate`](app/Services/Payments/TransferGate.php), [`MerchantPayouts`](app/Services/Payments/MerchantPayouts.php), [`StripeWebhookHandler`](app/Services/Payments/StripeWebhookHandler.php), [`routes/stripe.php`](routes/stripe.php), [`docs/STRIPE.md`](docs/STRIPE.md)
+- **Corrections:** [`CorrectionDecisions`](app/Services/Corrections/CorrectionDecisions.php)
 
 ## What's next
 
