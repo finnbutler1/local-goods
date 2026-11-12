@@ -42,6 +42,7 @@ Settings on the GitHub repository, not files in it, so you can only see them the
 
 - Private vulnerability reporting, dependency graph and Dependabot alerts, and secret scanning with push protection.
 - CodeQL default setup. **CodeQL doesn't cover PHP.** The PHP code is covered by our tests and by `composer audit` in CI; CodeQL looks at the JavaScript and workflow files.
+  - Its first scan (2026-11-11) found 5 alerts: 4 missing-permissions warnings in the CI workflow, and 1 HTML-insertion issue in `docs/brand/directions.html`, a design mockup that isn't served by the site. All were fixed the same day in commit `1635c34` (CI now has `permissions: contents: read`; the mockup no longer uses `innerHTML`). The alerts close when GitHub re-scans; we haven't confirmed that yet.
 - A ruleset that blocks force pushes and deletion on `main`.
 - Dependabot security updates are off until after the contest freeze.
 

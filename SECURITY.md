@@ -35,9 +35,16 @@ Turned on in the GitHub repository settings:
 - Dependency graph and Dependabot alerts. Dependabot security updates are
   off until after the contest freeze.
 - Secret scanning with push protection.
-- CodeQL default setup. It is enabled; its first scan was still running when
-  this was written. CodeQL doesn't cover PHP, so the PHP code is covered by
-  our tests and `composer audit` in CI.
+- CodeQL default setup. CodeQL doesn't cover PHP, so the PHP code is covered
+  by our tests and `composer audit` in CI. Its first scan (2026-11-11) found 5
+  alerts: 4 "workflow does not contain permissions" warnings in the CI
+  workflow and 1 HTML-insertion issue in `docs/brand/directions.html`, an old
+  design mockup that the site doesn't serve (the web root is `public/`; the
+  file is in the deploy zip as a document but no route reaches it). All 5 were
+  fixed the same day in commit `1635c34`: the workflow now asks for read-only
+  access to the repository, and the mockup builds its button with DOM calls
+  instead of HTML strings. No app code changed. GitHub closes the alerts
+  after it re-scans.
 - A ruleset that blocks force pushes and deletion on `main`.
 
 ## No bug bounty
