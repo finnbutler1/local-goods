@@ -5,6 +5,39 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Optional two-step sign-in for staff accounts — code done (2026-11-12), not
+deployed.** One additive migration
+(`2026_11_13_000001_add_two_factor_columns_to_users_table`: Fortify's three
+nullable `users` columns, nothing else; snapshot `before-two-step-sign-in`).
+No money, Stripe, AI, eval data, lock, password rule, mail guard or origin
+lock change.
+
+- Fortify `twoFactorAuthentication(['confirm' => true, 'confirmPassword' =>
+  true])`: on only after a code is confirmed; turning on/off and new recovery
+  codes need the password. Key and codes encrypted by Fortify with `APP_KEY`
+  (**never rotate APP_KEY**: it would also break these). `User::mayUseTwoStepSignIn()`:
+  not a judge, not revoked, not one of `DemoLogins` (the platform admin may).
+- `GuardTwoStepSignIn` (in Fortify's middleware list) refuses the manage
+  routes (403) for anyone else, and Fortify's read-back JSON GETs (QR code,
+  secret key, recovery codes) always 404: our page `/account/two-step-sign-in`
+  (`account.two-step`, `password.confirm`) shows the QR code/key only while
+  setup is unfinished and recovery codes only once, right after they are made.
+- Challenge `auth/two-factor-challenge` (code or recovery code); limiter
+  `two-factor` 5/min per pending sign-in, plus `auth-forms`. Magic links don't
+  go through Fortify's login, so judges are never challenged.
+- `demo:seed-accounts` clears the columns on the four shared logins only;
+  **no deploy step may touch the platform admin's or any other account's
+  two-factor columns** (`TwoStepSignInTest`).
+- Emergency: `auth:disable-two-step <email>` (dry run; `--apply`) clears only
+  those three columns on one account; refuses unknown emails, demo logins,
+  judges and accounts without it; logs user id and role only. In
+  `artisan-as-webapp.sh` (exactly one plain email, optional `--apply`).
+- Rolling back the code, not the migration, was checked against `2218ec4` on a
+  scratch database: a user with it on signs in with the password alone.
+- Tests: `TwoStepSignInTest`, `DisableTwoStepCommandTest`,
+  `TwoStepSignInMigrationSafetyTest`, `ArtisanAsWebappScriptTest`,
+  `SecurityPageTest`.
+
 **Safety guards for the shared demo logins — code done (2026-11-12), not
 deployed.** No migration, money rule, Stripe flow, fraud prompt, AI input,
 eval data or lock change.
@@ -299,7 +332,8 @@ data or lock change.
   (`#payout-history`). Judges see the same menu. **Rejected (decisions
   table):** sign out of other devices (needs `AuthenticateSession` in the
   web group, which changes every session including judges' magic links, for
-  a fictional-account demo), two-factor sign-in, change name/email, device
+  a fictional-account demo), two-factor sign-in (later built as optional
+  two-step sign-in, 2026-11-12), change name/email, device
   list or login history, download/delete my data, notification preferences.
 - Pay-code dialog: `partials/pay-code-not-valid-dialog` has no variables, so
   it is identical for every refusal; shown only for `PayCodes::NOT_VALID`.
@@ -1368,6 +1402,14 @@ snapshot step by name when the build says the deploy includes migrations.
    `/admin/reconciliation` says everything matches. As the BID admin, press
    "Run a collusion example" once (one AI call) and check its path line.
 7. Never click New link on the live public judge or named reviewer rows.
+8. Emergency only, if a staff account lost both its phone and its recovery
+   codes: through Session Manager, run
+   `sudo /var/app/current/scripts/artisan-as-webapp.sh auth:disable-two-step <email>`
+   (a dry run that says which account and changes nothing), check the
+   account it names, then the same with `--apply`. It turns off two-step
+   sign-in for that one account only; they sign in with their password and
+   can set it up again from Your account. It refuses the shared demo logins
+   and judges.
 
 ## Contest
 

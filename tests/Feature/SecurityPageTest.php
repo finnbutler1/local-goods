@@ -21,8 +21,18 @@ class SecurityPageTest extends TestCase
         }
         $r->assertSee("What's not done yet", false);
         $r->assertSee('No independent security review or penetration test.');
-        $r->assertSee('No two-factor sign-in.');
         $r->assertSee('SPF and DMARC');
+    }
+
+    public function test_two_step_sign_in_is_listed_under_access_not_as_missing(): void
+    {
+        $this->assertNotContains('No two-factor sign-in.', SecurityController::NOT_DONE);
+        $access = array_column(SecurityController::GROUPS['access']['items'], 0);
+        $this->assertNotEmpty(array_filter($access, fn (string $item) => str_starts_with($item, 'Optional two-step sign-in for staff accounts')));
+
+        $this->get('/security')->assertOk()
+            ->assertSee('Optional two-step sign-in for staff accounts')
+            ->assertDontSee('No two-factor sign-in.');
     }
 
     public function test_it_states_the_payment_methods_and_the_dispute_gap(): void

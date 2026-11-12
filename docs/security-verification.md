@@ -34,6 +34,7 @@ Run with `php -d memory_limit=2G vendor/bin/phpunit --filter <name>`. CI runs al
 | Spending more than exists | Overspend, two purchases at once, and the solvency rule | [`EmployeeBalanceSafetyTest`](../tests/Feature/EmployeeBalanceSafetyTest.php), [`MoneyGuardsTest`](../tests/Feature/MoneyGuardsTest.php), [`SolvencyGuardTest`](../tests/Feature/SolvencyGuardTest.php) |
 | Personal data showing up | Opens every page as every role looking for names, and scans committed AI output for named individuals | [`EmployeeNamePrivacyTest`](../tests/Feature/EmployeeNamePrivacyTest.php), [`MerchantOutputPrivacyTest`](../tests/Feature/MerchantOutputPrivacyTest.php) |
 | A forged payment event | Sends a webhook with no or a wrong signature, a replay, and live-mode events | [`StripeWebhookTest`](../tests/Feature/StripeWebhookTest.php) |
+| Getting past two-step sign-in | Wrong and reused codes, a recovery code used twice, too many tries, turning it on, off or reading the key back without the password, a shared demo login or judge turning it on, and judge links still signing in with no code | [`TwoStepSignInTest`](../tests/Feature/TwoStepSignInTest.php), [`DisableTwoStepCommandTest`](../tests/Feature/DisableTwoStepCommandTest.php) |
 | Missing browser protections | Checks the headers on web pages and their absence on the webhook | [`SecurityHeadersTest`](../tests/Feature/SecurityHeadersTest.php) |
 
 ## 3. Repository protections
@@ -54,7 +55,7 @@ Settings on the GitHub repository, not files in it, so you can only see them the
 - **A probe is one moment.** It shows the live site as of that run, not that it stays that way.
 - **Tests use fakes.** They run against a fake Stripe, a fake AI client and an in-memory database, and the MySQL job covers only a few race tests.
 - **Rate limits are per server** and start again after each deploy.
-- **No two-factor sign-in.**
+- **Two-step sign-in is optional.** Staff turn it on themselves; nothing requires it, the shared demo logins can't use it and judges sign in with their link. Its key and recovery codes are encrypted with the app's key, and its wrong-code limit is counted per server like the others.
 - **Card disputes and returned payments aren't handled yet.** Stripe runs in test mode only.
 - **The mail-spoofing protection (SPF and DMARC) is not probed**; it rests on DNS records.
 - **Passing checks are not a guarantee.** A check finds only the problems someone thought to test for.

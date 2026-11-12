@@ -40,6 +40,7 @@ class SecurityController extends Controller
                 ['Each role (employee, employer, merchant, BID admin, platform admin) only opens its own pages (judges can view them, read-only).', 'Role check', 'app/Http/Middleware/EnsureUserHasRole.php'],
                 ['Sign-in allows 5 tries a minute, and payments, feedback and other write actions have their own limits. Tests send one request too many.', 'Rate-limit tests', 'tests/Feature/RateLimitsTest.php'],
                 ['Judge sign-in links are stored only as a hash, so a database copy doesn\'t reveal a working link.', 'Reviewer links', 'app/Services/ReviewerLinks.php'],
+                ['Optional two-step sign-in for staff accounts: after the password, a code from an authenticator app or a one-time recovery code. The key and recovery codes are stored encrypted, and wrong codes are rate limited. The shared demo logins can\'t turn it on, and judge links don\'t use it.', 'Two-step sign-in', ['app/Http/Middleware/GuardTwoStepSignIn.php', 'tests/Feature/TwoStepSignInTest.php']],
             ],
         ],
         'data' => [
@@ -81,7 +82,6 @@ class SecurityController extends Controller
     /** @var list<string> */
     public const NOT_DONE = [
         'No independent security review or penetration test.',
-        'No two-factor sign-in.',
         'This is a prototype in Stripe test mode with fictional people and businesses.',
         'The browser content policy only reports for now; it is not enforced.',
         'Rate limits are counted on one server and start again after each deploy.',

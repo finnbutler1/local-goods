@@ -54,5 +54,7 @@ only.
 
 ## What's known not to be done
 
-No independent security review or penetration test yet, and no two-factor
-sign-in. See https://uselocalgoods.com/security for the plain-English list.
+No independent security review or penetration test yet. Staff accounts can
+turn on optional two-step sign-in (a code from an authenticator app after the
+password); it is not required, and the shared demo logins and judge links
+don't use it. See https://uselocalgoods.com/security for the plain-English list.

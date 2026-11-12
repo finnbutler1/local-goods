@@ -564,8 +564,9 @@ on the [Coming next page](https://uselocalgoods.com/coming-next).
 - **Testing with screen readers and real phones.** The pages are checked with
   automated tools and a keyboard, but not yet with a screen reader or on a
   range of real phones ([docs/accessibility.md](docs/accessibility.md)).
-- **Stronger account security,** such as two-factor sign-in, for a real
-  deployment with real staff accounts.
+- **Stronger account security** for a real deployment with real staff
+  accounts, such as requiring two-step sign-in (staff can turn it on today,
+  but it is optional).
 
 The residential, wallet and delivery ideas came from feedback from a
 business improvement district director.

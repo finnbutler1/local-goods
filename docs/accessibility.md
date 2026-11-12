@@ -787,3 +787,20 @@ browser, with a screen reader or on a phone yet.**
 - Wallet tabs: same tab roles and arrow keys. The selected tab has a check mark, an
   underlined label and a heavy bar, not only a colour change.
 
+
+### Two-step sign-in (2026-11-12)
+
+Checks that ran: automated tests (`TwoStepSignInTest`, plus the page sweeps in
+`AccessibilityTest`), and the setup page, recovery codes, `/account` card and sign-in code
+page opened on a scratch server in headless Chrome at 1440px and inside a 390px frame
+(`scrollWidth` 390 on all four, no sideways scrolling). **Not tried with a screen reader
+or on a real phone yet.**
+
+- Every code field has a visible label and a hint linked with `aria-describedby`; the app
+  code uses `inputmode="numeric"` and `autocomplete="one-time-code"`, so phones can offer
+  the code. Errors set `aria-invalid` and are linked the same way.
+- The QR code is `role="img"` with a label, and the setup key is shown as text next to it
+  for anyone who can't scan.
+- "Use a recovery code instead" is a native `<details>`, opened automatically when the
+  recovery code was the one that failed.
+- Buttons are `x-button` (44px); forms have `data-busy`.
