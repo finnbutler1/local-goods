@@ -7,6 +7,7 @@ use App\Enums\Role;
 use App\Models\Employee;
 use App\Models\Merchant;
 use App\Models\MerchantPayout;
+use App\Models\Redemption;
 use App\Models\User;
 use App\Services\Ai\ClaudeClient;
 use App\Services\CreditLedger;
@@ -16,6 +17,7 @@ use App\Support\Money;
 use App\Support\ShowMore;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\Concerns\PlacesMerchantsInTheDistrict;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
@@ -101,26 +103,43 @@ class MerchantDashboardTest extends TestCase
         $this->get('/merchant')->assertOk()->assertSee('Farragut Grind')->assertDontSee('<form method="POST" action="'.url('/merchant'), false);
     }
 
-    public function test_redemptions_received_loads_the_newest_fifty_and_keeps_the_reload_link(): void
+    /**
+     * A merchant of its own and a fixed clock, so the number of rows never depends on the
+     * calendar (the demo seed gives Farragut Grind anywhere from about 45 to 77 redemptions
+     * depending on today's date).
+     */
+    private function merchantWithRedemptions(int $count): Redemption
     {
-        $total = $this->merchant->redemptions()->count();
-        $this->assertGreaterThan(5, $total, 'The seed gives Farragut Grind more than five');
-        $this->assertLessThanOrEqual(ShowMore::CAP, $total);
-
-        // Up to fifty fit in the page: the button reveals them, no reload link.
-        $html = $this->get('/merchant')->assertSee('Newest first. Customers are shown by initials only.')->assertDontSee("The newest {$total} of {$total}")->assertDontSee("Show all {$total} redemptions")->getContent();
-        $this->assertSame($total, $this->receivedRows($html));
-        $this->assertSame($total - ShowMore::RECEIVED, preg_match_all('/data-received-row\\s+data-more/', $html));
-
-        // Past fifty the page carries fifty and the old link loads the lot.
-        $copy = $this->merchant->redemptions()->orderBy('id')->firstOrFail();
-        for ($i = $total; $i < ShowMore::CAP + 6; $i++) {
-            $copy->replicate()->save();
+        Carbon::setTestNow(Carbon::parse('2026-10-24 12:00', 'America/New_York'));
+        $owner = User::factory()->role(Role::Merchant)->create();
+        $this->merchant = Merchant::create(['bid_id' => $this->merchant->bid_id, 'name' => 'Test Bakery', 'category' => 'cafe', 'address' => '1 Test St NW', 'user_id' => $owner->id, ...$this->inTheDistrict()]);
+        $this->actingAs($owner);
+        $first = $this->redeem(300, 'clear');
+        while ($this->merchant->redemptions()->count() < $count) {
+            $first->replicate()->save();
         }
-        $all = $this->merchant->redemptions()->count();
 
-        $html = $this->get('/merchant')->assertSee('Newest first. Customers are shown by initials only.')->assertSee("Show all {$all} redemptions")->getContent();
+        return $first;
+    }
+
+    public function test_redemptions_received_up_to_the_cap_are_all_in_the_page_behind_the_button(): void
+    {
+        $this->merchantWithRedemptions(30);
+
+        $html = $this->get('/merchant')->assertSee('Newest first. Customers are shown by initials only.')->assertDontSee('Show all 30 redemptions')->getContent();
+        $this->assertSame(30, $this->receivedRows($html));
+        $this->assertSame(30 - ShowMore::RECEIVED, preg_match_all('/data-received-row\\s+data-more/', $html));
+        $this->assertStringContainsString('Show all redemptions (30)', $html);
+    }
+
+    public function test_redemptions_received_over_the_cap_load_fifty_and_keep_the_reload_link(): void
+    {
+        $this->merchantWithRedemptions(ShowMore::CAP + 6);
+        $all = ShowMore::CAP + 6;
+
+        $html = $this->get('/merchant')->assertSee("Show all {$all} redemptions")->getContent();
         $this->assertSame(ShowMore::CAP, $this->receivedRows($html));
+        $this->assertSame(ShowMore::CAP - ShowMore::RECEIVED, preg_match_all('/data-received-row\\s+data-more/', $html));
 
         $html = $this->get('/merchant?all=1')->assertDontSee("Show all {$all} redemptions")->assertSee('Show the newest '.ShowMore::CAP.' only')->getContent();
         $this->assertSame($all, $this->receivedRows($html));
