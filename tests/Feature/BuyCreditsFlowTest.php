@@ -71,6 +71,8 @@ class BuyCreditsFlowTest extends TestCase
     {
         $html = $response->getContent();
         $page = str_contains($html, '<main') ? str($html)->after('<main')->before('</main>')->toString() : $html;
+        // The planned employer platform fee box (ADR 0042) is a labelled projection shown while that fee is off, not a fee charged.
+        $page = preg_replace('/<aside\b[^>]*\bdata-planned-fee-preview\b[^>]*>.*?<\/aside>/s', '', $page);
 
         return (bool) preg_match('/\bfees?\b/i', strip_tags($page));
     }

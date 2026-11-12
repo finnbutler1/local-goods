@@ -13,8 +13,10 @@ use App\Models\Merchant;
 use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Services\Solvency\SolvencyGuard;
+use App\Support\EmployerPlatformFee;
 use App\Support\MerchantFee;
 use App\Support\Money;
+use App\Support\ParticipatingEmployees;
 use App\Support\PlatformFee;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -72,16 +74,55 @@ class CreditLedger
             // The employer first (lock order: StripeFunding). A new row's foreign key check needs
             // the employer row, and a redemption locking the purchases waits on the new row.
             Employer::whereKey($employer->id)->lockForUpdate()->first();
+            $at ??= now();
 
             return CreditPurchase::create([
                 'employer_id' => $employer->id,
                 'amount_cents' => $amountCents,
                 'platform_fee_cents' => PlatformFee::centsFor($amountCents),
                 'reference' => $reference,
-                'purchased_at' => $at ?? now(),
+                'purchased_at' => $at,
                 'status' => CreditPurchase::STATUS_PENDING,
-            ]);
+            ] + $this->employerFeeFor($employer, $at));
         });
+    }
+
+    /**
+     * The employer platform fee columns for a new purchase (ADR 0042), or
+     * nothing (today's row) when the fee is off, this month's fee is
+     * already on another pending or paid purchase, or nobody took part last
+     * month. Read under the employer lock taken just before, so two
+     * requests at once see each other; the unique employer_fee_key is the
+     * backstop that keeps it to one fee a month even so.
+     *
+     * @return array<string, int|string>
+     */
+    private function employerFeeFor(Employer $employer, Carbon $at): array
+    {
+        if (! EmployerPlatformFee::charges()) {
+            return [];
+        }
+
+        $month = EmployerPlatformFee::monthOf($at);
+        $key = EmployerPlatformFee::key($employer, $month);
+        if (CreditPurchase::where('employer_fee_key', $key)->exists()) {
+            return [];
+        }
+
+        $employees = ParticipatingEmployees::lastMonth($employer, $at);
+        if ($employees === 0) {
+            return [];
+        }
+
+        $unit = EmployerPlatformFee::unitCents();
+
+        return [
+            'employer_fee_cents' => $employees * $unit,
+            'employer_fee_employees' => $employees,
+            'employer_fee_unit_cents' => $unit,
+            'employer_fee_month' => $month,
+            'employer_fee_key' => $key,
+        ];
     }
 
     /**
@@ -182,24 +223,37 @@ class CreditLedger
     }
 
     /**
-     * The platform fee on its own line on the platform account (ADR 0021),
-     * in the same transaction as the purchase entry. Nothing when the
-     * purchase has no fee, so with the fee off the ledger is as before.
+     * Each fee on its own line on the platform account (the percent fee, ADR
+     * 0021; the employer platform fee, ADR 0042), in the same transaction as
+     * the purchase entry. Nothing when the purchase has no fee, so with the
+     * fees off the ledger is as before.
      */
     private function recordPlatformFee(CreditPurchase $purchase, Carbon $at, string $how): void
     {
-        if ($purchase->platform_fee_cents <= 0) {
-            return;
+        if ($purchase->platform_fee_cents > 0) {
+            CreditLedgerEntry::create([
+                'platform' => true,
+                'amount_cents' => $purchase->platform_fee_cents,
+                'type' => CreditLedgerEntry::TYPE_PLATFORM_FEE,
+                'credit_purchase_id' => $purchase->id,
+                'description' => 'Platform fee on '.$purchase->reference.' ('.$how.')',
+                'created_at' => $at,
+            ]);
         }
 
-        CreditLedgerEntry::create([
-            'platform' => true,
-            'amount_cents' => $purchase->platform_fee_cents,
-            'type' => CreditLedgerEntry::TYPE_PLATFORM_FEE,
-            'credit_purchase_id' => $purchase->id,
-            'description' => 'Platform fee on '.$purchase->reference.' ('.$how.')',
-            'created_at' => $at,
-        ]);
+        // The employer platform fee (ADR 0042) on its own line: Local Goods revenue, never credits.
+        if ($purchase->hasEmployerFee()) {
+            CreditLedgerEntry::create([
+                'platform' => true,
+                'amount_cents' => $purchase->employer_fee_cents,
+                'type' => CreditLedgerEntry::TYPE_EMPLOYER_PLATFORM_FEE,
+                'credit_purchase_id' => $purchase->id,
+                'description' => 'Employer platform fee for '.$purchase->employer_fee_month.': '.$purchase->employer_fee_employees
+                    .' participating '.($purchase->employer_fee_employees === 1 ? 'employee' : 'employees').' × '.Money::format($purchase->employer_fee_unit_cents)
+                    .' on '.$purchase->reference.' ('.$how.')',
+                'created_at' => $at,
+            ]);
+        }
     }
 
     /**

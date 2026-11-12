@@ -126,7 +126,9 @@ the local multiplier. An estimate from an outside study, not measured by Local G
 ## Business model
 
 **Projection, not results.** Employers pay a monthly platform fee for each
-participating employee, on top of the credits they buy. The BID, which
+participating employee, on top of the credits they buy. In the product that
+fee is built and tested; switched off during the pilot, so no employer is
+charged it ([ADR 0042](docs/adr/0042-employer-platform-fee-switched-off.md)). The BID, which
 introduces us to employers, gets a share of that fee. Merchants may pay a
 small fee per sale; it is zero in the product today. The credits themselves
 pass through Stripe to merchants and are never Local Goods revenue, and credits

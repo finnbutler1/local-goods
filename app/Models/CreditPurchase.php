@@ -37,7 +37,8 @@ class CreditPurchase extends Model
     public const PAID_STATUSES = [self::STATUS_SIMULATED, self::STATUS_PAID];
 
     protected $fillable = [
-        'employer_id', 'amount_cents', 'platform_fee_cents', 'reference', 'purchased_at', 'status', 'payment_token',
+        'employer_id', 'amount_cents', 'platform_fee_cents', 'employer_fee_cents', 'employer_fee_employees', 'employer_fee_unit_cents',
+        'employer_fee_month', 'employer_fee_key', 'reference', 'purchased_at', 'status', 'payment_token',
         'stripe_checkout_session_id', 'stripe_payment_intent_id', 'stripe_charge_id', 'paid_at', 'payment_error',
     ];
 
@@ -61,10 +62,37 @@ class CreditPurchase extends Model
         return $this->status === self::STATUS_CANCELLED;
     }
 
-    /** What the employer pays: the credits plus the platform fee (0 unless the fee is on, ADR 0021). */
+    /**
+     * What the employer pays: the credits plus the platform fee (0 unless the
+     * fee is on, ADR 0021) plus the employer platform fee (0 unless it is on
+     * and this is the month's first purchase, ADR 0042).
+     */
     public function totalCents(): int
     {
-        return $this->amount_cents + (int) $this->platform_fee_cents;
+        return $this->amount_cents + (int) $this->platform_fee_cents + (int) $this->employer_fee_cents;
+    }
+
+    /** Both fees paid on top of the credits; never credits, never refundable (ADR 0042). */
+    public function feeCents(): int
+    {
+        return (int) $this->platform_fee_cents + (int) $this->employer_fee_cents;
+    }
+
+    public function hasEmployerFee(): bool
+    {
+        return (int) $this->employer_fee_cents > 0;
+    }
+
+    /**
+     * Cancels a purchase that is still pending; returns how many rows
+     * changed (0 or 1). The only way a purchase becomes cancelled. It also
+     * frees the month's employer platform fee key, so the employer's next
+     * purchase that month carries the fee instead (ADR 0042).
+     */
+    public static function cancelIfPending(int $id): int
+    {
+        return self::whereKey($id)->where('status', self::STATUS_PENDING)
+            ->update(['status' => self::STATUS_CANCELLED, 'employer_fee_key' => null]);
     }
 
     /** The demo activity generator's record, if it made this (ADR 0032). Eager-load it on lists. */

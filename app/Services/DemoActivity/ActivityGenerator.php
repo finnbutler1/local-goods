@@ -223,7 +223,7 @@ class ActivityGenerator
                 // Stripe definitely took no money: cancel, as "Cancel payment" would. If
                 // we can't tell (a timeout), it stays pending and the webhook decides.
                 if ($e->definite) {
-                    CreditPurchase::whereKey($purchase->id)->where('status', CreditPurchase::STATUS_PENDING)->update(['status' => CreditPurchase::STATUS_CANCELLED]);
+                    CreditPurchase::cancelIfPending($purchase->id);
                 }
 
                 throw $e;

@@ -10,4 +10,14 @@ return [
      * check can tell "unset" from "bad".
      */
     'platform_fee_percent' => env('PLATFORM_FEE_PERCENT'),
+
+    /*
+     * Employer platform fee per participating employee per month (ADR 0042).
+     * Built and tested; switched off during the pilot. Off unless this is
+     * exactly true: unset means off, in every environment including
+     * production. Never set it in a deploy file or seeder (a test checks).
+     * The price is not set here: it is the base employer_platform_fee in
+     * config/projections.php. Refused together with PLATFORM_FEE_PERCENT.
+     */
+    'employer_platform_fee_enabled' => env('EMPLOYER_PLATFORM_FEE_ENABLED', false) === true,
 ];

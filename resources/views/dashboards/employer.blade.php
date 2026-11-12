@@ -1,5 +1,7 @@
 @php
     use App\Enums\Occasion;
+    use App\Services\Payments\StripeCheckout;
+    use App\Support\EmployerPlatformFee;
     use App\Support\Money;
     use App\Support\PlatformFee;
 
@@ -211,10 +213,14 @@
         <div class="grid gap-x-6 gap-y-12 xl:grid-cols-12">
             @php
                 $buying = $buy['purchase'];
-                // Only when the platform fee is on (ADR 0021); at 0 nothing here mentions fees.
-                $feeLine = fn ($p) => $p->platform_fee_cents > 0
-                    ? 'Credits '.Money::format($p->amount_cents).' + platform fee '.Money::format($p->platform_fee_cents).' = total '.Money::format($p->totalCents())
-                    : null;
+                // Only when a fee is on (ADR 0021, ADR 0042); with both off nothing here mentions fees, apart from the planned-fee preview.
+                $feeLine = fn ($p) => match (true) {
+                    $p->hasEmployerFee() => 'Credits '.Money::format($p->amount_cents).' + platform fee '.Money::format($p->employer_fee_cents)
+                        .' ('.StripeCheckout::employerFeeLine($p).') = total '.Money::format($p->totalCents()),
+                    $p->platform_fee_cents > 0 => 'Credits '.Money::format($p->amount_cents).' + platform fee '.Money::format($p->platform_fee_cents).' = total '.Money::format($p->totalCents()),
+                    default => null,
+                };
+                $feeNotRefundable = 'The platform fee is Local Goods\' own revenue, not credits, and can\'t be refunded in this version.';
             @endphp
             <x-card as="section" id="buy" aria-labelledby="buy-heading" @class(['scroll-mt-24 min-w-0 self-start', 'xl:col-span-12' => $buy['state'] === 'paying', 'xl:col-span-5' => $buy['state'] !== 'paying'])>
                 <div class="flex flex-wrap items-center justify-between gap-2">
@@ -230,6 +236,9 @@
                     </p>
                     @if ($line = $feeLine($buying))
                         <p class="tabular mt-1 font-semibold" data-fee-breakdown>{{ $line }}</p>
+                    @endif
+                    @if ($buying->hasEmployerFee())
+                        <p class="mt-1 text-sm" data-employer-fee-refunds>{{ $feeNotRefundable }}</p>
                     @endif
                     <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm">
                         <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
@@ -309,11 +318,48 @@
                             @if (PlatformFee::enabled())
                                 <p class="tabular text-sm font-semibold" aria-live="polite" data-fee-preview data-fee-basis-points="{{ PlatformFee::basisPoints() }}"></p>
                             @endif
+                            @if ($employerFee['on'])
+                                {{-- The employer platform fee (ADR 0042): added once a month, on the first purchase. --}}
+                                <p class="text-sm" data-employer-fee-next="{{ $employerFee['adds'] ? 'adds' : 'none' }}">
+                                    @if ($employerFee['adds'])
+                                        <span class="tabular font-semibold">This purchase adds the platform fee for {{ EmployerPlatformFee::monthLabel($employerFee['month']) }}:
+                                            {{ $employerFee['employees'] }} participating {{ Str::plural('employee', $employerFee['employees']) }} × {{ Money::format($employerFee['unit_cents']) }} = {{ Money::format($employerFee['cents']) }}.</span>
+                                        Participating means they received credits last month. It's charged once a month, on the first purchase. {{ $feeNotRefundable }}
+                                    @else
+                                        No platform fee on this purchase: it's charged once a month, on the first purchase, for the employees who received credits last month.
+                                    @endif
+                                </p>
+                            @endif
                             <x-button type="submit" variant="accent" class="max-sm:w-full" :aria-describedby="$readOnly ? 'read-only-note' : null">
                                 {{ $buy['state'] === 'cancelled' ? 'Try again' : ($stripe ? 'Buy credits' : 'Buy credits (simulated, no real money)') }}
                             </x-button>
                         </fieldset>
                     </form>
+                    @unless ($employerFee['on'])
+                        {{-- Display only (ADR 0042): the planned fee is built and tested but switched off during the pilot; nothing is charged. --}}
+                        @php $mayOpenModel = auth()->user()?->hasRole(\App\Enums\Role::Judge, \App\Enums\Role::BidAdmin, \App\Enums\Role::PlatformAdmin); @endphp
+                        <aside class="mt-6 rounded-xl border-2 border-line bg-band p-4 text-sm" aria-labelledby="planned-fee-heading" data-planned-fee-preview>
+                            <p class="font-semibold text-muted">{{ config('projections.label') }}</p>
+                            <h4 id="planned-fee-heading" class="mt-1 text-base font-bold">Planned platform fee (not charged during the pilot)</h4>
+                            <p class="mt-1">
+                                The plan is <span class="tabular font-semibold">{{ Money::format($employerFee['unit_cents']) }}</span> per participating employee per month,
+                                added once a month to the first credit purchase. Participating means they received credits the month before.
+                                @if ($employerFee['employees'] > 0)
+                                    Last month {{ $employerFee['employees'] }} {{ Str::plural('employee', $employerFee['employees']) }} received credits here, so it would come to
+                                    <span class="tabular font-semibold">{{ Money::format($employerFee['cents']) }}</span>.
+                                @endif
+                                Nothing is charged now.
+                            </p>
+                            <p class="mt-1">
+                                The figure comes from the
+                                @if ($mayOpenModel)
+                                    <a href="{{ route('business-model') }}#assumptions" class="{{ $link }}">business model's stated assumptions</a>.
+                                @else
+                                    business model's stated assumptions.
+                                @endif
+                            </p>
+                        </aside>
+                    @endunless
                 @endif
             </x-card>
 
@@ -363,6 +409,9 @@
                                             <p class="text-muted">{{ $purchase->reference }} · {{ $purchase->purchased_at->setTimezone('America/New_York')->format('M j, Y') }}</p>
                                             @if ($purchase->platform_fee_cents > 0)
                                                 <p class="ledger-num text-muted">+ {{ Money::format($purchase->platform_fee_cents) }} platform fee</p>
+                                            @endif
+                                            @if ($purchase->hasEmployerFee())
+                                                <p class="ledger-num text-muted" data-employer-fee-row>+ {{ Money::format($purchase->employer_fee_cents) }} {{ StripeCheckout::employerFeeLine($purchase) }} · not refundable</p>
                                             @endif
                                         </td>
                                         <td data-label="Status" class="stack-block py-3">

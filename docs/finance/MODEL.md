@@ -21,7 +21,10 @@ The calculator (`App\Support\Projections\BusinessModel`) is pure arithmetic.
 It works month by month for 72 months: the P&L shows the first 48 (4 years),
 and the extra months are only used to find the break-even month. It never
 reads the live fee settings, the credit ledger or Stripe, and nothing in the
-live product reads it.
+live product runs it. One number goes the other way: the product's employer
+platform fee (ADR 0042) uses the base `employer_platform_fee` below as its
+price. It is built and tested; switched off during the pilot, so nothing is
+charged.
 
 1. **BIDs launch.** The first BID (the Golden Triangle) launches in month 1.
    Each year's new BIDs are spread evenly across that year (scenarios below).
@@ -34,7 +37,11 @@ live product reads it.
 4. **Revenue** is four separate lines, each of which can be 0:
    - **BID initiation fee:** once, when a BID launches.
    - **Employer platform fee:** per participating employee per month, paid
-     by the employer on top of the credits.
+     by the employer on top of the credits. In the product (ADR 0042; built
+     and tested; switched off during the pilot) it is added once a month to
+     the employer's first credit purchase, for the employees who received
+     credits in the previous calendar month (`App\Support\ParticipatingEmployees`),
+     and it can't be refunded in that version.
    - **Merchant fee:** a share of each sale. The live product's merchant fee
      is 0 (ADR 0029); the scenario assumes a rate.
    - **Interchange:** only in an optional card-issuing phase, which is off.
@@ -203,7 +210,7 @@ check with real employers, BIDs and merchants.
 | `merchants_per_bid` | Participating merchants per BID | merchants | 20 | 40 | 60 | [Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants](https://goldentriangledc.com/locate-here/why-golden-triangle). How many of those sign up is an assumption: 40 is about a fifth of the restaurants alone. Checked 2026-10-28. |
 | `merchant_ramp_months` | Months to sign up those merchants | months | 12 | 12 | 12 | Assumption: to validate in customer discovery. From the month the BID launches. Checked 2026-10-28. |
 | `bid_initiation_fee` | BID initiation fee | dollars once per BID | $0 | $2,500 | $5,000 | Assumption: to validate in customer discovery. The reference model charged each BID $2,500 to start. Checked 2026-10-28. |
-| `employer_platform_fee` | Employer platform fee | dollars per participating employee per month | $4 | $6 | $10 | [Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month](https://www.vendr.com/marketplace/benepass). Third-party estimates; benefit platforms don't publish prices. Paid by the employer on top of the credits. The live product's platform fee setting is a percent and is off (ADR 0021); this is a model lever only. Checked 2026-10-28. |
+| `employer_platform_fee` | Employer platform fee | dollars per participating employee per month | $4 | $6 | $10 | [Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month](https://www.vendr.com/marketplace/benepass). Third-party estimates; benefit platforms don't publish prices. Paid by the employer on top of the credits. The live product's employer platform fee uses this base figure: built and tested; switched off during the pilot (ADR 0042). Checked 2026-10-28. |
 | `merchant_fee_rate` | Merchant fee | share of each sale | 0% | 1.5% | 3% | Assumption: to validate in customer discovery. The live merchant fee is 0 (ADR 0029). The scenario assumes a rate below card processing. Checked 2026-10-28. |
 | `interchange_rate` | Interchange (card-issuing phase only) | share of card spend | 1.35% | 1.35% | 1.35% | Assumption: to validate in customer discovery. The 2013 reference model's rate. Stripe Issuing's interchange share is not public. Counted only when card issuing is turned on, which it is not. Checked 2026-10-28. |
 | `ach_share` | Employer purchases paid by ACH | share of purchases | 80% | 80% | 80% | Assumption: to validate in customer discovery. The rest are paid by card. Large employers usually pay by bank transfer. Checked 2026-10-28. |

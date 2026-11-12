@@ -62,14 +62,14 @@ class OperatingSweeps
 
     /**
      * Earned on Stripe-paid activity and not yet swept through Stripe:
-     * platform fees on Stripe-paid purchases, merchant fees on sales paid
+     * platform fees (both kinds) on Stripe-paid purchases, merchant fees on sales paid
      * out through Stripe, less what refunds gave back, less Stripe sweeps.
      */
     public function stripeEarnedUnswept(): int
     {
         $stripeRedemptions = MerchantPayout::where('status', '!=', MerchantPayout::STATUS_SIMULATED)->whereNotNull('redemption_id')->select('redemption_id');
 
-        $earned = (int) CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_PLATFORM_FEE)
+        $earned = (int) CreditLedgerEntry::where('platform', true)->whereIn('type', CreditLedgerEntry::PURCHASE_FEE_TYPES)
             ->whereIn('credit_purchase_id', CreditPurchase::where('status', CreditPurchase::STATUS_PAID)->select('id'))->sum('amount_cents')
             + (int) CreditLedgerEntry::where('platform', true)
                 ->whereIn('type', [CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED])
