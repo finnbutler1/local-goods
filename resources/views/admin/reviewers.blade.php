@@ -23,6 +23,7 @@
             <strong class="font-semibold text-ink">New link</strong> switches the old one off at once, and
             <strong class="font-semibold text-ink">Revoke</strong> ends their access; either way their open session ends on its next click.
         </p>
+        <p class="mt-3 text-sm"><a href="{{ route('admin.adjudication.index') }}" class="font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary">Retired: blind adjudication results (read-only)</a></p>
         @if ($ended)
             <p class="mt-3 rounded-2xl border-2 border-hold bg-hold-bg p-4 font-semibold text-hold">
                 Judging has ended: every reviewer link now shows "This link has ended". Move JUDGING_ENDS_AT later to reopen them.

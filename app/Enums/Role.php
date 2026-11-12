@@ -76,20 +76,22 @@ enum Role: string
             'money' => ['label' => 'Money', 'items' => array_filter([
                 'money' => $item('Where the Money Is', 'Money', 'money', $i['ledger']),
                 'reconciliation' => $platform ? $item('Reconciliation', 'Stripe', 'admin.reconciliation', $i['scales']) : null,
-                'fees' => $item('Fee Settings', 'Fees', 'bid-admin.fees', $i['ledger']),
-                'demo-activity' => $item('Demo Activity', 'Activity', 'bid-admin.demo-activity', $i['trend']),
+                // Platform admin only in the menu. The BID admin still opens these pages
+                // by role (Demo Activity from the Home card, Fee Settings by address).
+                'fees' => $platform ? $item('Fee Settings', 'Fees', 'bid-admin.fees', $i['ledger']) : null,
+                'demo-activity' => $platform ? $item('Demo Activity', 'Activity', 'bid-admin.demo-activity', $i['trend']) : null,
             ])],
-            'program' => ['label' => 'Program', 'items' => [
+            'program' => ['label' => 'Program', 'items' => array_filter([
                 'impact' => $item('Impact', 'Impact', 'bid-admin.impact', $i['trend']),
                 'participation' => $item('Participation', 'Program', 'bid-admin.participation', $i['people']),
                 'partnership' => $item('Partnership', 'Partner', 'bid-admin.partnership', $i['handshake']),
                 'district' => $item('District Map', 'Map', 'district', $i['store']),
-                'business-model' => $item('Business Model', 'Model', 'business-model', $i['ledger']),
-            ]],
+                'business-model' => $platform ? $item('Business Model', 'Model', 'business-model', $i['ledger']) : null,
+            ])],
             'ai' => ['label' => 'AI & Evaluation', 'items' => array_filter([
                 'eval' => $item('AI Eval', 'AI Eval', 'bid-admin.eval', $i['chart']),
-                'merchant-eval' => $item('Merchant Eval', 'Eval', 'eval.merchants', $i['chart']),
-                'adjudication' => $platform ? $item('Adjudication', 'Votes', 'admin.adjudication.index', $i['scales']) : null,
+                // Platform admin only; the BID admin reaches it from Merchant Eligibility and /eval.
+                'merchant-eval' => $platform ? $item('Merchant Eval', 'Eval', 'eval.merchants', $i['chart']) : null,
             ])],
         ];
 

@@ -22,6 +22,25 @@ class AdminMenuCoverageTest extends TestCase
     /** Downloads, not pages. */
     private const NOT_PAGES = ['bid-admin.impact.csv', 'business-model.csv'];
 
+    /**
+     * Pages a role can open that are deliberately not in its menu (the 2026-11-12 menu trim).
+     * Each is reached by a link on another page, or is a retired page. A page not listed
+     * here and not in the menu still fails the test below.
+     *
+     * @var array<string, array<string, string>> role => route => where the link is
+     */
+    private const REACHED_BY_LINK = [
+        'bid_admin' => [
+            'bid-admin.demo-activity' => 'the Demo Activity card on Home (dashboards/admin-home)',
+            'eval.merchants' => 'Merchant Eligibility, AI Eval and /eval link to it',
+            'business-model' => 'linked from Impact and /who-does-what',
+            'bid-admin.fees' => 'no page links to it: the BID admin opens /bid-admin/fees by address (platform admin has it in the menu)',
+        ],
+        'platform_admin' => [
+            'admin.adjudication.index' => 'the "Retired: blind adjudication results" link on Reviewers',
+        ],
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -51,12 +70,41 @@ class AdminMenuCoverageTest extends TestCase
     public function test_every_admin_page_a_role_can_open_is_in_its_menu(): void
     {
         foreach ([Role::BidAdmin, Role::PlatformAdmin] as $role) {
-            $inMenu = collect($role->navigation())->pluck('route')->all();
+            $inMenu = [...collect($role->navigation())->pluck('route')->all(), ...array_keys(self::REACHED_BY_LINK[$role->value] ?? [])];
             $pages = $this->adminPagesFor($role);
 
             $this->assertGreaterThan(10, count($pages), $role->value);
             $this->assertSame([], array_values(array_diff($pages, $inMenu)), "{$role->value}: pages missing from the menu");
         }
+    }
+
+    public function test_the_pages_left_out_of_a_menu_are_not_in_it_and_still_open(): void
+    {
+        foreach ([Role::BidAdmin, Role::PlatformAdmin] as $role) {
+            $this->signIn($role);
+            $inMenu = collect($role->navigation())->pluck('route')->all();
+            foreach (self::REACHED_BY_LINK[$role->value] as $route => $why) {
+                $this->assertNotContains($route, $inMenu, "{$role->value}: {$route} is listed as link-only but is in the menu");
+                $this->get(route($route))->assertOk();
+            }
+        }
+        $this->signIn(Role::PlatformAdmin);
+        $this->get(route('admin.reviewers.index'))->assertSee('Retired: blind adjudication results (read-only)')->assertSee(route('admin.adjudication.index'), false);
+    }
+
+    public function test_the_bid_admin_menu_is_trimmed_and_the_platform_admin_keeps_the_rest(): void
+    {
+        $bid = collect(Role::BidAdmin->navigation())->pluck('label')->all();
+        $platform = collect(Role::PlatformAdmin->navigation())->pluck('label')->all();
+        foreach (['Merchant Eval', 'Fee Settings', 'Demo Activity', 'Business Model'] as $label) {
+            $this->assertNotContains($label, $bid);
+            $this->assertContains($label, $platform);
+        }
+        foreach (['Home', 'Fraud Review', 'Corrections', 'Merchant Applications', 'Merchant Eligibility', 'Where the Money Is', 'Impact', 'Participation', 'Partnership', 'District Map', 'AI Eval'] as $label) {
+            $this->assertContains($label, $bid);
+        }
+        $this->assertNotContains('Adjudication', $platform);
+        $this->assertContains('Reviewers', $platform);
     }
 
     public function test_every_menu_link_opens_for_the_role_and_for_judges_viewing_as_the_bid_admin(): void

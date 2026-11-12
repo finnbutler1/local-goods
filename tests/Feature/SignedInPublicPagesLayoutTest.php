@@ -59,7 +59,9 @@ class SignedInPublicPagesLayoutTest extends TestCase
     {
         foreach (['BID admin', 'platform admin'] as $who) {
             $user = $this->viewers()[$who];
-            foreach (['/district' => 'District Map', '/eval/merchants' => 'Merchant Eval'] as $url => $label) {
+            // Merchant Eval is in the platform admin's menu only (the BID admin's was trimmed, 2026-11-12).
+            $pages = ['/district' => 'District Map'] + ($who === 'platform admin' ? ['/eval/merchants' => 'Merchant Eval'] : []);
+            foreach ($pages as $url => $label) {
                 $html = $this->actingAs($user)->get($url)->assertOk()->getContent();
                 preg_match('#<aside.*?</aside>#s', $html, $aside);
                 $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>.*?'.preg_quote($label, '/').'/s', $aside[0] ?? '', "$who on $url");

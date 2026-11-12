@@ -165,17 +165,9 @@
                             <ul class="mt-1">
                                 <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your Account</a></li>
                                 @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Employee)
-                                    <li><a href="{{ route('employee.wallet') }}#history" class="menu-item">Your Receipts</a></li>
                                     <li><a href="{{ route('employee.demo-tools') }}" class="menu-item" @if ($active === 'demo-tools') aria-current="page" @endif>Demo Tools</a></li>
                                 @endif
-                                @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Merchant)
-                                    <li><a href="{{ route('merchant.dashboard') }}#payout-history" class="menu-item">Payout History</a></li>
-                                @endif
                                 <li><a href="{{ route('account.data') }}" class="menu-item" @if ($active === 'account.data') aria-current="page" @endif>What We Store About You</a></li>
-                                <li><a href="{{ route('account') }}#feedback" class="menu-item">Help and Feedback</a></li>
-                                @unless ($votingOnly)
-                                    <li><a href="{{ route('home') }}" class="menu-item">Back to the Public Site</a></li>
-                                @endunless
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf

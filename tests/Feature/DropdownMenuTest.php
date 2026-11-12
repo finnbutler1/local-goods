@@ -84,8 +84,12 @@ class DropdownMenuTest extends TestCase
         foreach (['admin.reconciliation', 'admin.adjudication.index', 'admin.reviewers.index', 'admin.feedback.index'] as $route) {
             $this->assertStringNotContainsString('href="'.route($route).'"', $sidebar, "{$route} is platform admin only");
         }
-        foreach (['bid-admin.corrections', 'money', 'bid-admin.fees', 'bid-admin.impact'] as $route) {
+        foreach (['bid-admin.corrections', 'money', 'bid-admin.participation', 'bid-admin.impact'] as $route) {
             $this->assertStringContainsString('href="'.route($route).'"', $sidebar, $route);
+        }
+        // Left out of the BID admin's menu in the 2026-11-12 trim (platform admin keeps them).
+        foreach (['bid-admin.fees', 'bid-admin.demo-activity', 'business-model', 'eval.merchants'] as $route) {
+            $this->assertStringNotContainsString('href="'.route($route).'"', $sidebar, $route);
         }
     }
 

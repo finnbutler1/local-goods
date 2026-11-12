@@ -149,11 +149,13 @@ class MerchantFeeSettingsTest extends TestCase
         app(MerchantFeeSettings::class)->change($this->admin(), 0, 0, 'Already none.', 0);
     }
 
-    public function test_the_admin_pages_link_to_it(): void
+    public function test_the_platform_admin_pages_link_to_it(): void
     {
         $this->actingAs($this->admin());
         $this->get(route('admin.dashboard'))->assertSee(route('bid-admin.fees'));
+        // The BID admin's menu no longer lists Fee Settings (2026-11-12 trim); the page still opens for the role.
         $this->signIn(Role::BidAdmin);
-        $this->get(route('bid-admin.dashboard'))->assertSee(route('bid-admin.fees'));
+        $this->get(route('bid-admin.dashboard'))->assertDontSee(route('bid-admin.fees'));
+        $this->get(route('bid-admin.fees'))->assertOk();
     }
 }

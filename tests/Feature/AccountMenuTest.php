@@ -19,26 +19,38 @@ class AccountMenuTest extends TestCase
         return $html;
     }
 
-    public function test_everyone_gets_the_store_page_and_help_links(): void
+    public function test_everyone_gets_the_account_and_store_pages_and_log_out(): void
     {
         foreach ([Role::Employee, Role::Merchant, Role::EmployerAdmin, Role::BidAdmin, Role::PlatformAdmin, Role::Judge] as $role) {
             $html = $this->menuOf($role);
             $this->assertStringContainsString(route('account.data'), $html, $role->value);
+            $this->assertStringContainsString('Your Account', $html, $role->value);
             $this->assertStringContainsString('What We Store About You', $html, $role->value);
-            $this->assertStringContainsString('Help and Feedback', $html, $role->value);
-            $this->assertStringContainsString(route('account').'#feedback', $html, $role->value);
+            $this->assertStringContainsString('Log Out', $html, $role->value);
         }
     }
 
-    public function test_quick_links_fit_the_role(): void
+    public function test_the_trimmed_account_menu_items_are_gone_for_every_role(): void
     {
-        $this->assertStringContainsString('Your Receipts', $this->menuOf(Role::Employee));
-        $this->assertStringNotContainsString('Payout History</a>', $this->menuOf(Role::Employee));
-        $this->assertStringContainsString('#payout-history', $this->menuOf(Role::Merchant));
-        $this->assertStringNotContainsString('Your Receipts', $this->menuOf(Role::BidAdmin));
+        // Removed from the menu only: the pages and anchors they pointed at stay (next test),
+        // and the floating Feedback button still reaches the feedback form.
+        foreach ([Role::Employee, Role::Merchant, Role::EmployerAdmin, Role::BidAdmin, Role::PlatformAdmin, Role::Judge] as $role) {
+            $html = $this->menuOf($role);
+            foreach (['Your Receipts', 'Payout History', 'Back to the Public Site', 'Help and Feedback'] as $gone) {
+                $this->assertStringNotContainsString($gone, $html, "{$role->value}: {$gone}");
+            }
+            $this->assertStringContainsString('Feedback', $html, "{$role->value}: the Feedback button stays");
+        }
     }
 
-    public function test_the_anchors_the_links_point_to_exist(): void
+    public function test_only_the_employee_gets_demo_tools(): void
+    {
+        $this->assertStringContainsString('Demo Tools', $this->menuOf(Role::Employee));
+        $this->assertStringNotContainsString('Demo Tools', $this->menuOf(Role::Merchant));
+        $this->assertStringNotContainsString('Demo Tools', $this->menuOf(Role::BidAdmin));
+    }
+
+    public function test_the_pages_the_removed_links_pointed_to_still_exist(): void
     {
         $this->assertStringContainsString('id="feedback"', $this->actingAs(User::factory()->role(Role::Employee)->create())->get('/account')->getContent());
         $this->assertStringContainsString('id="payout-history"', file_get_contents(resource_path('views/dashboards/merchant.blade.php')));
