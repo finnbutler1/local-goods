@@ -22,7 +22,7 @@ class SecretScanScriptTest extends TestCase
      * is ever a literal NAME=value, so nothing here looks like a committed
      * password even without the scanner's exemption.
      */
-    private static function name(string $suffix): string
+    private static function settingName(string $suffix): string
     {
         return match ($suffix) {
             'db' => 'DB_'.'PASSWORD',
@@ -35,13 +35,13 @@ class SecretScanScriptTest extends TestCase
     /** "NAME=value" for a fixture line. */
     private static function line(string $suffix, string $value): string
     {
-        return self::name($suffix).'='.$value;
+        return self::settingName($suffix).'='.$value;
     }
 
     /** What the scanner prints for a hit on that setting. */
     private static function masked(string $suffix): string
     {
-        return 'value masked: '.self::name($suffix).'='.str_repeat('*', 4);
+        return 'value masked: '.self::settingName($suffix).'='.str_repeat('*', 4);
     }
 
     private string $repo;
