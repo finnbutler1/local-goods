@@ -104,6 +104,14 @@ enum Role: string
             ]];
         }
 
+        // A group holding one page needs no header: show that page on its own
+        // (the BID admin's Money and AI & Evaluation after the 2026-11-12 trim).
+        foreach ($groups as $key => $group) {
+            if ($group['label'] !== null && count($group['items']) === 1) {
+                $groups[$key]['label'] = null;
+            }
+        }
+
         return $groups;
     }
 

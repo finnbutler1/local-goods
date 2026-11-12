@@ -79,7 +79,8 @@ class DropdownMenuTest extends TestCase
         $this->signIn(Role::BidAdmin);
         $sidebar = str($this->get(route('bid-admin.home'))->assertOk()->getContent())->after('<aside')->before('</aside>')->toString();
 
-        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'money' => 'Money', 'program' => 'Program', 'ai' => 'AI &amp; Evaluation']);
+        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'program' => 'Program']);
+        $this->assertSingleItemsAreUngrouped($sidebar, 'side');
         $this->assertStringNotContainsString('nav-side-people', $sidebar);
         foreach (['admin.reconciliation', 'admin.adjudication.index', 'admin.reviewers.index', 'admin.feedback.index'] as $route) {
             $this->assertStringNotContainsString('href="'.route($route).'"', $sidebar, "{$route} is platform admin only");
@@ -105,6 +106,9 @@ class DropdownMenuTest extends TestCase
             $sheet = $this->menu($html, 'tab-menu');
             $this->assertStringContainsString('>Menu<', $tabBar);
             $this->assertStringContainsString('id="nav-sheet-reviews-button" aria-expanded=', $sheet);
+            if ($role === Role::BidAdmin) {
+                $this->assertSingleItemsAreUngrouped($sheet, 'sheet');
+            }
             foreach ($role->navigation() as $item) {
                 $this->assertStringContainsString('href="'.route($item['route']).'"', $sheet, $role->value.' '.$item['label']);
             }
@@ -117,7 +121,22 @@ class DropdownMenuTest extends TestCase
         $sidebar = str($this->get(route('bid-admin.home'))->assertOk()->getContent())->after('<aside')->before('</aside>')->toString();
 
         $this->assertMatchesRegularExpression('#Judge Home\s*</a>#', $sidebar);
-        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'money' => 'Money', 'program' => 'Program', 'ai' => 'AI &amp; Evaluation']);
+        $this->assertGroupsInOrder($sidebar, 'side', ['reviews' => 'Reviews &amp; Decisions', 'program' => 'Program']);
+        $this->assertSingleItemsAreUngrouped($sidebar, 'side');
+    }
+
+    /** The BID admin's Money and AI & Evaluation hold one page each, so they have no header: just the link. */
+    private function assertSingleItemsAreUngrouped(string $html, string $variant): void
+    {
+        foreach (['money', 'ai'] as $id) {
+            $this->assertStringNotContainsString('id="nav-'.$variant.'-'.$id.'-button"', $html, "{$id} has no group header");
+        }
+        foreach (['Money', 'AI &amp; Evaluation'] as $heading) {
+            $this->assertStringNotContainsString('>'.$heading.'<', $html, "{$heading} heading is gone");
+        }
+        foreach (['money', 'bid-admin.eval'] as $route) {
+            $this->assertStringContainsString('href="'.route($route).'"', $html, $route);
+        }
     }
 
     /** @param array<string, string> $groups id => heading */
