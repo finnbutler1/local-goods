@@ -3,6 +3,21 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-12: Employer platform fee, built and tested but switched off
+
+- **A monthly fee per participating employee**, the business model's
+  $6.00 base figure, added once a month to an employer's first credit
+  purchase as its own Checkout line and its own ledger line. Participating
+  means the employee received credits the month before. Built and tested;
+  switched off during the pilot (`EMPLOYER_PLATFORM_FEE_ENABLED`, unset =
+  off), so nothing changes for anyone. It is Local Goods' revenue, never
+  credits, and can't be refunded in this version
+  ([ADR 0042](docs/adr/0042-employer-platform-fee-switched-off.md)).
+- While it is off, the employer dashboard shows a "Planned platform fee
+  (not charged during the pilot)" box, labelled "Projection, not results".
+- One migration (five columns on credit purchases, all 0 or empty; nothing
+  existing changes).
+
 ## 2026-11-11: What is deployed right now
 
 - **`/version`** shows the commit (short and full) and build time of the

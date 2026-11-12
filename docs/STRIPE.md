@@ -126,6 +126,36 @@ With the fee on:
 - The ledger check becomes: paid credits + fees − payouts − held = sum of
   all entries.
 
+### Employer platform fee (off)
+
+A monthly fee per participating employee
+([ADR 0042](adr/0042-employer-platform-fee-switched-off.md)). Built and
+tested; switched off during the pilot. `EMPLOYER_PLATFORM_FEE_ENABLED`
+must be exactly `true` to turn it on; unset (the default, and on live)
+means off and nothing changes anywhere. It refuses to be on together with
+`PLATFORM_FEE_PERCENT`, and a bad price stops a production deploy.
+
+With it on:
+
+- The employer's first credit purchase in a calendar month (DC time)
+  carries it: the employees who received credits in the previous calendar
+  month (`ParticipatingEmployees`) × the base `employer_platform_fee` in
+  `config/projections.php` ($6.00). No participants, no fee. Later
+  purchases that month add none; a cancelled purchase passes it to the
+  next one. Fixed on the purchase when it is requested
+  (`employer_fee_cents`, employees, unit price, month), and the unique
+  `employer_fee_key` keeps it to one per employer per month.
+- Checkout has a separate line, "Platform fee for November 2026: 38
+  participating employees × $6.00", and one more sentence saying it is
+  Local Goods' own revenue and can't be refunded. Stripe must receive
+  credits + fee, or the webhook refuses the payment.
+- Only `payment_intent.succeeded` writes it: its own ledger line
+  (`employer_platform_fee`) on the **platform account**, with the purchase
+  entry. It never reaches the employer's balance, never funds a merchant
+  transfer and is never refunded (refunds cap at the credits). It is
+  operating money in the solvency rule, counted by reconciliation and
+  swept to Local Goods Operating like the other fees.
+
 ### Merchant fee (at 0)
 
 A separate fee, on the merchant's side: a percent of each sale plus an
