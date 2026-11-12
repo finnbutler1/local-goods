@@ -77,4 +77,11 @@ return [
     | production on its own.
     */
     'reset_enabled' => in_array(env('APP_ENV', 'production'), ['local', 'testing'], true),
+
+    /*
+    | The most the shared demo employer login (App\Support\DemoLogins) may buy
+    | in one purchase, in cents. Every other employer admin keeps the normal
+    | form limit. Validation only: no money rule changes.
+    */
+    'employer_purchase_cap_cents' => 500_000,
 ];

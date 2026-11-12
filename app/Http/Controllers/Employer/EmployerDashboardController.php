@@ -13,6 +13,7 @@ use App\Services\EmployerMetrics;
 use App\Services\EmployerProgram;
 use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
+use App\Support\DemoLogins;
 use App\Support\Money;
 use App\Support\StripeMode;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -216,8 +218,16 @@ class EmployerDashboardController extends Controller
         $data = $request->validate([
             'purchase_amount' => ['required', self::DOLLARS, 'not_regex:/^0+(\.0+)?$/'],
         ], $this->messages());
+        $cents = Money::toCents($data['purchase_amount']);
 
-        $purchase = $ledger->requestPurchase($employer, Money::toCents($data['purchase_amount']), EmployerProgram::nextReference($employer));
+        // The shared demo employer login has a smaller cap, so a judge can't add
+        // $999,999.99 and distort Where the Money Is. Checked before anything is written.
+        $cap = (int) config('demo.employer_purchase_cap_cents');
+        if (DemoLogins::isSharedLogin($request->user()) && $cents > $cap) {
+            throw ValidationException::withMessages(['purchase_amount' => 'The demo employer can buy up to '.Money::format($cap).' at a time.']);
+        }
+
+        $purchase = $ledger->requestPurchase($employer, $cents, EmployerProgram::nextReference($employer));
 
         if (StripeMode::active()) {
             return redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy');

@@ -5,6 +5,22 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Safety guards for the shared demo logins — code done (2026-11-12), not
+deployed.** No migration, money rule, Stripe flow, fraud prompt, AI input,
+eval data or lock change.
+
+- Reset demo: the `reset-demo` gate also needs `config('demo.reset_enabled')`
+  (true only when APP_ENV is local/testing, **no env override**) and refuses
+  whenever `app()->isProduction()`. Never add a switch that turns it on live.
+- `App\Support\DemoLogins` = the four shared logins (BID admin, employer,
+  employee, merchant; platform admin and judge excluded). They can't change
+  or reset their password (`UpdateUserPassword`, `ResetUserPassword`;
+  `/account` shows a note). `demo:seed-accounts` restores the env password
+  anyway on every deploy/config change.
+- The demo employer login buys at most `demo.employer_purchase_cap_cents`
+  ($5,000) per purchase (validation in `storePurchase` only).
+- Tests: `ResetDemoTest`, `AccountPasswordTest`, `DemoPurchaseCapTest`.
+
 **README screenshots, "Run it yourself" and an architecture diagram — docs
 only (2026-11-12), not deployed.** No code, migration, money or test change.
 
