@@ -92,6 +92,37 @@ class SecretScanScriptTest extends TestCase
         $this->assertSame(0, $code, $output);
     }
 
+    public function test_the_readme_demo_password_placeholder_is_not_reported(): void
+    {
+        file_put_contents($this->repo.'/README.md', "DEMO_PASSWORD_BID_ADMIN=choose-a-password\nDEMO_PASSWORD_EMPLOYEE=\"choose-a-password\"\n");
+        $this->commit($this->repo, 'run it yourself');
+
+        [$code, $output] = $this->scan($this->repo);
+
+        $this->assertSame(0, $code, $output);
+    }
+
+    public function test_only_that_exact_value_on_a_demo_password_line_is_allowed(): void
+    {
+        // A realistic password, built at run time so this file never holds one.
+        $real = 'Kestrel-'.bin2hex(random_bytes(5)).'!9';
+        file_put_contents($this->repo.'/README.md', implode("\n", [
+            "DEMO_PASSWORD_BID_ADMIN={$real}",
+            'DEMO_PASSWORD_MERCHANT=choose-a-password2',
+            'DB_PASSWORD=choose-a-password',
+        ])."\n");
+        $this->commit($this->repo, 'not placeholders');
+
+        [$code, $output] = $this->scan($this->repo);
+
+        $this->assertSame(1, $code, $output);
+        $this->assertStringContainsString('3 possible secret(s)', $output);
+        $this->assertStringContainsString('value masked: DEMO_PASSWORD_BID_ADMIN=****', $output);
+        $this->assertStringContainsString('value masked: DEMO_PASSWORD_MERCHANT=****', $output);
+        $this->assertStringContainsString('value masked: DB_PASSWORD=****', $output);
+        $this->assertStringNotContainsString($real, $output);
+    }
+
     public function test_a_shallow_clone_fails_loudly_instead_of_passing(): void
     {
         file_put_contents($this->repo.'/README.md', 'second');

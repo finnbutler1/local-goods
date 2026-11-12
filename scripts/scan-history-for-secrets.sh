@@ -42,6 +42,9 @@ git log --all -p --no-color --no-ext-diff --format='commit %H' | COMMITS="$commi
         $placeholder = qr/SECRETVALUE|SHOULDNOTSHOW|fake|not-real|not_real|not-a-real|example|placeholder|dummy/i;
         # The throwaway password of the CI-only MySQL service.
         %allowed = map { $_ => 1 } ("DB_PASSWORD: password");
+        # The README "Run it yourself" placeholder: exactly this value, only on a
+        # DEMO_PASSWORD_ line. Anything else there (even choose-a-password2) still fails.
+        $demo_placeholder = qr/^DEMO_PASSWORD_[A-Z_]+\s*(?:=|:)\s*["\x27]?choose-a-password$/;
         $hits = 0;
     }
     if (/^commit ([0-9a-f]{40})$/) { $commit = $1; next; }
@@ -54,6 +57,7 @@ git log --all -p --no-color --no-ext-diff --format='commit %H' | COMMITS="$commi
             my ($whole, $shown) = ($&, $1);
             next if $name eq "secret_setting" && $2 eq ":" && $file !~ /\.(?:ya?ml|config|json)$/;
             next if $whole =~ $placeholder || $allowed{$whole};
+            next if $name eq "secret_setting" && $whole =~ $demo_placeholder;
             $shown .= "****";
             $shown .= ".rds.amazonaws.com" if $name eq "rds_endpoint";
             print "Found $name in commit ", substr($commit, 0, 12), ", file $file (value masked: $shown)\n";
