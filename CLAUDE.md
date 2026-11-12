@@ -11,8 +11,8 @@ Accessible names only; no visible wording, route, money or data change.
 - From Finn's VoiceOver notes: the three landing "Request a demo" links say
   "(opens your email)", the wallet balance heading says the amount, and every
   `<x-district-map>` pin has its own `aria-label` (shapes `aria-hidden`).
-  axe 4.14 run once locally (20 visits, 0 violations); not in CI. Fixes not
-  yet re-heard in VoiceOver. `docs/accessibility.md` is now written around
+  axe 4.14 run once locally (20 visits, 0 violations); not in CI. Finn re-tested
+  all three fixes in VoiceOver on the live site (2026-11-11). `docs/accessibility.md` is now written around
   what a screen-reader user hears. Tests: `DemoRequestLinkTest`,
   `EmployeeWalletTest`, `DistrictMapPageTest`.
 

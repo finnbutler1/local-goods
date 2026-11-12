@@ -47,8 +47,9 @@ checks, with no screen reader).
 ## What a screen-reader user hears
 
 The names below come from the browser's accessibility tree (Playwright
-ARIA snapshot in Chrome on the scratch server), not from VoiceOver. How
-VoiceOver actually speaks them has not been re-checked yet.
+ARIA snapshot in Chrome on the scratch server). After the fixes were
+deployed, Finn re-tested all three with VoiceOver on the live site (see
+"Re-verified in VoiceOver").
 
 | Where | Before | Now |
 |---|---|---|
@@ -72,13 +73,19 @@ landmarks, one `<h1>`, labelled fields and named buttons are enforced by
   the text list).
 - No visible wording changed. The cause of "doesn't read the entirety of
   the merchants" is my reading of the markup (pins named only by `<title>`);
-  it was not reproduced in VoiceOver.
+  it was not reproduced in VoiceOver before the fix.
+
+### Re-verified in VoiceOver
+
+After the fixes were deployed, Finn re-tested with VoiceOver on the live
+site (uselocalgoods.com) and reported on 2026-11-11 that all three now read
+correctly: the "Request a demo" links say they open an email, the balance
+reads with its amount, and the map reads the merchants. This is Finn's own
+report; the pages beyond those three items were not re-listened to, and the
+re-test was one person, one screen reader (macOS, Safari).
 
 ## Still untested
 
-- **The fixes in VoiceOver.** Finn needs to listen again after the next
-  deploy. Until then these are checked in the browser's accessibility
-  tree only.
 - **Real phones.** No iPhone or Android device. Phone widths are 390px
   emulation in Chrome (axe) and earlier emulation and Playwright WebKit.
 - **iOS VoiceOver, and Android TalkBack.**
