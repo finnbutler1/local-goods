@@ -69,4 +69,12 @@ return [
         'farragutgrind.com',
         'goldentriangle.uselocalgoods.com',
     ],
+
+    /*
+    | Reset demo (DemoResetter) erases every live demo example, so it only
+    | ever runs on a laptop or in tests. Deliberately no env override: nothing
+    | set on Beanstalk can turn it on. The reset-demo gate also refuses in
+    | production on its own.
+    */
+    'reset_enabled' => in_array(env('APP_ENV', 'production'), ['local', 'testing'], true),
 ];

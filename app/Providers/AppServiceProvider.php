@@ -68,7 +68,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Who may change what. Judges pass none of these; BlockJudgeWrites
         // also stops them at the door, so both layers must agree.
-        Gate::define('reset-demo', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
+        // Reset demo: local and tests only (config demo.reset_enabled), never in
+        // production, whoever asks: the live demo's examples can't be rebuilt.
+        Gate::define('reset-demo', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin)
+            && config('demo.reset_enabled') === true
+            && ! app()->isProduction());
         // Admins only: one real AI call per press (ADR 0016). Judges never see or use it.
         Gate::define('run-collusion-example', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('decide-merchant-eligibility', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));

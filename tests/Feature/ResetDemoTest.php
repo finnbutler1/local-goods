@@ -14,6 +14,8 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
 
@@ -98,6 +100,48 @@ class ResetDemoTest extends TestCase
             ->assertOk()
             ->assertSee('Reset demo')
             ->assertSee(route('bid-admin.reset'), false);
+    }
+
+    public static function admins(): array
+    {
+        return ['BID admin' => [Role::BidAdmin], 'platform admin' => [Role::PlatformAdmin]];
+    }
+
+    #[DataProvider('admins')]
+    public function test_reset_is_refused_and_hidden_when_switched_off(Role $role): void
+    {
+        config(['demo.reset_enabled' => false]);
+        $seeded = $this->demoState();
+
+        $this->signIn($role);
+        $this->post('/bid-admin/reset')->assertForbidden();
+        $this->get('/bid-admin')->assertOk()
+            ->assertDontSee(route('bid-admin.reset'), false)
+            ->assertDontSee('Reset demo');
+
+        $this->assertSame($seeded, $this->demoState());
+    }
+
+    #[DataProvider('admins')]
+    public function test_reset_is_never_allowed_in_production_even_if_the_setting_is_on(Role $role): void
+    {
+        $user = User::factory()->role($role)->create();
+        $this->assertTrue(Gate::forUser($user)->allows('reset-demo'));
+
+        // Checked on the gate itself, so production-only middleware can't be
+        // what refuses. The setting is forced on to prove the gate still says no.
+        $this->app['env'] = 'production';
+        config(['demo.reset_enabled' => true]);
+
+        $this->assertTrue(Gate::forUser($user)->denies('reset-demo'));
+    }
+
+    public function test_the_setting_is_on_only_in_local_and_testing(): void
+    {
+        $this->assertTrue(config('demo.reset_enabled'));
+        $source = file_get_contents(config_path('demo.php'));
+        $this->assertStringContainsString("'reset_enabled' => in_array(env('APP_ENV', 'production'), ['local', 'testing'], true)", $source);
+        $this->assertStringNotContainsString("env('DEMO_RESET", $source);
     }
 
     public function test_reset_requires_post(): void
