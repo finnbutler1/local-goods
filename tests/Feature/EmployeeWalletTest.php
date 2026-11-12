@@ -54,6 +54,11 @@ class EmployeeWalletTest extends TestCase
             ->assertSee('Press Room Deli');
     }
 
+    public function test_the_balance_heading_says_the_amount_to_a_screen_reader(): void
+    {
+        $this->get('/employee')->assertOk()->assertSee('aria-label="Available balance: $120.00"', false);
+    }
+
     public function test_a_normal_redemption_is_approved(): void
     {
         $this->fakeClaude(FakeClaudeClient::verdict(6, 'clear', 'A $6.50 coffee is typical.'));

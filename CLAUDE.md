@@ -5,6 +5,17 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Screen-reader names and an axe pass — done (2026-11-11), not deployed.**
+Accessible names only; no visible wording, route, money or data change.
+
+- From Finn's VoiceOver notes: the three landing "Request a demo" links say
+  "(opens your email)", the wallet balance heading says the amount, and every
+  `<x-district-map>` pin has its own `aria-label` (shapes `aria-hidden`).
+  axe 4.14 run once locally (20 visits, 0 violations); not in CI. Fixes not
+  yet re-heard in VoiceOver. `docs/accessibility.md` is now written around
+  what a screen-reader user hears. Tests: `DemoRequestLinkTest`,
+  `EmployeeWalletTest`, `DistrictMapPageTest`.
+
 **Apple Pay / Google Pay wording and the dispute gap — docs and copy only
 (2026-11-11), not deployed.** No code logic, migration, money or Stripe change.
 

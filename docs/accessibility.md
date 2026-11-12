@@ -1,17 +1,111 @@
-# Accessibility and UX check
+# Accessibility: what a screen-reader user hears
 
-Note (2026-11-09): the adjudication voting page is no longer shown (ADR 0041); a "Voting has closed" page replaces it. Mentions of it below are the record of checks that ran at the time.
+Written 2026-11-11. This page lists only checks that actually ran, who ran
+them and when. Where something was not tested, it says so.
 
-What was checked on every page of Local Goods, what was fixed, and what
-was not checked or could not be fixed. Done on 2026-10-19 (Prompt 9B).
-This page lists only checks that actually ran.
+The first part is about the key pages as a screen-reader user meets them.
+The second part ("Earlier checks") is the record of the 2026-10-19 to
+2026-11-02 passes, kept as it was (those were HTML, axe and keyboard
+checks, with no screen reader).
 
-## How it was checked
+## What was tested
+
+### VoiceOver, by Finn (2026-11-11)
+
+- **Who and what.** Finn, by hand, with VoiceOver on macOS in Safari, on
+  the live site (uselocalgoods.com), on 2026-11-11.
+- **Which pages.** His notes don't list them page by page. He reported
+  that everything worked well except the three problems below. This page
+  does not claim more coverage than that.
+- **Found:**
+  1. "Request a demo" didn't say it opens an email.
+  2. The balance was read as "available balance" without the amount.
+  3. The map didn't read all of the merchants.
+
+### axe-core, by Claude (2026-11-11, local, once)
+
+- **Tool.** axe-core 4.14.0 in Google Chrome (Playwright, `playwright-core`),
+  rules tagged WCAG 2.0, 2.1 and 2.2 A and AA. Run from a scratch folder:
+  nothing was added to the repo, `package.json` or CI.
+- **Setup.** `php -S` on a new SQLite file in a scratch folder, seeded
+  with the demo data; Stripe and the Claude API switched off; throwaway
+  passwords. The real `storage/database.sqlite` was not touched.
+- **Pages.** `/`, `/security`, `/coming-next` and `/district` signed out;
+  `/judge` and `/where-the-money-is` as the public judge; the employee
+  wallet (`/employee`); the merchant dashboard (`/merchant`); BID admin
+  Home (`/bid-admin/home`) and `/where-the-money-is` as the BID admin.
+- **Widths.** 1280px and 390px, 20 page visits in all.
+- **Result.** 0 violations on all 20, run after the fixes below. A run
+  before the fixes was not made, so there is no before-and-after count.
+  axe marked color contrast "needs review" (it could not decide) on all
+  20 visits. It found no failures, and the color pairs are separately
+  checked at 4.5:1 or more by `ColorContrastTest`.
+- **What axe cannot tell you.** It checks that names and labels exist,
+  not whether they make sense when spoken. That is why the three
+  problems above were found by listening, not by axe.
+
+## What a screen-reader user hears
+
+The names below come from the browser's accessibility tree (Playwright
+ARIA snapshot in Chrome on the scratch server), not from VoiceOver. How
+VoiceOver actually speaks them has not been re-checked yet.
+
+| Where | Before | Now |
+|---|---|---|
+| Landing page, three "Request a demo" links | Link "Request a demo" | Link "Request a demo (opens your email)"; the third one near the team heading "Request a demo for your team (opens your email)". The visible words are unchanged and still start the name (WCAG label in name). |
+| Employee wallet, balance | Heading "Available balance", then the amount as separate text | Heading "Available balance: $270.00" (demo data). The amount is also still read as its own text, so reading straight through says it twice. |
+| `/district` map | A group, with each pin named only by an SVG `<title>`, which Safari/VoiceOver does not reliably read | Group "Map of the Golden Triangle BID boundary with 8 merchant pins. The same information is listed in text on this page.", then 8 links, each named "Merchant, address" (for example "Farragut Grind, 1600 block of K St NW"). Boundary and street shapes are hidden. Pins that aren't links (the checked address) are images with the same kind of name. |
+
+Everything else on the key pages is as the earlier checks left it:
+landmarks, one `<h1>`, labelled fields and named buttons are enforced by
+`AccessibilityTest` on every page without a parameter.
+
+## Found and fixed (2026-11-11)
+
+- **Demo link purpose.** `aria-label` on the three links in
+  `welcome.blade.php`. Test: `DemoRequestLinkTest`.
+- **Balance amount.** `aria-label="Available balance: $X"` on the
+  heading in `employee/wallet.blade.php`. Test: `EmployeeWalletTest`.
+- **Map merchants.** `aria-label` on every pin and `aria-hidden` on the
+  drawn boundary and streets in `components/district-map.blade.php`.
+  Test: `DistrictMapPageTest` (every merchant has a named pin that matches
+  the text list).
+- No visible wording changed. The cause of "doesn't read the entirety of
+  the merchants" is my reading of the markup (pins named only by `<title>`);
+  it was not reproduced in VoiceOver.
+
+## Still untested
+
+- **The fixes in VoiceOver.** Finn needs to listen again after the next
+  deploy. Until then these are checked in the browser's accessibility
+  tree only.
+- **Real phones.** No iPhone or Android device. Phone widths are 390px
+  emulation in Chrome (axe) and earlier emulation and Playwright WebKit.
+- **iOS VoiceOver, and Android TalkBack.**
+- **Other screen readers:** NVDA, JAWS, and VoiceOver in browsers other
+  than Safari.
+- **Zoom and reflow.** 320px width was checked in the earlier pass (it
+  stands in for 400% zoom); real browser zoom and larger-text settings
+  were not.
+- **Forced colors (Windows High Contrast).**
+- **The other pages** (admin, employer, Stripe screens and so on) were
+  never listened to; they have axe and HTML checks only, from the earlier
+  passes. The 2026-11-11 axe run did not cover them.
+- **The 2026-11-02 work** (account menu, pay-code dialog, wallet tabs,
+  admin menu groups) has axe and test checks but no spoken check.
+
+## Earlier checks (2026-10-19 to 2026-11-02)
+
+The sections that follow are the earlier record, unchanged in content.
+Their "Not tested" and "Known limits" lists are still the long list; where
+this page's "Still untested" is shorter, the older list wins.
+
+### How it was checked
 
 There are two kinds of check: automated tests that run in CI on every
 push, and a one-off browser audit run locally for this pass.
 
-### Automated tests (in the repo, run in CI)
+#### Automated tests (in the repo, run in CI)
 
 | Test | What it checks |
 |---|---|
@@ -25,7 +119,7 @@ push, and a one-off browser audit run locally for this pass.
 
 No accessibility test is skipped or marked as a known failure.
 
-### Browser audit (run once, locally, not in CI)
+#### Browser audit (run once, locally, not in CI)
 
 - **Setup.** The app ran on `php -S` against a new SQLite file in a
   scratch folder, seeded with the demo data (the real
@@ -71,7 +165,7 @@ No accessibility test is skipped or marked as a known failure.
   `aria-disabled`, the status was announced in a live region, a second
   Enter was ignored, and exactly one redemption was saved.
 
-## What was found and fixed
+### What was found and fixed
 
 | Found | Fix | Commit |
 |---|---|---|
@@ -100,7 +194,7 @@ No accessibility test is skipped or marked as a known failure.
 
 The `/admin` accounts table also got its missing caption (1fb4507).
 
-## Results after the fixes
+### Results after the fixes
 
 - **axe:** no violations on any of the 33 pages at 320px, 375px or
   1280px, except one false positive (see Known limits). This was the
@@ -111,7 +205,7 @@ The `/admin` accounts table also got its missing caption (1fb4507).
   the focused element.
 - **Tests:** all pass (`php artisan test`).
 
-## Pages checked
+### Pages checked
 
 Signed out: `/`, `/eval`, `/eval/merchants`, `/login`,
 `/forgot-password`, `/reset-password/{token}` (tests only),
@@ -127,7 +221,7 @@ Platform admin: `/admin`, `/admin/reviewers`, `/admin/reconciliation`,
 (start, cases, submit), view as employee, employer admin, merchant and BID
 admin. Every signed-in page: the Feedback button and its dialog.
 
-## Confirmation toasts
+### Confirmation toasts
 
 After every action, one toast at the top of the screen says what happened
 (see `/styleguide` → States). Checked in headless Chrome (a script, on a
@@ -150,7 +244,7 @@ scratch SQLite database, simulated payments, no AI key) at 1280px and
 Not checked: hovering to pause the fade, and how a screen reader actually
 reads it (see Not tested).
 
-## Buying credits
+### Buying credits
 
 One-step Buy credits with Stripe's embedded Checkout (ADR 0021). Checked in
 headless Chrome (a script, on a scratch SQLite database, Stripe test keys,
@@ -177,7 +271,7 @@ Not checked: moving through Stripe's own form with the keyboard or a
 screen reader (it is Stripe's, inside their frames), and the 2-minute
 "still waiting" text.
 
-## Loading states
+### Loading states
 
 Every page is rendered on the server, so nothing loads in pieces after the
 page appears, except Stripe's card form while buying credits ("Loading
@@ -185,7 +279,7 @@ Stripe's payment form…" until it appears). The only waits are after pressing a
 form, and each of those now has a "working…" state (see above). There is
 no separate loading screen.
 
-## Redeeming from a menu
+### Redeeming from a menu
 
 The two-step redeem (choose a merchant, then pick from its menu) and
 Priya's `/merchant/menu`. Checked in headless Chrome (a script, on a
@@ -207,7 +301,7 @@ The static checks (`AccessibilityTest`) cover the menu step, the
 suspicious example, and both forms' error states. Not checked: 320px, axe,
 and how a screen reader reads the running total (see Not tested).
 
-## Mission rewrite (2026-10-23)
+### Mission rewrite (2026-10-23)
 
 The new landing page (hero, "The commute-desk-commute loop", "Why it
 matters" and the labelled 3x box) and the 3x line in the estimate box on
@@ -231,7 +325,7 @@ Not checked this time: keyboard-only walk-through (no new controls were
 added) and `/judge` in the browser (judges sign in by magic link; the page
 is covered by `AccessibilityTest`).
 
-## Transit lines brand (2026-10-23)
+### Transit lines brand (2026-10-23)
 
 The new brand (ADR 0025): light and dark tokens, the theme toggle, button
 states and the new menus. Checked in headless Chrome 155 over the DevTools
@@ -267,7 +361,7 @@ Not checked this time: the menus in Safari (it does not focus clicked
 links; app.js has a guard for that, untested), 320px, and the adjudication
 voting page in the browser (covered by `AccessibilityTest`).
 
-## Pay in person (2026-10-23)
+### Pay in person (2026-10-23)
 
 The wallet's two tabs, the code screen and the merchant's Take a payment
 card ([ADR 0026](adr/0026-pay-in-person-with-pay-codes.md)). Checked in
@@ -298,7 +392,7 @@ only twice (one minute left, expired). Not checked: how a screen reader
 actually reads the tabs, the code or the announcements, 320px, and axe on
 these screens.
 
-## Phone-first pass (2026-10-24)
+### Phone-first pass (2026-10-24)
 
 Every page made to work on a phone first, desktop unchanged.
 
@@ -385,7 +479,7 @@ the merchant dashboard), where the Feedback button, the tab bar or a
 decorative element overlaps it; every text colour comes from a pair
 `ColorContrastTest` checks.
 
-## Demo activity page (2026-10-29)
+### Demo activity page (2026-10-29)
 
 **How it was checked.** Only the static checks ran. `AccessibilityTest`,
 `ResponsiveTablesTest`, `EmployeeNamePrivacyTest`, `JudgeReadOnlyTest` and
@@ -401,7 +495,7 @@ or the new "Demo activity" marker and "Waiting for a person" box.
 - The waiting box is a labelled section. Overdue items are said in words,
   not only by the border colour.
 
-## Where the money is (2026-10-30)
+### Where the money is (2026-10-30)
 
 **How it was checked.** Only the static checks ran. `AccessibilityTest`,
 `EmptyStatesTest`, `ResponsiveTablesTest`, `EmployeeNamePrivacyTest`,
@@ -418,7 +512,7 @@ was done for this page.
 - "Run the check now" is the shared button with `data-busy`; its result is
   a toast (`<x-flash>`).
 
-## Two accounts and sweeps (2026-11-01)
+### Two accounts and sweeps (2026-11-01)
 
 **How it was checked.** Only the static checks ran. `AccessibilityTest`,
 `EmptyStatesTest`, `ResponsiveTablesTest`, `EmployeeNamePrivacyTest`,
@@ -439,7 +533,7 @@ screen-reader pass was done for these sections.
 - How a sweep was sent is said in words ("Stripe test-mode transfer",
   "Refused by Stripe, nothing moved"), not only by colour.
 
-## Admin menu groups (2026-11-04)
+### Admin menu groups (2026-11-04)
 
 Checks that ran: `AccessibilityTest` (one h1, ids, aria-controls targets) over
 every admin page; `DropdownMenuTest` (each group heading is a real button with
@@ -447,10 +541,11 @@ aria-expanded and aria-controls, the group holding the current page starts
 open); `AdminMenuCoverageTest`. Not run: a browser or screen reader on the
 collapsing groups or the phone Menu sheet.
 
-## Not tested
+### Not tested
 
-- **Not tested with a screen reader.** No VoiceOver, NVDA or JAWS session
-  was run. Names, labels and announcements were checked from the HTML and
+- **Not tested with a screen reader (when these earlier checks ran).** No
+  VoiceOver, NVDA or JAWS session was run then; Finn's VoiceOver session
+  on 2026-11-11 is recorded at the top of this page. Names, labels and announcements were checked from the HTML and
   with axe, which is not the same as listening to the pages.
 - **Not tested on a real phone.** Phone widths were Chrome's emulation of
   a touch screen at 320px, 375px and 414px, and Playwright's WebKit (the
@@ -475,7 +570,7 @@ collapsing groups or the phone Menu sheet.
   `motion-safe:`, and a test checks that every animation in the views
   does.
 
-## Known limits
+### Known limits
 
 - **axe false positive on the read-only employee list.** When a judge views
   the employer page, the "Choose people" list sits in a disabled form, so
@@ -500,7 +595,7 @@ collapsing groups or the phone Menu sheet.
   field or while someone is typing. That is on purpose, but on a phone it
   can be out of sight while a form is in use.
 
-## Sales tax at checkout (2026-10-24)
+### Sales tax at checkout (2026-10-24)
 
 **How it was checked.** A Playwright script (in a scratch folder, not in
 `package.json`) drove headless Chrome against `php -S` on a scratch SQLite
@@ -534,7 +629,7 @@ Static checks (`AccessibilityTest`, `ResponsiveTablesTest`) sweep the
 changed pages automatically. Not checked: a screen reader, a real phone,
 WebKit, 375px and 414px.
 
-## Refunds and corrections (2026-10-24)
+### Refunds and corrections (2026-10-24)
 
 **How it was checked.** puppeteer-core with axe-core 4.14 (in a scratch
 folder, not in `package.json`) drove headless Chrome against `php -S` on a
@@ -566,7 +661,7 @@ Static checks (`AccessibilityTest`, `ResponsiveTablesTest`,
 `EmployeeNamePrivacyTest`) sweep the new page and the changed ones
 automatically. Not checked: a screen reader, a real phone, WebKit.
 
-## Business model and impact projection (2026-10-28)
+### Business model and impact projection (2026-10-28)
 
 **How it was checked.** puppeteer-core 24.43.1 with axe-core 4.14.0 (in a
 scratch folder, not in `package.json`) drove headless Chrome against `php -S`
@@ -608,7 +703,7 @@ Static checks (`AccessibilityTest`, `ResponsiveTablesTest`, `EmptyStatesTest`,
 pages automatically. Not checked: a screen reader, a real phone, WebKit, the
 judge's own login in a browser (covered by the feature tests).
 
-## Districts, partnerships and joining (2026-10-28)
+### Districts, partnerships and joining (2026-10-28)
 
 **How it was checked.** puppeteer-core 24.43.1 with axe-core 4.14.0 (in a
 scratch folder, not in `package.json`) drove headless Chrome against
@@ -671,7 +766,7 @@ Not checked:
   `MerchantJoinOnboardingTest` with fake Stripe);
 - a judge's login in a browser.
 
-## Account menu, pay-code dialog and wallet tabs (2026-11-02)
+### Account menu, pay-code dialog and wallet tabs (2026-11-02)
 
 Checks that ran: automated tests only (`AccountMenuTest`, `PayCodeNotValidDialogTest`,
 `WalletTabsTest`, plus the page sweeps in `AccessibilityTest`). **Not tried in a real

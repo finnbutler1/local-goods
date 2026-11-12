@@ -78,7 +78,7 @@
 
     <section aria-labelledby="balance-heading" class="wallet-balance">
         <div class="flex items-center justify-between gap-4">
-            <h2 id="balance-heading" class="text-[0.8125rem] leading-none font-bold tracking-[0.14em] text-night-muted uppercase">Available balance</h2>
+            <h2 id="balance-heading" aria-label="Available balance: {{ Money::format($balance) }}" class="text-[0.8125rem] leading-none font-bold tracking-[0.14em] text-night-muted uppercase">Available balance</h2>
             <span class="text-[0.9375rem] font-extrabold whitespace-nowrap text-on-night">Local Goods</span>
         </div>
         <p class="money mt-3 text-[clamp(2.75rem,2.2rem+2.4vw,3.5rem)] leading-none text-on-night" data-testid="balance">{{ Money::format($balance) }}</p>

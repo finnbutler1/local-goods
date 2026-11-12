@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\District;
 use App\Models\Merchant;
 use App\Services\Districts\DistrictCheck;
+use App\Services\Districts\DistrictCheckResult;
 use App\Services\Districts\DistrictRules;
+use App\Services\Geo\AddressLookup;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +50,12 @@ class DistrictMapPageTest extends TestCase
         foreach (Merchant::all() as $merchant) {
             $this->assertStringContainsString('id="merchant-'.$merchant->id.'"', $html);
         }
+        // Every pin has its own accessible name (an SVG <title> alone is not read reliably), and the shapes are hidden.
+        $this->assertSame(Merchant::count(), preg_match_all('/<a href="#merchant-\d+" aria-label="[^"]+"/', $html));
+        foreach (Merchant::all() as $merchant) {
+            $this->assertStringContainsString('aria-label="'.e($merchant->name.', '.$merchant->address).'"', $html);
+        }
+        $this->assertStringContainsString('class="dd-boundary" aria-hidden="true"', $html);
         $this->assertDoesNotMatchRegularExpression('/<(img|iframe|script)[^>]+src="https?:\/\/(?!localhost)/', $html, 'no map tiles or outside scripts');
         Http::assertNothingSent();
     }
@@ -74,11 +83,11 @@ class DistrictMapPageTest extends TestCase
 
     public function test_the_checker_uses_the_enforcement_code(): void
     {
-        $spy = new class(app(\App\Services\Geo\AddressLookup::class)) extends DistrictCheck
+        $spy = new class(app(AddressLookup::class)) extends DistrictCheck
         {
             public int $calls = 0;
 
-            public function address(\App\Models\District $district, string $address, string $origin): \App\Services\Districts\DistrictCheckResult
+            public function address(District $district, string $address, string $origin): DistrictCheckResult
             {
                 $this->calls++;
 
@@ -94,7 +103,7 @@ class DistrictMapPageTest extends TestCase
         $source = (string) file_get_contents(app_path('Services/Districts/DistrictCheck.php'));
         $this->assertStringContainsString('DistrictRules::isInside(', $source);
         $this->assertStringContainsString('self::isInside($district', (string) file_get_contents(app_path('Services/Districts/DistrictRules.php')));
-        $this->assertTrue(DistrictRules::isInside(\App\Models\District::default(), self::DC_ADDRESSES['1700 K STREET NW'][0], self::DC_ADDRESSES['1700 K STREET NW'][1]));
+        $this->assertTrue(DistrictRules::isInside(District::default(), self::DC_ADDRESSES['1700 K STREET NW'][0], self::DC_ADDRESSES['1700 K STREET NW'][1]));
     }
 
     public function test_the_typed_address_is_not_stored(): void

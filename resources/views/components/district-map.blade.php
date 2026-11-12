@@ -14,26 +14,26 @@
 
 <svg viewBox="{{ $map->viewBox() }}" role="{{ $linked ? 'group' : 'img' }}" aria-labelledby="{{ $labelledBy }}" @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
      class="block h-auto w-full max-h-[70vh] rounded-2xl border-2 border-frame bg-band" preserveAspectRatio="xMidYMid meet" data-district-map>
-    <path d="{{ $map->path() }}" class="dd-district" />
+    <path d="{{ $map->path() }}" class="dd-district" aria-hidden="true" />
     @if ($streets)
         @foreach (\App\View\Components\DistrictDiagram::STREETS as $street)
             @php($d = 'M'.implode(' L', array_map(fn (array $point) => implode(' ', $map->project(...$point)), $street[1])))
-            <path class="dd-street-case" d="{{ $d }}" />
-            <path class="dd-street" d="{{ $d }}" />
+            <path class="dd-street-case" d="{{ $d }}" aria-hidden="true" />
+            <path class="dd-street" d="{{ $d }}" aria-hidden="true" />
         @endforeach
     @endif
-    <path d="{{ $map->path() }}" class="dd-boundary" />
+    <path d="{{ $map->path() }}" class="dd-boundary" aria-hidden="true" />
     @foreach ($pins as $pin)
         @continue(! $map->shows($pin['lat'], $pin['lng']))
         @php([$x, $y] = $map->project($pin['lat'], $pin['lng']))
         @if ($pin['href'] ?? null)
-            <a href="{{ $pin['href'] }}" class="group" data-map-pin="{{ $pin['kind'] }}">
+            <a href="{{ $pin['href'] }}" aria-label="{{ $pin['label'] }}" class="group" data-map-pin="{{ $pin['kind'] }}">
                 <title>{{ $pin['label'] }}</title>
                 <circle cx="{{ $x }}" cy="{{ $y }}" r="24" class="fill-transparent stroke-focus opacity-0 group-focus-visible:opacity-100" stroke-width="6" />
                 <circle cx="{{ $x }}" cy="{{ $y }}" r="15" class="fill-surface stroke-ink group-hover:fill-primary" stroke-width="6" />
             </a>
         @else
-            <g data-map-pin="{{ $pin['kind'] }}">
+            <g role="img" aria-label="{{ $pin['label'] }}" data-map-pin="{{ $pin['kind'] }}">
                 <title>{{ $pin['label'] }}</title>
                 @if (($pin['kind'] ?? '') === 'checked')
                     <circle cx="{{ $x }}" cy="{{ $y }}" r="22" class="fill-accent stroke-ink" stroke-width="7" />

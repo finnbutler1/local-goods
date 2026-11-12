@@ -35,6 +35,7 @@ class DemoRequestLinkTest extends TestCase
         foreach ($m[1] as $href) {
             $this->assertSame(self::EXPECTED, html_entity_decode($href));
         }
+        $this->assertSame(3, substr_count($html, '(opens your email)"'), 'each demo link names itself as opening an email');
         $this->assertStringNotContainsString('href="#request-demo"', $html);
     }
 

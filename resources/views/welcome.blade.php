@@ -39,7 +39,7 @@
                     <li>Home</li>
                 </ol>
                 <div class="mt-8 flex flex-wrap gap-3">
-                    <x-button variant="accent" size="lg" :href="\App\Support\DemoRequestLink::url()">Request a demo</x-button>
+                    <x-button variant="accent" size="lg" :href="\App\Support\DemoRequestLink::url()" aria-label="Request a demo (opens your email)">Request a demo</x-button>
                     <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
                     @if ($publicJudgeUrl)
                         <x-button variant="secondary" size="lg" rel="nofollow" :href="$publicJudgeUrl">Look around (read-only)</x-button>
@@ -164,7 +164,7 @@
                             @endforeach
                         </ul>
                         <div class="mt-6">
-                            <x-button :href="\App\Support\DemoRequestLink::url()">Request a demo for your team</x-button>
+                            <x-button :href="\App\Support\DemoRequestLink::url()" aria-label="Request a demo for your team (opens your email)">Request a demo for your team</x-button>
                         </div>
                     </article>
 
@@ -316,7 +316,7 @@
                     </p>
                     <div class="flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:flex-col lg:items-start">
                         <div>
-                            <x-button size="lg" :href="\App\Support\DemoRequestLink::url()">Request a demo</x-button>
+                            <x-button size="lg" :href="\App\Support\DemoRequestLink::url()" aria-label="Request a demo (opens your email)">Request a demo</x-button>
                             <p class="mt-2 text-sm text-muted">Or email <span class="wrap-anywhere-safe font-semibold text-ink">{{ \App\Support\DemoRequestLink::address() }}</span></p>
                         </div>
                         <x-button size="lg" :href="route('login')">Log in</x-button>
