@@ -107,11 +107,11 @@ reasonable time to fix it before sharing it, I'll credit you if you'd like.
 
 These live in consoles, not in this repository, so no test can check them. Names only; values are never written here.
 
-- **Beanstalk environment properties:** `EMPLOYER_PLATFORM_FEE_ENABLED` on, `PLATFORM_FEE_PERCENT` unset, `PUBLIC_JUDGE_URL` set, `LOG_CHANNEL`, `CLOUDFRONT_ORIGIN_SECRET` set. Checked by Finn on [DATE]. Check: Elastic Beanstalk → Configuration → Software, then `/where-the-money-is` and the employer page.
-- **CloudFront origin sends the `X-Origin-Verify` header.** Checked by Finn on [DATE]. Check: `scripts/security-probes.sh <raw-host>` says the raw address is 403 and the site itself loads.
-- **Stripe Dashboard:** payment methods limited to card, Apple Pay and Google Pay; verified domain. Checked by Finn on [DATE]. Check: Stripe Dashboard → Settings → Payment methods and Payment method domains.
-- **SPF and DMARC** on the domain (DNS only; no test or probe checks them). Checked by Finn on [DATE]. Check: `dig +short TXT uselocalgoods.com` and `dig +short TXT _dmarc.uselocalgoods.com`. Pass = SPF ending in `-all`, DMARC with `p=reject`.
-- **GitHub settings** listed above. Checked by Finn on [DATE]. Check: repository Settings → Code security, and Settings → Rules.
+- **Beanstalk environment properties:** `EMPLOYER_PLATFORM_FEE_ENABLED` on, `PLATFORM_FEE_PERCENT` unset, `PUBLIC_JUDGE_URL` set, `LOG_CHANNEL`, `CLOUDFRONT_ORIGIN_SECRET` set. Checked by Finn on 2026-11-12. Check: Elastic Beanstalk → Configuration → Software, then `/where-the-money-is` and the employer page.
+- **CloudFront origin sends the `X-Origin-Verify` header.** Checked by Finn on 2026-11-12. Check: `scripts/security-probes.sh <raw-host>` says the raw address is 403 and the site itself loads.
+- **Stripe Dashboard:** payment methods limited to card, Apple Pay and Google Pay; verified domain. Checked by Finn on 2026-11-12. Check: Stripe Dashboard → Settings → Payment methods and Payment method domains.
+- **SPF and DMARC** on the domain (DNS only; no test or probe checks them). Checked by Finn on 2026-11-12. Check: `dig +short TXT uselocalgoods.com` and `dig +short TXT _dmarc.uselocalgoods.com`. Pass = SPF ending in `-all`, DMARC with `p=reject`.
+- **GitHub settings** listed above. Checked by Finn on 2026-11-12. Check: repository Settings → Code security, and Settings → Rules.
 
 ## Keys that must never change
 
