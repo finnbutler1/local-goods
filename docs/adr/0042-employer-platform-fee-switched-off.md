@@ -1,6 +1,6 @@
 # 0042. An employer platform fee per participating employee, built and switched off
 
-**Status:** Accepted, implemented. Built and tested; switched off during the pilot.
+**Status:** Accepted, implemented. Built and tested; switched on in Stripe test mode on 2026-11-12 (no real money) on the live demo (see "Switched on" below).
 
 ## Context
 
@@ -104,6 +104,30 @@ login gets the same sentence without a link, because the business model
 page stays closed to it. `PublicClaimsTest` removes only that labelled
 element before its fee-figure check, and checks that it appears only on
 the employer dashboard.
+
+## Switched on (2026-11-12)
+
+Finn switched it on on the live demo, in Stripe test mode, by setting
+`EMPLOYER_PLATFORM_FEE_ENABLED=true` in Beanstalk (no deploy file or
+seeder sets it; the default is still off). To switch it off, unset it: a
+configuration change, no redeploy. Purchases already made keep the fee
+they carried.
+
+Before switching it on, the demo activity generator's own purchase was
+checked with it on (`DemoActivityEmployerFeeTest`): it carries the
+month's fee, Stripe's test card is charged credits + fee, the webhook
+writes one platform line, reconciliation matches, and a refused payment
+cancels the purchase and passes the fee to the next one. No money code
+changed.
+
+Every page that says whether the fee is on reads the setting
+(`EmployerPlatformFee::status()`): on, "switched on in Stripe test mode:
+no real money"; off, "built and tested; switched off during the pilot".
+With it on, the employer dashboard's fee lines (Buy credits form, a
+purchase's breakdown and its row) carry `data-employer-fee-live` and their
+money mode ("Stripe test mode: no real money"); `PublicClaimsTest` skips
+only those labelled lines, and `PublicClaimsEmployerFeeOnTest` runs the
+whole sweep with the fee on. `/security` names no fee either way.
 
 ## Consequences
 

@@ -3,6 +3,21 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-12: Employer platform fee switched on in Stripe test mode
+
+- **Switched on on the live demo, in Stripe test mode: no real money**
+  (`EMPLOYER_PLATFORM_FEE_ENABLED=true` in Beanstalk; unset it to switch
+  off). The default stays off everywhere else.
+- Every page that says whether the fee is on now reads the setting, so it
+  is never out of date: the business model page and Where the Money Is
+  say "switched on in Stripe test mode: no real money" when it is on and
+  "built and tested; switched off during the pilot" when it is off. On
+  the employer dashboard each fee amount says which money mode it is in.
+- The demo activity generator's automatic credit purchase was tested with
+  the fee on: right amount, one ledger line, reconciliation matches, and a
+  refused payment passes the fee to the next purchase. No money code
+  changed.
+
 ## 2026-11-12: Employer platform fee, built and tested but switched off
 
 - **A monthly fee per participating employee**, the business model's

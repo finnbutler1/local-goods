@@ -126,13 +126,15 @@ With the fee on:
 - The ledger check becomes: paid credits + fees − payouts − held = sum of
   all entries.
 
-### Employer platform fee (off)
+### Employer platform fee (on in test mode)
 
 A monthly fee per participating employee
 ([ADR 0042](adr/0042-employer-platform-fee-switched-off.md)). Built and
-tested; switched off during the pilot. `EMPLOYER_PLATFORM_FEE_ENABLED`
-must be exactly `true` to turn it on; unset (the default, and on live)
-means off and nothing changes anywhere. It refuses to be on together with
+tested; switched on in Stripe test mode on 2026-11-12 (no real money) on the live
+demo, by Finn in Beanstalk. `EMPLOYER_PLATFORM_FEE_ENABLED` must be exactly
+`true` to turn it on; unset (the default everywhere else) means off and
+nothing changes anywhere. To switch it off, unset it (a configuration
+change, no redeploy). It refuses to be on together with
 `PLATFORM_FEE_PERCENT`, and a bad price stops a production deploy.
 
 With it on:

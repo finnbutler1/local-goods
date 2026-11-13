@@ -5,6 +5,21 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Employer platform fee: wording follows the setting, ready to switch on
+(2026-11-12).** Finn switches it on in Stripe test mode on live after this
+deploy (Beanstalk only). No migration or money code change.
+
+- Every "is it on?" sentence comes from `EmployerPlatformFee::status()`
+  (/business-model `[data-employer-fee-status]`, Where the Money Is). On, the
+  employer dashboard's fee lines carry `data-employer-fee-live` and their
+  money mode (`moneyLabel()`, `formLabel()`: "… no real money");
+  `PublicClaimsTest` skips only those labelled lines, and
+  `PublicClaimsEmployerFeeOnTest` reruns the sweep with the fee on.
+  `/security` names no fee either way (`SecurityPageTest` checks both).
+- Docs (README, ADR 0042 "Switched on", MODEL.md, STRIPE.md) say switched on
+  in test mode on 2026-11-12; switch off by unsetting the variable.
+- Demo activity purchase with the fee on: `DemoActivityEmployerFeeTest`.
+
 **Employer platform fee per participating employee — code done (2026-11-12,
 ADR 0042), merged to main, not deployed; switched off.**
 One additive migration (`2026_11_14_000001_add_employer_platform_fee_to_credit_purchases`,
