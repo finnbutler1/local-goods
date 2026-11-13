@@ -89,12 +89,11 @@ reasonable time to fix it before sharing it, I'll credit you if you'd like.
 ### Infrastructure
 
 - **Only CloudFront can reach the server** (origin lock). Where: `app/Http/Middleware/RequireCloudFrontOrigin.php`. Proved by: `BehindCloudFrontTest`.
-- **HTTPS with HSTS**, and the login cookie is Secure, HTTP-only and SameSite=Lax. Where: `app/Http/Middleware/SecurityHeaders.php`, `config/session.php`, `app/Support/ProductionConfig.php`. Proved by: `SecurityHeadersTest`, `BehindCloudFrontTest`, `ProductionConfigTest`. (HTTP-only and SameSite come from config defaults; no test pins them.)
+- **HTTPS with HSTS**, and the login cookie is Secure, HTTP-only and SameSite=Lax. Where: `app/Http/Middleware/SecurityHeaders.php`, `config/session.php`, `app/Support/ProductionConfig.php`. Proved by: `SecurityHeadersTest`, `BehindCloudFrontTest`, `ProductionConfigTest`. `config/session.php` sets `http_only` to true and `same_site` to `lax` by default, and `.ebextensions/laravel.config` sets `SESSION_SECURE_COOKIE` to true and doesn't override the other two; the deploy stops if secure isn't true (`ProductionConfig`). No test pins HTTP-only or SameSite.
 - **Security headers on web pages**; the Content-Security-Policy is **report-only** (it blocks nothing). Where: `SecurityHeaders.php`. Proved by: `SecurityHeadersTest`.
 - **Production forces debug off and shows generic error pages.** The deploy stops if debug is on. Where: `app/Support/ProductionConfig.php`, `resources/views/errors/`. Proved by: `ProductionConfigTest`, `ErrorPagesTest`.
 - **Errors also go to the system log**, outside the app folder. Where: `config/logging.php`. Proved by: `LoggingChannelConfigTest`. The exact file on the host isn't confirmed.
 - **security.txt and `/version`.** `/version` shows the deployed commit and build time only. Where: `public/.well-known/security.txt`, `app/Http/Controllers/VersionController.php`. Proved by: `SecurityTxtTest`, `VersionEndpointTest`.
-- **SPF and DMARC** on the domain. Rests on DNS records Finn checked (SPF `-all`, DMARC `p=reject`); no test or probe checks it. Where: DNS only.
 
 ### Repository and supply chain
 
@@ -111,6 +110,7 @@ These live in consoles, not in this repository, so no test can check them. Names
 - **Beanstalk environment properties:** `EMPLOYER_PLATFORM_FEE_ENABLED` on, `PLATFORM_FEE_PERCENT` unset, `PUBLIC_JUDGE_URL` set, `LOG_CHANNEL`, `CLOUDFRONT_ORIGIN_SECRET` set. Checked by Finn on [DATE]. Check: Elastic Beanstalk → Configuration → Software, then `/where-the-money-is` and the employer page.
 - **CloudFront origin sends the `X-Origin-Verify` header.** Checked by Finn on [DATE]. Check: `scripts/security-probes.sh <raw-host>` says the raw address is 403 and the site itself loads.
 - **Stripe Dashboard:** payment methods limited to card, Apple Pay and Google Pay; verified domain. Checked by Finn on [DATE]. Check: Stripe Dashboard → Settings → Payment methods and Payment method domains.
+- **SPF and DMARC** on the domain (DNS only; no test or probe checks them). Checked by Finn on [DATE]. Check: `dig +short TXT uselocalgoods.com` and `dig +short TXT _dmarc.uselocalgoods.com`. Pass = SPF ending in `-all`, DMARC with `p=reject`.
 - **GitHub settings** listed above. Checked by Finn on [DATE]. Check: repository Settings → Code security, and Settings → Rules.
 
 ## Keys that must never change
@@ -142,17 +142,17 @@ These live in consoles, not in this repository, so no test can check them. Names
 | Gap | Why | What would trigger a fix | Cost |
 |---|---|---|---|
 | No independent penetration test | Nobody outside the project has tried to break it | Before real money or real users | Cost not checked |
-| CSP not enforced | Enforcing could break pages during judging | After the freeze, once reports show no breakage | Staff time only |
-| Card disputes and returned payments not handled | Test mode only | Before live keys or any delayed payment method | Staff time only |
-| Rate limits count per server | One server, cache-based; counts restart on deploy | A second server | Staff time only |
-| No real two-connection race test on MySQL for pay codes and redeem | Only lock-wait tests exist (`MysqlRedemptionLockTest`) | Before live money | Staff time only |
-| No database-level guard on negative balances | The check is in application code, inside the locked transaction | Before live money | Staff time only |
-| Low-level refund function relies on the cap one layer up | `CreditLedger::refundRedemption` checks only a positive amount; the cap is in `CorrectionLimits` (`EmployeeBalanceSafetyTest` documents it) | Next change to refunds | Staff time only |
-| `laravel/framework` and `tinker` updates held | Freeze; they pull about 30 packages | After judging, together | Staff time only |
-| Two-step is optional | See "Decided" | Before real staff accounts | Staff time only |
+| CSP not enforced | Enforcing could break pages during judging | After the freeze, once reports show no breakage | No added cost |
+| Card disputes and returned payments not handled | Test mode only | Before live keys or any delayed payment method | No added cost |
+| Rate limits count per server | One server, cache-based; counts restart on deploy | A second server | No added cost |
+| No real two-connection race test on MySQL for pay codes and redeem | Only lock-wait tests exist (`MysqlRedemptionLockTest`) | Before live money | No added cost |
+| No database-level guard on negative balances | The check is in application code, inside the locked transaction | Before live money | No added cost |
+| Low-level refund function relies on the cap one layer up | `CreditLedger::refundRedemption` checks only a positive amount; the cap is in `CorrectionLimits` (`EmployeeBalanceSafetyTest` documents it) | Next change to refunds | No added cost |
+| `laravel/framework` and `tinker` updates held | Freeze; they pull about 30 packages | After judging, together | No added cost |
+| Two-step is optional | See "Decided" | Before real staff accounts | No added cost |
 | No edge firewall (WAF) | See "Decided" | Real traffic or abuse | Cost not checked; AWS lists WAF pricing at https://aws.amazon.com/waf/pricing/ |
 | Changes go straight to `main`; CI passing isn't a required check in the ruleset | One-person project | More contributors, or before live money | Free (a ruleset setting) |
-| Not probed | SPF/DMARC and GitHub settings rest on manual checks | Any DNS or settings change | Free |
+| Not probed | SPF, DMARC and GitHub settings rest on manual checks | Any DNS or settings change | Free |
 
 ## Last updated
 
