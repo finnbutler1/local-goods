@@ -15,7 +15,7 @@
         <h1 class="page-title">Fee Settings</h1>
         <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Local Goods fee on merchant sales</p>
         <p class="page-lede">
-            How Local Goods would earn money: a fee on each cleared sale, kept out of what the merchant is transferred.
+            The merchant fee is a smaller, optional way Local Goods could earn money: a fee on each cleared sale, kept out of what the merchant is transferred. It is zero today. The main planned revenue is the employer platform fee, not this one.
             It is set to charge nothing until we have talked with merchants about it.
         </p>
         <ul class="mt-4 list-disc space-y-1 pl-5 text-muted">

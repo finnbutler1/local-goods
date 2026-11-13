@@ -125,15 +125,34 @@ the local multiplier. An estimate from an outside study, not measured by Local G
 
 ## Business model
 
-**Projection, not results.** Employers pay a monthly platform fee for each
-participating employee, on top of the credits they buy. In the product that
-fee is built and tested, and switched on in Stripe test mode on 2026-11-12 (no real money) on the
-live demo; switch it off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`
-([ADR 0042](docs/adr/0042-employer-platform-fee-switched-off.md)). The BID, which
-introduces us to employers, gets a share of that fee. Merchants may pay a
-small fee per sale; it is zero in the product today. The credits themselves
-pass through Stripe to merchants and are never Local Goods revenue, and credits
-employees don't spend stay the employer's money.
+**How Local Goods makes money.** *Projection, not results*: every figure
+below is worked out from stated assumptions, listed with sources in
+[docs/finance/MODEL.md](docs/finance/MODEL.md), not measured.
+
+- **Employers pay a monthly fee for each participating employee** (an employee
+  who received credits the month before). It is added once a month to the
+  employer's first credit purchase, on top of the credits: $6 in the base
+  case, $4 to $10 in the range. The credits themselves all go to local
+  merchants. In the product the fee is built and tested, and switched on in
+  Stripe test mode on 2026-11-12 (no real money) on the live demo; switch it
+  off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`
+  ([ADR 0042](docs/adr/0042-employer-platform-fee-switched-off.md)).
+- **The fee is Local Goods' own operating money.** It is kept separate from
+  customer funds on the ledger and moved to the separate Local Goods Operating
+  account by an operating sweep
+  ([ADR 0034](docs/adr/0034-two-separate-stripe-balances.md)). Customer money is never
+  used for anything else.
+- **Merchants pay nothing during the pilot.** A merchant fee is built and set
+  to 0. The base-case projection assumes a small one later (1.5% of sales), to
+  be set after asking merchants what is fair.
+- **Districts pay no upfront fee during the pilot.** The projection assumes a
+  one-time start-up fee of $2,500 for each new district later. The business
+  improvement district (BID) would receive a share of the employer fee
+  (planned; no money goes to a BID today).
+- **Unspent credits are never revenue.** They stay the employer's money and are
+  refunded on request.
+- **One district alone does not break even in the base case.** The model breaks
+  even DC-wide around month 56.
 
 The model is worked out month by month from stated assumptions, each with a
 public source or labelled an assumption to check in customer discovery. On the
@@ -188,12 +207,16 @@ low and high cases on the Business model page.
    missed payout is sent again, each as a new append-only ledger line
    confirmed by Stripe's webhook, and reconciliation still matches
    ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)).
-5. **How Local Goods would earn money.** A per-transaction merchant fee is
-   a configurable setting that charges nothing by default. When it is set,
-   each sale keeps the fee it was made with, the merchant's Stripe transfer
-   is the sale less the fee, a refund gives back its share of the fee, and
-   reconciliation checks it all. Only the platform admin can change it, and
-   every change is logged
+5. **How Local Goods would earn money.** The main revenue line is the
+   employer platform fee: a monthly fee for each participating employee,
+   added once a month to the employer's first credit purchase on top of the
+   credits, never refundable, and kept apart from customer funds
+   ([ADR 0042](docs/adr/0042-employer-platform-fee-switched-off.md)). A
+   per-transaction merchant fee is a second, smaller setting that charges
+   nothing by default. When it is set, each sale keeps the fee it was made
+   with, the merchant's Stripe transfer is the sale less the fee, a refund
+   gives back its share of the fee, and reconciliation checks it all. Only
+   the platform admin can change it, and every change is logged
    ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)).
 6. **Shops join, and the district boundary is enforced.** An independent
    shop applies at [/apply](https://uselocalgoods.com/apply)

@@ -5,6 +5,22 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Plain "How Local Goods makes money" summary — wording and docs only
+(2026-11-12), not deployed.** No code, migration, model number or money
+change. The employer fee was switched on in Stripe test mode on live on
+Thursday evening, 2026-11-12 (Finn's time); keep 2026-11-12 everywhere.
+
+- `/business-model` top box (`projections/partials/how-it-makes-money`,
+  `[data-how-it-makes-money]`) and the README "## Business model" opening say
+  the same six things; the fee sentence comes from
+  `EmployerPlatformFee::status()`, figures from `config/projections.php` and
+  the model, always next to "Projection, not results" and `#assumptions`.
+  The BID "would receive" a share (planned); districts pay no upfront fee in
+  the pilot but the projection assumes a $2,500 start-up fee later; unspent
+  credits are refunded on request; ACH is on the roadmap (cards, Apple Pay,
+  Google Pay today). README "How it works" item 5 names the employer fee as
+  the main revenue line. Test: `BusinessModelPageTest`.
+
 **Employer platform fee: wording follows the setting, ready to switch on
 (2026-11-12).** Finn switches it on in Stripe test mode on live after this
 deploy (Beanstalk only). No migration or money code change.

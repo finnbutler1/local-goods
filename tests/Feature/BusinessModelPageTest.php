@@ -56,6 +56,27 @@ class BusinessModelPageTest extends TestCase
         $this->actingAs($contact)->get('/business-model')->assertForbidden();
     }
 
+    public function test_the_makes_money_box_is_first_and_its_fee_sentence_follows_the_setting(): void
+    {
+        foreach ([false, true] as $on) {
+            config(['payments.employer_platform_fee_enabled' => $on]);
+            $html = $this->actingAs($this->signIn(Role::BidAdmin))->get('/business-model')->assertOk()->getContent();
+            $box = substr($html, strpos($html, 'data-how-it-makes-money'));
+            $box = substr($box, 0, strpos($box, '</section>'));
+            $text = self::text($box);
+
+            $this->assertLessThan(strpos($html, 'id="choose-heading"'), strpos($html, 'data-how-it-makes-money'), 'The box sits above the scenario choice.');
+            $this->assertStringContainsString('How Local Goods makes money', $text);
+            $this->assertStringContainsString('Projection, not results', $text);
+            $this->assertStringContainsString('href="#assumptions"', $box);
+            $this->assertStringContainsString('would receive a share of the employer fee (planned; no money goes to a BID today)', $text);
+            $this->assertStringContainsString('refunded on request', $text);
+            $this->assertStringContainsString($on ? 'switched on, with payments simulated: no real money' : 'built and tested; switched off during the pilot', $text);
+            $this->assertStringContainsString('start-up fee of $2,500', $text);
+            $this->assertStringNotContainsString($on ? 'switched off during the pilot' : 'no real money', $text);
+        }
+    }
+
     public function test_it_is_labelled_a_projection_and_links_its_assumptions(): void
     {
         $html = $this->actingAs($this->signIn(Role::Judge))->get('/business-model')->getContent();

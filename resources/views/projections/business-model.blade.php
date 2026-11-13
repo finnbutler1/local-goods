@@ -36,6 +36,8 @@
         <div class="mt-5">@include('projections.partials.label')</div>
     </header>
 
+    @include('projections.partials.how-it-makes-money')
+
     <section aria-labelledby="choose-heading" class="rule-heavy mt-10 bg-band px-5 pb-5 sm:px-6">
         <h2 id="choose-heading" class="sr-only">Choose a scenario and case</h2>
         @include('projections.partials.toggles', ['route' => 'business-model'])

@@ -47,12 +47,16 @@ on the live demo; switch it off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`.
    - **Interchange:** only in an optional card-issuing phase, which is off.
      The MVP has no card program.
 5. **Cost of revenue:**
-   - Stripe fees on each employer purchase (ACH or card).
+   - Stripe fees on each employer purchase (ACH or card). Today employers pay
+     by card, Apple Pay or Google Pay; ACH is on the roadmap once returned
+     payments are handled, and the model's ACH share is an assumption about
+     later.
    - Stripe Connect fees per active merchant account and per payout.
    - The Claude API cost of one Redemption Fraud Detection check per
      redemption.
    - Hosting.
-   - The BID partner's share of the employer fee.
+   - The BID partner's share of the employer fee (the BID would receive it;
+     planned, no money goes to a BID today).
 6. **Operating expenses:**
    - Customer support.
    - Sales and marketing (ongoing, per BID launch and per new employer).
@@ -82,7 +86,8 @@ They are shown on their own and never counted as revenue or operating cash.
 
 **Breakage is excluded from revenue by policy.** Credits employees don't spend
 stay the employer's money. The model returns them to the employer after 3
-months (ADR 0028 lets an employer ask for unspent credits back). Unspent
+months, a modelling simplification: in the product they are refunded on
+request, not automatically (ADR 0028). Unspent
 credits never earn Local Goods anything; a test checks that revenue doesn't
 change with the share spent.
 
@@ -213,7 +218,7 @@ check with real employers, BIDs and merchants.
 | `employer_platform_fee` | Employer platform fee | dollars per participating employee per month | $4 | $6 | $10 | [Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month](https://www.vendr.com/marketplace/benepass). Third-party estimates; benefit platforms don't publish prices. Paid by the employer on top of the credits. The live product's employer platform fee uses this base figure (ADR 0042). Checked 2026-10-28. |
 | `merchant_fee_rate` | Merchant fee | share of each sale | 0% | 1.5% | 3% | Assumption: to validate in customer discovery. The live merchant fee is 0 (ADR 0029). The scenario assumes a rate below card processing. Checked 2026-10-28. |
 | `interchange_rate` | Interchange (card-issuing phase only) | share of card spend | 1.35% | 1.35% | 1.35% | Assumption: to validate in customer discovery. The 2013 reference model's rate. Stripe Issuing's interchange share is not public. Counted only when card issuing is turned on, which it is not. Checked 2026-10-28. |
-| `ach_share` | Employer purchases paid by ACH | share of purchases | 80% | 80% | 80% | Assumption: to validate in customer discovery. The rest are paid by card. Large employers usually pay by bank transfer. Checked 2026-10-28. |
+| `ach_share` | Employer purchases paid by ACH | share of purchases | 80% | 80% | 80% | Assumption: to validate in customer discovery. The rest are paid by card. Large employers usually pay by bank transfer. Today employers pay by card, Apple Pay or Google Pay; ACH is on the roadmap once returned payments are handled. Checked 2026-10-28. |
 | `stripe_ach_rate` | Stripe ACH Direct Debit | share of the purchase | 0.8% | 0.8% | 0.8% | [Stripe pricing: ACH Direct Debit 0.8%, $5.00 cap](https://stripe.com/pricing). Paid by Local Goods on each employer purchase. Checked 2026-10-28. |
 | `stripe_ach_cap` | Stripe ACH Direct Debit cap | dollars per purchase | $5 | $5 | $5 | [Stripe pricing: ACH Direct Debit 0.8%, $5.00 cap](https://stripe.com/pricing). One purchase per employer per month. Checked 2026-10-28. |
 | `stripe_card_rate` | Stripe card payments, percent | share of the purchase | 2.9% | 2.9% | 2.9% | [Stripe pricing: domestic cards 2.9% + 30¢](https://stripe.com/pricing). Paid by Local Goods when an employer pays by card. Checked 2026-10-28. |
@@ -228,7 +233,7 @@ check with real employers, BIDs and merchants.
 | `claude_output_price` | Claude Opus 5.5 output price | dollars per million tokens | $20 | $20 | $20 | [Anthropic pricing: Claude Opus 5.5, $20 per million output tokens](https://platform.claude.com/docs/en/about-claude/pricing). Checked 2026-10-28. |
 | `hosting_monthly` | Hosting (AWS), base | dollars per month | $150 | $150 | $150 | Assumption: to validate in customer discovery. Elastic Beanstalk, RDS MySQL and CloudFront. A guess: replace it with the real AWS bill. Checked 2026-10-28. |
 | `hosting_per_bid_monthly` | Hosting (AWS), per BID | dollars per BID per month | $25 | $25 | $25 | Assumption: to validate in customer discovery. Grows slowly with use. Checked 2026-10-28. |
-| `bid_revenue_share` | BID partner revenue share | share of the employer platform fee | 10% | 10% | 10% | Assumption: to validate in customer discovery. Makes the BID a paid partner. The reference model paid each BID $0.50 per card; 10% of a $6 fee is $0.60. Checked 2026-10-28. |
+| `bid_revenue_share` | BID partner revenue share | share of the employer platform fee | 10% | 10% | 10% | Assumption: to validate in customer discovery. The BID would receive this share (planned; no money goes to a BID today). The reference model paid each BID $0.50 per card; 10% of a $6 fee is $0.60. Checked 2026-10-28. |
 | `support_per_employee` | Customer support | dollars per participating employee per month | $0.30 | $0.30 | $0.30 | Assumption: to validate in customer discovery. Help desk tools and part-time help. Checked 2026-10-28. |
 | `marketing_monthly` | Marketing, ongoing | dollars per month | $1,000 | $1,000 | $1,000 | Assumption: to validate in customer discovery. Website, materials and events. Checked 2026-10-28. |
 | `bid_launch_cost` | Cost to launch a BID | dollars per new BID | $10,000 | $10,000 | $10,000 | Assumption: to validate in customer discovery. Under review: in this model the BID partner does the on-the-ground recruiting and is paid a revenue share, so this cost may be lower. Checked 2026-10-28. |
@@ -245,7 +250,7 @@ check with real employers, BIDs and merchants.
 | `ops_salary` | Operations salary, loaded | dollars per year | $85,000 | $85,000 | $85,000 | Assumption: to validate in customer discovery. Support escalations, fraud review and payouts. Checked 2026-10-28. |
 | `ops_employees_per_person` | One operations person per | participating employees | 30,000 | 30,000 | 30,000 | Assumption: to validate in customer discovery. Checked 2026-10-28. |
 | `compliance_hire_at_bids` | Compliance hire at | BIDs | 20 | 20 | 20 | Assumption: to validate in customer discovery. One operations person for compliance once the program is in 20 or more districts. Checked 2026-10-28. |
-| `unspent_return_months` | Unspent credits held before going back to the employer | months | 3 | 3 | 3 | Assumption: to validate in customer discovery. Unspent credits are never Local Goods revenue. They stay the employer's money and can be refunded (ADR 0028). Checked 2026-10-28. |
+| `unspent_return_months` | Unspent credits held before going back to the employer | months | 3 | 3 | 3 | Assumption: to validate in customer discovery. Unspent credits are never Local Goods revenue. They stay the employer's money and are refunded on request, not automatically (ADR 0028); the model's return after this many months is a simplification. Checked 2026-10-28. |
 | `payout_lag_days` | Days a cleared sale waits for its payout | days | 7 | 7 | 7 | Assumption: to validate in customer discovery. Weekly payouts. Checked 2026-10-28. |
 <!-- projection:assumptions:end -->
 

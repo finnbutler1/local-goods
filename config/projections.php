@@ -109,7 +109,7 @@ return [
         'interchange_rate' => $fixed('revenue', 'Interchange (card-issuing phase only)', 'share of card spend', 0.0135, null, '', 'The 2013 reference model\'s rate. Stripe Issuing\'s interchange share is not public. Counted only when card issuing is turned on, which it is not.'),
 
         // Cost of revenue.
-        'ach_share' => $fixed('stripe', 'Employer purchases paid by ACH', 'share of purchases', 0.80, null, '', 'The rest are paid by card. Large employers usually pay by bank transfer.'),
+        'ach_share' => $fixed('stripe', 'Employer purchases paid by ACH', 'share of purchases', 0.80, null, '', 'The rest are paid by card. Large employers usually pay by bank transfer. Today employers pay by card, Apple Pay or Google Pay; ACH is on the roadmap once returned payments are handled.'),
         'stripe_ach_rate' => $fixed('stripe', 'Stripe ACH Direct Debit', 'share of the purchase', 0.008, $stripePricing, 'Stripe pricing: ACH Direct Debit 0.8%, $5.00 cap', 'Paid by Local Goods on each employer purchase.'),
         'stripe_ach_cap' => $fixed('stripe', 'Stripe ACH Direct Debit cap', 'dollars per purchase', 5.00, $stripePricing, 'Stripe pricing: ACH Direct Debit 0.8%, $5.00 cap', 'One purchase per employer per month.'),
         'stripe_card_rate' => $fixed('stripe', 'Stripe card payments, percent', 'share of the purchase', 0.029, $stripePricing, 'Stripe pricing: domestic cards 2.9% + 30¢', 'Paid by Local Goods when an employer pays by card.'),
@@ -124,7 +124,7 @@ return [
         'claude_output_price' => $fixed('ai', 'Claude Opus 5.5 output price', 'dollars per million tokens', 20.00, $claudePricing, 'Anthropic pricing: Claude Opus 5.5, $20 per million output tokens', ''),
         'hosting_monthly' => $fixed('operations', 'Hosting (AWS), base', 'dollars per month', 150, null, '', 'Elastic Beanstalk, RDS MySQL and CloudFront. A guess: replace it with the real AWS bill.'),
         'hosting_per_bid_monthly' => $fixed('operations', 'Hosting (AWS), per BID', 'dollars per BID per month', 25, null, '', 'Grows slowly with use.'),
-        'bid_revenue_share' => $fixed('partner', 'BID partner revenue share', 'share of the employer platform fee', 0.10, null, '', 'Makes the BID a paid partner. The reference model paid each BID $0.50 per card; 10% of a $6 fee is $0.60.'),
+        'bid_revenue_share' => $fixed('partner', 'BID partner revenue share', 'share of the employer platform fee', 0.10, null, '', 'The BID would receive this share (planned; no money goes to a BID today). The reference model paid each BID $0.50 per card; 10% of a $6 fee is $0.60.'),
 
         // Operating expenses.
         'support_per_employee' => $fixed('operations', 'Customer support', 'dollars per participating employee per month', 0.30, null, '', 'Help desk tools and part-time help.'),
@@ -145,7 +145,7 @@ return [
         'compliance_hire_at_bids' => $fixed('payroll', 'Compliance hire at', 'BIDs', 20, null, '', 'One operations person for compliance once the program is in 20 or more districts.'),
 
         // Customer money: shown separately, never revenue or operating cash.
-        'unspent_return_months' => $fixed('customer_funds', 'Unspent credits held before going back to the employer', 'months', 3, null, '', 'Unspent credits are never Local Goods revenue. They stay the employer\'s money and can be refunded (ADR 0028).'),
+        'unspent_return_months' => $fixed('customer_funds', 'Unspent credits held before going back to the employer', 'months', 3, null, '', 'Unspent credits are never Local Goods revenue. They stay the employer\'s money and are refunded on request, not automatically (ADR 0028); the model\'s return after this many months is a simplification.'),
         'payout_lag_days' => $fixed('customer_funds', 'Days a cleared sale waits for its payout', 'days', 7, null, '', 'Weekly payouts.'),
     ],
 
