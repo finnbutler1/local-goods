@@ -18,13 +18,14 @@ use App\Models\User;
 use App\Services\Corrections\CorrectionRequests;
 use App\Services\CreditLedger;
 use App\Services\EmployerProgram;
+use App\Services\PayCodes;
 use App\Services\Payments\MerchantPayouts;
 use App\Services\Payments\StripeGatewayException;
 use App\Services\Payments\StripeReconciliation;
-use App\Services\PayCodes;
 use App\Services\RedemptionBasket;
 use App\Services\RedemptionService;
 use App\Services\Solvency\SolvencyCheck;
+use App\Support\EmployerPlatformFee;
 use App\Support\MerchantFee;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
@@ -229,7 +230,11 @@ class ActivityGenerator
                 throw $e;
             }
 
-            return 'Bought '.Money::format($amount).' of credits ('.$purchase->reference.') with Stripe\'s test card; the webhook marks it paid.';
+            $fee = $purchase->hasEmployerFee()
+                ? ' + '.Money::format($purchase->employer_fee_cents).' employer platform fee for '.EmployerPlatformFee::monthLabel($purchase->employer_fee_month)
+                : '';
+
+            return 'Bought '.Money::format($amount).' of credits'.$fee.' ('.$purchase->reference.') with Stripe\'s test card; the webhook marks it paid.';
         });
     }
 
@@ -383,7 +388,7 @@ class ActivityGenerator
             return null;
         }
 
-        $random = new Randomizer(new Mt19937(crc32($day->date->toDateString().':'.$slot['slot']) & 0x7fffffff));
+        $random = new Randomizer(new Mt19937(crc32($day->date->toDateString().':'.$slot['slot']) & 0x7FFFFFFF));
 
         return $candidates[$random->getInt(0, $candidates->count() - 1)];
     }
@@ -397,7 +402,7 @@ class ActivityGenerator
             }
 
             $people = Employee::where('employer_id', $employer->id)->whereNotIn('display_name', config('demo_activity.excluded_employees'))->orderBy('id')->get();
-            $random = new Randomizer(new Mt19937(crc32($day->date->toDateString().':recognition') & 0x7fffffff));
+            $random = new Randomizer(new Mt19937(crc32($day->date->toDateString().':recognition') & 0x7FFFFFFF));
             $employee = $people[$random->getInt(0, $people->count() - 1)];
 
             $this->ledger->allocateMany($employer, [$employee], $amount, Occasion::Recognition);
@@ -440,7 +445,7 @@ class ActivityGenerator
 
             $item = $order->items->sortBy('unit_price_cents')->first();
             $reasons = config('demo_activity.refund_reasons');
-            $random = new Randomizer(new Mt19937(crc32($day->date->toDateString().':refund') & 0x7fffffff));
+            $random = new Randomizer(new Mt19937(crc32($day->date->toDateString().':refund') & 0x7FFFFFFF));
             [$reason, $note] = $reasons[$random->getInt(0, count($reasons) - 1)];
 
             $correction = $this->corrections->forRedemption($login, $order, $reason, $note.' ('.$item->name.')');
