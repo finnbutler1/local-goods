@@ -235,7 +235,7 @@
                         <span class="tabular font-semibold">{{ Money::format($buying->amount_cents) }}</span> in credits.
                     </p>
                     @if ($line = $feeLine($buying))
-                        <p class="tabular mt-1 font-semibold" data-fee-breakdown>{{ $line }}</p>
+                        <p class="tabular mt-1 font-semibold" data-fee-breakdown @if ($buying->hasEmployerFee()) data-employer-fee-live @endif>{{ $line }}@if ($buying->hasEmployerFee()) <span class="font-normal text-muted">({{ EmployerPlatformFee::moneyLabel($buying) }})</span>@endif</p>
                     @endif
                     @if ($buying->hasEmployerFee())
                         <p class="mt-1 text-sm" data-employer-fee-refunds>{{ $feeNotRefundable }}</p>
@@ -320,7 +320,8 @@
                             @endif
                             @if ($employerFee['on'])
                                 {{-- The employer platform fee (ADR 0042): added once a month, on the first purchase. --}}
-                                <p class="text-sm" data-employer-fee-next="{{ $employerFee['adds'] ? 'adds' : 'none' }}">
+                                <p class="text-sm" data-employer-fee-next="{{ $employerFee['adds'] ? 'adds' : 'none' }}" data-employer-fee-live>
+                                    <span class="block font-semibold text-muted">{{ EmployerPlatformFee::formLabel() }}.</span>
                                     @if ($employerFee['adds'])
                                         <span class="tabular font-semibold">This purchase adds the platform fee for {{ EmployerPlatformFee::monthLabel($employerFee['month']) }}:
                                             {{ $employerFee['employees'] }} participating {{ Str::plural('employee', $employerFee['employees']) }} × {{ Money::format($employerFee['unit_cents']) }} = {{ Money::format($employerFee['cents']) }}.</span>
@@ -411,7 +412,7 @@
                                                 <p class="ledger-num text-muted">+ {{ Money::format($purchase->platform_fee_cents) }} platform fee</p>
                                             @endif
                                             @if ($purchase->hasEmployerFee())
-                                                <p class="ledger-num text-muted" data-employer-fee-row>+ {{ Money::format($purchase->employer_fee_cents) }} {{ StripeCheckout::employerFeeLine($purchase) }} · not refundable</p>
+                                                <p class="ledger-num text-muted" data-employer-fee-row data-employer-fee-live>+ {{ Money::format($purchase->employer_fee_cents) }} {{ StripeCheckout::employerFeeLine($purchase) }} · not refundable · {{ EmployerPlatformFee::moneyLabel($purchase) }}</p>
                                             @endif
                                         </td>
                                         <td data-label="Status" class="stack-block py-3">

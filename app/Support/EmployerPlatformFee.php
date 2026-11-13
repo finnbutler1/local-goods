@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\CreditPurchase;
 use App\Models\Employer;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
@@ -9,8 +10,10 @@ use Illuminate\Support\Carbon;
 /**
  * The employer platform fee (ADR 0042): a monthly fee per participating
  * employee, added once a month to the employer's first credit purchase.
- * Built and tested; switched off during the pilot. Off unless
- * EMPLOYER_PLATFORM_FEE_ENABLED is exactly true.
+ * Off unless EMPLOYER_PLATFORM_FEE_ENABLED is exactly true; switched on
+ * in Stripe test mode on the live site on 2026-11-12 (no real money).
+ * Every public sentence about whether it is on comes from status(), so
+ * it follows the setting.
  *
  * The price is the base employer_platform_fee in config/projections.php
  * (the business model's own figure), never a number written here. It is
@@ -56,6 +59,38 @@ class EmployerPlatformFee
     public static function charges(): bool
     {
         return self::enabled() && self::problem() === null;
+    }
+
+    /**
+     * What pages say about the fee right now, to finish "The employer
+     * platform fee is …". Never claims more than the setting does.
+     */
+    public static function status(): string
+    {
+        return match (true) {
+            ! self::charges() => 'built and tested; switched off during the pilot, so nothing is charged',
+            StripeMode::active() => 'switched on in Stripe test mode: no real money',
+            default => 'switched on, with payments simulated: no real money',
+        };
+    }
+
+    /**
+     * The short label every element showing a charged fee carries (the
+     * public claims check looks for "no real money" in it): which money
+     * mode that purchase is in.
+     */
+    public static function moneyLabel(CreditPurchase $purchase): string
+    {
+        $simulated = $purchase->status === CreditPurchase::STATUS_SIMULATED
+            || (! $purchase->isStripe() && ! StripeMode::active());
+
+        return $simulated ? 'Simulated: no real money' : 'Stripe test mode: no real money';
+    }
+
+    /** The same label for the Buy credits form, before there is a purchase. */
+    public static function formLabel(): string
+    {
+        return StripeMode::active() ? 'Switched on in Stripe test mode: no real money' : 'Switched on, simulated: no real money';
     }
 
     /** The price per participating employee per month, in cents (the projection's base case). */

@@ -20,7 +20,10 @@ use Tests\TestCase;
  * the pilot)" box, labelled as a projection, linking to the business model
  * for viewers who may open it. On: the fee on the buy form, Checkout's
  * breakdown, the purchase row and the confirmation, and that it can't be
- * refunded in this version.
+ * refunded in this version, each fee figure labelled with its money mode
+ * ("Stripe test mode: no real money"). The pages that say whether the fee
+ * is on (/business-model, Where the Money Is) follow the setting;
+ * /security names no fee either way (SecurityPageTest).
  */
 class EmployerPlatformFeeDisplayTest extends TestCase
 {
@@ -45,6 +48,8 @@ class EmployerPlatformFeeDisplayTest extends TestCase
         }
         $this->travelTo(Carbon::parse('2027-03-10 12:00', 'America/New_York'));
         config(['reviewers.judging_ends_at' => '2027-12-31 23:59']);
+        // Each test states the setting: off unless it switches it on, whatever the environment says.
+        config(['payments.employer_platform_fee_enabled' => false]);
     }
 
     // --- Off ---------------------------------------------------------------------
@@ -106,6 +111,7 @@ class EmployerPlatformFeeDisplayTest extends TestCase
 
         $form = $this->get('/employer')->assertOk()->assertDontSee(self::PREVIEW, false)
             ->assertSee('data-employer-fee-next="adds"', false)
+            ->assertSee('Switched on in Stripe test mode: no real money.')
             ->assertSee('This purchase adds the platform fee for March 2027:')
             ->assertSee('3 participating employees × $6.00 = $18.00.')
             ->assertSee(self::NOT_REFUNDABLE, false);
@@ -117,13 +123,14 @@ class EmployerPlatformFeeDisplayTest extends TestCase
         // Paying: the breakdown and the refund sentence, before the card form.
         $this->get('/employer?pay='.$purchase->reference)->assertOk()
             ->assertSee('Credits $400.00 + platform fee $18.00 (Platform fee for March 2027: 3 participating employees × $6.00) = total $418.00')
+            ->assertSee('(Stripe test mode: no real money)')
             ->assertSee('data-employer-fee-refunds', false)
             ->assertSee(self::NOT_REFUNDABLE, false);
 
         // This month's fee is taken by that purchase, so the next one adds none.
         $this->get('/employer')->assertOk()->assertSee('data-employer-fee-next="none"', false)
             ->assertSee('No platform fee on this purchase');
-        $this->get('/employer')->assertSee('+ $18.00 Platform fee for March 2027: 3 participating employees × $6.00 · not refundable');
+        $this->get('/employer')->assertSee('+ $18.00 Platform fee for March 2027: 3 participating employees × $6.00 · not refundable · Stripe test mode: no real money');
     }
 
     public function test_on_the_confirmation_names_the_fee_and_its_month(): void
@@ -136,5 +143,53 @@ class EmployerPlatformFeeDisplayTest extends TestCase
         $toast = html_entity_decode((string) session('status'), ENT_QUOTES);
         $this->assertStringContainsString('$400.00 in credits added (simulated, no real money, ', $toast);
         $this->assertStringContainsString('; $418.00 paid, including a $18.00 platform fee for March 2027). Ready to give.', $toast);
+    }
+
+    public function test_on_without_stripe_the_labels_say_simulated(): void
+    {
+        config(['payments.employer_platform_fee_enabled' => true]);
+        $this->signIn(Role::EmployerAdmin);
+
+        $this->get('/employer')->assertOk()->assertSee('Switched on, simulated: no real money.');
+        $this->post('/employer/purchases', ['purchase_amount' => '400'])->assertRedirect();
+        $this->get('/employer')->assertOk()->assertSee('· not refundable · Simulated: no real money');
+    }
+
+    // --- What the pages say about the setting -------------------------------------
+
+    public function test_off_the_pages_say_built_and_tested_and_switched_off(): void
+    {
+        $this->signIn(Role::Judge);
+
+        $this->get(route('business-model'))->assertOk()
+            ->assertSee('built and tested; switched off during the pilot, so nothing is charged')
+            ->assertDontSee('switched on in Stripe test mode');
+        $this->get(route('money'))->assertOk()
+            ->assertDontSee('data-employer-fee-status', false)
+            ->assertSee('data-charges-now="no"', false);
+    }
+
+    public function test_on_the_pages_say_switched_on_in_stripe_test_mode(): void
+    {
+        config(['payments.employer_platform_fee_enabled' => true]);
+        $this->fakeStripe();
+        $this->signIn(Role::Judge);
+
+        $this->get(route('business-model'))->assertOk()
+            ->assertSee('switched on in Stripe test mode: no real money')
+            ->assertDontSee('switched off during the pilot');
+        $this->get(route('money'))->assertOk()
+            ->assertSee('The employer platform fee is switched on in Stripe test mode: no real money.')
+            ->assertSee('data-charges-now="yes"', false);
+    }
+
+    public function test_on_with_a_problem_the_pages_still_say_off(): void
+    {
+        // Both fees set: the deploy check refuses it, and nothing charges, so nothing says it is on.
+        config(['payments.employer_platform_fee_enabled' => true, 'payments.platform_fee_percent' => '2.5']);
+        $this->signIn(Role::Judge);
+
+        $this->get(route('business-model'))->assertOk()->assertSee('switched off during the pilot');
+        $this->get(route('money'))->assertOk()->assertDontSee('data-employer-fee-status', false);
     }
 }

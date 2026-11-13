@@ -274,7 +274,7 @@
         <p class="mt-3 max-w-[48rem] text-muted">
             Every number above comes from these, and nothing else: the model never reads the live fee settings, the ledger or Stripe.
             The other way round, the product's employer platform fee per participating employee uses the base employer platform fee below:
-            it is built and tested; switched off during the pilot, so nothing is charged.
+            it is <span data-employer-fee-status>{{ \App\Support\EmployerPlatformFee::status() }}</span>.
             “{{ $config['assumption_label'] }}” marks a value with no public source.
             Three go-to-market costs are under review because the model assumes the BID does the on-the-ground recruiting.
         </p>

@@ -58,13 +58,17 @@ class SecurityPageTest extends TestCase
         }
     }
 
+    /** With the employer platform fee off or on (ADR 0042): the page names no fee either way, so it is never out of date. */
     public function test_no_guarantees_and_no_figures(): void
     {
-        $text = strip_tags($this->get('/security')->getContent());
+        foreach ([false, true] as $on) {
+            config(['payments.employer_platform_fee_enabled' => $on]);
+            $text = strip_tags($this->get('/security')->getContent());
 
-        $this->assertDoesNotMatchRegularExpression('/\b(unhackable|bank-grade|military-grade|impenetrable|guarantee[ds]?|100% secure|completely secure)\b/i', $text);
-        $this->assertDoesNotMatchRegularExpression('/\$\s?\d|\d\s?%/', $text);
-        $this->assertDoesNotMatchRegularExpression('/\bfees?\b/i', $text);
+            $this->assertDoesNotMatchRegularExpression('/\b(unhackable|bank-grade|military-grade|impenetrable|guarantee[ds]?|100% secure|completely secure)\b/i', $text);
+            $this->assertDoesNotMatchRegularExpression('/\$\s?\d|\d\s?%/', $text);
+            $this->assertDoesNotMatchRegularExpression('/\bfees?\b/i', $text);
+        }
     }
 
     public function test_signed_in_people_can_open_it_too(): void

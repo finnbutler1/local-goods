@@ -13,7 +13,8 @@ return [
 
     /*
      * Employer platform fee per participating employee per month (ADR 0042).
-     * Built and tested; switched off during the pilot. Off unless this is
+     * Switched on in Stripe test mode on the live site on 2026-11-12, by
+     * Finn in Beanstalk; switch off by unsetting it. Off unless this is
      * exactly true: unset means off, in every environment including
      * production. Never set it in a deploy file or seeder (a test checks).
      * The price is not set here: it is the base employer_platform_fee in

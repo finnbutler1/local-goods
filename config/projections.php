@@ -104,7 +104,7 @@ return [
 
         // Revenue levers. Each is its own line and can be 0.
         'bid_initiation_fee' => $a('revenue', 'BID initiation fee', 'dollars once per BID', 0, 2500, 5000, null, '', 'The reference model charged each BID $2,500 to start.'),
-        'employer_platform_fee' => $a('revenue', 'Employer platform fee', 'dollars per participating employee per month', 4, 6, 10, 'https://www.vendr.com/marketplace/benepass', 'Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month', 'Third-party estimates; benefit platforms don\'t publish prices. Paid by the employer on top of the credits. The live product\'s employer platform fee uses this base figure: built and tested; switched off during the pilot (ADR 0042).'),
+        'employer_platform_fee' => $a('revenue', 'Employer platform fee', 'dollars per participating employee per month', 4, 6, 10, 'https://www.vendr.com/marketplace/benepass', 'Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month', 'Third-party estimates; benefit platforms don\'t publish prices. Paid by the employer on top of the credits. The live product\'s employer platform fee uses this base figure (ADR 0042).'),
         'merchant_fee_rate' => $a('revenue', 'Merchant fee', 'share of each sale', 0, 0.015, 0.03, null, '', 'The live merchant fee is 0 (ADR 0029). The scenario assumes a rate below card processing.'),
         'interchange_rate' => $fixed('revenue', 'Interchange (card-issuing phase only)', 'share of card spend', 0.0135, null, '', 'The 2013 reference model\'s rate. Stripe Issuing\'s interchange share is not public. Counted only when card issuing is turned on, which it is not.'),
 

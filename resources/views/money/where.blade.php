@@ -149,7 +149,10 @@
                         </p>
                     @endif
                     <p data-charges-now="{{ $earned['charges_now'] ? 'yes' : 'no' }}">
-                        @if ($earned['charges_now'])
+                        @if (\App\Support\EmployerPlatformFee::charges())
+                            <span data-employer-fee-status>The employer platform fee is {{ \App\Support\EmployerPlatformFee::status() }}.</span>
+                            New credit purchases can earn Local Goods money{{ \App\Support\MerchantFee::current()->isNone() ? '' : ', and so can sales, because the merchant fee is on too' }}.
+                        @elseif ($earned['charges_now'])
                             A fee is switched on now, so new activity can earn Local Goods money.
                         @elseif ($hasEarned)
                             Otherwise Local Goods charges nothing: the platform fee and the merchant fee are both off now, so this is not ongoing income.
