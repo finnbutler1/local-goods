@@ -101,8 +101,9 @@
                         @endif
                     </p>
                 @endif
-                <p class="mt-6 border-t-[3px] border-ink bg-band px-4 py-3 text-sm"><span class="font-semibold">Unspent credits always remain the employer's money, never ours.</span>
-                    Local Goods never counts them as income, never spends or invests them, and an employer can ask for them back.</p>
+                <p class="mt-6 border-t-[3px] border-ink bg-band px-4 py-3 text-sm"><span class="font-semibold">Unspent credits are customer funds held for the program, never Local Goods' money.</span>
+                    Credits an employer hasn't given out yet stay on its balance and can be refunded on request; credits given to an employee
+                    stay in their wallet, with no expiry. Local Goods never counts them as income and never spends or invests them.</p>
             </section>
 
             <section aria-labelledby="operating-heading" class="lg:border-l lg:border-ink lg:pl-12" data-account="operating">

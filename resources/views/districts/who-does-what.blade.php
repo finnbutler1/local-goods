@@ -116,7 +116,7 @@
                 $notBuilt = [
                     ['The merchant fee ships switched off. Nothing is charged, and a test stops any seed from turning it on.', "We haven't talked to merchants about pricing yet, so it stays off until customer discovery tells us what is fair."],
                     ['A payout that was reversed in the Stripe dashboard is not re-sent by us. It is refused, and a person sorts it out in Stripe.', 'A second automatic money path on top of a reversal Stripe itself made is easy to get wrong, and we won\'t add one before judging.'],
-                    ['Unspent credits are never counted as revenue.', "They are the employer's money, and a test checks that revenue doesn't move with the share spent."],
+                    ['Unspent credits are never counted as revenue.', "They are customer funds held for the program: credits not yet given out stay on the employer's balance and can be refunded on request, and credits given to an employee stay in their wallet with no expiry. A test checks that revenue doesn't move with the share spent."],
                     ['No issued card, so no interchange.', 'The MVP has no card program, and we could not verify the interchange rate, so the model keeps it off.'],
                     ['No admin "Cancel" button on a held in-person payment.', 'The shop is the one who knows the customer paid another way, so only the shop can cancel. An admin\'s Deny already returns the credits.'],
                     ['No card preview: a Stripe Issuing test card next to pay codes.', "Issuing switches on instantly in test mode, but funding cards needs a business account behind an identity check, which we chose not to complete with invented details. We won't show a fake card instead."],
@@ -127,7 +127,7 @@
                     ['No BID program fee charged in the product.', 'It is already a lever in the projection model, and a new money path adds risk before judging.'],
                     ['No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source.', 'The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured.'],
                     ['A fee charged during a three-minute check that the fee setting worked is kept as earned income, not given back.', 'On Oct 28, from 12:08 to 12:11 (fee audit log), the merchant fee was switched on live to check that it worked. One sale was charged a few cents. We considered building a way to give it back. We decided that a new money path for so small an amount, this close to the freeze, was the wrong trade. Instead we recorded exactly what happened and treated it as earned. Otherwise Local Goods charges nothing.'],
-                    ['Customer money is never invested or lent, and new purchases never pay old promises.', "Unspent credits are the employer's money. A guard on every money operation refuses anything that would leave less money than has been promised. A check over the whole ledger history reports any moment when that happened."],
+                    ['Customer money is never invested or lent, and new purchases never pay old promises.', "Unspent credits are customer funds held for the program, never Local Goods' money. A guard on every money operation refuses anything that would leave less money than has been promised. A check over the whole ledger history reports any moment when that happened."],
                 ];
             @endphp
             <x-rtable class="mt-6" label="What we chose not to build">
