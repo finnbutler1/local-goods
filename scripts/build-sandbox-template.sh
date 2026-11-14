@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Builds today's "Try it yourself" sandbox template (ADR 0045) by running
 # `php artisan sandbox:build-template` as the web server's user, webapp.
-# Called as root by the Beanstalk postdeploy hook (after the new version is
-# live in /var/app/current) and its confighook twin, because only root can
-# read the Beanstalk environment properties.
+# The scheduler normally builds the template (every five minutes); this is
+# for running the same build by hand as root through Session Manager
+# (`sudo /var/app/current/scripts/build-sandbox-template.sh`), because only
+# root can read the Beanstalk environment properties. No hook calls it.
 #
-# It can NEVER fail a deploy: no "set -e", every step may fail, and it always
-# ends with exit 0. When SANDBOX_ENABLED isn't "true" it starts no PHP at all.
-# The scheduler builds the template too, so a failure here only delays it.
+# It never fails loudly: no "set -e", every step may fail, and it always ends
+# with exit 0. When SANDBOX_ENABLED isn't "true" it starts no PHP at all.
 #
 # Like scripts/run-scheduler.sh, the user switcher is only ever called by its
 # full path (cron's and the hooks' PATH may not include /usr/sbin).

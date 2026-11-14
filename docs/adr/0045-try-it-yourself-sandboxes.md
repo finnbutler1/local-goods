@@ -41,9 +41,11 @@ connection at the new file and the cache at an in-memory store before
 anything runs, so it makes **no query on the live connection**, and it never
 touches `DemoResetter` or the Reset demo gate. It is never built during a web
 request: the scheduler builds it (every five minutes, a no-op once today's
-exists). `scripts/build-sandbox-template.sh` is ready for a Beanstalk
-postdeploy hook; the hook itself waits for Finn's approval, because
-`DemoActivityScheduleTest` asserts there are no postdeploy hooks.
+exists), so after a deploy or switching it on the template appears within
+five minutes; until then Start says it is being prepared. There is no
+postdeploy hook (decided 2026-11-14: `DemoActivityScheduleTest` keeps
+asserting there are none). `scripts/build-sandbox-template.sh` runs the same
+build by hand as webapp if ever needed.
 Without today's template, Start says "The sandbox is being prepared — try
 again in a minute."
 
@@ -99,10 +101,17 @@ deleting the folder is fine. `scripts/run-scheduler.sh` now starts the
 scheduler when `DEMO_ACTIVITY_ENABLED` **or** `SANDBOX_ENABLED` is true (the
 generator still refuses on its own switch).
 
-### Inside a sandbox the visitor is the public
+### Inside a sandbox the visitor is the public, for platform figures only
 
-`MerchantFee::showsFiguresTo` is false in a sandbox, as for judges: no fee,
-Stripe balance or money-in-hand figures. The sweep and solvency-run gates
+`MerchantFee::showsFiguresTo` is false in a sandbox, as for judges. It hides
+platform-level figures only: merchant and platform fee amounts (the merchant's
+Sale / Local Goods fee / You receive lines, fees given back on corrections,
+fees earned on Where the Money Is), money in hand, Local Goods Operating,
+sweeps and Stripe balances. Each role's own money stays visible, because
+seeing it move is the point: the employer's credit balance and purchases, the
+employee's balance and payments, the merchant's sales, what it is owed and
+its payouts, the BID's impact totals, and customer funds on Where the Money
+Is (`SandboxFiguresVisibleTest`). The sweep and solvency-run gates
 refuse in a sandbox (their routes aren't part of it anyway). Every sandbox
 page carries the banner "Sandbox: your own copy. Nothing here touches the live
 demo or Stripe. Deleted after 24 hours." with Start over and Exit, and the

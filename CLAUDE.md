@@ -16,9 +16,9 @@ rules unchanged.
   PDO::getAvailableDrivers()));'`.
 - `storage/app/sandboxes/`: `template-<DC date>.sqlite` (built by
   `sandbox:build-template`, about 0.5 s and 0.8 MB, scheduler every 5 min and
-  `scripts/build-sandbox-template.sh`, whose postdeploy hook awaits Finn's OK
-  (`DemoActivityScheduleTest` forbids postdeploy hooks today); **never in a
-  web request**) and
+  by hand `scripts/build-sandbox-template.sh`; **no postdeploy hook** (Finn,
+  2026-11-14: `DemoActivityScheduleTest` stays as it is); **never in a web
+  request**) and
   `sb-<sha256(token)>.sqlite` + `.json`. The folder is the registry: no
   live-database table. `sandbox:prune` hourly and on every Start.
 - `UseSandbox` (web group, between EncryptCookies and StartSession) +
@@ -30,14 +30,17 @@ rules unchanged.
   sandbox), `CappedClaudeClient` (10 per sandbox, 100/day; over = existing
   fallback hold). `SandboxRoutes::ALLOWED` = money loop only; everything else
   404 (`sandbox.not-here`). In a sandbox `MerchantFee::showsFiguresTo` is
-  false, as for judges. **A new page a sandbox must open goes in
+  false, as for judges: platform figures only (fees, money in hand,
+  Operating, sweeps, Stripe balances); each role's own money stays visible
+  (`SandboxFiguresVisibleTest`). **A new page a sandbox must open goes in
   `SandboxRoutes::ALLOWED`.**
 - `scripts/run-scheduler.sh` starts PHP when `DEMO_ACTIVITY_ENABLED` or
   `SANDBOX_ENABLED` is true. Limits: 10 new per IP per hour (live cache
   store), 1 per browser, 50 at once, 24 h, $5,000 purchase cap.
 - Tests: `SandboxWalkthroughTest` (no live writes, no Stripe),
   `SandboxIsolationTest`, `SandboxLimitsTest`, `SandboxTemplateTest`,
-  `SandboxScheduleScriptsTest`, `PublicClaimsSandboxOnTest`; helper
+  `SandboxScheduleScriptsTest`, `SandboxFiguresVisibleTest`,
+  `PublicClaimsSandboxOnTest`; helper
   `Tests\Concerns\UsesSandboxes`.
 
 **BID annual program fee: no free pilot year, charged in Stripe test mode —

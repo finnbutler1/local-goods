@@ -10,7 +10,7 @@ use Tests\TestCase;
  * The two scripts that keep sandboxes going on the instance (ADR 0045):
  * run-scheduler.sh now also starts the scheduler when SANDBOX_ENABLED is
  * true (hourly cleanup, template build), and build-sandbox-template.sh,
- * called by the postdeploy hook, which must never fail a deploy. Both run
+ * the same build run by hand, which must never fail loudly. Both run
  * here with a fake get-config and a fake user switcher, so nothing real starts.
  */
 class SandboxScheduleScriptsTest extends TestCase
@@ -69,7 +69,7 @@ class SandboxScheduleScriptsTest extends TestCase
         }
     }
 
-    public function test_the_builder_never_fails_a_deploy(): void
+    public function test_the_builder_always_exits_0(): void
     {
         // The build itself fails.
         $this->fake('runuser', 3);
