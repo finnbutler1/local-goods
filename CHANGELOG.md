@@ -3,6 +3,15 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-13: Laravel framework security update
+
+- `laravel/framework` 13.33.0 → 13.42.0, with `laravel/prompts` 0.3.24 →
+  0.3.27 (required by Composer; nothing else changed), for advisory
+  PKSA-yxbx-3c9s-cjt9 / CVE-2026-128083 (low), "Task Output Injection -
+  Concurrency Process". Local Goods doesn't use Laravel's Concurrency
+  feature, so it was not exposed; the update clears the CI security audit.
+  Tinker stays where it is until after judging. No code change.
+
 ## 2026-11-13: Revenue model update (projection and wording only)
 
 - **Districts:** the one-time $2,500 start-up fee in the projection is

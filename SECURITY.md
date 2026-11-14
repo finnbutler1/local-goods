@@ -135,7 +135,9 @@ These live in consoles, not in this repository, so no test can check them. Names
 - **No web application firewall (WAF).** Disproportionate for a test-mode prototype.
 - **No automatic card-dispute handling.** Only card, Apple Pay and Google Pay are enabled and all payments are test mode.
 - **Merchant fee set to 0 during the pilot.** Fee logic is built and tested but unused (`MerchantFeeSeedTest`).
-- **Laravel framework update held until after judging**, to avoid a risky change during the freeze.
+- **`laravel/tinker` update held until after judging**, to avoid a risky change during the freeze (it pulls about 30 packages). The framework update is no longer held: see below.
+
+**Laravel framework security update (2026-11-13).** `laravel/framework` 13.33.0 → 13.42.0 (and `laravel/prompts` 0.3.24 → 0.3.27, which Composer required; nothing else) for advisory PKSA-yxbx-3c9s-cjt9 / CVE-2026-128083 (low), "Task Output Injection - Concurrency Process", affecting 13.0.0 up to 13.40.0. The app doesn't use Laravel's Concurrency feature (no `Concurrency` facade, no `config/concurrency.php`), so it was not exposed, but the CI audit (`composer audit --locked`) fails on any advisory. Full suite, `JudgeReadOnlyTest` (judges allowed GET, HEAD and OPTIONS only, `BlockJudgeWritesMethodsTest`) and the PHP-minimum checks passed.
 
 ## Still open
 
@@ -148,7 +150,7 @@ These live in consoles, not in this repository, so no test can check them. Names
 | No real two-connection race test on MySQL for pay codes and redeem | Only lock-wait tests exist (`MysqlRedemptionLockTest`) | Before live money | No added cost |
 | No database-level guard on negative balances | The check is in application code, inside the locked transaction | Before live money | No added cost |
 | Low-level refund function relies on the cap one layer up | `CreditLedger::refundRedemption` checks only a positive amount; the cap is in `CorrectionLimits` (`EmployeeBalanceSafetyTest` documents it) | Next change to refunds | No added cost |
-| `laravel/framework` and `tinker` updates held | Freeze; they pull about 30 packages | After judging, together | No added cost |
+| `laravel/tinker` update held | Freeze; it pulls about 30 packages | After judging | No added cost |
 | Two-step is optional | See "Decided" | Before real staff accounts | No added cost |
 | No edge firewall (WAF) | See "Decided" | Real traffic or abuse | Cost not checked; AWS lists WAF pricing at https://aws.amazon.com/waf/pricing/ |
 | Changes go straight to `main`; CI passing isn't a required check in the ruleset | One-person project | More contributors, or before live money | Free (a ruleset setting) |

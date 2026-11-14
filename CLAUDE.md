@@ -1321,15 +1321,14 @@ Update this section whenever the milestone changes.
   Apple Pay and Google Pay on purpose (a Dashboard setting, not code; the
   webhook credits only on `payment_intent.succeeded`).
 
-- **Update laravel/framework (13.33.0 → 13.40.0+, Dependabot PR #4) and
-  laravel/tinker (3.0.2 → 3.1.0, PR #2) after the contest, together:** the
-  tinker bump pulls the framework to 13.42.0 and about 30 other packages
-  (Symfony 8.1.x, Guzzle). They were left out of the Nov freeze on purpose.
-  Framework 13.35 routes the QUERY method, which is why
-  `BlockJudgeWrites` now allows a judge GET, HEAD and OPTIONS only
-  (`BlockJudgeWritesMethodsTest`); with that fix `JudgeReadOnlyTest` was the
-  only failure seen in CI. Re-run the full suite and the cached boot smoke
-  after the update.
+- **laravel/framework is on 13.42.0** (2026-11-13, advisory
+  PKSA-yxbx-3c9s-cjt9 / CVE-2026-128083, Concurrency, which the app doesn't
+  use; only `laravel/prompts` came with it). Dependabot PR #4 is superseded.
+  **Update laravel/tinker (3.0.2 → 3.1.0, PR #2) after the contest:** it
+  pulls about 30 other packages (Symfony 8.1.x, Guzzle). Framework 13.35+
+  routes the QUERY method, which is why `BlockJudgeWrites` allows a judge GET,
+  HEAD and OPTIONS only (`BlockJudgeWritesMethodsTest`). Re-run the full suite
+  and the cached boot smoke after the tinker update.
 - Renew `/.well-known/security.txt` before 2027-11-10.
 - Balance-safety gaps left open after `EmployeeBalanceSafetyTest` (tests
   only, no app change was made):
