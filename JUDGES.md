@@ -13,6 +13,19 @@ On [uselocalgoods.com](https://uselocalgoods.com), press **Look around (read-onl
 | 7. Merchant dashboard | Only cleared sales are owed; held ones wait for review. |
 | 8. Corrections | Refunds need a reason, and the books still match. |
 
+## Try it yourself
+
+If **Try it yourself** shows on the home page or on your judge Home, press it for a private copy of the demo where money really moves (it appears only while switched on). You get a role bar to switch between Employer (HR), Employee, Merchant, BID admin and Local Goods reviewer with one click, no passwords, and a "Try this" checklist:
+
+1. Buy credits as the employer (simulated: no card is charged and Stripe is not contacted).
+2. Give some to Jordan Rivera.
+3. Pay at Farragut Grind as the employee.
+4. See the sale and its simulated payout as the merchant.
+5. See the district's impact as the BID admin.
+6. Try a suspicious payment, and 7. decide it in Fraud Review as the Local Goods reviewer.
+
+The fraud check is the real one (up to 10 AI checks per sandbox; after that payments are held for a person). Nothing you do there touches the live demo or Stripe, and your copy is deleted after 24 hours or when you press Exit. Your read-only login is unchanged.
+
 ## Where the evidence lives
 
 - AI results: [/eval](https://uselocalgoods.com/eval), [/eval/merchants](https://uselocalgoods.com/eval/merchants), [README: How the AI was measured](README.md#how-the-ai-was-measured)

@@ -5,6 +5,41 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**"Try it yourself" sandboxes — code done (2026-11-14, ADR 0045), not
+deployed; switched off.** No migration. Fraud prompt, signals, AI input, eval
+data, locks, judge read-only rules (`BlockJudgeWrites` allowlist) and money
+rules unchanged.
+
+- `SANDBOX_ENABLED` (Beanstalk only, default off) and an SQLite PDO driver
+  (`Sandbox::enabled()`); off = no button, every `/sandbox*` 404. Check the
+  driver on the instance first: `php -r 'var_dump(in_array("sqlite",
+  PDO::getAvailableDrivers()));'`.
+- `storage/app/sandboxes/`: `template-<DC date>.sqlite` (built by
+  `sandbox:build-template`, about 0.5 s and 0.8 MB, scheduler every 5 min and
+  `scripts/build-sandbox-template.sh`, whose postdeploy hook awaits Finn's OK
+  (`DemoActivityScheduleTest` forbids postdeploy hooks today); **never in a
+  web request**) and
+  `sb-<sha256(token)>.sqlite` + `.json`. The folder is the registry: no
+  live-database table. `sandbox:prune` hourly and on every Start.
+- `UseSandbox` (web group, between EncryptCookies and StartSession) +
+  `Sandbox::activate/deactivate`: default connection `sandbox`, session and
+  main cache pinned to the live connection, own cache store in the file,
+  session cookie `lg_sandbox_session`, guard `sandbox`
+  (`SandboxUserProvider`: sandbox only, `@sandbox.invalid` only, no
+  passwords), Stripe keys blanked (`StripeNotices::quietly` refuses in a
+  sandbox), `CappedClaudeClient` (10 per sandbox, 100/day; over = existing
+  fallback hold). `SandboxRoutes::ALLOWED` = money loop only; everything else
+  404 (`sandbox.not-here`). In a sandbox `MerchantFee::showsFiguresTo` is
+  false, as for judges. **A new page a sandbox must open goes in
+  `SandboxRoutes::ALLOWED`.**
+- `scripts/run-scheduler.sh` starts PHP when `DEMO_ACTIVITY_ENABLED` or
+  `SANDBOX_ENABLED` is true. Limits: 10 new per IP per hour (live cache
+  store), 1 per browser, 50 at once, 24 h, $5,000 purchase cap.
+- Tests: `SandboxWalkthroughTest` (no live writes, no Stripe),
+  `SandboxIsolationTest`, `SandboxLimitsTest`, `SandboxTemplateTest`,
+  `SandboxScheduleScriptsTest`, `PublicClaimsSandboxOnTest`; helper
+  `Tests\Concerns\UsesSandboxes`.
+
 **BID annual program fee: no free pilot year, charged in Stripe test mode —
 code done (2026-11-13, ADR 0044), not deployed; switched off.** One additive
 migration (`2026_11_15_000001_add_bid_program_fee`, snapshot

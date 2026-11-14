@@ -3,6 +3,24 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: "Try it yourself" sandboxes (switched off)
+
+- **A private copy of the demo per visitor.** "Try it yourself" on the
+  landing page and the judge Home (only while `SANDBOX_ENABLED` is on) makes
+  an SQLite copy of the demo. A role bar switches between Employer (HR),
+  Employee, Merchant, BID admin and Local Goods reviewer with one click, and a
+  "Try this" checklist walks through buying, giving, paying, the payout, the
+  impact and a held payment decided by a person.
+- **Nothing touches the live site.** The live database is never written (a
+  test watches it through the whole walkthrough), Stripe is never called,
+  and live pages and commands never open a sandbox. Payments use the
+  simulated path; credits still go through the real ledger, solvency and
+  fraud code.
+- **Limits:** 10 new per IP per hour, 1 per browser, 50 at once, 24 hours,
+  $5,000 per purchase, 10 AI checks per sandbox and 100 a day (then held
+  for review). Cleanup runs hourly. No migration
+  ([ADR 0045](docs/adr/0045-try-it-yourself-sandboxes.md)).
+
 ## 2026-11-13: BID annual program fee, charged in Stripe test mode (switched off)
 
 - **No free pilot year.** Every district, the Golden Triangle included, pays

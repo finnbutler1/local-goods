@@ -71,6 +71,18 @@ reasonable time to fix it before sharing it, I'll credit you if you'd like.
 - **The demo employer's purchases are capped** per purchase. Where: `config/demo.php`. Proved by: `DemoPurchaseCapTest`.
 - **Rate limits** on sign-in (5 a minute), other auth forms, redemptions, feedback and magic links. Where: `app/Providers/FortifyServiceProvider.php`, `app/Providers/AppServiceProvider.php`. Proved by: `RateLimitsTest`.
 
+### "Try it yourself" sandboxes (ADR 0045)
+
+Off unless `SANDBOX_ENABLED` is true (and PHP has SQLite). Each visitor gets a private copy of the demo as its own SQLite file; money moves through the real ledger, solvency and fraud code inside it only.
+
+- **Never writes the live database.** A sandbox request runs with the default connection pointed at its own file; the session and the main cache stay on the live connection by name; nothing about sandboxes is stored in the live database (the folder is the list). Where: `app/Services/Sandbox/Sandbox.php`, `app/Http/Middleware/UseSandbox.php`. Proved by: `SandboxWalkthroughTest` (the whole checklist with a listener that fails on any write to the live connection, plus a control write that it catches).
+- **Never calls Stripe.** The Stripe keys are blanked for the request, so every caller takes its simulated path, and `StripeNotices::quietly` (every Stripe call passes through it) refuses while a sandbox is active. Where: `Sandbox.php`, `app/Services/Payments/StripeNotices.php`. Proved by: `SandboxWalkthroughTest` (Stripe keys set, fake gateway: zero calls).
+- **The role bar can't work on the live site.** It needs a live sandbox (404 otherwise); the sandbox guard finds users only inside a sandbox, only from its file, only with a `@sandbox.invalid` email, never by password; a forged, unsigned or ended cookie opens nothing. Sandbox pages use their own session cookie, so a live login (a judge's included) is never read there. Where: `app/Services/Sandbox/SandboxUserProvider.php`, `app/Http/Middleware/RequireSandbox.php`. Proved by: `SandboxIsolationTest`.
+- **Only the money loop opens** inside a sandbox; every `/admin` page, Your account, sign-in, feedback and the evals are 404. Fee and balance figures are hidden, as for judges. Where: `app/Services/Sandbox/SandboxRoutes.php`, `app/Support/MerchantFee.php`. Proved by: `SandboxIsolationTest`, `PublicClaimsSandboxOnTest`.
+- **Live pages, commands and the scheduler never open a sandbox file**; cleanup only lists and deletes files. Proved by: `SandboxIsolationTest` (`test_live_pages_and_commands_never_open_a_sandbox_file`).
+- **The template build makes no query on the live connection** and leaves Reset demo blocked in production. Where: `app/Services/Sandbox/SandboxTemplateBuilder.php`. Proved by: `SandboxTemplateTest`.
+- **Limits:** 10 new sandboxes per IP per hour, 1 per browser, 50 at once, 24 hours, $5,000 per purchase; Redemption Fraud Detection 10 calls per sandbox and 100 a day across all sandboxes, after which payments are held by the existing fail-closed path (prompt and input unchanged). Where: `config/sandbox.php`, `app/Services/Sandbox/CappedClaudeClient.php`. Proved by: `SandboxLimitsTest`, `SandboxWalkthroughTest` (the AI input equals what the live signal code computes).
+
 ### Data and privacy
 
 - **Merchants see initials only; the BID sees totals only.** Where: views and `Employee::initials()`. Proved by: `EmployeeNamePrivacyTest` (opens every page as every role).
@@ -109,6 +121,7 @@ reasonable time to fix it before sharing it, I'll credit you if you'd like.
 
 These live in consoles, not in this repository, so no test can check them. Names only; values are never written here.
 
+- **`SANDBOX_ENABLED`** (Beanstalk only): unset = no sandboxes. Before setting it, confirm SQLite on the instance: `php -r 'var_dump(in_array("sqlite", PDO::getAvailableDrivers()));'` should print `bool(true)`.
 - **Beanstalk environment properties:** `EMPLOYER_PLATFORM_FEE_ENABLED` on, `PLATFORM_FEE_PERCENT` unset, `PUBLIC_JUDGE_URL` set, `LOG_CHANNEL`, `CLOUDFRONT_ORIGIN_SECRET` set. Checked by Finn on 2026-11-12. Check: Elastic Beanstalk → Configuration → Software, then `/where-the-money-is` and the employer page.
 - **CloudFront origin sends the `X-Origin-Verify` header.** Checked by Finn on 2026-11-12. Check: `scripts/security-probes.sh <raw-host>` says the raw address is 403 and the site itself loads.
 - **Stripe Dashboard:** payment methods limited to card, Apple Pay and Google Pay; verified domain. Checked by Finn on 2026-11-12. Check: Stripe Dashboard → Settings → Payment methods and Payment method domains.
@@ -149,6 +162,7 @@ These live in consoles, not in this repository, so no test can check them. Names
 | CSP not enforced | Enforcing could break pages during judging | After the freeze, once reports show no breakage | No added cost |
 | Card disputes and returned payments not handled | Test mode only | Before live keys or any delayed payment method | No added cost |
 | Rate limits count per server | One server, cache-based; counts restart on deploy | A second server | No added cost |
+| Sandboxes live on one server's disk | One instance; a redeploy deletes them | A second server | No added cost |
 | No real two-connection race test on MySQL for pay codes and redeem | Only lock-wait tests exist (`MysqlRedemptionLockTest`) | Before live money | No added cost |
 | No database-level guard on negative balances | The check is in application code, inside the locked transaction | Before live money | No added cost |
 | Low-level refund function relies on the cap one layer up | `CreditLedger::refundRedemption` checks only a positive amount; the cap is in `CorrectionLimits` (`EmployeeBalanceSafetyTest` documents it) | Next change to refunds | No added cost |
@@ -160,4 +174,4 @@ These live in consoles, not in this repository, so no test can check them. Names
 
 ## Last updated
 
-2026-11-12
+2026-11-14
