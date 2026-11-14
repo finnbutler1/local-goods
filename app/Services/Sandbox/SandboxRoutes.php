@@ -75,7 +75,7 @@ final class SandboxRoutes
         ['Buy credits', 'Under Buy credits, buy up to $5,000 of credits. The payment is simulated: no card is charged and Stripe is not contacted.', 'employer', 'employer.dashboard'],
         ['Give credits to an employee', 'Under Give credits, give some to Jordan Rivera.', 'employer', 'employer.dashboard'],
         ['Pay at a merchant', 'Spend credits at Farragut Grind: pick items from its menu, or get a pay code to pay in person.', 'employee', 'employee.wallet'],
-        ['See the merchant\'s payout', 'The sale shows under recent payments once the fraud check clears it, with its simulated payout.', 'merchant', 'merchant.dashboard'],
+        ['See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated)', 'Once the fraud check clears the sale, it shows under Redemptions received and its amount is added to Owed, simulated.', 'merchant', 'merchant.dashboard'],
         ['See the district\'s impact', 'Spending at independent merchants in the district, counted from the ledger.', 'bid_admin', 'bid-admin.impact'],
         ['Try a suspicious payment', 'Press "Try a suspicious redemption", then confirm it on the wallet. The AI usually holds it, but it may clear it.', 'employee', 'employee.demo-tools'],
         ['Decide a held payment', 'In Fraud Review, approve or deny the held payment, with a reason. Approving pays the merchant (simulated).', 'reviewer', 'bid-admin.dashboard'],

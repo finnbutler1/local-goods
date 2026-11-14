@@ -73,7 +73,8 @@ class SandboxWalkthroughTest extends TestCase
         $this->startSandbox();
         $this->sandboxGet(route('sandbox.home'))->assertOk()
             ->assertSee('Sandbox: your own copy. Nothing here touches the live demo or Stripe. Deleted after 24 hours.')
-            ->assertSee('Try This')->assertSee('Switch to </span>Employer (HR)', false);
+            ->assertSee('Try This')->assertSee('Switch to </span>Employer (HR)', false)
+            ->assertSee('See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated)');
 
         // 1. Buy credits, simulated, with the label.
         $this->sandboxGet(route('employer.dashboard'))->assertOk()

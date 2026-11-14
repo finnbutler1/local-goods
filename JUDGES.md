@@ -20,7 +20,7 @@ If **Try it yourself** shows on the home page or on your judge Home, press it fo
 1. Buy credits as the employer (simulated: no card is charged and Stripe is not contacted).
 2. Give some to Jordan Rivera.
 3. Pay at Farragut Grind as the employee.
-4. See the sale and its simulated payout as the merchant.
+4. See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated).
 5. See the district's impact as the BID admin.
 6. Try a suspicious payment, and 7. decide it in Fraud Review as the Local Goods reviewer.
 
