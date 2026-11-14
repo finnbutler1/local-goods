@@ -14,6 +14,11 @@
                         Thank you for reviewing Local Goods. Your login is read-only, so you can open any page but can't change anything.
                         Use the Feedback button on any page to tell me what works and what doesn't.
                     </p>
+                    @if (\App\Services\Sandbox\Sandbox::enabled())
+                        {{-- ADR 0045: a private copy where money really moves; this login stays read-only. --}}
+                        <p class="mt-4 max-w-[42rem]">Want to move money yourself? Get a private copy of the demo, separate from the live one.</p>
+                        <x-button variant="accent" class="mt-3" :href="route('sandbox.show')">Try it yourself</x-button>
+                    @endif
                 </div>
             </div>
         </header>

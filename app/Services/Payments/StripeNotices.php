@@ -2,7 +2,9 @@
 
 namespace App\Services\Payments;
 
+use App\Services\Sandbox\Sandbox;
 use Illuminate\Support\Facades\Log;
+use LogicException;
 
 /**
  * Stripe's informational notices must never crash a request.
@@ -30,6 +32,13 @@ class StripeNotices
      */
     public static function quietly(string $what, callable $call): mixed
     {
+        // Every Stripe call passes through here (NoticeSafeStripeGateway). A
+        // sandbox (ADR 0045) blanks the Stripe keys so nothing reaches this;
+        // if something ever did, it stops here before Stripe is contacted.
+        if (Sandbox::active()) {
+            throw new LogicException("Stripe is never called from a sandbox ({$what}).");
+        }
+
         // No level mask on purpose: with one, PHP would send every other error
         // to its built-in handler instead of Laravel's. Anything that isn't a
         // user-level notice goes on to the handler that was there before.

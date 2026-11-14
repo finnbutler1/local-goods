@@ -296,10 +296,16 @@
                     <p class="mt-1 text-sm text-muted">
                         @if ($stripe)
                             Enter an amount and pay by card right here (Stripe test mode). The credits are ready to give once Stripe confirms the payment.
+                        @elseif (\App\Services\Sandbox\Sandbox::active())
+                            The credits are added straight away.
                         @else
                             Stripe isn't connected on this server, so buying is simulated: the credits are added straight away with no real money.
                         @endif
                     </p>
+                    @if (\App\Services\Sandbox\Sandbox::active())
+                        {{-- ADR 0045: a sandbox never contacts Stripe. --}}
+                        <p data-sandbox-simulated class="mt-2 rounded-lg border-2 border-accent px-3 py-2 font-semibold">Simulated payment: no card is charged and Stripe is not contacted.</p>
+                    @endif
                     @include('partials.customer-funds-note', ['stripe' => $stripe])
                     @php
                         $feeHint = PlatformFee::enabled() ? ' A '.PlatformFee::label().' platform fee is added on top.' : '';

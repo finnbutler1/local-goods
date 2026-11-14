@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\BidImpactMetrics;
 use App\Services\Fraud\FraudEvalReport;
+use App\Services\Sandbox\Sandbox;
 use App\Support\PublicJudgeLink;
 use Illuminate\View\View;
 
@@ -26,6 +27,8 @@ class LandingController extends Controller
             'publicJudgeUrl' => auth()->guest() ? $publicJudgeLink->url() : null,
             // The shared public judge account, back on the landing page: a plain link to its own home, no token.
             'continueLooking' => auth()->user()?->isPublicReviewer() === true,
+            // "Try it yourself" (ADR 0045): only while sandboxes are on.
+            'sandbox' => Sandbox::enabled(),
         ]);
     }
 }

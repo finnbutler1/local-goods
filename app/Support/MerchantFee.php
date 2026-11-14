@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\MerchantFeeChange;
 use App\Models\Redemption;
 use App\Models\User;
+use App\Services\Sandbox\Sandbox;
 
 /**
  * The merchant transaction fee (ADR 0029): a percent in basis points plus an
@@ -86,7 +87,8 @@ final class MerchantFee
     /** Fee amounts and rates are shown to staff, merchants and employers; never to judges, who count as the public. */
     public static function showsFiguresTo(?User $user): bool
     {
-        return $user !== null && ! $user->isReadOnly();
+        // Inside a "Try it yourself" sandbox (ADR 0045) the visitor is the public, like a judge.
+        return $user !== null && ! $user->isReadOnly() && ! Sandbox::active();
     }
 
     /** 250 → "2.5%" */

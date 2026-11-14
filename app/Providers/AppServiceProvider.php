@@ -9,6 +9,9 @@ use App\Services\Geo\Geocoder;
 use App\Services\Payments\NoticeSafeStripeGateway;
 use App\Services\Payments\StripeGateway;
 use App\Services\Payments\StripeSdkGateway;
+use App\Services\Sandbox\Sandbox;
+use App\Services\Sandbox\SandboxFiles;
+use App\Services\Sandbox\SandboxUserProvider;
 use App\Services\Solvency\SolvencyGuard;
 use App\Support\AppUrl;
 use App\Support\DemoMailGuard;
@@ -18,6 +21,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -45,6 +49,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(StripeGateway::class, fn ($app) => new NoticeSafeStripeGateway($app->make(StripeSdkGateway::class)));
         // DC's Master Address Repository (ADR 0031); tests fake its HTTP answers.
         $this->app->bind(Geocoder::class, DcMarGeocoder::class);
+        // "Try it yourself" sandboxes (ADR 0045): one per request at most.
+        $this->app->singleton(Sandbox::class);
+        $this->app->singleton(SandboxFiles::class);
     }
 
     /**
@@ -65,6 +72,9 @@ class AppServiceProvider extends ServiceProvider
         // environment (DemoMailGuard). No switch turns this off.
         Event::listen(MessageSending::class, [DemoMailGuard::class, 'onMessageSending']);
         Event::listen(NotificationSending::class, [DemoMailGuard::class, 'onNotificationSending']);
+
+        // The sandbox guard's users (ADR 0045): only sandbox logins, only inside a sandbox.
+        Auth::provider('sandbox', fn ($app, array $config) => new SandboxUserProvider($app['hash'], $config['model']));
 
         // Who may change what. Judges pass none of these; BlockJudgeWrites
         // also stops them at the door, so both layers must agree.
@@ -89,9 +99,10 @@ class AppServiceProvider extends ServiceProvider
         // The merchant fee setting (ADR 0029) changes money on every new sale: the platform operator only.
         Gate::define('change-merchant-fee', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         // Running the solvency check by hand (ADR 0033) reads the ledger and stores the result: the platform operator only.
-        Gate::define('run-solvency-check', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+        // Neither inside a sandbox (ADR 0045): those routes are not part of it.
+        Gate::define('run-solvency-check', fn (User $user) => $user->hasRole(Role::PlatformAdmin) && ! Sandbox::active());
         // Moving earned money to Local Goods Operating (ADR 0034): platform admin only.
-        Gate::define('sweep-operating-funds', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
+        Gate::define('sweep-operating-funds', fn (User $user) => $user->hasRole(Role::PlatformAdmin) && ! Sandbox::active());
         // The BID partnership (ADR 0031): the BID admin or the platform operator changes it; judges read it.
         // The BID annual program fee (ADR 0044): the BID pays it (Stripe test mode); the platform operator sets
         // the district's size and start date and writes notes. Judges never pay, set or note.

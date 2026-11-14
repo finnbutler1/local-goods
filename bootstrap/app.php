@@ -5,15 +5,19 @@ use App\Http\Middleware\EndReviewerSessions;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\KeepPersonalContactsToAdjudication;
 use App\Http\Middleware\RequireCloudFrontOrigin;
+use App\Http\Middleware\RequireSandbox;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackLastSeen;
 use App\Http\Middleware\TrustCloudFront;
 use App\Http\Middleware\UseAppUrl;
+use App\Http\Middleware\UseSandbox;
+use App\Services\Sandbox\Sandbox;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -31,8 +35,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // In production, only CloudFront may reach Beanstalk (kill switch: ORIGIN_VERIFY_ENFORCE).
         $middleware->prepend(RequireCloudFrontOrigin::class);
         $middleware->replace(TrustProxies::class, TrustCloudFront::class);
-        $middleware->alias(['role' => EnsureUserHasRole::class]);
-        $middleware->appendToGroup('web', [EndReviewerSessions::class, BlockJudgeWrites::class, KeepPersonalContactsToAdjudication::class, TrackLastSeen::class, SecurityHeaders::class]);
+        $middleware->alias(['role' => EnsureUserHasRole::class, 'sandbox' => RequireSandbox::class]);
+        // "Try it yourself" sandboxes (ADR 0045): after cookies are decrypted, before the session starts.
+        $middleware->prependToPriorityList(before: StartSession::class, prepend: UseSandbox::class);
+        $middleware->redirectGuestsTo(fn (Request $request) => Sandbox::active() ? route('sandbox.home') : route('login'));
+        $middleware->appendToGroup('web', [UseSandbox::class, EndReviewerSessions::class, BlockJudgeWrites::class, KeepPersonalContactsToAdjudication::class, TrackLastSeen::class, SecurityHeaders::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // A pay code is never sent back to the page as old input (ADR 0026).

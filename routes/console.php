@@ -4,6 +4,9 @@ use App\Models\Bid;
 use App\Models\District;
 use App\Models\Merchant;
 use App\Services\DemoResetter;
+use App\Services\Sandbox\Sandbox;
+use App\Services\Sandbox\SandboxFiles;
+use App\Services\Sandbox\SandboxTemplateBuilder;
 use App\Support\RetiredDemoAccounts;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoAccountSeeder;
@@ -88,3 +91,35 @@ Schedule::command('demo-activity:tick')
     ->between('07:00', '19:00')
     ->withoutOverlapping(15)
     ->appendOutputTo(storage_path('logs/demo-activity.log'));
+
+// "Try it yourself" sandboxes (ADR 0045). Builds today's template: a fresh
+// SQLite file with the demo seed and one login per role. Run by the
+// postdeploy hook (scripts/build-sandbox-template.sh) and below; never during
+// a web request. Does nothing while sandboxes are off, unless --force.
+Artisan::command('sandbox:build-template {--force : Build even if today\'s exists or sandboxes are off}', function (SandboxTemplateBuilder $builder) {
+    if (! Sandbox::enabled() && ! $this->option('force')) {
+        $this->info('Sandboxes are off (SANDBOX_ENABLED, or no SQLite driver): nothing built.');
+
+        return 0;
+    }
+
+    $result = $builder->build((bool) $this->option('force'));
+    $size = number_format($result['bytes'] / 1048576, 1).' MB';
+    $this->info($result['built']
+        ? "Built today's sandbox template in {$result['seconds']} s ({$size})."
+        : "Today's sandbox template is already there ({$size}).");
+
+    return 0;
+})->purpose('Build today\'s sandbox template from the demo seed (never touches the live database)');
+
+// Deletes expired sandboxes and old templates. Only lists and deletes files.
+Artisan::command('sandbox:prune', function (SandboxFiles $files) {
+    $result = $files->prune();
+    $this->info("Deleted {$result['sandboxes']} expired sandbox(es) and {$result['templates']} old template(s).");
+
+    return 0;
+})->purpose('Delete expired sandboxes and old sandbox templates');
+
+Schedule::command('sandbox:prune')->hourly()->withoutOverlapping(30);
+// Every five minutes so a new day's template appears soon after midnight (a no-op once it exists).
+Schedule::command('sandbox:build-template')->everyFiveMinutes()->withoutOverlapping(10);

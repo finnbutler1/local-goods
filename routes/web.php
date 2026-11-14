@@ -43,6 +43,7 @@ use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\Money\WhereTheMoneyIsController;
 use App\Http\Controllers\Projections\BusinessModelController;
 use App\Http\Controllers\Projections\ProjectionController;
+use App\Http\Controllers\SandboxController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\VersionController;
@@ -287,6 +288,19 @@ Route::middleware('auth')->group(function () {
             Route::post('/publish', [AdjudicationController::class, 'publish'])->name('publish');
             Route::post('/close', [AdjudicationController::class, 'close'])->name('close');
         });
+    });
+});
+
+// "Try it yourself" sandboxes (ADR 0045). 404 unless SANDBOX_ENABLED is true and PHP has SQLite.
+// They run on the sandbox's own session (UseSandbox), never the live login's. The role bar,
+// the checklist, Start over and Exit work only inside a live sandbox (sandbox:active).
+Route::middleware('sandbox:enabled')->prefix('sandbox')->name('sandbox.')->group(function () {
+    Route::get('/', [SandboxController::class, 'show'])->name('show');
+    Route::post('/start', [SandboxController::class, 'start'])->middleware('throttle:20,1,sandbox.start')->name('start');
+    Route::middleware('sandbox:active')->group(function () {
+        Route::get('/home', [SandboxController::class, 'home'])->name('home');
+        Route::post('/role', [SandboxController::class, 'role'])->middleware('throttle:60,1,sandbox.role')->name('role');
+        Route::post('/exit', [SandboxController::class, 'exit'])->middleware('throttle:30,1,sandbox.exit')->name('exit');
     });
 });
 

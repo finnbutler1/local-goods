@@ -31,6 +31,15 @@
         $nav = $judgeHome + $nav;
         $groups = ['judge' => ['label' => null, 'items' => $judgeHome]] + $groups;
     }
+    // Inside a "Try it yourself" sandbox (ADR 0045): only the pages a sandbox opens, with its checklist first.
+    $inSandbox = \App\Services\Sandbox\Sandbox::active();
+    if ($inSandbox) {
+        $sandboxOnly = fn (array $items) => array_filter($items, fn ($item) => \App\Services\Sandbox\SandboxRoutes::allows($item['route']));
+        $tryThis = ['sandbox' => ['label' => 'Try This', 'short' => 'Try', 'route' => 'sandbox.home', 'icon' => 'M4.5 12.75l6 6 9-13.5']];
+        $groups = array_filter(array_map(fn ($group) => ['label' => count($sandboxOnly($group['items'])) > 1 ? $group['label'] : null, 'items' => $sandboxOnly($group['items'])], $groups), fn ($group) => $group['items'] !== []);
+        $groups = ['sandbox' => ['label' => null, 'items' => $tryThis]] + $groups;
+        $nav = $tryThis + $sandboxOnly($nav);
+    }
     // Unread (status New) feedback, shown on the platform admin's Feedback item.
     $unreadFeedback = $role === \App\Enums\Role::PlatformAdmin && ! $viewAs
         ? \App\Models\Feedback::where('status', \App\Enums\FeedbackStatus::New)->count() : 0;
@@ -39,13 +48,13 @@
     $menuIcon = 'M4 7h16M4 12h16M4 17h16';
     if ($grouped) {
         // Phone bar: Home, the role's two pinned pages, and a Menu button with every group.
-        $tabNav = array_intersect_key($nav, array_flip(['home', ...$menuRole->pinnedNavigation()]));
+        $tabNav = array_intersect_key($nav, array_flip([$inSandbox ? 'sandbox' : 'home', ...$menuRole->pinnedNavigation()]));
         $tabMore = [];
         $sideNav = $sideMore = [];
     } else {
         // Flat menus (ADR 0025): the sidebar shows up to 5 items and the phone tab bar
         // up to 4. Past that, the first in this list stay and the rest go into a More menu.
-        $priority = ['dashboard', 'wallet', 'judge-home', 'menu', 'business-model'];
+        $priority = ['sandbox', 'dashboard', 'wallet', 'judge-home', 'menu', 'business-model'];
         $split = function (array $items, int $max) use ($priority): array {
             if (count($items) <= $max) {
                 return [$items, []];
@@ -127,6 +136,9 @@
     </aside>
 
     <div class="pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:pl-64">
+        @if ($inSandbox)
+            @include('partials.sandbox-bar')
+        @endif
         {{-- Top bar --}}
         <header class="sticky top-0 z-20 border-b-2 border-frame bg-page">
             <div class="wrap flex min-h-16 items-center justify-between gap-4 py-2.5">
@@ -163,6 +175,17 @@
                                 <x-badge tone="primary" :wrap="true" class="mt-1"><span class="sr-only">Role: </span>{{ $role->label() }}@if ($viewAs) · viewing as {{ $viewAs->label() }}@endif</x-badge>
                             </div>
                             <ul class="mt-1">
+                                @if ($inSandbox)
+                                    @if ($role === \App\Enums\Role::Employee)
+                                        <li><a href="{{ route('employee.demo-tools') }}" class="menu-item" @if ($active === 'demo-tools') aria-current="page" @endif>Demo Tools</a></li>
+                                    @endif
+                                    <li>
+                                        <form method="POST" action="{{ route('sandbox.exit') }}" data-busy="Leaving…">
+                                            @csrf
+                                            <button type="submit" class="menu-item">Exit Sandbox</button>
+                                        </form>
+                                    </li>
+                                @else
                                 <li><a href="{{ route('account') }}" class="menu-item" @if ($active === 'account') aria-current="page" @endif>Your Account</a></li>
                                 @if (! $votingOnly && ($viewAs ?? $role) === \App\Enums\Role::Employee)
                                     <li><a href="{{ route('employee.demo-tools') }}" class="menu-item" @if ($active === 'demo-tools') aria-current="page" @endif>Demo Tools</a></li>
@@ -174,6 +197,7 @@
                                         <button type="submit" class="menu-item">Log Out</button>
                                     </form>
                                 </li>
+                                @endif
                             </ul>
                         </x-menu>
                     @else
@@ -204,7 +228,7 @@
         </footer>
     </div>
 
-    @if ($user)
+    @if ($user && ! $inSandbox)
         <x-feedback-widget />
     @endif
 

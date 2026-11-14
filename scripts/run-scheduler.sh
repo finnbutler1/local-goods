@@ -7,10 +7,11 @@
 # (exits 1) or the scheduler itself fails (its exit code), so a failure shows
 # in storage/logs/scheduler.log instead of passing silently.
 #
-# Today the scheduler only runs the demo activity generator, so when
-# DEMO_ACTIVITY_ENABLED isn't "true" this stops before starting PHP at all.
-# It reads the properties fresh every minute: setting DEMO_ACTIVITY_ENABLED
-# to false in Beanstalk stops the next run.
+# The scheduler runs the demo activity generator and the sandbox cleanup
+# (ADR 0045), so unless DEMO_ACTIVITY_ENABLED or SANDBOX_ENABLED is "true"
+# this stops before starting PHP at all. It reads the properties fresh every
+# minute: setting both to false in Beanstalk stops the next run. The
+# generator still refuses on its own unless DEMO_ACTIVITY_ENABLED is true.
 #
 # Cron's PATH is only /usr/bin:/bin, which left "runuser: command not found"
 # on Amazon Linux (it lives in /usr/sbin). So the PATH is set here, and the
@@ -50,10 +51,13 @@ eval "$("$GET_CONFIG" environment 2>/dev/null | php -r '
     }
 ' 2>/dev/null)" 2>/dev/null || exit 0
 
-case "$(printf '%s' "${DEMO_ACTIVITY_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')" in
-    true) ;;
-    *) exit 0 ;;
-esac
+is_true() {
+    [ "$(printf '%s' "${1:-false}" | tr '[:upper:]' '[:lower:]')" = "true" ]
+}
+
+if ! is_true "${DEMO_ACTIVITY_ENABLED:-false}" && ! is_true "${SANDBOX_ENABLED:-false}"; then
+    exit 0
+fi
 
 # Each keeps the exported environment (-m / -E): Laravel reads its settings from it.
 if switcher="$(first_executable "$RUNUSER_PATHS")"; then

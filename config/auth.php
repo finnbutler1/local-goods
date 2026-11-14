@@ -42,6 +42,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // "Try it yourself" sandboxes (ADR 0045). Used only inside a sandbox
+        // (Sandbox::activate); its provider finds nobody anywhere else.
+        'sandbox' => [
+            'driver' => 'session',
+            'provider' => 'sandbox_users',
+        ],
     ],
 
     /*
@@ -65,6 +72,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'sandbox_users' => [
+            'driver' => 'sandbox',
+            'model' => User::class,
         ],
 
         // 'users' => [

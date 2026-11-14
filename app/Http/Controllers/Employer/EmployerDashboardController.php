@@ -13,6 +13,7 @@ use App\Services\EmployerMetrics;
 use App\Services\EmployerProgram;
 use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
+use App\Services\Sandbox\Sandbox;
 use App\Support\DemoLogins;
 use App\Support\EmployerPlatformFee;
 use App\Support\Money;
@@ -284,7 +285,8 @@ class EmployerDashboardController extends Controller
         // The shared demo employer login has a smaller cap, so a judge can't add
         // $999,999.99 and distort Where the Money Is. Checked before anything is written.
         $cap = (int) config('demo.employer_purchase_cap_cents');
-        if (DemoLogins::isSharedLogin($request->user()) && $cents > $cap) {
+        // A sandbox employer (ADR 0045) has the same cap.
+        if ((DemoLogins::isSharedLogin($request->user()) || Sandbox::active()) && $cents > $cap) {
             throw ValidationException::withMessages(['purchase_amount' => 'The demo employer can buy up to '.Money::format($cap).' at a time.']);
         }
 
