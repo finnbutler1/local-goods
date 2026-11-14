@@ -3,6 +3,25 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-13: Revenue model update (projection and wording only)
+
+- **Districts:** the one-time $2,500 start-up fee in the projection is
+  replaced by an annual BID program fee by district size (Small $1,000,
+  Medium $2,500, Large $5,000 a year). The Golden Triangle is Large and is
+  free for its first year; other districts use Medium from their launch
+  month. Planned, not charged in the app.
+- **Merchants:** still no fee during the pilot; the page now says why a
+  later fee waits until the program shows it brings them new sales.
+- **Unspent credits:** a new line, "Unspent credits (estimate, not counted
+  as revenue)", about 8% of credits issued, shown by year next to revenue
+  and never counted in revenue, profit or the break-even month. The pages
+  now say exactly what the product does with unspent credits (they don't
+  expire; credits not yet given out can be refunded if the employer asks)
+  and that Local Goods charges no dormancy fees.
+- Base case: DC-wide break-even moves from month 56 to month 54. No fee
+  code, ledger, Stripe or database change
+  ([ADR 0043](docs/adr/0043-bid-program-fee-and-unspent-credit-estimate.md)).
+
 ## 2026-11-12: Employer platform fee switched on in Stripe test mode
 
 - **Switched on on the live demo, in Stripe test mode: no real money**

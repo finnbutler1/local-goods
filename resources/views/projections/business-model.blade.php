@@ -131,7 +131,8 @@
         <x-station-sign heading-id="pnl-heading">Projected P&amp;L</x-station-sign>
         <p class="mt-4 max-w-[52rem] text-sm text-muted">
             {{ $chosen['name'] }}, {{ $caseName }} case, by year. Revenue is only Local Goods' own fees. The credits employers buy pass through to
-            merchants and are customer funds, never revenue; credits left unspent stay the employer's money.
+            merchants and are customer funds, never revenue. Unspent credits are shown under revenue as an estimate and are not counted
+            in revenue, EBITDA or the break-even month.
         </p>
         <x-rtable class="mt-4" label="Projected P&L table">
             <table data-rtable="stack" class="w-full min-w-2xl text-left text-sm">
@@ -154,6 +155,12 @@
                             <th scope="row" data-primary class="py-2.5 pr-4 font-bold">{{ $totalLabel }}</th>
                             @foreach ($years as $y)<td data-label="Year {{ $y['year'] }}" class="{{ $td }} font-bold">{{ Figures::dollars($y[$total]) }}</td>@endforeach
                         </tr>
+                        @if ($total === 'revenue')
+                            <tr class="border-b-2 border-dashed border-line" data-unspent-estimate>
+                                <th scope="row" data-primary class="py-2.5 pr-4 font-normal italic">Unspent credits (estimate, not counted as revenue)</th>
+                                @foreach ($years as $y)<td data-label="Year {{ $y['year'] }}" class="{{ $td }} italic text-muted">{{ Figures::dollars($y['unspent_estimate']) }}</td>@endforeach
+                            </tr>
+                        @endif
                         @if ($total === 'cost_of_revenue')
                             <tr class="bg-band">
                                 <th scope="row" data-primary class="py-2.5 pr-4 pl-2 font-bold">Gross profit (margin)</th>
@@ -172,6 +179,14 @@
                 </tbody>
             </table>
         </x-rtable>
+        <p class="mt-4 max-w-[52rem] text-sm" data-unspent-estimate-note>
+            <span class="font-semibold">Unspent credits (estimate, not counted as revenue):</span>
+            {{ Figures::percent($projection->assumptions->value('utilization'), 0) }} spent in the month it's given; about
+            {{ Figures::percent(min($projection->assumptions->value('unspent_never_spent_share'), 1 - $projection->assumptions->value('utilization')), 0) }} never spent.
+            The rest is spent in later months.
+            Depending on state law, unspent balances may belong to the employer, the employee or the state (unclaimed property), so Local Goods doesn't rely on them.
+            Local Goods charges no dormancy fees.
+        </p>
     </section>
 
     <section aria-labelledby="compare-heading" class="stop">
@@ -226,7 +241,7 @@
                 <x-station-sign heading-id="funds-heading">Customer funds held: a promise to pay</x-station-sign>
                 <p class="mt-4 text-sm text-muted">
                     This is money that belongs to employers, employees and merchants, held by Stripe. It is not revenue or operating cash.
-                    Unspent credits stay the employer's money: breakage is excluded from revenue by policy.
+                    Unspent credits are never Local Goods revenue: breakage is excluded from revenue by policy.
                 </p>
                 <x-rtable class="mt-4" label="Customer funds table" :card="false">
                     <table data-rtable="stack" class="w-full text-left text-sm">

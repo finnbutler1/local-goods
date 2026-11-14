@@ -35,7 +35,14 @@ on the live demo; switch it off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`.
    credits × the share spent. Visits (and AI fraud checks) = spending ÷ the
    average purchase.
 4. **Revenue** is four separate lines, each of which can be 0:
-   - **BID initiation fee:** once, when a BID launches.
+   - **BID annual program fee** (ADR 0043): set by district size, the same
+     in every case. Small (under 1,000 member businesses) $1,000 a year,
+     Medium (1,000 to 3,999) $2,500, Large (4,000 or more) $5,000. The pilot
+     district (the Golden Triangle, nearly 6,000 businesses: Large) is free
+     for its first 12 months and pays from month 13. The model has no size
+     for other districts, so each uses Medium, paid from its launch month.
+     Each year is spread as a twelfth a month. Planned, not charged in the
+     app.
    - **Employer platform fee:** per participating employee per month, paid
      by the employer on top of the credits. In the product (ADR 0042;
      switched on in Stripe test mode on 2026-11-12 (no real money)) it is added once a month to
@@ -43,7 +50,10 @@ on the live demo; switch it off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`.
      credits in the previous calendar month (`App\Support\ParticipatingEmployees`),
      and it can't be refunded in that version.
    - **Merchant fee:** a share of each sale. The live product's merchant fee
-     is 0 (ADR 0029); the scenario assumes a rate.
+     is 0 (ADR 0029): no fee during the pilot. The scenario assumes a rate
+     that would start only once the program shows it brings merchants new
+     sales, because independent merchants run on thin margins and already
+     pay card processing.
    - **Interchange:** only in an optional card-issuing phase, which is off.
      The MVP has no card program.
 5. **Cost of revenue:**
@@ -84,12 +94,23 @@ held, a promise to pay**:
 
 They are shown on their own and never counted as revenue or operating cash.
 
-**Breakage is excluded from revenue by policy.** Credits employees don't spend
-stay the employer's money. The model returns them to the employer after 3
-months, a modelling simplification: in the product they are refunded on
-request, not automatically (ADR 0028). Unspent
-credits never earn Local Goods anything; a test checks that revenue doesn't
-change with the share spent.
+**Breakage is excluded from revenue by policy.** In the product, credits
+don't expire. Credits an employer hasn't given out yet can be refunded if the
+employer asks (ADR 0028); credits given to an employee stay in their wallet.
+The model returns unspent credits to the employer after 3 months, a modelling
+simplification. Unspent credits never earn Local Goods anything; a test checks
+that revenue doesn't change with the share spent.
+
+**Unspent credits (estimate, not counted as revenue)** (ADR 0043). The share
+spent is the share spent in the month the credits are given (85% in the base
+case); most of the rest is spent in later months. About 8% of credits issued
+is assumed never to be spent (`unspent_never_spent_share`, capped at the share
+not spent in the month, so 5% in the high case). The tables below show it by
+year next to revenue, but it is never added to revenue, profit or EBITDA, and
+never moves the break-even month (a test checks). Depending on state law,
+unspent balances may belong to the employer, the employee or the state
+(unclaimed property), so Local Goods doesn't rely on them. Local Goods charges
+no dormancy fees.
 
 ## Base-case results
 
@@ -99,57 +120,60 @@ change with the share spent.
 | | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
 | BIDs / employers / participating employees (year end) | 1 / 10 / 600 | 1 / 20 / 1,200 | 1 / 20 / 1,200 | 1 / 20 / 1,200 |
-| Revenue | $28k | $74k | $96k | $96k |
+| Revenue | $26k | $79k | $101k | $101k |
 | of which employer platform fees | $23k | $67k | $86k | $86k |
 | of which merchant fees | $2k | $7k | $9k | $9k |
-| of which BID initiation fees | $3k | $0 | $0 | $0 |
+| of which BID program fees | $0 | $5k | $5k | $5k |
+| Unspent credits (estimate, not counted as revenue) | $16k | $44k | $58k | $58k |
 | Cost of revenue | $7k | $16k | $20k | $20k |
-| Gross profit | $21k | $57k | $75k | $75k |
+| Gross profit | $18k | $62k | $80k | $80k |
 | Operating expenses | $219k | $186k | $172k | $172k |
 | of which payroll | $90k | $90k | $90k | $90k |
-| EBITDA | −$198k | −$129k | −$97k | −$97k |
+| EBITDA | −$201k | −$124k | −$92k | −$92k |
 | Spent at independent merchants | $166k | $472k | $612k | $612k |
 | Visits | 11,839 | 33,696 | 43,714 | 43,714 |
 | Customer funds held at year end (not revenue) | $18k | $38k | $39k | $39k |
-| Gross margin | 74% | 78% | 79% | 79% |
+| Gross margin | 71% | 79% | 80% | 80% |
 
 **DC-wide** (base case)
 
 | | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
 | BIDs / employers / participating employees (year end) | 2 / 11 / 650 | 6 / 49 / 2,950 | 10 / 117 / 7,000 | 12 / 185 / 11,100 |
-| Revenue | $31k | $145k | $405k | $748k |
+| Revenue | $26k | $147k | $417k | $772k |
 | of which employer platform fees | $24k | $122k | $357k | $672k |
 | of which merchant fees | $3k | $13k | $38k | $71k |
-| of which BID initiation fees | $5k | $10k | $10k | $5k |
+| of which BID program fees | $208 | $12k | $22k | $29k |
+| Unspent credits (estimate, not counted as revenue) | $16k | $81k | $238k | $448k |
 | Cost of revenue | $8k | $30k | $82k | $149k |
-| Gross profit | $24k | $115k | $323k | $599k |
+| Gross profit | $19k | $117k | $335k | $623k |
 | Operating expenses | $240k | $425k | $730k | $771k |
 | of which payroll | $99k | $227k | $452k | $479k |
-| EBITDA | −$216k | −$310k | −$407k | −$173k |
+| EBITDA | −$221k | −$308k | −$395k | −$148k |
 | Spent at independent merchants | $168k | $863k | $2.53M | $4.76M |
 | Visits | 11,991 | 61,625 | 180,777 | 339,848 |
 | Customer funds held at year end (not revenue) | $19k | $89k | $218k | $353k |
-| Gross margin | 76% | 79% | 80% | 80% |
+| Gross margin | 71% | 80% | 80% | 81% |
 
 **National rollout** (base case)
 
 | | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
 | BIDs / employers / participating employees (year end) | 4 / 23 / 1,350 | 24 / 168 / 10,050 | 60 / 580 / 34,800 | 100 / 1,248 / 74,900 |
-| Revenue | $56k | $453k | $1.83M | $4.52M |
+| Revenue | $49k | $442k | $1.85M | $4.63M |
 | of which employer platform fees | $42k | $364k | $1.57M | $4.00M |
 | of which merchant fees | $4k | $39k | $167k | $425k |
-| of which BID initiation fees | $10k | $50k | $90k | $100k |
+| of which BID program fees | $3k | $39k | $111k | $206k |
+| Unspent credits (estimate, not counted as revenue) | $28k | $243k | $1.05M | $2.67M |
 | Cost of revenue | $12k | $88k | $362k | $896k |
-| Gross profit | $44k | $365k | $1.47M | $3.63M |
+| Gross profit | $37k | $354k | $1.49M | $3.73M |
 | Operating expenses | $359k | $1.17M | $2.76M | $4.67M |
 | of which payroll | $173k | $580k | $1.37M | $2.51M |
-| EBITDA | −$315k | −$809k | −$1.29M | −$1.04M |
+| EBITDA | −$322k | −$820k | −$1.27M | −$935k |
 | Spent at independent merchants | $295k | $2.58M | $11.13M | $28.32M |
 | Visits | 21,098 | 184,268 | 794,902 | 2,023,000 |
 | Customer funds held at year end (not revenue) | $40k | $300k | $1.07M | $2.34M |
-| Gross margin | 79% | 81% | 80% | 80% |
+| Gross margin | 76% | 80% | 80% | 81% |
 <!-- projection:base-case:end -->
 
 ## Break-even and peak cash, every scenario and case
@@ -157,15 +181,15 @@ change with the share spent.
 <!-- projection:break-even:start -->
 | Scenario | Case | Monthly break-even | Peak cash needed |
 |---|---|---|---|
-| Golden Triangle only | low | not within 72 months | $1.02M (still growing at month 72) |
-| Golden Triangle only | base | not within 72 months | $716k (still growing at month 72) |
-| Golden Triangle only | high | month 19 | $104k (month 10) |
-| DC-wide | low | not within 72 months | $2.84M (still growing at month 72) |
-| DC-wide | base | month 56 | $1.14M (month 55) |
-| DC-wide | high | month 19 | $165k (month 18) |
-| National rollout | low | not within 72 months | $12.10M (still growing at month 72) |
-| National rollout | base | month 50 | $3.48M (month 49) |
-| National rollout | high | month 16 | $208k (month 15) |
+| Golden Triangle only | low | not within 72 months | $997k (still growing at month 72) |
+| Golden Triangle only | base | not within 72 months | $693k (still growing at month 72) |
+| Golden Triangle only | high | month 19 | $109k (month 10) |
+| DC-wide | low | not within 72 months | $2.72M (still growing at month 72) |
+| DC-wide | base | month 54 | $1.09M (month 53) |
+| DC-wide | high | month 19 | $180k (month 18) |
+| National rollout | low | not within 72 months | $11.23M (still growing at month 72) |
+| National rollout | base | month 49 | $3.35M (month 48) |
+| National rollout | high | month 16 | $245k (month 15) |
 <!-- projection:break-even:end -->
 
 ## What it takes
@@ -183,9 +207,9 @@ that many means paying for an engineer too.
 <!-- projection:what-it-takes:start -->
 | Case | Employer fee now | Participating employees needed | Employers needed | Employer fee that breaks even | At participating employees |
 |---|---|---|---|---|---|
-| low | $4 | 9,461 | 316 at 30 each | $53.82 | 300 |
-| base | $6 | 5,341 | 90 at 60 each | $13.54 | 1,200 |
-| high | $10 | 1,364 | 12 at 120 each | $6.83 | 3,600 |
+| low | $4 | 9,318 | 311 at 30 each | $52.26 | 300 |
+| base | $6 | 5,261 | 88 at 60 each | $13.16 | 1,200 |
+| high | $10 | 1,324 | 12 at 120 each | $6.70 | 3,600 |
 <!-- projection:what-it-takes:end -->
 
 **What this says, at the assumptions checked on 2026-10-28:**
@@ -210,13 +234,15 @@ check with real employers, BIDs and merchants.
 | `employer_ramp_months` | Months to enroll those employers | months | 24 | 24 | 24 | Assumption: to validate in customer discovery. From the month the BID launches. Checked 2026-10-28. |
 | `employees_per_employer` | Participating employees per employer | people | 30 | 60 | 120 | Assumption: to validate in customer discovery. Employees who receive credits each month. The demo employer has 40 enrolled out of 120 staff; major employers in the district are larger. Checked 2026-10-28. |
 | `monthly_credit_per_employee` | Monthly credit per employee | dollars | $25 | $50 | $100 | Assumption: to validate in customer discovery. Set by each employer. The landing page's worked example uses $50. Checked 2026-10-28. |
-| `utilization` | Share of credits spent | share | 70% | 85% | 95% | Assumption: to validate in customer discovery. The rest stays the employer's money and is returned or rolled over. It is never Local Goods revenue. Checked 2026-10-28. |
+| `utilization` | Share of credits spent | share | 70% | 85% | 95% | Assumption: to validate in customer discovery. Spent in the month it's given. Most of the rest is spent in later months; the share never spent is a separate estimate. None of it is ever Local Goods revenue. Checked 2026-10-28. |
 | `average_ticket` | Average purchase | dollars | $10 | $14 | $18 | Assumption: to validate in customer discovery. A lunch, a coffee or a small retail purchase. Sets the number of visits and AI checks. Checked 2026-10-28. |
 | `merchants_per_bid` | Participating merchants per BID | merchants | 20 | 40 | 60 | [Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants](https://goldentriangledc.com/locate-here/why-golden-triangle). How many of those sign up is an assumption: 40 is about a fifth of the restaurants alone. Checked 2026-10-28. |
 | `merchant_ramp_months` | Months to sign up those merchants | months | 12 | 12 | 12 | Assumption: to validate in customer discovery. From the month the BID launches. Checked 2026-10-28. |
-| `bid_initiation_fee` | BID initiation fee | dollars once per BID | $0 | $2,500 | $5,000 | Assumption: to validate in customer discovery. The reference model charged each BID $2,500 to start. Checked 2026-10-28. |
+| `bid_program_fee_pilot` | BID annual program fee, pilot district (Large tier) | dollars per BID per year | $5,000 | $5,000 | $5,000 | [Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants](https://goldentriangledc.com/locate-here/why-golden-triangle). Golden Triangle has nearly 6,000 businesses, so it is in the Large tier. Free for its first year (the pilot), then spread evenly over each month. Checked 2026-10-28. |
+| `bid_program_fee_other` | BID annual program fee, every other district (Medium tier) | dollars per BID per year | $2,500 | $2,500 | $2,500 | Assumption: to validate in customer discovery. The model has no size for the other districts, so it uses the Medium tier for each of them. Paid from the month the district launches, spread evenly over each month. Checked 2026-10-28. |
+| `bid_program_free_months` | Pilot months with no BID program fee | months, pilot district only | 12 | 12 | 12 | Assumption: to validate in customer discovery. Only the pilot district gets a free first year. Checked 2026-10-28. |
 | `employer_platform_fee` | Employer platform fee | dollars per participating employee per month | $4 | $6 | $10 | [Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month](https://www.vendr.com/marketplace/benepass). Third-party estimates; benefit platforms don't publish prices. Paid by the employer on top of the credits. The live product's employer platform fee uses this base figure (ADR 0042). Checked 2026-10-28. |
-| `merchant_fee_rate` | Merchant fee | share of each sale | 0% | 1.5% | 3% | Assumption: to validate in customer discovery. The live merchant fee is 0 (ADR 0029). The scenario assumes a rate below card processing. Checked 2026-10-28. |
+| `merchant_fee_rate` | Merchant fee | share of each sale | 0% | 1.5% | 3% | Assumption: to validate in customer discovery. The live merchant fee is 0 (ADR 0029): no fee during the pilot. A small fee per sale would come later, only once the program shows it brings merchants new sales: independent merchants run on thin margins and already pay card processing. The scenario assumes a rate below card processing. Checked 2026-10-28. |
 | `interchange_rate` | Interchange (card-issuing phase only) | share of card spend | 1.35% | 1.35% | 1.35% | Assumption: to validate in customer discovery. The 2013 reference model's rate. Stripe Issuing's interchange share is not public. Counted only when card issuing is turned on, which it is not. Checked 2026-10-28. |
 | `ach_share` | Employer purchases paid by ACH | share of purchases | 80% | 80% | 80% | Assumption: to validate in customer discovery. The rest are paid by card. Large employers usually pay by bank transfer. Today employers pay by card, Apple Pay or Google Pay; ACH is on the roadmap once returned payments are handled. Checked 2026-10-28. |
 | `stripe_ach_rate` | Stripe ACH Direct Debit | share of the purchase | 0.8% | 0.8% | 0.8% | [Stripe pricing: ACH Direct Debit 0.8%, $5.00 cap](https://stripe.com/pricing). Paid by Local Goods on each employer purchase. Checked 2026-10-28. |
@@ -250,7 +276,8 @@ check with real employers, BIDs and merchants.
 | `ops_salary` | Operations salary, loaded | dollars per year | $85,000 | $85,000 | $85,000 | Assumption: to validate in customer discovery. Support escalations, fraud review and payouts. Checked 2026-10-28. |
 | `ops_employees_per_person` | One operations person per | participating employees | 30,000 | 30,000 | 30,000 | Assumption: to validate in customer discovery. Checked 2026-10-28. |
 | `compliance_hire_at_bids` | Compliance hire at | BIDs | 20 | 20 | 20 | Assumption: to validate in customer discovery. One operations person for compliance once the program is in 20 or more districts. Checked 2026-10-28. |
-| `unspent_return_months` | Unspent credits held before going back to the employer | months | 3 | 3 | 3 | Assumption: to validate in customer discovery. Unspent credits are never Local Goods revenue. They stay the employer's money and are refunded on request, not automatically (ADR 0028); the model's return after this many months is a simplification. Checked 2026-10-28. |
+| `unspent_return_months` | Unspent credits held before going back to the employer | months | 3 | 3 | 3 | Assumption: to validate in customer discovery. Unspent credits are never Local Goods revenue. In the product they don't expire: credits an employer hasn't given out can be refunded if the employer asks (ADR 0028), and credits given to an employee stay in their wallet. The model's return after this many months is a simplification. Checked 2026-10-28. |
+| `unspent_never_spent_share` | Credits never spent (estimate) | share of credits issued | 8% | 8% | 8% | Assumption: to validate in customer discovery. Shown as "Unspent credits (estimate, not counted as revenue)". Capped at the share not spent in the month. Depending on state law, unspent balances may belong to the employer, the employee or the state (unclaimed property), so Local Goods doesn't rely on them. Local Goods charges no dormancy fees. Checked 2026-10-28. |
 | `payout_lag_days` | Days a cleared sale waits for its payout | days | 7 | 7 | 7 | Assumption: to validate in customer discovery. Weekly payouts. Checked 2026-10-28. |
 <!-- projection:assumptions:end -->
 

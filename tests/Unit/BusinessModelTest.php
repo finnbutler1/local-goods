@@ -37,7 +37,7 @@ class BusinessModelTest extends TestCase
             'employers_per_bid' => 1, 'employer_ramp_months' => 1, 'employees_per_employer' => 100,
             'monthly_credit_per_employee' => 50, 'utilization' => 0.8, 'average_ticket' => 10,
             'merchants_per_bid' => 2, 'merchant_ramp_months' => 1,
-            'bid_initiation_fee' => 1000, 'employer_platform_fee' => 5, 'merchant_fee_rate' => 0.01,
+            'bid_program_fee_pilot' => 1200, 'bid_program_fee_other' => 600, 'bid_program_free_months' => 12, 'employer_platform_fee' => 5, 'merchant_fee_rate' => 0.01,
             'ach_share' => 1, 'ai_input_tokens_per_check' => 1000, 'ai_output_tokens_per_check' => 500,
             'hosting_monthly' => 100, 'hosting_per_bid_monthly' => 0, 'bid_revenue_share' => 0.10,
             'payouts_per_merchant_per_month' => 4, 'support_per_employee' => 0.5,
@@ -49,18 +49,19 @@ class BusinessModelTest extends TestCase
 
     public function test_a_hand_checked_month(): void
     {
-        [$first, $second] = self::tiny()->run('t')->months();
+        $months = self::tiny()->run('t')->months();
+        [$first, $second] = $months;
 
         // 100 employees × $50 = $5,000 of credits; 80% spent = $4,000; at $10 a visit, 400 visits.
         $this->assertEqualsWithDelta(5000, $first['credits_bought'], 1e-9);
         $this->assertEqualsWithDelta(4000, $first['spend'], 1e-9);
         $this->assertEqualsWithDelta(400, $first['visits'], 1e-9);
 
-        // Revenue: $1,000 BID fee + 100 × $5 + 1% of $4,000.
-        $this->assertEqualsWithDelta(1000, $first['bid_fees'], 1e-9);
+        // Revenue: no BID fee in the pilot's free year + 100 × $5 + 1% of $4,000.
+        $this->assertEqualsWithDelta(0, $first['bid_fees'], 1e-9);
         $this->assertEqualsWithDelta(500, $first['platform_fees'], 1e-9);
         $this->assertEqualsWithDelta(40, $first['merchant_fees'], 1e-9);
-        $this->assertEqualsWithDelta(1540, $first['revenue'], 1e-9);
+        $this->assertEqualsWithDelta(540, $first['revenue'], 1e-9);
 
         // Stripe: one $5,500 ACH purchase, 0.8% capped at $5. Connect: 2 × ($2 + 4 × 25¢) + 0.25% of ($4,000 − $40).
         $this->assertEqualsWithDelta(5, $first['stripe_funding'], 1e-9);
@@ -73,11 +74,13 @@ class BusinessModelTest extends TestCase
 
         // Opex: 100 × 50¢ support + $1,000 G&A + $12,000 / 12 founder.
         $this->assertEqualsWithDelta(2050, $first['opex'], 1e-9);
-        $this->assertEqualsWithDelta(1540 - 176.50 - 2050, $first['ebitda'], 1e-9);
-
-        // The BID fee is charged once.
-        $this->assertEqualsWithDelta(0, $second['bid_fees'], 1e-9);
+        $this->assertEqualsWithDelta(540 - 176.50 - 2050, $first['ebitda'], 1e-9);
         $this->assertEqualsWithDelta(540 - 176.50 - 2050, $second['ebitda'], 1e-9);
+
+        // The pilot district's $1,200 a year starts in month 13, a twelfth a month.
+        $this->assertEqualsWithDelta(0, $months[11]['bid_fees'], 1e-9);
+        $this->assertEqualsWithDelta(100, $months[12]['bid_fees'], 1e-9);
+        $this->assertEqualsWithDelta(640 - 176.50 - 2050, $months[12]['ebitda'], 1e-9);
     }
 
     public function test_what_it_takes_is_hand_checked(): void
@@ -86,16 +89,17 @@ class BusinessModelTest extends TestCase
         $needs = $model->whatItTakes();
 
         // Each employee adds $5 + 40¢ − 5¢ ACH − 9.9¢ payout − 5.6¢ AI − 50¢ BID share − 50¢ support = $4.195.
-        // Fixed: $6 Connect accounts + $100 hosting + $1,000 G&A + $1,000 founder = $2,106. 2,106 / 4.195 = 502.03.
-        $this->assertSame(503, $needs->employees);
-        $this->assertSame(6, $needs->employers);
-        $this->assertGreaterThanOrEqual(0, $model->fullyRampedBid('base', 503)['ebitda']);
-        $this->assertLessThan(0, $model->fullyRampedBid('base', 502)['ebitda']);
+        // Fixed: $6 Connect accounts + $100 hosting + $1,000 G&A + $1,000 founder − $100 BID program fee (past the
+        // pilot's free year) = $2,006. 2,006 / 4.195 = 478.19.
+        $this->assertSame(479, $needs->employees);
+        $this->assertSame(5, $needs->employers);
+        $this->assertGreaterThanOrEqual(0, $model->fullyRampedBid('base', 479)['ebitda']);
+        $this->assertLessThan(0, $model->fullyRampedBid('base', 478)['ebitda']);
 
-        // At 100 employees: 100f + $40 − $5 − $15.90 − $5.60 − $100 − 10f − $50 − $2,000 = 90f − $2,136.50, so f = $23.7389.
-        $this->assertSame(23.74, $needs->breakEvenFee);
-        $this->assertGreaterThanOrEqual(0, $model->fullyRampedBid('base', 100, 23.74)['ebitda']);
-        $this->assertLessThan(0, $model->fullyRampedBid('base', 100, 23.73)['ebitda']);
+        // At 100 employees: 100f + $100 + $40 − $5 − $15.90 − $5.60 − $100 − 10f − $50 − $2,000 = 90f − $2,036.50, so f = $22.6278.
+        $this->assertSame(22.63, $needs->breakEvenFee);
+        $this->assertGreaterThanOrEqual(0, $model->fullyRampedBid('base', 100, 22.63)['ebitda']);
+        $this->assertLessThan(0, $model->fullyRampedBid('base', 100, 22.62)['ebitda']);
     }
 
     public function test_what_it_takes_says_when_no_fee_is_enough(): void
@@ -128,13 +132,37 @@ class BusinessModelTest extends TestCase
             }
         }
 
-        $levers = ['bid_initiation_fee' => 'bid_fees', 'employer_platform_fee' => 'platform_fees', 'merchant_fee_rate' => 'merchant_fees'];
-        foreach ($levers as $assumption => $line) {
-            $months = self::real()->with([$assumption => 0])->run('c')->allMonths();
+        $levers = [
+            'bid_fees' => ['bid_program_fee_pilot' => 0, 'bid_program_fee_other' => 0],
+            'platform_fees' => ['employer_platform_fee' => 0],
+            'merchant_fees' => ['merchant_fee_rate' => 0],
+        ];
+        foreach ($levers as $line => $zero) {
+            $months = self::real()->with($zero)->run('c')->allMonths();
             $this->assertSame(0.0, (float) array_sum(array_column($months, $line)), $line);
             $this->assertGreaterThan(0, array_sum(array_column(self::real()->run('c')->allMonths(), $line)), $line);
         }
         $this->assertSame(0.0, (float) array_sum(array_column(self::real()->run('c')->allMonths(), 'interchange')), 'Card issuing is off.');
+    }
+
+    public function test_only_the_pilot_district_gets_a_free_year_and_others_pay_from_launch(): void
+    {
+        $model = self::real();
+        [$pilot, $second] = $model->launchMonths('b');
+        $months = $model->run('b')->allMonths();
+        $other = 2500 / 12;
+        $pilotFee = 5000 / 12;
+
+        $this->assertSame(1, $pilot);
+        $this->assertLessThan(13, $second, 'The check needs the second district to launch inside the pilot year.');
+        $this->assertEqualsWithDelta(0, $months[$second - 2]['bid_fees'], 1e-9, 'Nothing before the second district launches.');
+        $this->assertEqualsWithDelta($other, $months[$second - 1]['bid_fees'], 1e-9, 'The second district pays from its launch month.');
+        $this->assertEqualsWithDelta($other, $months[11]['bid_fees'], 1e-9, 'The pilot district is still free in month 12.');
+        $this->assertEqualsWithDelta($other + $pilotFee, $months[12]['bid_fees'], 1e-9, 'The pilot district pays from month 13.');
+
+        $year2 = $model->run('a')->years()[1];
+        $this->assertEqualsWithDelta(5000, $year2['bid_fees'], 1e-6, 'A full paid year of the pilot district is its Large tier fee.');
+        $this->assertEqualsWithDelta(0, $model->run('a')->years()[0]['bid_fees'], 1e-9);
     }
 
     public function test_interchange_counts_only_once_card_issuing_is_turned_on(): void
@@ -185,6 +213,28 @@ class BusinessModelTest extends TestCase
         $lessSpent = self::real()->with(['utilization' => 0.5])->run('c')->years();
         foreach ($spent as $i => $year) {
             $this->assertGreaterThanOrEqual($lessSpent[$i]['revenue'], $year['revenue']);
+        }
+    }
+
+    public function test_the_unspent_credit_estimate_is_shown_but_never_counted(): void
+    {
+        // 8% of $5,000 of credits; capped at what is left unspent in the month when more is spent.
+        $this->assertEqualsWithDelta(400, self::tiny()->run('t')->months()[0]['unspent_estimate'], 1e-9);
+        $this->assertEqualsWithDelta(250, self::tiny()->with(['utilization' => 0.95])->run('t')->months()[0]['unspent_estimate'], 1e-9);
+
+        $this->assertArrayNotHasKey('unspent_estimate', BusinessModel::REVENUE_LINES);
+        foreach (['a', 'b', 'c'] as $scenario) {
+            $none = self::real()->with(['unspent_never_spent_share' => 0])->run($scenario);
+            $lots = self::real()->with(['unspent_never_spent_share' => 0.5])->run($scenario);
+
+            $this->assertGreaterThan(0, array_sum(array_column($lots->years(), 'unspent_estimate')));
+            $this->assertSame($none->breakEvenMonth(), $lots->breakEvenMonth(), 'The break-even month never moves with the estimate.');
+            $this->assertSame($none->peakCashNeeded(), $lots->peakCashNeeded());
+            foreach ($none->allMonths() as $i => $month) {
+                foreach (['revenue', 'gross_profit', 'ebitda'] as $line) {
+                    $this->assertSame($month[$line], $lots->allMonths()[$i][$line], "{$scenario} {$line} month ".($i + 1));
+                }
+            }
         }
     }
 

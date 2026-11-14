@@ -13,13 +13,14 @@ use InvalidArgumentException;
  * Each BID launches in a month set by its scenario, then enrolls employers
  * and merchants in a straight line. Revenue is only the four fee lines.
  * Customer money (credits bought, unspent balances, payouts owed) is
- * tracked on the side and is never revenue or operating cash; unspent
- * credits go back to the employer, so breakage is excluded by policy.
+ * tracked on the side and is never revenue or operating cash. The estimate
+ * of credits never spent (ADR 0043) is shown next to revenue but never
+ * counted in revenue, EBITDA or the break-even month.
  */
 final class BusinessModel
 {
     public const REVENUE_LINES = [
-        'bid_fees' => 'BID initiation fees',
+        'bid_fees' => 'BID program fees',
         'platform_fees' => 'Employer platform fees',
         'merchant_fees' => 'Merchant fees',
         'interchange' => 'Interchange (card-issuing phase, off)',
@@ -104,6 +105,18 @@ final class BusinessModel
             }
             $newBids = count(array_keys($launches, $m, true));
 
+            // BID annual program fee (ADR 0043), a twelfth each month: the pilot
+            // district (the first launch) is free for its first months; every
+            // other district pays from the month it launches.
+            $bidFees = 0.0;
+            foreach ($launches as $i => $launched) {
+                if ($i === 0) {
+                    $bidFees += $m > $a->value('bid_program_free_months') ? $a->value('bid_program_fee_pilot') / 12 : 0.0;
+                } elseif ($launched <= $m) {
+                    $bidFees += $a->value('bid_program_fee_other') / 12;
+                }
+            }
+
             $months[] = ['month' => $m] + $this->lines(
                 $a,
                 employees: $employers * $a->value('employees_per_employer'),
@@ -111,6 +124,7 @@ final class BusinessModel
                 bids: $bids,
                 newBids: $newBids,
                 newEmployers: max(0, $employers - $previousEmployers),
+                bidFees: $bidFees,
                 legalSetup: $m === 1,
                 interchange: $a->cardIssuingFrom() !== null && $m >= $a->cardIssuingFrom(),
             );
@@ -144,7 +158,8 @@ final class BusinessModel
 
     /**
      * One fully enrolled BID in a quiet month: no launches, no new employers,
-     * no one-time legal setup. What "What it takes" is worked out on.
+     * no one-time legal setup, past the pilot's free months (so it pays the
+     * pilot district's program fee). What "What it takes" is worked out on.
      *
      * @return array<string, float|int>
      */
@@ -152,7 +167,7 @@ final class BusinessModel
     {
         $a = $this->assumptions($case);
 
-        return $this->lines($a, $employees, $a->value('merchants_per_bid'), 1, 0, 0.0, false, $a->cardIssuingFrom() !== null, $employerFee);
+        return $this->lines($a, $employees, $a->value('merchants_per_bid'), 1, 0, 0.0, $a->value('bid_program_fee_pilot') / 12, false, $a->cardIssuingFrom() !== null, $employerFee);
     }
 
     /**
@@ -203,10 +218,12 @@ final class BusinessModel
     /**
      * One month's lines. Revenue is the four fee lines only; the credits
      * employers buy, and what employees leave unspent, are customer money.
+     * 'unspent_estimate' (credits never spent, ADR 0043) is display only:
+     * it is never added to revenue or EBITDA.
      *
      * @return array<string, float|int>
      */
-    private function lines(Assumptions $a, float $employees, float $merchants, int $bids, int $newBids, float $newEmployers, bool $legalSetup, bool $interchange, ?float $employerFee = null): array
+    private function lines(Assumptions $a, float $employees, float $merchants, int $bids, int $newBids, float $newEmployers, float $bidFees, bool $legalSetup, bool $interchange, ?float $employerFee = null): array
     {
         $fee = $employerFee ?? $a->value('employer_platform_fee');
         $perEmployer = $a->value('employees_per_employer');
@@ -217,7 +234,7 @@ final class BusinessModel
         $visits = $spend / $a->value('average_ticket');
 
         $revenue = [
-            'bid_fees' => $newBids * $a->value('bid_initiation_fee'),
+            'bid_fees' => $bidFees,
             'platform_fees' => $employees * $fee,
             'merchant_fees' => $spend * $a->value('merchant_fee_rate'),
             'interchange' => $interchange ? $spend * $a->value('interchange_rate') : 0.0,
@@ -264,6 +281,7 @@ final class BusinessModel
             'spend' => $spend,
             'visits' => $visits,
             'unspent' => $credits - $spend,
+            'unspent_estimate' => $credits * min($a->value('unspent_never_spent_share'), 1 - $a->value('utilization')),
             'headcount' => 1 + $engineers + $accountManagers + $ops,
         ] + $revenue + $costOfRevenue + $opex + [
             'revenue' => $totalRevenue,

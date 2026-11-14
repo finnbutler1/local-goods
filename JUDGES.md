@@ -30,6 +30,7 @@ On [uselocalgoods.com](https://uselocalgoods.com), press **Look around (read-onl
 - That the fraud check catches planted collusion rings. It does not.
 - Web search in Merchant Eligibility Matching.
 - Handling of card disputes and returned payments.
+- Any BID or merchant fee charged in the product (both are planned and free in the pilot), or unspent credits counted as revenue.
 
 ## Still to come
 

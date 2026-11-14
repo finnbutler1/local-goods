@@ -5,6 +5,24 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Revenue model update — projection and wording only (2026-11-13, ADR
+0043), not deployed.** No fee code, ledger, Stripe, migration or database
+change; no BID or merchant fee is charged in the app.
+
+- `config/projections.php`: `bid_initiation_fee` removed; `bid_program_fee_pilot`
+  ($5,000, Large: Golden Triangle), `bid_program_fee_other` ($2,500, Medium:
+  the model has no size for other districts), `bid_program_free_months` (12,
+  pilot district only; others pay from launch), `bid_fee_tiers` (display),
+  `unspent_never_spent_share` (0.08, capped at `1 − utilization`).
+- `BusinessModel`: `bid_fees` a twelfth a month; `unspent_estimate` is display
+  only, **never in revenue, EBITDA or break-even** (`BusinessModelTest`). P&L
+  row `[data-unspent-estimate]`, note `[data-unspent-estimate-note]`.
+- Box, README Business model, MODEL.md, TRANSPARENCY, JUDGES.md say what the
+  product does with unspent credits (no expiry; employer's not-yet-given
+  credits refunded if asked; employee wallets keep theirs), the state-law
+  line and "Local Goods charges no dormancy fees." Base DC-wide break-even
+  month 54 (was 56). Tests: `BusinessModelTest`, `BusinessModelPageTest`.
+
 **Plain "How Local Goods makes money" summary — wording and docs only
 (2026-11-12), not deployed.** No code, migration, model number or money
 change. The employer fee was switched on in Stripe test mode on live on
@@ -15,9 +33,8 @@ Thursday evening, 2026-11-12 (Finn's time); keep 2026-11-12 everywhere.
   the same six things; the fee sentence comes from
   `EmployerPlatformFee::status()`, figures from `config/projections.php` and
   the model, always next to "Projection, not results" and `#assumptions`.
-  The BID "would receive" a share (planned); districts pay no upfront fee in
-  the pilot but the projection assumes a $2,500 start-up fee later; unspent
-  credits are refunded on request; ACH is on the roadmap (cards, Apple Pay,
+  The BID "would receive" a share (planned); the district and unspent-credit
+  items were rewritten on 2026-11-13 (ADR 0043, milestone above); ACH is on the roadmap (cards, Apple Pay,
   Google Pay today). README "How it works" item 5 names the employer fee as
   the main revenue line. Test: `BusinessModelPageTest`.
 

@@ -958,9 +958,14 @@ results, and each says "Projection, not results"
   discovery". The calculator never reads the live fee settings, the ledger
   or Stripe.
 - **Customer money is not revenue.** The credits employers buy are customer
-  funds, and so are the payouts owed to merchants. Unspent credits stay the
-  employer's money, and breakage is never counted as revenue. A test checks
-  that revenue doesn't change with how much employees spend.
+  funds, and so are the payouts owed to merchants. Breakage is never counted
+  as revenue. A test checks that revenue doesn't change with how much
+  employees spend. The Business model page shows an estimate of credits
+  never spent, labelled "Unspent credits (estimate, not counted as
+  revenue)"; a test checks it never moves revenue, profit or the break-even
+  month (ADR 0043). Depending on state law, unspent balances may belong to
+  the employer, the employee or the state (unclaimed property), so Local
+  Goods doesn't rely on them. Local Goods charges no dormancy fees.
 - **Who sees which figures.** Logged-out visitors see district numbers only.
   Fee, revenue and profit figures appear only on the signed-in Business
   model page and in the README section, each with the label and a link to

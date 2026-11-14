@@ -85,6 +85,13 @@ return [
         ],
     ],
 
+    // The BID annual program fee by district size (ADR 0043). Planned, not charged in the app; free during the pilot.
+    'bid_fee_tiers' => [
+        ['name' => 'Small', 'businesses' => 'under 1,000 member businesses', 'fee' => 1000],
+        ['name' => 'Medium', 'businesses' => '1,000 to 3,999 member businesses', 'fee' => 2500],
+        ['name' => 'Large', 'businesses' => '4,000 or more member businesses', 'fee' => 5000],
+    ],
+
     // Interchange exists only if Local Goods later issues cards through Stripe Issuing. Off: the MVP has no card program.
     'card_issuing' => [
         'enabled' => false,
@@ -97,15 +104,18 @@ return [
         'employer_ramp_months' => $a('demand', 'Months to enroll those employers', 'months', 24, 24, 24, null, '', 'From the month the BID launches.', true),
         'employees_per_employer' => $a('demand', 'Participating employees per employer', 'people', 30, 60, 120, null, '', 'Employees who receive credits each month. The demo employer has 40 enrolled out of 120 staff; major employers in the district are larger.', true),
         'monthly_credit_per_employee' => $a('demand', 'Monthly credit per employee', 'dollars', 25, 50, 100, null, '', 'Set by each employer. The landing page\'s worked example uses $50.', true),
-        'utilization' => $a('demand', 'Share of credits spent', 'share', 0.70, 0.85, 0.95, null, '', 'The rest stays the employer\'s money and is returned or rolled over. It is never Local Goods revenue.', true),
+        'utilization' => $a('demand', 'Share of credits spent', 'share', 0.70, 0.85, 0.95, null, '', 'Spent in the month it\'s given. Most of the rest is spent in later months; the share never spent is a separate estimate. None of it is ever Local Goods revenue.', true),
         'average_ticket' => $a('demand', 'Average purchase', 'dollars', 10, 14, 18, null, '', 'A lunch, a coffee or a small retail purchase. Sets the number of visits and AI checks.', true),
         'merchants_per_bid' => $a('demand', 'Participating merchants per BID', 'merchants', 20, 40, 60, 'https://goldentriangledc.com/locate-here/why-golden-triangle', 'Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants', 'How many of those sign up is an assumption: 40 is about a fifth of the restaurants alone.', true),
         'merchant_ramp_months' => $a('demand', 'Months to sign up those merchants', 'months', 12, 12, 12, null, '', 'From the month the BID launches.', true),
 
         // Revenue levers. Each is its own line and can be 0.
-        'bid_initiation_fee' => $a('revenue', 'BID initiation fee', 'dollars once per BID', 0, 2500, 5000, null, '', 'The reference model charged each BID $2,500 to start.'),
+        // The BID annual program fee (ADR 0043): planned, not charged in the app. Set by district size (bid_fee_tiers), the same tier in every case.
+        'bid_program_fee_pilot' => $fixed('revenue', 'BID annual program fee, pilot district (Large tier)', 'dollars per BID per year', 5000, 'https://goldentriangledc.com/locate-here/why-golden-triangle', 'Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants', 'Golden Triangle has nearly 6,000 businesses, so it is in the Large tier. Free for its first year (the pilot), then spread evenly over each month.'),
+        'bid_program_fee_other' => $fixed('revenue', 'BID annual program fee, every other district (Medium tier)', 'dollars per BID per year', 2500, null, '', 'The model has no size for the other districts, so it uses the Medium tier for each of them. Paid from the month the district launches, spread evenly over each month.'),
+        'bid_program_free_months' => $fixed('revenue', 'Pilot months with no BID program fee', 'months, pilot district only', 12, null, '', 'Only the pilot district gets a free first year.'),
         'employer_platform_fee' => $a('revenue', 'Employer platform fee', 'dollars per participating employee per month', 4, 6, 10, 'https://www.vendr.com/marketplace/benepass', 'Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month', 'Third-party estimates; benefit platforms don\'t publish prices. Paid by the employer on top of the credits. The live product\'s employer platform fee uses this base figure (ADR 0042).'),
-        'merchant_fee_rate' => $a('revenue', 'Merchant fee', 'share of each sale', 0, 0.015, 0.03, null, '', 'The live merchant fee is 0 (ADR 0029). The scenario assumes a rate below card processing.'),
+        'merchant_fee_rate' => $a('revenue', 'Merchant fee', 'share of each sale', 0, 0.015, 0.03, null, '', 'The live merchant fee is 0 (ADR 0029): no fee during the pilot. A small fee per sale would come later, only once the program shows it brings merchants new sales: independent merchants run on thin margins and already pay card processing. The scenario assumes a rate below card processing.'),
         'interchange_rate' => $fixed('revenue', 'Interchange (card-issuing phase only)', 'share of card spend', 0.0135, null, '', 'The 2013 reference model\'s rate. Stripe Issuing\'s interchange share is not public. Counted only when card issuing is turned on, which it is not.'),
 
         // Cost of revenue.
@@ -145,7 +155,8 @@ return [
         'compliance_hire_at_bids' => $fixed('payroll', 'Compliance hire at', 'BIDs', 20, null, '', 'One operations person for compliance once the program is in 20 or more districts.'),
 
         // Customer money: shown separately, never revenue or operating cash.
-        'unspent_return_months' => $fixed('customer_funds', 'Unspent credits held before going back to the employer', 'months', 3, null, '', 'Unspent credits are never Local Goods revenue. They stay the employer\'s money and are refunded on request, not automatically (ADR 0028); the model\'s return after this many months is a simplification.'),
+        'unspent_return_months' => $fixed('customer_funds', 'Unspent credits held before going back to the employer', 'months', 3, null, '', 'Unspent credits are never Local Goods revenue. In the product they don\'t expire: credits an employer hasn\'t given out can be refunded if the employer asks (ADR 0028), and credits given to an employee stay in their wallet. The model\'s return after this many months is a simplification.'),
+        'unspent_never_spent_share' => $fixed('customer_funds', 'Credits never spent (estimate)', 'share of credits issued', 0.08, null, '', 'Shown as "Unspent credits (estimate, not counted as revenue)". Capped at the share not spent in the month. Depending on state law, unspent balances may belong to the employer, the employee or the state (unclaimed property), so Local Goods doesn\'t rely on them. Local Goods charges no dormancy fees.'),
         'payout_lag_days' => $fixed('customer_funds', 'Days a cleared sale waits for its payout', 'days', 7, null, '', 'Weekly payouts.'),
     ],
 

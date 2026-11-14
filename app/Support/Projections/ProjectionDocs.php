@@ -52,7 +52,7 @@ final class ProjectionDocs
         $rows = ['| Base case | Year 1 | Year 2 | Year 3 | Year 4 |', '|---|---|---|---|---|'];
         foreach (config('projections.scenarios') as $key => $scenario) {
             $years = $this->model->run($key)->years();
-            foreach (['revenue' => 'revenue', 'ebitda' => 'EBITDA'] as $line => $label) {
+            foreach (['revenue' => 'revenue', 'unspent_estimate' => 'unspent credits (estimate, not counted as revenue)', 'ebitda' => 'EBITDA'] as $line => $label) {
                 $rows[] = "| {$scenario['name']}: {$label} | ".implode(' | ', array_map(fn ($y) => Figures::dollars($y[$line]), $years)).' |';
             }
         }
@@ -71,7 +71,8 @@ final class ProjectionDocs
             $out[] = '|---|---|---|---|---|';
             $out[] = '| BIDs / employers / participating employees (year end) | '.implode(' | ', array_map(fn ($y) => $y['bids'].' / '.Figures::count($y['employers']).' / '.Figures::count($y['employees']), $years)).' |';
             foreach ([
-                'revenue' => 'Revenue', 'platform_fees' => '  of which employer platform fees', 'merchant_fees' => '  of which merchant fees', 'bid_fees' => '  of which BID initiation fees',
+                'revenue' => 'Revenue', 'platform_fees' => '  of which employer platform fees', 'merchant_fees' => '  of which merchant fees', 'bid_fees' => '  of which BID program fees',
+                'unspent_estimate' => 'Unspent credits (estimate, not counted as revenue)',
                 'cost_of_revenue' => 'Cost of revenue', 'gross_profit' => 'Gross profit', 'opex' => 'Operating expenses', 'payroll' => '  of which payroll', 'ebitda' => 'EBITDA',
                 'spend' => 'Spent at independent merchants', 'visits' => 'Visits', 'customer_funds' => 'Customer funds held at year end (not revenue)',
             ] as $line => $label) {

@@ -143,16 +143,28 @@ below is worked out from stated assumptions, listed with sources in
   ([ADR 0034](docs/adr/0034-two-separate-stripe-balances.md)). Customer money is never
   used for anything else.
 - **Merchants pay nothing during the pilot.** A merchant fee is built and set
-  to 0. The base-case projection assumes a small one later (1.5% of sales), to
-  be set after asking merchants what is fair.
-- **Districts pay no upfront fee during the pilot.** The projection assumes a
-  one-time start-up fee of $2,500 for each new district later. The business
-  improvement district (BID) would receive a share of the employer fee
-  (planned; no money goes to a BID today).
-- **Unspent credits are never revenue.** They stay the employer's money and are
-  refunded on request.
+  to 0. Later, a small fee per sale (1.5% in the base-case projection) would
+  come only once the program shows it brings merchants new sales: independent
+  merchants run on thin margins and already pay card processing.
+- **Districts would pay an annual program fee, free during the pilot.** It is
+  set by district size: Small (under 1,000 member businesses) $1,000 a year;
+  Medium (1,000 to 3,999) $2,500; Large (4,000 or more) $5,000. The Golden
+  Triangle, with nearly 6,000 businesses, is Large; the projection has it
+  paying from month 13, after a free first year. The model has no size for
+  other districts, so it uses Medium for each of them, paid from the month
+  they launch. Planned, not charged in the app. The business improvement
+  district (BID) would receive a share of the employer fee (planned; no money
+  goes to a BID today).
+- **Unspent credits are never revenue.** In the product they don't expire:
+  credits an employer hasn't given out yet can be refunded if the employer
+  asks, and credits given to an employee stay in their wallet. The table below
+  shows an estimate of credits never spent (about 8% of credits issued) next to
+  revenue, but it is never counted in revenue, profit or the break-even month.
+  Depending on state law, unspent balances may belong to the employer, the
+  employee or the state (unclaimed property), so Local Goods doesn't rely on
+  them. Local Goods charges no dormancy fees.
 - **One district alone does not break even in the base case.** The model breaks
-  even DC-wide around month 56.
+  even DC-wide around month 54.
 
 The model is worked out month by month from stated assumptions, each with a
 public source or labelled an assumption to check in customer discovery. On the
@@ -165,12 +177,15 @@ low and high cases on the Business model page.
 <!-- projection:readme-table:start -->
 | Base case | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
-| Golden Triangle only: revenue | $28k | $74k | $96k | $96k |
-| Golden Triangle only: EBITDA | −$198k | −$129k | −$97k | −$97k |
-| DC-wide: revenue | $31k | $145k | $405k | $748k |
-| DC-wide: EBITDA | −$216k | −$310k | −$407k | −$173k |
-| National rollout: revenue | $56k | $453k | $1.83M | $4.52M |
-| National rollout: EBITDA | −$315k | −$809k | −$1.29M | −$1.04M |
+| Golden Triangle only: revenue | $26k | $79k | $101k | $101k |
+| Golden Triangle only: unspent credits (estimate, not counted as revenue) | $16k | $44k | $58k | $58k |
+| Golden Triangle only: EBITDA | −$201k | −$124k | −$92k | −$92k |
+| DC-wide: revenue | $26k | $147k | $417k | $772k |
+| DC-wide: unspent credits (estimate, not counted as revenue) | $16k | $81k | $238k | $448k |
+| DC-wide: EBITDA | −$221k | −$308k | −$395k | −$148k |
+| National rollout: revenue | $49k | $442k | $1.85M | $4.63M |
+| National rollout: unspent credits (estimate, not counted as revenue) | $28k | $243k | $1.05M | $2.67M |
+| National rollout: EBITDA | −$322k | −$820k | −$1.27M | −$935k |
 <!-- projection:readme-table:end -->
 
 ## How it works
@@ -390,7 +405,7 @@ Saying no was part of the design. Each decision below is already in our decision
 | No email sending in the prototype ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md), [ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)). | There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead. |
 | The Merchant Eligibility Matching AI has no web search ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)). | Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides. |
 | We don't reset the live demo for convenience ([CLAUDE.md](CLAUDE.md)). | Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only. |
-| No BID or employer initiation fee in the product ([CHANGELOG](CHANGELOG.md)). | It is already a lever in the projection model, and a new money path adds risk before judging. |
+| No BID program fee charged in the product ([ADR 0043](docs/adr/0043-bid-program-fee-and-unspent-credit-estimate.md)). | It is already a lever in the projection model, and a new money path adds risk before judging. |
 | No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source ([ADR 0024](docs/adr/README.md), [`PublicClaimsTest`](tests/Feature/PublicClaimsTest.php)). | The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured. |
 | A fee charged during a three-minute check that the fee setting worked is kept as earned income, not given back ([ADR 0034](docs/adr/0034-two-separate-stripe-balances.md)). | On Oct 28, from 12:08 to 12:11 (fee audit log), the merchant fee was switched on live to check that it worked, and one sale was charged a few cents. We considered building a way to give it back, and decided that a new money path for so small an amount, this close to the freeze, was the wrong trade. Instead we recorded exactly what happened and treated it as earned. Otherwise Local Goods charges nothing. |
 | Customer money is never used for anything else: not invested, not lent, and new purchases never pay old promises ([ADR 0033](docs/adr/0033-customer-funds-and-the-solvency-rule.md)). | Unspent credits are the employer's money. A check over the whole ledger history, and a guard on every money operation, refuse anything that would leave less money than has been promised. |

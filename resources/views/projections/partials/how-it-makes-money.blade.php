@@ -10,6 +10,8 @@
     $fee = fn (string $case) => Figures::exact($assumed('employer_platform_fee', $case));
     $gt = $model->run('a', 'base')->breakEvenMonth();
     $dc = $model->run('b', 'base')->breakEvenMonth();
+    $tiers = config('projections.bid_fee_tiers');
+    $freeMonths = (int) $assumed('bid_program_free_months');
     $linkClass = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover';
 @endphp
 <section aria-labelledby="makes-money-heading" class="rule-heavy mt-10 bg-band px-5 pb-6 sm:px-6" data-how-it-makes-money>
@@ -31,17 +33,25 @@
         </li>
         <li>
             <span class="font-semibold">Merchants pay nothing during the pilot.</span>
-            A merchant fee is built and set to 0. The base-case projection assumes a small one later
-            ({{ Figures::percent($assumed('merchant_fee_rate'), 1) }} of sales), to be set after asking merchants what is fair.
+            A merchant fee is built and set to 0. Later, a small fee per sale
+            ({{ Figures::percent($assumed('merchant_fee_rate'), 1) }} in the base-case projection) would come only once the program shows it
+            brings merchants new sales: independent merchants run on thin margins and already pay card processing.
         </li>
-        <li>
-            <span class="font-semibold">Districts pay no upfront fee during the pilot.</span>
-            The projection assumes a one-time start-up fee of {{ Figures::exact($assumed('bid_initiation_fee')) }} for each new district later.
-            The business improvement district (BID) would receive a share of the employer fee (planned; no money goes to a BID today).
+        <li data-bid-program-fee>
+            <span class="font-semibold">Districts would pay an annual program fee, free during the pilot.</span>
+            It is set by district size: {{ collect($tiers)->map(fn ($t) => $t['name'].' ('.$t['businesses'].') '.Figures::exact($t['fee']).' a year')->join('; ', '; and ') }}.
+            The Golden Triangle, with nearly 6,000 businesses, is Large; the projection has it paying from month {{ $freeMonths + 1 }}, after a free
+            first year. The model has no size for other districts, so it uses Medium for each of them, paid from the month they launch.
+            Planned, not charged in the app. The business improvement district (BID) would receive a share of the employer fee
+            (planned; no money goes to a BID today).
         </li>
-        <li>
+        <li data-unspent-credits>
             <span class="font-semibold">Unspent credits are never revenue.</span>
-            They stay the employer's money and are refunded on request.
+            In the product they don't expire: credits an employer hasn't given out yet can be refunded if the employer asks, and credits
+            given to an employee stay in their wallet. The projection shows an estimate of credits never spent
+            (about {{ Figures::percent($assumed('unspent_never_spent_share'), 0) }} of credits issued) next to revenue, but never counts it in revenue,
+            profit or the break-even month. Depending on state law, unspent balances may belong to the employer, the employee or the state
+            (unclaimed property), so Local Goods doesn't rely on them. Local Goods charges no dormancy fees.
         </li>
         <li>
             <span class="font-semibold">{{ $gt === null ? 'One district alone does not break even in the base case.' : 'Break-even in the base case.' }}</span>

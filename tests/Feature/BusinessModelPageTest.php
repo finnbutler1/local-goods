@@ -70,11 +70,30 @@ class BusinessModelPageTest extends TestCase
             $this->assertStringContainsString('Projection, not results', $text);
             $this->assertStringContainsString('href="#assumptions"', $box);
             $this->assertStringContainsString('would receive a share of the employer fee (planned; no money goes to a BID today)', $text);
-            $this->assertStringContainsString('refunded on request', $text);
+            $this->assertStringContainsString('refunded if the employer asks', $text);
             $this->assertStringContainsString($on ? 'switched on, with payments simulated: no real money' : 'built and tested; switched off during the pilot', $text);
-            $this->assertStringContainsString('start-up fee of $2,500', $text);
+            $this->assertStringContainsString('Small (under 1,000 member businesses) $1,000 a year; Medium (1,000 to 3,999 member businesses) $2,500 a year; and Large (4,000 or more member businesses) $5,000 a year', $text);
+            $this->assertStringContainsString('paying from month 13', $text);
+            $this->assertStringContainsString('already pay card processing', $text);
+            $this->assertStringContainsString('may belong to the employer, the employee or the state (unclaimed property)', $text);
+            $this->assertStringContainsString('Local Goods charges no dormancy fees.', $text);
+            $this->assertStringNotContainsString('start-up fee', $text);
             $this->assertStringNotContainsString($on ? 'switched off during the pilot' : 'no real money', $text);
         }
+    }
+
+    public function test_the_unspent_credit_estimate_sits_under_revenue_and_says_it_is_not_counted(): void
+    {
+        $html = $this->actingAs($this->signIn(Role::Judge))->get('/business-model?scenario=a&case=base')->assertOk()->getContent();
+
+        preg_match('/<tr\b[^>]*data-unspent-estimate\b[^>]*>.*?<\/tr>/s', $html, $row);
+        $this->assertNotEmpty($row, 'The P&L has the estimate row.');
+        $this->assertStringContainsString('Unspent credits (estimate, not counted as revenue)', $row[0]);
+        $this->assertLessThan(strpos($html, 'data-unspent-estimate'), strpos($html, '>Revenue</th>'), 'It comes right after the revenue total.');
+
+        $note = self::text(substr($html, strpos($html, 'data-unspent-estimate-note')));
+        $this->assertStringStartsWith('Unspent credits (estimate, not counted as revenue): 85% spent in the month it\'s given; about 8% never spent. The rest is spent in later months.', trim(substr($note, strpos($note, 'Unspent'))));
+        $this->assertStringContainsString('Local Goods charges no dormancy fees.', $note);
     }
 
     public function test_it_is_labelled_a_projection_and_links_its_assumptions(): void

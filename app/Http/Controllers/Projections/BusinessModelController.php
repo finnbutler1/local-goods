@@ -26,7 +26,8 @@ class BusinessModelController extends Controller
 
     public const CSV_HEADERS = [
         'Scenario', 'Case', 'Year', 'BIDs', 'Employers', 'Participating employees', 'Merchants',
-        'BID initiation fees', 'Employer platform fees', 'Merchant fees', 'Interchange', 'Revenue',
+        'BID program fees', 'Employer platform fees', 'Merchant fees', 'Interchange', 'Revenue',
+        'Unspent credits (estimate, not counted as revenue)',
         'Stripe: employer purchases', 'Stripe Connect', 'AI fraud checks', 'Hosting', 'BID partner share', 'Cost of revenue', 'Gross profit',
         'Customer support', 'Sales and marketing', 'G&A, legal and compliance', 'Payroll', 'Operating expenses', 'EBITDA',
         'Spent at independent merchants', 'Visits', 'Customer funds held at year end (not revenue)',
@@ -63,7 +64,7 @@ class BusinessModelController extends Controller
             $out = fopen('php://output', 'w');
             $put = fn (array $row) => fputcsv($out, array_map(fn ($v) => RedemptionsExportController::cell((string) $v), $row), escape: '');
 
-            $put([config('projections.label').'. Every figure comes from the assumptions in docs/finance/MODEL.md. Customer funds are never revenue; unspent credits stay the employer\'s money.']);
+            $put([config('projections.label').'. Every figure comes from the assumptions in docs/finance/MODEL.md. Customer funds are never revenue. Unspent credits are an estimate, never counted in revenue, EBITDA or the break-even month.']);
             $put(self::CSV_HEADERS);
             foreach (self::rows($model) as $row) {
                 $put($row);
@@ -101,6 +102,7 @@ class BusinessModelController extends Controller
                         $scenario['name'], $case, $y['year'], $y['bids'], (int) round($y['employers']), (int) round($y['employees']), (int) round($y['merchants']),
                         ...array_map(fn ($line) => (int) round($y[$line]), [
                             'bid_fees', 'platform_fees', 'merchant_fees', 'interchange', 'revenue',
+                            'unspent_estimate',
                             'stripe_funding', 'stripe_connect', 'ai_checks', 'hosting', 'bid_share', 'cost_of_revenue', 'gross_profit',
                             'support', 'sales_marketing', 'g_and_a', 'payroll', 'opex', 'ebitda',
                             'spend', 'visits', 'customer_funds',

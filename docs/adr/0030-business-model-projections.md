@@ -1,6 +1,6 @@
 # 0030. A business model and impact projections, labelled "Projection, not results"
 
-**Status:** Accepted, implemented.
+**Status:** Accepted, implemented. The one-time BID initiation fee was replaced by an annual BID program fee, and an unspent-credit estimate was added (ADR 0043).
 
 ## Context
 

@@ -12,7 +12,7 @@ final class Projection
 {
     /** Lines added up over a year; everything else is read at the year's end. */
     private const FLOWS = [
-        'new_bids', 'new_employers', 'credits_bought', 'spend', 'visits', 'unspent', 'returned_to_employers',
+        'new_bids', 'new_employers', 'credits_bought', 'spend', 'visits', 'unspent', 'unspent_estimate', 'returned_to_employers',
         'bid_fees', 'platform_fees', 'merchant_fees', 'interchange',
         'stripe_funding', 'stripe_connect', 'ai_checks', 'hosting', 'bid_share',
         'support', 'sales_marketing', 'g_and_a', 'payroll',

@@ -106,7 +106,7 @@
                 <p class="mt-4 max-w-[52rem] text-sm text-muted">
                     How it is worked out: each BID launches in a month set by its scenario, then enrolls its employers and merchants in a straight line.
                     Spending is participating employees × monthly credit × the share of credits spent; visits are spending ÷ the average purchase.
-                    Credits employees don't spend stay their employer's money. The full method is in
+                    Credits employees don't spend are never Local Goods revenue. The full method is in
                     <a href="https://github.com/finnbutler1/local-goods/blob/main/docs/finance/MODEL.md" class="{{ $link }}" rel="noopener">the model's documentation</a>.
                 </p>
             </section>
