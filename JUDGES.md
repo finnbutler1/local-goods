@@ -17,7 +17,7 @@ On [uselocalgoods.com](https://uselocalgoods.com), press **Look around (read-onl
 
 If **Try it yourself** shows on the home page or on your judge Home, press it for a private copy of the demo where money really moves (it appears only while switched on). You get a role bar to switch between Employer (HR), Employee, Merchant, BID admin and Local Goods reviewer with one click, no passwords, and a "Try this" checklist:
 
-1. Buy credits as the employer. Simulated (no card is charged and Stripe is not contacted), unless the sandbox says payments use a separate Stripe test account: then you pay on Stripe's page with test card 4242 4242 4242 4242, no real money, and nothing reaches the live demo.
+1. Buy credits as the employer. Simulated (no card is charged and Stripe is not contacted), unless the sandbox says payments use a separate Stripe test account: then you pay on Stripe's card form (or Stripe's own page). Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC and any ZIP code. No real money, and nothing reaches the live demo; the email is filled in for you.
 2. Give some to Jordan Rivera.
 3. Pay at Farragut Grind as the employee.
 4. See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated).

@@ -34,14 +34,30 @@ if (mount) {
         panel.focus();
     };
 
+    // Sandbox only (ADR 0045 addendum): when Stripe.js doesn't load or can't
+    // mount the card form, go to Stripe's hosted page instead. The live page
+    // has no such form, so it only shows the message, as before.
+    const hosted = document.querySelector('form[data-checkout-fallback]');
+    const stripeFailed = (message) => {
+        if (!hosted) {
+            failed(message);
+            return;
+        }
+        failed("Stripe's card form didn't load here. Nothing was charged. Opening Stripe's own page instead…");
+        hosted.requestSubmit ? hosted.requestSubmit() : hosted.submit();
+    };
+    // Our own request for the form failed (closed, already paid, Stripe down): Try again, never the hosted page.
+    let secretFailed = false;
+
     (async () => {
         if (!window.Stripe) {
-            failed("Stripe's payment form didn't load. Nothing was charged. Check your connection, then try again.");
+            stripeFailed("Stripe's payment form didn't load. Nothing was charged. Check your connection, then try again.");
             return;
         }
         try {
             const stripe = window.Stripe(mount.dataset.stripeKey);
             const fetchClientSecret = async () => {
+                secretFailed = true;
                 const response = await fetch(mount.dataset.secretUrl, {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -51,6 +67,7 @@ if (mount) {
                 if (!response.ok || !body.client_secret) {
                     throw new Error(body.message ?? "Payment didn't start. Nothing was charged.");
                 }
+                secretFailed = false;
                 return body.client_secret;
             };
             // Stripe.js "endive" (our API version) renamed initEmbeddedCheckout.
@@ -59,7 +76,8 @@ if (mount) {
             mount.querySelector('[data-checkout-loading]')?.remove();
             checkout.mount(mount);
         } catch (error) {
-            failed(error?.message || "Payment didn't start. Nothing was charged.");
+            const message = error?.message || "Payment didn't start. Nothing was charged.";
+            secretFailed ? failed(message) : stripeFailed(message);
         }
     })();
 }

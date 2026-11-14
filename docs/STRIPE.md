@@ -474,13 +474,38 @@ keys, so `StripeMode` is simulated there and payouts, Connect, refunds,
 reconciliation, balances and sweeps stay simulated or refused. One exception,
 off by default: with `SANDBOX_STRIPE_ENABLED` exactly `true` and
 `SANDBOX_STRIPE_SECRET` an `sk_test_` key from a **separate Stripe test
-account**, the sandbox employer's Buy credits opens Stripe's hosted Checkout
-on that account (test card 4242 4242 4242 4242).
+account**, the sandbox employer's Buy credits opens Stripe Checkout on that
+account: the **embedded** card form on our page (the same view and
+`resources/js/checkout.js` as the live purchase) when
+`SANDBOX_STRIPE_PUBLISHABLE` is that account's `pk_test_` key, otherwise
+Stripe's hosted page. The test-card sentence is `SandboxStripe::TEST_CARD_HINT`
+("Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any
+3-digit CVC and any ZIP code. No real money.").
 
-- Only `App\Services\Sandbox\SandboxStripe` reads the key, only inside a
+- Only `App\Services\Sandbox\SandboxStripe` reads the keys, only inside a
   sandbox; its client can only create, read back and expire a Checkout
-  Session. The live site never uses it, and the deploy check refuses it if it
-  equals `STRIPE_SECRET`.
+  Session. The live site never uses them, and the deploy check refuses the
+  secret if it equals `STRIPE_SECRET` and the publishable key if it equals
+  `STRIPE_KEY`.
+- Publishable keys never cross: the live page's `data-stripe-key` is
+  `STRIPE_KEY` (blank inside a sandbox), a sandbox page's is
+  `SandboxStripe::publishableKey()` (null outside one).
+- Embedded: the session is opened when Buy credits (or Continue paying) is
+  pressed, with `ui_mode` `embedded_page` and `return_url` =
+  `employer.purchases.sandbox-return?session_id={CHECKOUT_SESSION_ID}`.
+  `employer.purchases.checkout` then only reads the saved, still-open session's
+  client secret; it never opens a new one, so a reload doesn't use up the 10.
+- Fallback order: embedded → hosted (publishable key missing or not
+  `pk_test_`; or Stripe.js didn't load or couldn't mount, when `checkout.js`
+  submits the page's "Pay on Stripe's page instead" form, `hosted=1`, which
+  expires the embedded session first) → simulated. Never a 500.
+- Every sandbox session sets `customer_email` to `employer@example.com`
+  (`SandboxCheckout::CHECKOUT_EMAIL`), so a visitor never types their own; the
+  live Checkout doesn't.
+- CSP: unchanged. The one policy already allows js.stripe.com,
+  checkout.stripe.com and api.stripe.com for the live embedded form; the
+  sandbox page gets the same header (`form-action` keeps
+  `https://checkout.stripe.com` for the hosted fallback).
 - Same lines as the live purchase (`StripeCheckout::lineItems`), including the
   employer platform fee line when it applies. Metadata `lg_sandbox` (a hash
   of the sandbox id), `lg_purchase_token`, `lg_purchase_reference`; no

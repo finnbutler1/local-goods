@@ -40,6 +40,10 @@ return [
     'stripe' => [
         'enabled' => env('SANDBOX_STRIPE_ENABLED') === true || env('SANDBOX_STRIPE_ENABLED') === 'true',
         'secret' => env('SANDBOX_STRIPE_SECRET'),
+        // The same account's publishable key (pk_test_ only), for Stripe's embedded
+        // card form on the sandbox's own page. Missing or not pk_test_: hosted
+        // Checkout instead. Never the live STRIPE_KEY (the deploy check refuses it).
+        'publishable' => env('SANDBOX_STRIPE_PUBLISHABLE'),
         // Checkout Sessions one sandbox may open; after that, Buy credits is simulated.
         'checkouts_per_sandbox' => 10,
     ],

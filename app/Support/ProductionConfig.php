@@ -53,6 +53,9 @@ class ProductionConfig
         if (($sandbox = SandboxStripe::problem()) !== null) {
             $problems[] = $sandbox;
         }
+        if (($sandbox = SandboxStripe::publishableProblem()) !== null) {
+            $problems[] = $sandbox;
+        }
 
         return $problems;
     }

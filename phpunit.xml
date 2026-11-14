@@ -26,6 +26,7 @@
         <env name="STRIPE_CONNECT_WEBHOOK_SECRET" value=""/>
         <env name="SANDBOX_STRIPE_ENABLED" value=""/>
         <env name="SANDBOX_STRIPE_SECRET" value=""/>
+        <env name="SANDBOX_STRIPE_PUBLISHABLE" value=""/>
         <env name="ANTHROPIC_MODEL" value="claude-opus-5-5"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

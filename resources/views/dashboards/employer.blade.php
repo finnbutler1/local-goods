@@ -7,8 +7,10 @@
 
     $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary';
     $readOnly = Gate::denies('manage-employer-program');
-    // A sandbox with its own Stripe test account: hosted Checkout (ADR 0045 addendum).
+    // A sandbox with its own Stripe test account (ADR 0045 addendum): Stripe's card
+    // form on this page when its publishable key is set, otherwise hosted Checkout.
     $sandboxStripe = \App\Services\Sandbox\SandboxStripe::available();
+    $sandboxEmbedded = \App\Services\Sandbox\SandboxStripe::embeddedAvailable();
     $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
 @endphp
 
@@ -231,7 +233,8 @@
                 </div>
 
                 @if ($buy['state'] === 'paying')
-                    {{-- Stripe's embedded Checkout (resources/js/checkout.js). The credits unlock only when Stripe's webhook confirms. --}}
+                    {{-- Stripe's embedded Checkout (resources/js/checkout.js). Live: the credits unlock only when Stripe's webhook confirms.
+                         Sandbox (ADR 0045 addendum): its own Stripe test account; recorded on return (sandbox-return), no webhook. --}}
                     <p class="mt-2">
                         Paying for <span class="font-semibold">{{ $buying->reference }}</span>:
                         <span class="tabular font-semibold">{{ Money::format($buying->amount_cents) }}</span> in credits.
@@ -242,27 +245,44 @@
                     @if ($buying->hasEmployerFee())
                         <p class="mt-1 text-sm" data-employer-fee-refunds>{{ $feeNotRefundable }}</p>
                     @endif
-                    <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm">
-                        <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
-                        No real money moves. Stripe holds the money, not Local Goods.
-                    </p>
-                    @include('partials.customer-funds-note', ['stripe' => true])
+                    @if ($sandboxStripe)
+                        <p id="test-card-hint" data-sandbox-stripe class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm font-semibold">
+                            Stripe test mode (separate sandbox). {{ \App\Services\Sandbox\SandboxStripe::TEST_CARD_HINT }} Nothing reaches the live site.
+                        </p>
+                    @else
+                        <p id="test-card-hint" class="mt-3 rounded-xl border-2 border-accent bg-band p-3 text-sm">
+                            <strong>Test mode:</strong> use card <span class="tabular font-mono">4000 0000 0000 0077</span>, any future date, any CVC.
+                            No real money moves. Stripe holds the money, not Local Goods.
+                        </p>
+                    @endif
+                    @include('partials.customer-funds-note', ['stripe' => $stripe])
                     <div class="mt-4 w-full min-w-0 overflow-hidden rounded-xl" data-embedded-checkout aria-label="Stripe payment form, test mode"
                          role="region" aria-describedby="test-card-hint"
-                         data-stripe-key="{{ config('services.stripe.key') }}"
+                         data-stripe-key="{{ $checkoutKey }}"
                          data-secret-url="{{ route('employer.purchases.checkout', $buying) }}"
                          data-csrf="{{ csrf_token() }}">
                         <p class="flex items-center gap-2 p-4 text-muted" data-checkout-loading><span class="spinner" aria-hidden="true"></span>Loading Stripe's payment form…</p>
                     </div>
+                    {{-- Sandbox only: if Stripe's card form can't load or mount, Stripe's hosted page instead (resources/js/checkout.js). --}}
                     <noscript>
-                        <p class="mt-3 rounded-xl bg-band p-3 text-sm">Paying by card needs JavaScript, because the card form is Stripe's. Turn it on and reload this page.</p>
+                        @if ($sandboxStripe)
+                            <p class="mt-3 rounded-xl bg-band p-3 text-sm">The card form here needs JavaScript. You can pay on Stripe's own page instead.</p>
+                            @include('dashboards.partials.sandbox-hosted-fallback', ['purchase' => $buying, 'auto' => false])
+                        @else
+                            <p class="mt-3 rounded-xl bg-band p-3 text-sm">Paying by card needs JavaScript, because the card form is Stripe's. Turn it on and reload this page.</p>
+                        @endif
                     </noscript>
                     <div hidden tabindex="-1" role="alert" data-checkout-error class="mt-4 rounded-xl border-2 border-hold bg-hold-bg p-4 text-hold">
                         <p class="font-semibold" data-checkout-error-text>Payment didn't start. Nothing was charged.</p>
-                        <form method="POST" action="{{ route('employer.purchases.pay', $buying) }}" data-busy="Starting again…" class="mt-3">
-                            @csrf
-                            <x-button type="submit" size="sm">Try again</x-button>
-                        </form>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <form method="POST" action="{{ route('employer.purchases.pay', $buying) }}" data-busy="Starting again…">
+                                @csrf
+                                <x-button type="submit" size="sm">Try again</x-button>
+                            </form>
+                            @if ($sandboxStripe)
+                                @include('dashboards.partials.sandbox-hosted-fallback', ['purchase' => $buying, 'auto' => true])
+                            @endif
+                        </div>
                     </div>
                     <form method="POST" action="{{ route('employer.purchases.cancel', $buying) }}" data-busy="Cancelling…" class="mt-4">
                         @csrf
@@ -298,6 +318,8 @@
                     <p class="mt-1 text-sm text-muted">
                         @if ($stripe)
                             Enter an amount and pay by card right here (Stripe test mode). The credits are ready to give once Stripe confirms the payment.
+                        @elseif ($sandboxEmbedded)
+                            Enter an amount and pay by card right here, on Stripe's card form. The credits are added once Stripe confirms the payment.
                         @elseif ($sandboxStripe)
                             Enter an amount and pay on Stripe's page. The credits are added when you come back and Stripe confirms the payment.
                         @elseif (\App\Services\Sandbox\Sandbox::active())
@@ -308,7 +330,7 @@
                     </p>
                     @if ($sandboxStripe)
                         {{-- ADR 0045 addendum: the sandbox's own Stripe test account, never the live one. --}}
-                        <p data-sandbox-stripe class="mt-2 rounded-lg border-2 border-accent px-3 py-2 font-semibold">Stripe test mode (separate sandbox): use card <span class="tabular font-mono">4242 4242 4242 4242</span>. No real money; nothing reaches the live site.</p>
+                        <p data-sandbox-stripe class="mt-2 rounded-lg border-2 border-accent px-3 py-2 font-semibold">Stripe test mode (separate sandbox). {{ \App\Services\Sandbox\SandboxStripe::TEST_CARD_HINT }} Nothing reaches the live site.</p>
                     @elseif (\App\Services\Sandbox\Sandbox::active())
                         {{-- ADR 0045: a sandbox never contacts Stripe. --}}
                         <p data-sandbox-simulated class="mt-2 rounded-lg border-2 border-accent px-3 py-2 font-semibold">Simulated payment: no card is charged and Stripe is not contacted.</p>
@@ -318,7 +340,7 @@
                         $feeHint = PlatformFee::enabled() ? ' A '.PlatformFee::label().' platform fee is added on top.' : '';
                         $prefill = old('purchase_amount', $buy['state'] === 'cancelled' ? Money::toDollars($buying->amount_cents) : null);
                     @endphp
-                    <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="{{ $stripe ? 'Opening the payment form…' : ($sandboxStripe ? 'Opening Stripe…' : 'Buying…') }}" class="mt-4">
+                    <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="{{ $stripe || $sandboxEmbedded ? 'Opening the payment form…' : ($sandboxStripe ? 'Opening Stripe…' : 'Buying…') }}" class="mt-4">
                         @csrf
                         <fieldset @disabled($readOnly) class="space-y-4">
                             <legend class="sr-only">Buy credits</legend>

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Corrections\CorrectionDecisions;
 use App\Services\Corrections\CorrectionRequests;
 use App\Services\Sandbox\Sandbox;
+use App\Services\Sandbox\SandboxCheckout;
 use App\Services\Sandbox\SandboxCheckoutClient;
 use App\Services\Sandbox\SandboxRoutes;
 use App\Services\Sandbox\SandboxStripe;
@@ -104,7 +105,8 @@ class SandboxStripeCheckoutTest extends TestCase
         $this->asSandboxEmployer();
 
         $page = $this->sandboxGet(route('employer.dashboard'))->assertOk();
-        $page->assertSee('Stripe test mode (separate sandbox): use card', false)
+        $page->assertSee('Stripe test mode (separate sandbox). '.SandboxStripe::TEST_CARD_HINT, false)
+            ->assertSee("pay on Stripe's page", false)
             ->assertSee('Payments use a separate Stripe test account: no real money, and nothing reaches the live demo. Deleted after 24 hours.')
             ->assertDontSee('data-sandbox-simulated', false);
 
@@ -119,6 +121,7 @@ class SandboxStripeCheckoutTest extends TestCase
         $this->assertSame($id, $purchase->stripe_checkout_session_id);
         $this->assertSame('payment', $session['mode']);
         $this->assertArrayNotHasKey('ui_mode', $session);
+        $this->assertSame(SandboxCheckout::CHECKOUT_EMAIL, $session['customer_email'], 'A made-up email, so a visitor never types their own');
         $this->assertSame('Local Goods credits ('.$purchase->reference.')', $session['line_items'][0]['price_data']['product_data']['name']);
         $this->assertSame(25000, $session['line_items'][0]['price_data']['unit_amount']);
         $this->assertSame($purchase->totalCents(), $this->checkout->sessions[$id]['amount_total']);
@@ -373,7 +376,10 @@ class SandboxStripeCheckoutTest extends TestCase
     {
         $this->get(route('sandbox.show'))->assertOk()->assertSee('Buying credits uses a separate Stripe test account');
         $this->startSandbox();
-        $this->sandboxGet(route('sandbox.home'))->assertOk()->assertSee('test card 4242 4242 4242 4242', false);
+        $this->get(route('sandbox.show'))->assertSee(SandboxStripe::TEST_CARD_HINT, false);
+        $this->sandboxGet(route('sandbox.home'))->assertOk()->assertSee(SandboxStripe::TEST_CARD_HINT, false);
+        $this->assertStringContainsString(SandboxStripe::TEST_CARD_HINT, SandboxRoutes::CHECKLIST_STRIPE_BUY);
+        $this->assertSame('Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC and any ZIP code. No real money.', SandboxStripe::TEST_CARD_HINT);
         $this->assertSame(SandboxRoutes::CHECKLIST_STRIPE_BUY, $this->insideSandbox(fn () => SandboxRoutes::checklist()[0][1]));
 
         config(['sandbox.stripe.enabled' => false]);

@@ -30,10 +30,15 @@ class FakeSandboxCheckoutClient implements SandboxCheckoutClient
 
         $id = 'cs_test_sandbox_fake_'.$this->next++;
 
+        // Embedded (ui_mode set): a client secret and no url, as Stripe answers; hosted: a url and no client secret.
+        $embedded = isset($params['ui_mode']);
+
         return $this->sessions[$id] = [
             'id' => $id,
             'object' => 'checkout.session',
-            'url' => 'https://checkout.stripe.com/c/pay/'.$id,
+            'ui_mode' => $embedded ? $params['ui_mode'] : 'hosted',
+            'url' => $embedded ? null : 'https://checkout.stripe.com/c/pay/'.$id,
+            'client_secret' => $embedded ? $id.'_secret_fake_not_a_real_secret' : null,
             'status' => 'open',
             'payment_status' => 'unpaid',
             'amount_total' => array_sum(array_map(fn ($l) => $l['price_data']['unit_amount'] * $l['quantity'], $params['line_items'])),

@@ -91,6 +91,12 @@ trait UsesSandboxes
         return $this->remember($this->withCookies($this->sandboxJar)->post($uri, $data));
     }
 
+    protected function sandboxPostJson(string $uri, array $data = []): TestResponse
+    {
+        // JSON requests send cookies only withCredentials(), like fetch with credentials: same-origin (checkout.js).
+        return $this->remember($this->withCookies($this->sandboxJar)->withCredentials()->postJson($uri, $data));
+    }
+
     /** Runs $callback with the sandbox's own database, as a request inside it would. */
     protected function insideSandbox(callable $callback): mixed
     {

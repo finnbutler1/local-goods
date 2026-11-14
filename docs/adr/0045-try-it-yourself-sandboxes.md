@@ -201,3 +201,40 @@ Tests: `SandboxStripeCheckoutTest` (with a fake client; live and sandbox keys
 both ways, record once, refresh, forged id, every mismatch, fallbacks, the
 10-session limit, the cap, Cancel/Continue, simulated refund, zero writes to
 the live database and zero live Stripe calls), `PublicClaimsSandboxStripeOnTest`.
+
+### Update (2026-11-14): embedded Checkout first, as on the live site
+
+The sandbox's Buy credits now shows **Stripe's embedded card form on our
+page**, the same view and `resources/js/checkout.js` as the live purchase, so
+it looks the same. Everything above is unchanged unless said here.
+
+- **Key.** `SANDBOX_STRIPE_PUBLISHABLE`, the sandbox account's `pk_test_` key
+  (Beanstalk only). Only `SandboxStripe::publishableKey()` reads it, and only
+  when `available()` (inside a sandbox, switched on, good secret). The live
+  page's `data-stripe-key` stays `STRIPE_KEY`, which a sandbox blanks; the
+  sandbox one is null outside a sandbox. `app:check-production-config` also
+  refuses it when it equals `STRIPE_KEY` (`SandboxStripe::publishableProblem`).
+- **Session.** Buy credits / Continue paying open it (`SandboxCheckout::start($p,
+  embedded: true)`: `ui_mode` `embedded_page`, `return_url` to
+  `sandbox-return?session_id={CHECKOUT_SESSION_ID}`, same lines, metadata and
+  text) and show the card form at `?pay=<ref>#buy`. `employer.purchases.checkout`
+  (now on `SandboxRoutes::ALLOWED`) only reads the saved open session's client
+  secret (`clientSecret()`), never opens one, so reloads don't count towards the
+  10. An open session of the other kind is expired before a new one.
+- **Recording** is exactly as above: Stripe sends the page to `sandbox-return`;
+  `confirm()` unchanged.
+- **Fallback order:** embedded → hosted → simulated. Hosted when the
+  publishable key is missing or not `pk_test_`, or when Stripe.js doesn't load
+  or can't mount (`checkout.js` submits the sandbox-only "Pay on Stripe's page
+  instead" form, `hosted=1`; also offered under `<noscript>`). A failed request
+  for our own client secret shows Try again, as on the live page. Simulated as
+  before (off, bad secret, Stripe down when opening, 10 used). Never a 500.
+- **Wording.** One sentence, `SandboxStripe::TEST_CARD_HINT`: "Use card 4242
+  4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC and
+  any ZIP code. No real money." On Buy credits (form and card form), checklist
+  step 1 and `/sandbox`. Every sandbox session sets `customer_email` to
+  `employer@example.com` (reserved domain), which Stripe fills in and locks,
+  so a visitor never types their own; the live Checkout doesn't set it.
+- **CSP** unchanged: the policy already allows the live embedded form's
+  origins, and the sandbox page gets the same header (tested).
+- Tests: `SandboxStripeEmbeddedCheckoutTest`, `PublicClaimsSandboxStripeEmbeddedOnTest`.

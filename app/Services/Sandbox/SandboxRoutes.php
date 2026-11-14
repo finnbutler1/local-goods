@@ -20,6 +20,7 @@ final class SandboxRoutes
         'employer.dashboard',
         'employer.program.update',
         'employer.purchases.store',
+        'employer.purchases.checkout',
         'employer.purchases.pay',
         'employer.purchases.status',
         'employer.purchases.cancel',
@@ -83,7 +84,7 @@ final class SandboxRoutes
     ];
 
     /** Step 1 of the checklist says to use Stripe's test card when this sandbox has its own Stripe test account. */
-    public const CHECKLIST_STRIPE_BUY = 'Under Buy credits, buy up to $5,000 of credits. You pay on Stripe\'s page with test card 4242 4242 4242 4242 (any future date, any CVC): a separate Stripe test account, no real money, and nothing reaches the live demo.';
+    public const CHECKLIST_STRIPE_BUY = 'Under Buy credits, buy up to $5,000 of credits and pay with Stripe\'s card form. '.SandboxStripe::TEST_CARD_HINT.' It is a separate Stripe test account, and nothing reaches the live demo.';
 
     /**
      * The checklist as shown: CHECKLIST, with step 1's wording following

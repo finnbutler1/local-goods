@@ -3,6 +3,24 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: The sandbox's Buy credits uses the same card form as the live site (switched off)
+
+- **Embedded Checkout in a sandbox.** With the sandbox Stripe account's
+  publishable key set (`SANDBOX_STRIPE_PUBLISHABLE`, `pk_test_` only), Buy
+  credits shows Stripe's card form inside our page, the same one the live
+  purchase uses, on the separate sandbox test account. Recording on return is
+  unchanged: once, only when paid with the expected amount, currency and
+  details; no webhook.
+- **Falls back** to Stripe's own page when that key is missing or wrong, or
+  the card form can't load, and to simulated after that.
+- **One test-card sentence:** "Use card 4242 4242 4242 4242 with any future
+  expiry date (e.g. 12/34), any 3-digit CVC and any ZIP code. No real money."
+  Stripe's email field is filled in with a made-up address
+  (employer@example.com), so nobody types their own.
+- The live page keeps the live key, a sandbox page only ever gets the sandbox
+  one, and the deploy check refuses the live key as the sandbox key. No
+  migration ([ADR 0045 addendum](docs/adr/0045-try-it-yourself-sandboxes.md)).
+
 ## 2026-11-14: Stripe Checkout inside a sandbox, on a separate test account (switched off)
 
 - **Buy credits can open real Stripe Checkout in a sandbox.** With

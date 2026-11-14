@@ -29,6 +29,9 @@ class StripeCheckout
     /** How long a Checkout stays open; after that Stripe expires it and the webhook makes room for a fresh one. */
     public const OPEN_FOR_SECONDS = 3600;
 
+    /** Stripe's embedded card form (Stripe.js "endive"); the sandbox's embedded Checkout uses the same. */
+    public const EMBEDDED_UI_MODE = 'embedded_page';
+
     public function __construct(private StripeGateway $stripe) {}
 
     /**
@@ -70,7 +73,7 @@ class StripeCheckout
             // Checkout. Which methods appear (card, in test mode) is set in
             // the Stripe Dashboard under Settings → Payment methods.
             'mode' => 'payment',
-            'ui_mode' => 'embedded_page',
+            'ui_mode' => self::EMBEDDED_UI_MODE,
             'client_reference_id' => $purchase->reference,
             'line_items' => self::lineItems($purchase),
             'payment_intent_data' => [

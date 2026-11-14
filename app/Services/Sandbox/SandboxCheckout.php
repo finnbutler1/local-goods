@@ -13,8 +13,10 @@ use InvalidArgumentException;
 use LogicException;
 
 /**
- * Hosted Stripe Checkout for Buy credits inside a sandbox (ADR 0045
- * addendum), on the separate sandbox Stripe test account (SandboxStripe).
+ * Stripe Checkout for Buy credits inside a sandbox (ADR 0045 addendum), on
+ * the separate sandbox Stripe test account (SandboxStripe): Stripe's
+ * embedded card form on our page when the sandbox's publishable key is set,
+ * as on the live site, otherwise Stripe's hosted page.
  *
  * No webhook: when the employer comes back, confirm() reads the Checkout
  * Session we saved on the purchase and records the purchase in this
@@ -42,6 +44,9 @@ class SandboxCheckout
     /** Per-sandbox count of Checkout Sessions opened, in the sandbox's own cache (inside its file). */
     public const BUDGET_KEY = 'sandbox.stripe_checkouts';
 
+    /** The email Checkout shows, filled in by us and not editable (example.com is reserved, RFC 2606). Never a real address. */
+    public const CHECKOUT_EMAIL = 'employer@example.com';
+
     /** How long a Checkout stays open (Stripe's minimum is 30 minutes). */
     public const OPEN_FOR_SECONDS = 3600;
 
@@ -58,12 +63,16 @@ class SandboxCheckout
     }
 
     /**
-     * The Stripe page to send the employer to, or null when Stripe already
-     * has the payment (then confirm() it instead). Throws
+     * Opens (or reuses) this purchase's Checkout on the sandbox account.
+     * Hosted: returns Stripe's page to send the employer to. Embedded
+     * ($embedded): returns the client secret for Stripe's card form on our
+     * page. Null when Stripe already has the payment (then confirm() it
+     * instead). An open Checkout of the same kind is reused (no new one, no
+     * count); one of the other kind is expired first. Throws
      * SandboxCheckoutUnavailable when this sandbox has used all its
      * Checkouts, StripeGatewayException when Stripe can't be asked.
      */
-    public function start(CreditPurchase $purchase): ?string
+    public function start(CreditPurchase $purchase, bool $embedded = false): ?string
     {
         $client = SandboxStripe::client() ?? throw new LogicException('Sandbox Stripe Checkout is off.');
 
@@ -73,10 +82,14 @@ class SandboxCheckout
 
         if ($purchase->stripe_checkout_session_id !== null) {
             $session = $client->retrieveCheckoutSession($purchase->stripe_checkout_session_id);
-            if (($session['status'] ?? null) === 'open' && is_string($session['url'] ?? null)) {
-                return $session['url'];
-            }
-            if (($session['status'] ?? null) !== 'expired') {
+            $status = $session['status'] ?? null;
+            if ($status === 'open') {
+                if (($reuse = self::reusable($session, $embedded)) !== null) {
+                    return $reuse;
+                }
+                // Open, but the other kind (embedded ↔ hosted): close it so only one can take a payment.
+                $client->expireCheckoutSession($purchase->stripe_checkout_session_id);
+            } elseif ($status !== 'expired') {
                 return null; // complete: Stripe has the payment
             }
         }
@@ -87,11 +100,15 @@ class SandboxCheckout
 
         $purchase->forceFill(['payment_token' => (string) Str::uuid(), 'stripe_checkout_session_id' => null, 'payment_error' => null])->save();
         $metadata = $this->metadata($purchase);
+        // Stripe fills in {CHECKOUT_SESSION_ID}; confirm() still reads the id saved below, never trusts this one alone.
+        $returnUrl = AppUrl::route('employer.purchases.sandbox-return', ['purchase' => $purchase]).'?session_id={CHECKOUT_SESSION_ID}';
 
-        $session = $client->createCheckoutSession([
+        $params = [
             'mode' => 'payment',
             'client_reference_id' => $purchase->reference,
             'line_items' => StripeCheckout::lineItems($purchase),
+            // A made-up address, filled in and locked by Stripe, so a visitor never types their own.
+            'customer_email' => self::CHECKOUT_EMAIL,
             'payment_intent_data' => [
                 'description' => 'Local Goods sandbox credits '.$purchase->reference.' (test mode, separate sandbox account)',
                 'metadata' => $metadata,
@@ -99,18 +116,61 @@ class SandboxCheckout
             'metadata' => $metadata,
             'custom_text' => ['submit' => ['message' => StripeCheckout::submitMessage($purchase)]],
             'expires_at' => now()->addSeconds(self::OPEN_FOR_SECONDS)->getTimestamp(),
-            // Stripe fills in {CHECKOUT_SESSION_ID}; confirm() still reads the id saved below, never trusts this one alone.
-            'success_url' => AppUrl::route('employer.purchases.sandbox-return', ['purchase' => $purchase]).'?session_id={CHECKOUT_SESSION_ID}',
+        ] + ($embedded ? [
+            // Stripe's card form on our page, as on the live site; after paying Stripe sends the whole page here.
+            'ui_mode' => StripeCheckout::EMBEDDED_UI_MODE,
+            'return_url' => $returnUrl,
+        ] : [
+            'success_url' => $returnUrl,
             'cancel_url' => AppUrl::route('employer.dashboard', ['checkout' => 'left', 'purchase' => $purchase->reference]).'#buy',
-        ], 'lg-sandbox-checkout-'.$purchase->payment_token);
+        ]);
 
-        if (! is_string($session['id'] ?? null) || ! is_string($session['url'] ?? null)) {
+        $session = $client->createCheckoutSession($params, 'lg-sandbox-checkout-'.$purchase->payment_token.($embedded ? '-embedded' : ''));
+
+        $answer = is_string($session['id'] ?? null) ? self::reusable($session, $embedded) : null;
+        if ($answer === null) {
             throw new StripeGatewayException('Stripe sent a reply Local Goods could not read. Nothing was charged.', definite: false);
         }
 
         $purchase->forceFill(['stripe_checkout_session_id' => $session['id']])->save();
 
-        return $session['url'];
+        return $answer;
+    }
+
+    /**
+     * For Stripe's card form (resources/js/checkout.js): the client secret of
+     * the purchase's saved, still-open embedded Checkout. Only reads: never
+     * opens a new Checkout, so it never counts towards the limit. Throws
+     * InvalidArgumentException when there is no such Checkout,
+     * StripeGatewayException when Stripe can't be asked.
+     */
+    public function clientSecret(CreditPurchase $purchase): string
+    {
+        $client = SandboxStripe::client() ?? throw new LogicException('Sandbox Stripe Checkout is off.');
+
+        if (! $purchase->isPending()) {
+            throw new InvalidArgumentException($purchase->isCancelled() ? 'That purchase was cancelled.' : 'That purchase is already paid.');
+        }
+
+        $session = $purchase->stripe_checkout_session_id !== null
+            ? $client->retrieveCheckoutSession($purchase->stripe_checkout_session_id)
+            : [];
+        $secret = ($session['status'] ?? null) === 'open' ? self::reusable($session, true) : null;
+
+        return $secret ?? throw new InvalidArgumentException('This payment form has closed. Press Try again for a new one.');
+    }
+
+    /** What an open session gives for this kind: hosted = its page (url), embedded = its client secret (and no url). */
+    private static function reusable(array $session, bool $embedded): ?string
+    {
+        $url = $session['url'] ?? null;
+        $secret = $session['client_secret'] ?? null;
+
+        if ($embedded) {
+            return is_string($secret) && $secret !== '' && ! is_string($url) ? $secret : null;
+        }
+
+        return is_string($url) && $url !== '' ? $url : null;
     }
 
     /**

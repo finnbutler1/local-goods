@@ -18,7 +18,7 @@
         <ul class="mt-6 list-disc space-y-2 pl-5">
             <li>It is yours alone: nobody else sees it, and nothing in it touches the live demo.</li>
             @if (\App\Services\Sandbox\SandboxStripe::switchedOn())
-                <li>Buying credits uses a separate Stripe test account (test card 4242 4242 4242 4242): no real money, and nothing reaches the live demo. If Stripe can't be reached, the payment is simulated. Everything else is simulated.</li>
+                <li>Buying credits uses a separate Stripe test account, and nothing reaches the live demo. {{ \App\Services\Sandbox\SandboxStripe::TEST_CARD_HINT }} If Stripe can't be reached, the payment is simulated. Everything else is simulated.</li>
             @else
                 <li>Payments are simulated: no card is charged and Stripe is not contacted.</li>
             @endif

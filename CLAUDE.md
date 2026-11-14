@@ -15,7 +15,16 @@ building, for whom, and the rules for working in this repo.
   Checkout only, through `StripeNotices::quietlyInSandbox`. Live `STRIPE_*`
   stay blanked in a sandbox, so everything else is simulated as before.
   Deploy check refuses the live key as the sandbox key.
-- Hosted Checkout, lines from `StripeCheckout::lineItems`; no webhook:
+- Embedded Checkout first (2026-11-14 update): `SANDBOX_STRIPE_PUBLISHABLE`
+  (`pk_test_` only, read only by `SandboxStripe::publishableKey()` inside a
+  sandbox; deploy check refuses it = `STRIPE_KEY`); same view and
+  `checkout.js` as live; `employer.purchases.checkout` only reads the saved
+  session's client secret. Fallback embedded → hosted (no/bad pk, or Stripe.js
+  fails: `hosted=1` form) → simulated. Wording only via
+  `SandboxStripe::TEST_CARD_HINT`; `customer_email` = `employer@example.com`
+  on sandbox sessions only. Tests: `SandboxStripeEmbeddedCheckoutTest`,
+  `PublicClaimsSandboxStripeEmbeddedOnTest`.
+- Hosted Checkout (the fallback), lines from `StripeCheckout::lineItems`; no webhook:
   `employer.purchases.sandbox-return` → `SandboxCheckout::confirm` (saved
   session only; paid + amount + currency + `lg_sandbox`/token/reference) →
   `markPurchasePaidByStripe` (once). Fallback to simulated: off, bad key,

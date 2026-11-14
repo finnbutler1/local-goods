@@ -16,6 +16,7 @@ use App\Services\Payments\StripeGatewayException;
 use App\Services\Sandbox\Sandbox;
 use App\Services\Sandbox\SandboxCheckout;
 use App\Services\Sandbox\SandboxCheckoutUnavailable;
+use App\Services\Sandbox\SandboxStripe;
 use App\Support\DemoLogins;
 use App\Support\EmployerPlatformFee;
 use App\Support\Money;
@@ -69,6 +70,9 @@ class EmployerDashboardController extends Controller
         return view('dashboards.employer', [
             'employer' => $employer,
             'stripe' => StripeMode::active(),
+            // Stripe.js's key for the card form: the live one on the live site, the
+            // sandbox account's inside a sandbox (where the live one is blank). Never both.
+            'checkoutKey' => StripeMode::active() ? (string) config('services.stripe.key') : SandboxStripe::publishableKey(),
             'buy' => $this->buyState($request, $employer),
             'metrics' => $metrics->for($employer),
             'balance' => $employer->balanceCents(),
@@ -119,7 +123,8 @@ class EmployerDashboardController extends Controller
      */
     private function buyState(Request $request, Employer $employer): array
     {
-        $paying = StripeMode::active() && Gate::allows('manage-employer-program') ? $this->purchaseFromQuery($employer, 'pay') : null;
+        // Live Stripe, or a sandbox with its own account's embedded card form (ADR 0045 addendum).
+        $paying = (StripeMode::active() || SandboxStripe::embeddedAvailable()) && Gate::allows('manage-employer-program') ? $this->purchaseFromQuery($employer, 'pay') : null;
         $returned = $request->query('checkout') === 'returned' ? $this->purchaseFromQuery($employer, 'purchase') : null;
         $cancelled = $this->purchaseFromQuery($employer, 'cancelled');
 
@@ -304,12 +309,16 @@ class EmployerDashboardController extends Controller
             return redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy');
         }
 
-        // A sandbox with its own Stripe test account (ADR 0045 addendum): Stripe's hosted page.
+        // A sandbox with its own Stripe test account (ADR 0045 addendum): Stripe's card
+        // form on this page when its publishable key is set, otherwise Stripe's hosted page.
         $why = null;
         if (SandboxCheckout::applies()) {
+            $embedded = SandboxStripe::embeddedAvailable();
             try {
-                if (($url = app(SandboxCheckout::class)->start($purchase)) !== null) {
-                    return redirect()->away($url);
+                if (($opened = app(SandboxCheckout::class)->start($purchase, $embedded)) !== null) {
+                    return $embedded
+                        ? redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy')
+                        : redirect()->away($opened);
                 }
             } catch (SandboxCheckoutUnavailable|StripeGatewayException $e) {
                 // A new purchase whose Checkout never opened: nobody can pay it at Stripe, so simulating it is safe.
@@ -368,10 +377,15 @@ class EmployerDashboardController extends Controller
     public function checkout(CreditPurchase $purchase, StripeCheckout $checkout): JsonResponse
     {
         $this->authorizeOwn($purchase);
-        abort_unless(StripeMode::active(), 404);
+        // Live Stripe, or a sandbox's embedded form on its own account (never both: a sandbox blanks the live keys).
+        $sandbox = ! StripeMode::active() && SandboxStripe::embeddedAvailable();
+        abort_unless(StripeMode::active() || $sandbox, 404);
 
         try {
-            return response()->json(['client_secret' => $checkout->start($purchase)]);
+            return response()->json(['client_secret' => $sandbox
+                // Only the saved, still-open Checkout: this never opens a new one (storePurchase / payPurchase do).
+                ? app(SandboxCheckout::class)->clientSecret($purchase)
+                : $checkout->start($purchase)]);
         } catch (InvalidArgumentException|StripeGatewayException $e) {
             return response()->json(['message' => "Payment didn't start: {$e->getMessage()} No new charge was made."], 422);
         }
@@ -394,7 +408,7 @@ class EmployerDashboardController extends Controller
      * page; if Stripe already has the payment, we wait for it instead.
      * Simulated mode: marks it paid with no real money, as before.
      */
-    public function payPurchase(CreditPurchase $purchase, CreditLedger $ledger, StripeCheckout $checkout): RedirectResponse
+    public function payPurchase(Request $request, CreditPurchase $purchase, CreditLedger $ledger, StripeCheckout $checkout): RedirectResponse
     {
         $this->authorizeOwn($purchase);
 
@@ -414,12 +428,15 @@ class EmployerDashboardController extends Controller
                 : redirect()->to(route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy');
         }
 
-        // A sandbox with its own Stripe test account: back to Stripe's page, or record it if Stripe already has it.
+        // A sandbox with its own Stripe test account: back to Stripe's card form (or its
+        // hosted page: no publishable key, or hosted=1 after the card form failed to
+        // load), or record it if Stripe already has it.
         $why = null;
         if (SandboxCheckout::applies() && $purchase->isPending()) {
             $sandbox = app(SandboxCheckout::class);
+            $embedded = SandboxStripe::embeddedAvailable() && ! $request->boolean('hosted');
             try {
-                $url = $sandbox->start($purchase);
+                $url = $sandbox->start($purchase, $embedded);
             } catch (StripeGatewayException $e) {
                 return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Payment didn't start: {$e->getMessage()} Nothing was charged; {$purchase->reference} is still pending.");
             } catch (SandboxCheckoutUnavailable $e) {
@@ -429,7 +446,9 @@ class EmployerDashboardController extends Controller
             }
 
             if (is_string($url)) {
-                return redirect()->away($url);
+                return $embedded
+                    ? redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy')
+                    : redirect()->away($url);
             }
             if ($url === null) {
                 return $this->afterSandboxConfirm($purchase, $sandbox->confirm($purchase, checkUrl: false));
