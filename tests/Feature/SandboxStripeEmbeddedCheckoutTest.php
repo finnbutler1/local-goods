@@ -101,6 +101,8 @@ class SandboxStripeEmbeddedCheckoutTest extends TestCase
 
         $this->sandboxGet(route('employer.dashboard'))->assertOk()
             ->assertSee('pay by card right here', false)
+            ->assertSee('Buy credits (Stripe test mode, no real money)')
+            ->assertDontSee('Buy credits (simulated, no real money)')
             ->assertSee('Stripe test mode (separate sandbox). '.SandboxStripe::TEST_CARD_HINT, false);
 
         $this->buy('250')->assertRedirect(route('employer.dashboard', ['pay' => $this->sandboxPurchase()->reference]).'#buy');
@@ -272,7 +274,8 @@ class SandboxStripeEmbeddedCheckoutTest extends TestCase
             config(['sandbox.stripe.enabled' => true, 'sandbox.stripe.secret' => self::SANDBOX_SECRET]);
             config($settings);
             $this->asSandboxEmployer();
-            $this->sandboxGet(route('employer.dashboard'))->assertOk()->assertSee('data-sandbox-simulated', false)->assertDontSee(self::SANDBOX_PUBLISHABLE, false);
+            $this->sandboxGet(route('employer.dashboard'))->assertOk()->assertSee('data-sandbox-simulated', false)->assertDontSee(self::SANDBOX_PUBLISHABLE, false)
+                ->assertSee('Buy credits (simulated, no real money)')->assertDontSee('Buy credits (Stripe test mode, no real money)');
             $this->buy('250')->assertSessionHas('status', fn ($s) => str_contains($s, 'simulated, no real money'));
             $this->assertSame(CreditPurchase::STATUS_SIMULATED, $this->sandboxPurchase()->status, $case);
         }

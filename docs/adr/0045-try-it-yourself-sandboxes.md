@@ -230,11 +230,15 @@ it looks the same. Everything above is unchanged unless said here.
   for our own client secret shows Try again, as on the live page. Simulated as
   before (off, bad secret, Stripe down when opening, 10 used). Never a 500.
 - **Wording.** One sentence, `SandboxStripe::TEST_CARD_HINT`: "Use card 4242
-  4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC and
-  any ZIP code. No real money." On Buy credits (form and card form), checklist
+  4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC, any ZIP code
+  and any name. No real money." On Buy credits (form and card form), checklist
   step 1 and `/sandbox`. Every sandbox session sets `customer_email` to
   `employer@example.com` (reserved domain), which Stripe fills in and locks,
   so a visitor never types their own; the live Checkout doesn't set it.
+- **Button.** The sandbox's Buy credits button says "Buy credits (Stripe test
+  mode, no real money)" while a press would open Stripe (on, Checkouts left),
+  otherwise "Buy credits (simulated, no real money)". Stripe being unreachable
+  can't be known before the press; then the toast says it was simulated.
 - **CSP** unchanged: the policy already allows the live embedded form's
   origins, and the sandbox page gets the same header (tested).
 - Tests: `SandboxStripeEmbeddedCheckoutTest`, `PublicClaimsSandboxStripeEmbeddedOnTest`.

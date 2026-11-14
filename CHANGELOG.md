@@ -14,9 +14,13 @@ commit history.
 - **Falls back** to Stripe's own page when that key is missing or wrong, or
   the card form can't load, and to simulated after that.
 - **One test-card sentence:** "Use card 4242 4242 4242 4242 with any future
-  expiry date (e.g. 12/34), any 3-digit CVC and any ZIP code. No real money."
+  expiry date (e.g. 12/34), any 3-digit CVC, any ZIP code and any name. No real money."
   Stripe's email field is filled in with a made-up address
   (employer@example.com), so nobody types their own.
+- **The sandbox's Buy credits button says which it is:** "Buy credits (Stripe
+  test mode, no real money)" when sandbox Stripe is on, "Buy credits
+  (simulated, no real money)" when it's off or the sandbox has used its 10
+  Checkouts.
 - The live page keeps the live key, a sandbox page only ever gets the sandbox
   one, and the deploy check refuses the live key as the sandbox key. No
   migration ([ADR 0045 addendum](docs/adr/0045-try-it-yourself-sandboxes.md)).

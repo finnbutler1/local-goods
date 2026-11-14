@@ -107,6 +107,8 @@ class SandboxStripeCheckoutTest extends TestCase
         $page = $this->sandboxGet(route('employer.dashboard'))->assertOk();
         $page->assertSee('Stripe test mode (separate sandbox). '.SandboxStripe::TEST_CARD_HINT, false)
             ->assertSee("pay on Stripe's page", false)
+            ->assertSee('Buy credits (Stripe test mode, no real money)')
+            ->assertDontSee('Buy credits (simulated, no real money)')
             ->assertSee('Payments use a separate Stripe test account: no real money, and nothing reaches the live demo. Deleted after 24 hours.')
             ->assertDontSee('data-sandbox-simulated', false);
 
@@ -265,7 +267,8 @@ class SandboxStripeCheckoutTest extends TestCase
             $this->asSandboxEmployer();
 
             $this->sandboxGet(route('employer.dashboard'))->assertOk()->assertSee('data-sandbox-simulated', false)->assertDontSee('data-sandbox-stripe', false)
-                ->assertSee('Nothing here touches the live demo or Stripe.');
+                ->assertSee('Nothing here touches the live demo or Stripe.')
+                ->assertSee('Buy credits (simulated, no real money)')->assertDontSee('Buy credits (Stripe test mode, no real money)');
             $this->buy('250')->assertSessionHas('status', fn ($s) => str_contains($s, 'simulated, no real money'));
             $this->assertSame(CreditPurchase::STATUS_SIMULATED, $this->sandboxPurchase()->status, $case);
         }
@@ -293,6 +296,9 @@ class SandboxStripeCheckoutTest extends TestCase
         $this->buy('10')->assertSessionHas('status', fn ($s) => str_contains($s, 'opened its 10 Stripe Checkouts, so this payment was simulated'));
         $this->assertSame(10, $this->checkout->count('create'));
         $this->assertSame(CreditPurchase::STATUS_SIMULATED, $this->sandboxPurchase()->status);
+        // With no Checkouts left, the button says what a press now does.
+        $this->sandboxGet(route('employer.dashboard'))->assertOk()
+            ->assertSee('Buy credits (simulated, no real money)')->assertDontSee('Buy credits (Stripe test mode, no real money)');
         $this->assertNoLiveStripeOrWrites();
     }
 
@@ -379,7 +385,7 @@ class SandboxStripeCheckoutTest extends TestCase
         $this->get(route('sandbox.show'))->assertSee(SandboxStripe::TEST_CARD_HINT, false);
         $this->sandboxGet(route('sandbox.home'))->assertOk()->assertSee(SandboxStripe::TEST_CARD_HINT, false);
         $this->assertStringContainsString(SandboxStripe::TEST_CARD_HINT, SandboxRoutes::CHECKLIST_STRIPE_BUY);
-        $this->assertSame('Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC and any ZIP code. No real money.', SandboxStripe::TEST_CARD_HINT);
+        $this->assertSame('Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC, any ZIP code and any name. No real money.', SandboxStripe::TEST_CARD_HINT);
         $this->assertSame(SandboxRoutes::CHECKLIST_STRIPE_BUY, $this->insideSandbox(fn () => SandboxRoutes::checklist()[0][1]));
 
         config(['sandbox.stripe.enabled' => false]);

@@ -480,7 +480,7 @@ account: the **embedded** card form on our page (the same view and
 `SANDBOX_STRIPE_PUBLISHABLE` is that account's `pk_test_` key, otherwise
 Stripe's hosted page. The test-card sentence is `SandboxStripe::TEST_CARD_HINT`
 ("Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any
-3-digit CVC and any ZIP code. No real money.").
+3-digit CVC, any ZIP code and any name. No real money.").
 
 - Only `App\Services\Sandbox\SandboxStripe` reads the keys, only inside a
   sandbox; its client can only create, read back and expire a Checkout

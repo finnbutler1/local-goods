@@ -16,7 +16,7 @@ namespace App\Services\Sandbox;
 final class SandboxStripe
 {
     /** The test-card sentence wherever a sandbox tells the employer how to pay (Buy credits, checklist step 1). */
-    public const TEST_CARD_HINT = 'Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC and any ZIP code. No real money.';
+    public const TEST_CARD_HINT = 'Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC, any ZIP code and any name. No real money.';
 
     /** The switch alone (no key read), for wording outside a sandbox such as /sandbox. */
     public static function switchedOn(): bool

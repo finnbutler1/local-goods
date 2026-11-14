@@ -11,6 +11,9 @@
     // form on this page when its publishable key is set, otherwise hosted Checkout.
     $sandboxStripe = \App\Services\Sandbox\SandboxStripe::available();
     $sandboxEmbedded = \App\Services\Sandbox\SandboxStripe::embeddedAvailable();
+    // The sandbox's Buy credits button says Stripe only while a press would open Stripe
+    // (on, and Checkouts left); otherwise the purchase is simulated, and the button says so.
+    $sandboxCard = $sandboxStripe && \App\Services\Sandbox\SandboxCheckout::checkoutsLeft() > 0;
     $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
 @endphp
 
@@ -367,7 +370,7 @@
                                 </p>
                             @endif
                             <x-button type="submit" variant="accent" class="max-sm:w-full" :aria-describedby="$readOnly ? 'read-only-note' : null">
-                                {{ $buy['state'] === 'cancelled' ? 'Try again' : ($stripe ? 'Buy credits' : 'Buy credits (simulated, no real money)') }}
+                                {{ $buy['state'] === 'cancelled' ? 'Try again' : ($stripe ? 'Buy credits' : ($sandboxCard ? 'Buy credits (Stripe test mode, no real money)' : 'Buy credits (simulated, no real money)')) }}
                             </x-button>
                         </fieldset>
                     </form>
