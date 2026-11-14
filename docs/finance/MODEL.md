@@ -35,12 +35,13 @@ on the live demo; switch it off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`.
    credits × the share spent. Visits (and AI fraud checks) = spending ÷ the
    average purchase.
 4. **Revenue** is four separate lines, each of which can be 0:
-   - **BID annual program fee** (ADR 0043): set by district size, the same
-     in every case. Small (under 1,000 member businesses) $1,000 a year,
-     Medium (1,000 to 3,999) $2,500, Large (4,000 or more) $5,000. The pilot
-     district (the Golden Triangle, nearly 6,000 businesses: Large) is free
-     for its first 12 months and pays from month 13. The model has no size
-     for other districts, so each uses Medium, paid from its launch month.
+   - **BID annual program fee** (ADR 0043, ADR 0044): set by district size,
+     the same in every case. Small (under 1,000 member businesses) $1,000 a
+     year, Medium (1,000 to 3,999) $2,500, Large (4,000 or more) $5,000.
+     Every district pays from its program start, with no free pilot year:
+     the pilot district (the Golden Triangle, nearly 6,000 businesses: Large)
+     pays from month 1. The model has no size for other districts, so each
+     uses Medium, paid from its launch month.
      Each year is spread as a twelfth a month. Planned, not charged in the
      app.
    - **Employer platform fee:** per participating employee per month, paid
@@ -120,60 +121,60 @@ no dormancy fees.
 | | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
 | BIDs / employers / participating employees (year end) | 1 / 10 / 600 | 1 / 20 / 1,200 | 1 / 20 / 1,200 | 1 / 20 / 1,200 |
-| Revenue | $26k | $79k | $101k | $101k |
+| Revenue | $31k | $79k | $101k | $101k |
 | of which employer platform fees | $23k | $67k | $86k | $86k |
 | of which merchant fees | $2k | $7k | $9k | $9k |
-| of which BID program fees | $0 | $5k | $5k | $5k |
+| of which BID program fees | $5k | $5k | $5k | $5k |
 | Unspent credits (estimate, not counted as revenue) | $16k | $44k | $58k | $58k |
 | Cost of revenue | $7k | $16k | $20k | $20k |
-| Gross profit | $18k | $62k | $80k | $80k |
+| Gross profit | $23k | $62k | $80k | $80k |
 | Operating expenses | $219k | $186k | $172k | $172k |
 | of which payroll | $90k | $90k | $90k | $90k |
-| EBITDA | −$201k | −$124k | −$92k | −$92k |
+| EBITDA | −$196k | −$124k | −$92k | −$92k |
 | Spent at independent merchants | $166k | $472k | $612k | $612k |
 | Visits | 11,839 | 33,696 | 43,714 | 43,714 |
 | Customer funds held at year end (not revenue) | $18k | $38k | $39k | $39k |
-| Gross margin | 71% | 79% | 80% | 80% |
+| Gross margin | 76% | 79% | 80% | 80% |
 
 **DC-wide** (base case)
 
 | | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
 | BIDs / employers / participating employees (year end) | 2 / 11 / 650 | 6 / 49 / 2,950 | 10 / 117 / 7,000 | 12 / 185 / 11,100 |
-| Revenue | $26k | $147k | $417k | $772k |
+| Revenue | $31k | $147k | $417k | $772k |
 | of which employer platform fees | $24k | $122k | $357k | $672k |
 | of which merchant fees | $3k | $13k | $38k | $71k |
-| of which BID program fees | $208 | $12k | $22k | $29k |
+| of which BID program fees | $5k | $12k | $22k | $29k |
 | Unspent credits (estimate, not counted as revenue) | $16k | $81k | $238k | $448k |
 | Cost of revenue | $8k | $30k | $82k | $149k |
-| Gross profit | $19k | $117k | $335k | $623k |
+| Gross profit | $24k | $117k | $335k | $623k |
 | Operating expenses | $240k | $425k | $730k | $771k |
 | of which payroll | $99k | $227k | $452k | $479k |
-| EBITDA | −$221k | −$308k | −$395k | −$148k |
+| EBITDA | −$216k | −$308k | −$395k | −$148k |
 | Spent at independent merchants | $168k | $863k | $2.53M | $4.76M |
 | Visits | 11,991 | 61,625 | 180,777 | 339,848 |
 | Customer funds held at year end (not revenue) | $19k | $89k | $218k | $353k |
-| Gross margin | 71% | 80% | 80% | 81% |
+| Gross margin | 76% | 80% | 80% | 81% |
 
 **National rollout** (base case)
 
 | | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
 | BIDs / employers / participating employees (year end) | 4 / 23 / 1,350 | 24 / 168 / 10,050 | 60 / 580 / 34,800 | 100 / 1,248 / 74,900 |
-| Revenue | $49k | $442k | $1.85M | $4.63M |
+| Revenue | $54k | $442k | $1.85M | $4.63M |
 | of which employer platform fees | $42k | $364k | $1.57M | $4.00M |
 | of which merchant fees | $4k | $39k | $167k | $425k |
-| of which BID program fees | $3k | $39k | $111k | $206k |
+| of which BID program fees | $8k | $39k | $111k | $206k |
 | Unspent credits (estimate, not counted as revenue) | $28k | $243k | $1.05M | $2.67M |
 | Cost of revenue | $12k | $88k | $362k | $896k |
-| Gross profit | $37k | $354k | $1.49M | $3.73M |
+| Gross profit | $42k | $354k | $1.49M | $3.73M |
 | Operating expenses | $359k | $1.17M | $2.76M | $4.67M |
 | of which payroll | $173k | $580k | $1.37M | $2.51M |
-| EBITDA | −$322k | −$820k | −$1.27M | −$935k |
+| EBITDA | −$317k | −$820k | −$1.27M | −$935k |
 | Spent at independent merchants | $295k | $2.58M | $11.13M | $28.32M |
 | Visits | 21,098 | 184,268 | 794,902 | 2,023,000 |
 | Customer funds held at year end (not revenue) | $40k | $300k | $1.07M | $2.34M |
-| Gross margin | 76% | 80% | 80% | 81% |
+| Gross margin | 78% | 80% | 80% | 81% |
 <!-- projection:base-case:end -->
 
 ## Break-even and peak cash, every scenario and case
@@ -181,15 +182,15 @@ no dormancy fees.
 <!-- projection:break-even:start -->
 | Scenario | Case | Monthly break-even | Peak cash needed |
 |---|---|---|---|
-| Golden Triangle only | low | not within 72 months | $997k (still growing at month 72) |
-| Golden Triangle only | base | not within 72 months | $693k (still growing at month 72) |
-| Golden Triangle only | high | month 19 | $109k (month 10) |
-| DC-wide | low | not within 72 months | $2.72M (still growing at month 72) |
+| Golden Triangle only | low | not within 72 months | $992k (still growing at month 72) |
+| Golden Triangle only | base | not within 72 months | $688k (still growing at month 72) |
+| Golden Triangle only | high | month 19 | $105k (month 9) |
+| DC-wide | low | not within 72 months | $2.71M (still growing at month 72) |
 | DC-wide | base | month 54 | $1.09M (month 53) |
-| DC-wide | high | month 19 | $180k (month 18) |
+| DC-wide | high | month 19 | $175k (month 18) |
 | National rollout | low | not within 72 months | $11.23M (still growing at month 72) |
 | National rollout | base | month 49 | $3.35M (month 48) |
-| National rollout | high | month 16 | $245k (month 15) |
+| National rollout | high | month 16 | $240k (month 15) |
 <!-- projection:break-even:end -->
 
 ## What it takes
@@ -238,9 +239,8 @@ check with real employers, BIDs and merchants.
 | `average_ticket` | Average purchase | dollars | $10 | $14 | $18 | Assumption: to validate in customer discovery. A lunch, a coffee or a small retail purchase. Sets the number of visits and AI checks. Checked 2026-10-28. |
 | `merchants_per_bid` | Participating merchants per BID | merchants | 20 | 40 | 60 | [Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants](https://goldentriangledc.com/locate-here/why-golden-triangle). How many of those sign up is an assumption: 40 is about a fifth of the restaurants alone. Checked 2026-10-28. |
 | `merchant_ramp_months` | Months to sign up those merchants | months | 12 | 12 | 12 | Assumption: to validate in customer discovery. From the month the BID launches. Checked 2026-10-28. |
-| `bid_program_fee_pilot` | BID annual program fee, pilot district (Large tier) | dollars per BID per year | $5,000 | $5,000 | $5,000 | [Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants](https://goldentriangledc.com/locate-here/why-golden-triangle). Golden Triangle has nearly 6,000 businesses, so it is in the Large tier. Free for its first year (the pilot), then spread evenly over each month. Checked 2026-10-28. |
+| `bid_program_fee_pilot` | BID annual program fee, pilot district (Large tier) | dollars per BID per year | $5,000 | $5,000 | $5,000 | [Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants](https://goldentriangledc.com/locate-here/why-golden-triangle). Golden Triangle has nearly 6,000 businesses, so it is in the Large tier. Paid from the month it launches (no free pilot year), spread evenly over each month. Checked 2026-10-28. |
 | `bid_program_fee_other` | BID annual program fee, every other district (Medium tier) | dollars per BID per year | $2,500 | $2,500 | $2,500 | Assumption: to validate in customer discovery. The model has no size for the other districts, so it uses the Medium tier for each of them. Paid from the month the district launches, spread evenly over each month. Checked 2026-10-28. |
-| `bid_program_free_months` | Pilot months with no BID program fee | months, pilot district only | 12 | 12 | 12 | Assumption: to validate in customer discovery. Only the pilot district gets a free first year. Checked 2026-10-28. |
 | `employer_platform_fee` | Employer platform fee | dollars per participating employee per month | $4 | $6 | $10 | [Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month](https://www.vendr.com/marketplace/benepass). Third-party estimates; benefit platforms don't publish prices. Paid by the employer on top of the credits. The live product's employer platform fee uses this base figure (ADR 0042). Checked 2026-10-28. |
 | `merchant_fee_rate` | Merchant fee | share of each sale | 0% | 1.5% | 3% | Assumption: to validate in customer discovery. The live merchant fee is 0 (ADR 0029): no fee during the pilot. A small fee per sale would come later, only once the program shows it brings merchants new sales: independent merchants run on thin margins and already pay card processing. The scenario assumes a rate below card processing. Checked 2026-10-28. |
 | `interchange_rate` | Interchange (card-issuing phase only) | share of card spend | 1.35% | 1.35% | 1.35% | Assumption: to validate in customer discovery. The 2013 reference model's rate. Stripe Issuing's interchange share is not public. Counted only when card issuing is turned on, which it is not. Checked 2026-10-28. |

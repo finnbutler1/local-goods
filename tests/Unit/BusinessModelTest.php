@@ -37,7 +37,7 @@ class BusinessModelTest extends TestCase
             'employers_per_bid' => 1, 'employer_ramp_months' => 1, 'employees_per_employer' => 100,
             'monthly_credit_per_employee' => 50, 'utilization' => 0.8, 'average_ticket' => 10,
             'merchants_per_bid' => 2, 'merchant_ramp_months' => 1,
-            'bid_program_fee_pilot' => 1200, 'bid_program_fee_other' => 600, 'bid_program_free_months' => 12, 'employer_platform_fee' => 5, 'merchant_fee_rate' => 0.01,
+            'bid_program_fee_pilot' => 1200, 'bid_program_fee_other' => 600, 'employer_platform_fee' => 5, 'merchant_fee_rate' => 0.01,
             'ach_share' => 1, 'ai_input_tokens_per_check' => 1000, 'ai_output_tokens_per_check' => 500,
             'hosting_monthly' => 100, 'hosting_per_bid_monthly' => 0, 'bid_revenue_share' => 0.10,
             'payouts_per_merchant_per_month' => 4, 'support_per_employee' => 0.5,
@@ -57,11 +57,12 @@ class BusinessModelTest extends TestCase
         $this->assertEqualsWithDelta(4000, $first['spend'], 1e-9);
         $this->assertEqualsWithDelta(400, $first['visits'], 1e-9);
 
-        // Revenue: no BID fee in the pilot's free year + 100 × $5 + 1% of $4,000.
-        $this->assertEqualsWithDelta(0, $first['bid_fees'], 1e-9);
+        // Revenue: the pilot district's $1,200 a year from month 1 (no free pilot year, ADR 0044), a twelfth
+        // a month, + 100 × $5 + 1% of $4,000.
+        $this->assertEqualsWithDelta(100, $first['bid_fees'], 1e-9);
         $this->assertEqualsWithDelta(500, $first['platform_fees'], 1e-9);
         $this->assertEqualsWithDelta(40, $first['merchant_fees'], 1e-9);
-        $this->assertEqualsWithDelta(540, $first['revenue'], 1e-9);
+        $this->assertEqualsWithDelta(640, $first['revenue'], 1e-9);
 
         // Stripe: one $5,500 ACH purchase, 0.8% capped at $5. Connect: 2 × ($2 + 4 × 25¢) + 0.25% of ($4,000 − $40).
         $this->assertEqualsWithDelta(5, $first['stripe_funding'], 1e-9);
@@ -74,11 +75,11 @@ class BusinessModelTest extends TestCase
 
         // Opex: 100 × 50¢ support + $1,000 G&A + $12,000 / 12 founder.
         $this->assertEqualsWithDelta(2050, $first['opex'], 1e-9);
-        $this->assertEqualsWithDelta(540 - 176.50 - 2050, $first['ebitda'], 1e-9);
-        $this->assertEqualsWithDelta(540 - 176.50 - 2050, $second['ebitda'], 1e-9);
+        $this->assertEqualsWithDelta(640 - 176.50 - 2050, $first['ebitda'], 1e-9);
+        $this->assertEqualsWithDelta(640 - 176.50 - 2050, $second['ebitda'], 1e-9);
 
-        // The pilot district's $1,200 a year starts in month 13, a twelfth a month.
-        $this->assertEqualsWithDelta(0, $months[11]['bid_fees'], 1e-9);
+        // The same twelfth every month, the first year included.
+        $this->assertEqualsWithDelta(100, $months[11]['bid_fees'], 1e-9);
         $this->assertEqualsWithDelta(100, $months[12]['bid_fees'], 1e-9);
         $this->assertEqualsWithDelta(640 - 176.50 - 2050, $months[12]['ebitda'], 1e-9);
     }
@@ -89,8 +90,8 @@ class BusinessModelTest extends TestCase
         $needs = $model->whatItTakes();
 
         // Each employee adds $5 + 40¢ − 5¢ ACH − 9.9¢ payout − 5.6¢ AI − 50¢ BID share − 50¢ support = $4.195.
-        // Fixed: $6 Connect accounts + $100 hosting + $1,000 G&A + $1,000 founder − $100 BID program fee (past the
-        // pilot's free year) = $2,006. 2,006 / 4.195 = 478.19.
+        // Fixed: $6 Connect accounts + $100 hosting + $1,000 G&A + $1,000 founder − $100 BID program fee
+        // = $2,006. 2,006 / 4.195 = 478.19.
         $this->assertSame(479, $needs->employees);
         $this->assertSame(5, $needs->employers);
         $this->assertGreaterThanOrEqual(0, $model->fullyRampedBid('base', 479)['ebitda']);
@@ -145,7 +146,7 @@ class BusinessModelTest extends TestCase
         $this->assertSame(0.0, (float) array_sum(array_column(self::real()->run('c')->allMonths(), 'interchange')), 'Card issuing is off.');
     }
 
-    public function test_only_the_pilot_district_gets_a_free_year_and_others_pay_from_launch(): void
+    public function test_every_district_including_the_pilot_pays_from_launch(): void
     {
         $model = self::real();
         [$pilot, $second] = $model->launchMonths('b');
@@ -154,15 +155,14 @@ class BusinessModelTest extends TestCase
         $pilotFee = 5000 / 12;
 
         $this->assertSame(1, $pilot);
-        $this->assertLessThan(13, $second, 'The check needs the second district to launch inside the pilot year.');
-        $this->assertEqualsWithDelta(0, $months[$second - 2]['bid_fees'], 1e-9, 'Nothing before the second district launches.');
-        $this->assertEqualsWithDelta($other, $months[$second - 1]['bid_fees'], 1e-9, 'The second district pays from its launch month.');
-        $this->assertEqualsWithDelta($other, $months[11]['bid_fees'], 1e-9, 'The pilot district is still free in month 12.');
-        $this->assertEqualsWithDelta($other + $pilotFee, $months[12]['bid_fees'], 1e-9, 'The pilot district pays from month 13.');
+        $this->assertArrayNotHasKey('bid_program_free_months', self::config()['assumptions'], 'No free pilot year (ADR 0044).');
+        $this->assertEqualsWithDelta($pilotFee, $months[0]['bid_fees'], 1e-9, 'The pilot district pays from month 1.');
+        $this->assertEqualsWithDelta($pilotFee, $months[$second - 2]['bid_fees'], 1e-9, 'Only the pilot before the second district launches.');
+        $this->assertEqualsWithDelta($pilotFee + $other, $months[$second - 1]['bid_fees'], 1e-9, 'The second district pays from its launch month.');
 
-        $year2 = $model->run('a')->years()[1];
-        $this->assertEqualsWithDelta(5000, $year2['bid_fees'], 1e-6, 'A full paid year of the pilot district is its Large tier fee.');
-        $this->assertEqualsWithDelta(0, $model->run('a')->years()[0]['bid_fees'], 1e-9);
+        foreach (array_slice($model->run('a')->years(), 0, 4) as $year) {
+            $this->assertEqualsWithDelta(5000, $year['bid_fees'], 1e-6, "Year {$year['year']} of the pilot district is its Large tier fee.");
+        }
     }
 
     public function test_interchange_counts_only_once_card_issuing_is_turned_on(): void

@@ -85,11 +85,13 @@ return [
         ],
     ],
 
-    // The BID annual program fee by district size (ADR 0043). Planned, not charged in the app; free during the pilot.
+    // The BID annual program fee by district size (ADR 0043, ADR 0044). Every district pays from its program
+    // start date; no free pilot year. The live charge (App\Support\BidProgramFee) reads its price from this list
+    // only: the tier is the last one whose min_businesses the district's member count reaches.
     'bid_fee_tiers' => [
-        ['name' => 'Small', 'businesses' => 'under 1,000 member businesses', 'fee' => 1000],
-        ['name' => 'Medium', 'businesses' => '1,000 to 3,999 member businesses', 'fee' => 2500],
-        ['name' => 'Large', 'businesses' => '4,000 or more member businesses', 'fee' => 5000],
+        ['name' => 'Small', 'businesses' => 'under 1,000 member businesses', 'min_businesses' => 0, 'fee' => 1000],
+        ['name' => 'Medium', 'businesses' => '1,000 to 3,999 member businesses', 'min_businesses' => 1000, 'fee' => 2500],
+        ['name' => 'Large', 'businesses' => '4,000 or more member businesses', 'min_businesses' => 4000, 'fee' => 5000],
     ],
 
     // Interchange exists only if Local Goods later issues cards through Stripe Issuing. Off: the MVP has no card program.
@@ -110,10 +112,10 @@ return [
         'merchant_ramp_months' => $a('demand', 'Months to sign up those merchants', 'months', 12, 12, 12, null, '', 'From the month the BID launches.', true),
 
         // Revenue levers. Each is its own line and can be 0.
-        // The BID annual program fee (ADR 0043): planned, not charged in the app. Set by district size (bid_fee_tiers), the same tier in every case.
-        'bid_program_fee_pilot' => $fixed('revenue', 'BID annual program fee, pilot district (Large tier)', 'dollars per BID per year', 5000, 'https://goldentriangledc.com/locate-here/why-golden-triangle', 'Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants', 'Golden Triangle has nearly 6,000 businesses, so it is in the Large tier. Free for its first year (the pilot), then spread evenly over each month.'),
+        // The BID annual program fee (ADR 0043, ADR 0044). Set by district size (bid_fee_tiers), the same tier in every case.
+        // Every district pays from its program start: there is no free pilot year (ADR 0044).
+        'bid_program_fee_pilot' => $fixed('revenue', 'BID annual program fee, pilot district (Large tier)', 'dollars per BID per year', 5000, 'https://goldentriangledc.com/locate-here/why-golden-triangle', 'Golden Triangle BID: 44 blocks, nearly 6,000 businesses, around 200 restaurants', 'Golden Triangle has nearly 6,000 businesses, so it is in the Large tier. Paid from the month it launches (no free pilot year), spread evenly over each month.'),
         'bid_program_fee_other' => $fixed('revenue', 'BID annual program fee, every other district (Medium tier)', 'dollars per BID per year', 2500, null, '', 'The model has no size for the other districts, so it uses the Medium tier for each of them. Paid from the month the district launches, spread evenly over each month.'),
-        'bid_program_free_months' => $fixed('revenue', 'Pilot months with no BID program fee', 'months, pilot district only', 12, null, '', 'Only the pilot district gets a free first year.'),
         'employer_platform_fee' => $a('revenue', 'Employer platform fee', 'dollars per participating employee per month', 4, 6, 10, 'https://www.vendr.com/marketplace/benepass', 'Vendr pricing data for Benepass, a benefits platform: about $4 to $12 per employee per month', 'Third-party estimates; benefit platforms don\'t publish prices. Paid by the employer on top of the credits. The live product\'s employer platform fee uses this base figure (ADR 0042).'),
         'merchant_fee_rate' => $a('revenue', 'Merchant fee', 'share of each sale', 0, 0.015, 0.03, null, '', 'The live merchant fee is 0 (ADR 0029): no fee during the pilot. A small fee per sale would come later, only once the program shows it brings merchants new sales: independent merchants run on thin margins and already pay card processing. The scenario assumes a rate below card processing.'),
         'interchange_rate' => $fixed('revenue', 'Interchange (card-issuing phase only)', 'share of card spend', 0.0135, null, '', 'The 2013 reference model\'s rate. Stripe Issuing\'s interchange share is not public. Counted only when card issuing is turned on, which it is not.'),

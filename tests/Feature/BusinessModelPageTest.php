@@ -73,7 +73,8 @@ class BusinessModelPageTest extends TestCase
             $this->assertStringContainsString('refunded if the employer asks', $text);
             $this->assertStringContainsString($on ? 'switched on, with payments simulated: no real money' : 'built and tested; switched off during the pilot', $text);
             $this->assertStringContainsString('Small (under 1,000 member businesses) $1,000 a year; Medium (1,000 to 3,999 member businesses) $2,500 a year; and Large (4,000 or more member businesses) $5,000 a year', $text);
-            $this->assertStringContainsString('paying from month 13', $text);
+            $this->assertStringContainsString('Every district pays from its program start date, with no free pilot year.', $text);
+            $this->assertStringNotContainsString('month 13', $text);
             $this->assertStringContainsString('already pay card processing', $text);
             $this->assertStringContainsString('may belong to the employer, the employee or the state (unclaimed property)', $text);
             $this->assertStringContainsString('Local Goods charges no dormancy fees.', $text);

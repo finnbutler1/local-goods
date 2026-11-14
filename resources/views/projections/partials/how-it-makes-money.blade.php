@@ -11,7 +11,6 @@
     $gt = $model->run('a', 'base')->breakEvenMonth();
     $dc = $model->run('b', 'base')->breakEvenMonth();
     $tiers = config('projections.bid_fee_tiers');
-    $freeMonths = (int) $assumed('bid_program_free_months');
     $linkClass = 'font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 hover:decoration-primary-hover';
 @endphp
 <section aria-labelledby="makes-money-heading" class="rule-heavy mt-10 bg-band px-5 pb-6 sm:px-6" data-how-it-makes-money>
@@ -38,10 +37,10 @@
             brings merchants new sales: independent merchants run on thin margins and already pay card processing.
         </li>
         <li data-bid-program-fee>
-            <span class="font-semibold">Districts would pay an annual program fee, free during the pilot.</span>
+            <span class="font-semibold">Districts would pay an annual program fee.</span>
             It is set by district size: {{ collect($tiers)->map(fn ($t) => $t['name'].' ('.$t['businesses'].') '.Figures::exact($t['fee']).' a year')->join('; ', '; and ') }}.
-            The Golden Triangle, with nearly 6,000 businesses, is Large; the projection has it paying from month {{ $freeMonths + 1 }}, after a free
-            first year. The model has no size for other districts, so it uses Medium for each of them, paid from the month they launch.
+            Every district pays from its program start date, with no free pilot year. The Golden Triangle, with nearly 6,000 businesses,
+            is Large; the model has no size for other districts, so it uses Medium for each of them, paid from the month they launch.
             Planned, not charged in the app. The business improvement district (BID) would receive a share of the employer fee
             (planned; no money goes to a BID today).
         </li>

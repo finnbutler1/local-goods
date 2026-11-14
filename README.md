@@ -146,13 +146,13 @@ below is worked out from stated assumptions, listed with sources in
   to 0. Later, a small fee per sale (1.5% in the base-case projection) would
   come only once the program shows it brings merchants new sales: independent
   merchants run on thin margins and already pay card processing.
-- **Districts would pay an annual program fee, free during the pilot.** It is
-  set by district size: Small (under 1,000 member businesses) $1,000 a year;
-  Medium (1,000 to 3,999) $2,500; Large (4,000 or more) $5,000. The Golden
-  Triangle, with nearly 6,000 businesses, is Large; the projection has it
-  paying from month 13, after a free first year. The model has no size for
-  other districts, so it uses Medium for each of them, paid from the month
-  they launch. Planned, not charged in the app. The business improvement
+- **Districts would pay an annual program fee.** It is set by district size:
+  Small (under 1,000 member businesses) $1,000 a year; Medium (1,000 to
+  3,999) $2,500; Large (4,000 or more) $5,000. Every district pays from its
+  program start date, with no free pilot year. The Golden Triangle, with
+  nearly 6,000 businesses, is Large; the model has no size for other
+  districts, so it uses Medium for each of them, paid from the month they
+  launch. Planned, not charged in the app. The business improvement
   district (BID) would receive a share of the employer fee (planned; no money
   goes to a BID today).
 - **Unspent credits are never revenue.** In the product they don't expire:
@@ -177,15 +177,15 @@ low and high cases on the Business model page.
 <!-- projection:readme-table:start -->
 | Base case | Year 1 | Year 2 | Year 3 | Year 4 |
 |---|---|---|---|---|
-| Golden Triangle only: revenue | $26k | $79k | $101k | $101k |
+| Golden Triangle only: revenue | $31k | $79k | $101k | $101k |
 | Golden Triangle only: unspent credits (estimate, not counted as revenue) | $16k | $44k | $58k | $58k |
-| Golden Triangle only: EBITDA | −$201k | −$124k | −$92k | −$92k |
-| DC-wide: revenue | $26k | $147k | $417k | $772k |
+| Golden Triangle only: EBITDA | −$196k | −$124k | −$92k | −$92k |
+| DC-wide: revenue | $31k | $147k | $417k | $772k |
 | DC-wide: unspent credits (estimate, not counted as revenue) | $16k | $81k | $238k | $448k |
-| DC-wide: EBITDA | −$221k | −$308k | −$395k | −$148k |
-| National rollout: revenue | $49k | $442k | $1.85M | $4.63M |
+| DC-wide: EBITDA | −$216k | −$308k | −$395k | −$148k |
+| National rollout: revenue | $54k | $442k | $1.85M | $4.63M |
 | National rollout: unspent credits (estimate, not counted as revenue) | $28k | $243k | $1.05M | $2.67M |
-| National rollout: EBITDA | −$322k | −$820k | −$1.27M | −$935k |
+| National rollout: EBITDA | −$317k | −$820k | −$1.27M | −$935k |
 <!-- projection:readme-table:end -->
 
 ## How it works

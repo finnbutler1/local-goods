@@ -105,15 +105,13 @@ final class BusinessModel
             }
             $newBids = count(array_keys($launches, $m, true));
 
-            // BID annual program fee (ADR 0043), a twelfth each month: the pilot
-            // district (the first launch) is free for its first months; every
-            // other district pays from the month it launches.
+            // BID annual program fee (ADR 0043, ADR 0044), a twelfth each month:
+            // every district pays from the month it launches, the pilot district
+            // (the first launch) included. There is no free pilot year.
             $bidFees = 0.0;
             foreach ($launches as $i => $launched) {
-                if ($i === 0) {
-                    $bidFees += $m > $a->value('bid_program_free_months') ? $a->value('bid_program_fee_pilot') / 12 : 0.0;
-                } elseif ($launched <= $m) {
-                    $bidFees += $a->value('bid_program_fee_other') / 12;
+                if ($launched <= $m) {
+                    $bidFees += $a->value($i === 0 ? 'bid_program_fee_pilot' : 'bid_program_fee_other') / 12;
                 }
             }
 
@@ -158,8 +156,8 @@ final class BusinessModel
 
     /**
      * One fully enrolled BID in a quiet month: no launches, no new employers,
-     * no one-time legal setup, past the pilot's free months (so it pays the
-     * pilot district's program fee). What "What it takes" is worked out on.
+     * no one-time legal setup, paying the pilot district's program fee.
+     * What "What it takes" is worked out on.
      *
      * @return array<string, float|int>
      */
