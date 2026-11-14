@@ -2,6 +2,7 @@
 
 namespace App\Services\Solvency;
 
+use App\Models\BidProgramFeePayment;
 use App\Models\Correction;
 use App\Models\CorrectionAction;
 use App\Models\CreditLedgerEntry as E;
@@ -72,7 +73,9 @@ class SolvencyCheck
         $stripeSwept = -(int) DB::table('credit_ledger_entries as e')->join('operating_sweeps as s', 's.id', '=', 'e.operating_sweep_id')
             ->where('s.channel', OperatingSweep::CHANNEL_STRIPE)->whereIn('e.type', LedgerTranches::SWEEP_TYPES)->sum('e.amount_cents');
         $stripeIn = (int) DB::table('credit_ledger_entries as e')->join('credit_purchases as c', 'c.id', '=', 'e.credit_purchase_id')
-            ->where('c.status', CreditPurchase::STATUS_PAID)->whereIn('e.type', [E::TYPE_PURCHASE, ...E::PURCHASE_FEE_TYPES])->sum('e.amount_cents');
+            ->where('c.status', CreditPurchase::STATUS_PAID)->whereIn('e.type', [E::TYPE_PURCHASE, ...E::PURCHASE_FEE_TYPES])->sum('e.amount_cents')
+            // The BID program fee (ADR 0044) is only ever written from a verified Stripe payment: all of it is Stripe money in.
+            + $sum(E::TYPE_BID_PROGRAM_FEE);
 
         return new SolvencyPosition(
             employerCents: $accounts[LedgerTranches::EMPLOYER],
@@ -84,7 +87,7 @@ class SolvencyCheck
             refundHolds: $holds->count(),
             operatingCents: max(0, $platform),
             creditsPaidInCents: $sum(E::TYPE_PURCHASE),
-            feesPaidInCents: $sum(...E::PURCHASE_FEE_TYPES),
+            feesPaidInCents: $sum(...[...E::PURCHASE_FEE_TYPES, E::TYPE_BID_PROGRAM_FEE]),
             paidOutCents: -$sum(E::TYPE_PAYOUT),
             pulledBackCents: $sum(E::TYPE_PAYOUT_REVERSED, E::TYPE_REFUND_REVERSAL),
             refundedCents: array_sum(array_column($refunded, 'all')),
@@ -217,7 +220,7 @@ class SolvencyCheck
             $stripePayout = $line->merchant_payout_id !== null && ! isset($simulatedPayouts[$line->merchant_payout_id]);
             match ($type) {
                 E::TYPE_PURCHASE => $in['credits'] += $amount,
-                E::TYPE_PLATFORM_FEE, E::TYPE_EMPLOYER_PLATFORM_FEE => $in['fees'] += $amount,
+                E::TYPE_PLATFORM_FEE, E::TYPE_EMPLOYER_PLATFORM_FEE, E::TYPE_BID_PROGRAM_FEE => $in['fees'] += $amount,
                 E::TYPE_PAYOUT => $in['out'] -= $amount,
                 E::TYPE_PAYOUT_REVERSED, E::TYPE_REFUND_REVERSAL => $in['back'] += $amount,
                 E::TYPE_OPERATING_SWEEP, E::TYPE_OPERATING_SWEEP_RETURNED => $in['swept'] -= $amount,
@@ -227,6 +230,9 @@ class SolvencyCheck
                 $in['stripe_out'] -= $amount;
             }
             if (in_array($type, [E::TYPE_PURCHASE, ...E::PURCHASE_FEE_TYPES], true) && isset($stripePurchases[$line->credit_purchase_id])) {
+                $in['stripe_in'] += $amount;
+            }
+            if ($type === E::TYPE_BID_PROGRAM_FEE) {
                 $in['stripe_in'] += $amount;
             }
             if (in_array($type, [E::TYPE_PAYOUT, E::TYPE_PAYOUT_REVERSED, E::TYPE_REFUND_REVERSAL], true) && $stripePayout) {
@@ -280,6 +286,12 @@ class SolvencyCheck
         $purchases = (int) (clone $paid)->sum('amount_cents') + (int) (clone $paid)->sum('platform_fee_cents') + (int) (clone $paid)->sum('employer_fee_cents');
         if ($purchases !== $line(E::TYPE_PURCHASE, ...E::PURCHASE_FEE_TYPES)) {
             $mismatches[] = 'Paid purchases come to '.$money($purchases).' but their ledger lines to '.$money($line(E::TYPE_PURCHASE, ...E::PURCHASE_FEE_TYPES)).'.';
+        }
+
+        // The BID program fee (ADR 0044): one line per paid program year.
+        $bidFees = (int) BidProgramFeePayment::where('status', BidProgramFeePayment::STATUS_PAID)->sum('amount_cents');
+        if ($bidFees !== $line(E::TYPE_BID_PROGRAM_FEE)) {
+            $mismatches[] = 'Paid BID program fees come to '.$money($bidFees).' but their ledger lines to '.$money($line(E::TYPE_BID_PROGRAM_FEE)).'.';
         }
 
         // A payout reversed in the Stripe dashboard has its payout line and its payout_reversed line.

@@ -30,7 +30,8 @@ On [uselocalgoods.com](https://uselocalgoods.com), press **Look around (read-onl
 - That the fraud check catches planted collusion rings. It does not.
 - Web search in Merchant Eligibility Matching.
 - Handling of card disputes and returned payments.
-- Any BID or merchant fee charged in the product (both are planned and free in the pilot), or unspent credits counted as revenue.
+- A merchant fee charged in the product (it is set to 0 during the pilot), or unspent credits counted as revenue.
+- Real BID program fees. The BID annual program fee is built (ADR 0044) and charges only in Stripe test mode, with no real money, when `BID_PROGRAM_FEE_ENABLED` is switched on; it is off by default. There is no free pilot year in the model: every district pays from its program start date.
 
 ## Still to come
 

@@ -42,8 +42,10 @@ on the live demo; switch it off by unsetting `EMPLOYER_PLATFORM_FEE_ENABLED`.
      the pilot district (the Golden Triangle, nearly 6,000 businesses: Large)
      pays from month 1. The model has no size for other districts, so each
      uses Medium, paid from its launch month.
-     Each year is spread as a twelfth a month. Planned, not charged in the
-     app.
+     Each year is spread as a twelfth a month. In the product (ADR 0044) the
+     fee is built and switched off by default (`BID_PROGRAM_FEE_ENABLED`);
+     switched on, a BID admin pays each program year in Stripe test mode at
+     its tier's price, from the district's program start date.
    - **Employer platform fee:** per participating employee per month, paid
      by the employer on top of the credits. In the product (ADR 0042;
      switched on in Stripe test mode on 2026-11-12 (no real money)) it is added once a month to

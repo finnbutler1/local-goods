@@ -83,6 +83,27 @@ class BusinessModelPageTest extends TestCase
         }
     }
 
+    public function test_the_bid_program_fee_sentence_says_planned_until_it_charges_in_stripe_test_mode(): void
+    {
+        $box = function (): string {
+            $html = $this->actingAs($this->signIn(Role::BidAdmin))->get('/business-model')->assertOk()->getContent();
+            $box = substr($html, strpos($html, 'data-bid-program-fee'));
+
+            return self::text(substr($box, 0, strpos($box, '</li>')));
+        };
+
+        $this->assertStringContainsString('Districts would pay an annual program fee.', $box());
+        $this->assertStringContainsString('The BID program fee is planned, not charged in the app', $box());
+
+        config(['payments.bid_program_fee_enabled' => true]);
+        $this->assertStringContainsString('so nothing is charged', $box(), 'On, but no Stripe test keys: still not charged.');
+
+        config(['services.stripe.key' => 'pk_test_fake', 'services.stripe.secret' => 'sk_test_fake', 'services.stripe.webhook_secret' => 'whsec_test_fake']);
+        $this->assertStringContainsString('Districts pay an annual program fee.', $box());
+        $this->assertStringContainsString('The BID program fee is charged in Stripe test mode: no real money', $box());
+        $this->assertStringNotContainsString('planned, not charged', $box());
+    }
+
     public function test_the_unspent_credit_estimate_sits_under_revenue_and_says_it_is_not_counted(): void
     {
         $html = $this->actingAs($this->signIn(Role::Judge))->get('/business-model?scenario=a&case=base')->assertOk()->getContent();

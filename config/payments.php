@@ -21,4 +21,14 @@ return [
      * config/projections.php. Refused together with PLATFORM_FEE_PERCENT.
      */
     'employer_platform_fee_enabled' => env('EMPLOYER_PLATFORM_FEE_ENABLED', false) === true,
+
+    /*
+     * BID annual program fee, charged in Stripe test mode (ADR 0044). Off
+     * unless this is exactly true: unset means off, everywhere. Never set it
+     * in a deploy file or seeder (a test checks) and never turn it on
+     * without Finn's say-so. The price is not set here: it is the district's
+     * tier in config/projections.php bid_fee_tiers. It charges only with
+     * Stripe test keys; with no keys the page says Stripe test mode is needed.
+     */
+    'bid_program_fee_enabled' => env('BID_PROGRAM_FEE_ENABLED', false) === true,
 ];

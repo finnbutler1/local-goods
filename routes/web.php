@@ -19,6 +19,7 @@ use App\Http\Controllers\BidAdmin\MerchantEligibilityController;
 use App\Http\Controllers\BidAdmin\MerchantFeeController;
 use App\Http\Controllers\BidAdmin\ParticipationController;
 use App\Http\Controllers\BidAdmin\PartnershipController;
+use App\Http\Controllers\BidAdmin\ProgramFeeController;
 use App\Http\Controllers\BidAdmin\ResetDemoController;
 use App\Http\Controllers\BidAdmin\ReviewRedemptionController;
 use App\Http\Controllers\CorrectionRequestController;
@@ -174,6 +175,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/partnership', [PartnershipController::class, 'index'])->name('partnership');
         Route::post('/partnership/review', [PartnershipController::class, 'review'])->middleware('throttle:20,1,bid-admin.partnership.review')->name('partnership.review');
         Route::post('/partnership', [PartnershipController::class, 'store'])->middleware('throttle:10,1,bid-admin.partnership.store')->name('partnership.store');
+
+        // The BID annual program fee (ADR 0044): everyone here reads it; a BID admin pays in Stripe test mode
+        // (pay-bid-program-fee); the platform admin sets the district's details and writes notes.
+        Route::get('/program-fee', [ProgramFeeController::class, 'index'])->name('program-fee');
+        Route::post('/program-fee/pay', [ProgramFeeController::class, 'pay'])->middleware('throttle:10,1,bid-admin.program-fee.pay')->name('program-fee.pay');
+        Route::post('/program-fee/district', [ProgramFeeController::class, 'district'])->middleware('throttle:10,1,bid-admin.program-fee.district')->name('program-fee.district');
+        Route::post('/program-fee/{payment}/note', [ProgramFeeController::class, 'note'])->whereNumber('payment')->middleware('throttle:10,1,bid-admin.program-fee.note')->name('program-fee.note');
 
         // Merchant Eligibility Matching review queue: real candidates, never participants.
         Route::get('/merchants', [MerchantEligibilityController::class, 'index'])->name('merchants');

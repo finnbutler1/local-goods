@@ -968,6 +968,11 @@ results, and each says "Projection, not results"
   month (ADR 0043). Depending on state law, unspent balances may belong to
   the employer, the employee or the state (unclaimed property), so Local
   Goods doesn't rely on them. Local Goods charges no dormancy fees.
+- **The BID program fee has no free pilot year.** Every district, the
+  Golden Triangle included, pays from its program start date (ADR 0044).
+  In the product it is built and switched off by default; switched on, it
+  is charged in Stripe test mode only (no real money), at the price of the
+  district's size tier, once per district per program year.
 - **Who sees which figures.** Logged-out visitors see district numbers only.
   Fee, revenue and profit figures appear only on the signed-in Business
   model page and in the README section, each with the label and a link to

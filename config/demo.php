@@ -84,4 +84,11 @@ return [
     | form limit. Validation only: no money rule changes.
     */
     'employer_purchase_cap_cents' => 500_000,
+
+    /*
+    | The most the shared demo BID admin login may pay for the BID annual
+    | program fee (ADR 0044), in cents: the Large tier. Payment is in Stripe
+    | test mode only, and once a program year is paid nobody can pay it again.
+    */
+    'bid_program_fee_cap_cents' => 500_000,
 ];

@@ -6,7 +6,9 @@ use App\Enums\ReviewerType;
 use App\Enums\Role;
 use App\Http\Middleware\BlockJudgeWrites;
 use App\Http\Middleware\KeepPersonalContactsToAdjudication;
+use App\Models\BidProgramFeePayment;
 use App\Models\CreditPurchase;
+use App\Models\District;
 use App\Models\Employee;
 use App\Models\Employer;
 use App\Models\Merchant;
@@ -28,6 +30,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\Fakes\FakeClaudeClient;
 use Tests\TestCase;
 
@@ -79,6 +82,13 @@ class JudgeReadOnlyTest extends TestCase
         // A merchant application (ADR 0031), so check, approve and decline have one to change.
         app(MerchantApplications::class)->submit(['business_name' => 'Test Shop', 'address' => '1700 K St NW', 'category' => 'cafe',
             'contact_email' => 'shop@example.com', 'independence_answer' => 'One shop, locally owned, no franchise.']);
+
+        // A BID program fee payment (ADR 0044), so the note route has one to change.
+        BidProgramFeePayment::create([
+            'district_id' => District::default()->id, 'program_year' => 1, 'period_starts_on' => '2026-10-01', 'period_ends_on' => '2027-09-30',
+            'tier' => 'Large', 'member_businesses' => 6000, 'amount_cents' => 500000, 'currency' => 'usd',
+            'status' => BidProgramFeePayment::STATUS_PENDING, 'fee_key' => District::default()->id.':1', 'payment_token' => (string) Str::uuid(),
+        ]);
 
         $this->judge = $this->signIn(Role::Judge);
     }
@@ -141,7 +151,7 @@ class JudgeReadOnlyTest extends TestCase
 
     public function test_policies_and_gates_refuse_a_judge_on_their_own(): void
     {
-        foreach (['reset-demo', 'decide-merchant-eligibility', 'decide-merchant-applications', 'change-partnership', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
+        foreach (['reset-demo', 'decide-merchant-eligibility', 'decide-merchant-applications', 'change-partnership', 'pay-bid-program-fee', 'set-district-program', 'note-bid-program-fee', 'redeem', 'manage-reviewers', 'manage-feedback', 'manage-changelog', 'manage-adjudication', 'adjudicate'] as $ability) {
             $this->assertTrue(Gate::forUser($this->judge)->denies($ability), "Gate {$ability} let a judge through.");
         }
 
@@ -210,6 +220,7 @@ class JudgeReadOnlyTest extends TestCase
             'product' => MerchantProduct::value('id'),
             'payCode' => $this->payCode->id,
             'application' => MerchantApplication::value('id'),
+            'payment' => BidProgramFeePayment::value('id'),
         ];
 
         return preg_replace_callback('/\{(\w+)\??\}/', function ($m) use ($ids) {

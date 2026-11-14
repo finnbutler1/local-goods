@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Bid;
+use App\Models\BidProgramFeePayment;
 use App\Models\Correction;
 use App\Models\CorrectionAction;
 use App\Models\CreditLedgerEntry;
@@ -101,13 +102,20 @@ class StripeReconciliation
         }
 
         try {
-            $intents = collect($this->stripe->listPaymentIntents($since->getTimestamp()))
+            $allIntents = collect($this->stripe->listPaymentIntents($since->getTimestamp()));
+            $intents = $allIntents
                 ->filter(fn ($pi) => isset($pi['metadata']['lg_purchase_token']) && ($pi['status'] ?? null) === 'succeeded')
+                ->keyBy('id');
+            // The BID program fee (ADR 0044): its own metadata key, never a credit purchase.
+            $bidIntents = $allIntents
+                ->filter(fn ($pi) => isset($pi['metadata']['lg_bid_fee_token']) && ($pi['status'] ?? null) === 'succeeded')
                 ->keyBy('id');
             $allTransfers = collect($this->stripe->listTransfers($since->getTimestamp()));
             $transfers = $allTransfers->filter(fn ($tr) => isset($tr['metadata']['lg_payout_key']))->keyBy('id');
             $sweepTransfers = $allTransfers->filter(fn ($tr) => isset($tr['metadata']['lg_sweep_key']))->keyBy('id');
-            $refunds = collect($this->stripe->listRefunds($since->getTimestamp()))
+            // Every refund, so one made by hand in the Stripe dashboard on a BID program fee is seen too.
+            $allRefunds = collect($this->stripe->listRefunds($since->getTimestamp()));
+            $refunds = $allRefunds
                 ->filter(fn ($re) => isset($re['metadata']['lg_correction_key']))
                 ->keyBy('id');
             $balance = $this->stripe->retrieveBalance();
@@ -121,7 +129,9 @@ class StripeReconciliation
         [$transfers, $otherTransfers] = $transfers->partition(fn ($tr) => $this->ourTransfer($tr));
         [$refunds, $otherRefunds] = $refunds->partition(fn ($re) => $this->ourRefund($re));
         [$sweepTransfers, $otherSweeps] = $sweepTransfers->partition(fn ($tr) => $this->ourSweep($tr));
-        $report['other'] = $this->otherEnvironments($otherIntents, $otherTransfers->merge($otherSweeps), $otherRefunds);
+        // Always tagged (the fee came after tagging), so only another environment's tag puts one aside.
+        [$bidIntents, $otherBidIntents] = $bidIntents->partition(fn ($pi) => StripeEnvironment::of($pi['metadata'] ?? null) !== StripeEnvironment::OTHER);
+        $report['other'] = $this->otherEnvironments($otherIntents->merge($otherBidIntents), $otherTransfers->merge($otherSweeps), $otherRefunds);
         $succeeded = $refunds->where('status', 'succeeded');
 
         $report['stripe'] = [
@@ -131,13 +141,16 @@ class StripeReconciliation
             'transfers' => $transfers->count(),
             'refund_cents' => (int) $succeeded->sum('amount'),
             'refunds' => $succeeded->count(),
+            'bid_fee_cents' => (int) $bidIntents->sum(fn ($pi) => $pi['amount_received'] ?? $pi['amount']),
+            'bid_fees' => $bidIntents->count(),
             'balance_cents' => self::usd($balance['available'] ?? []) + self::usd($balance['pending'] ?? []),
             'available_cents' => self::usd($balance['available'] ?? []),
         ];
 
         [$this->awaiting, $this->knockOn] = [[], []];
         $report['mismatches'] = [...$this->comparePurchases($intents), ...$this->compareTransfers($transfers),
-            ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds), ...$this->compareMerchantFees(), ...$this->compareSweeps($sweepTransfers)];
+            ...$this->compareReversals($transfers), ...$this->compareRefunds($refunds), ...$this->compareMerchantFees(), ...$this->compareSweeps($sweepTransfers),
+            ...$this->compareBidProgramFees($bidIntents, $allRefunds, $local)];
 
         if ($local['purchase_cents'] !== $report['stripe']['purchase_cents']) {
             $report['mismatches'][] = $this->knockOn('purchase', 'Purchases: the ledger counts '.Money::format($local['purchase_cents']).' paid through Stripe'.self::feeSplit($local).'; Stripe received '
@@ -163,10 +176,11 @@ class StripeReconciliation
         }
         $report['only_awaiting_webhooks_since'] = $this->onlyAwaitingSince($report['mismatches']);
 
-        $expected = $local['purchase_cents'] - $local['transfer_cents'] - $local['refund_cents'] - $local['sweep_cents'];
+        $expected = $local['purchase_cents'] + $local['bid_fee_cents'] - $local['transfer_cents'] - $local['refund_cents'] - $local['sweep_cents'];
         $report['expected_balance_cents'] = $expected;
         if ($report['stripe']['balance_cents'] !== $expected) {
-            $report['notes'][] = 'Stripe\'s platform balance, the customer funds account ('.Money::format($report['stripe']['balance_cents']).'), differs from Stripe-paid purchases minus transfers'.($local['refund_cents'] > 0 ? ', refunds' : '')
+            $report['notes'][] = 'Stripe\'s platform balance, the customer funds account ('.Money::format($report['stripe']['balance_cents']).'), differs from Stripe-paid purchases'
+                .($local['bid_fee_cents'] > 0 ? ' and BID program fees' : '').' minus transfers'.($local['refund_cents'] > 0 ? ', refunds' : '')
                 .($local['sweep_cents'] > 0 ? ' and sweeps to Local Goods Operating' : '').' ('
                 .Money::format($expected).') by '.Money::format($report['stripe']['balance_cents'] - $expected).'. That is expected: in test mode Stripe takes its card fees from this balance, and it also holds test activity from before the last Reset demo and from other environments sharing this Stripe account. Not counted as a mismatch.';
         }
@@ -237,7 +251,61 @@ class StripeReconciliation
             // Sent to Local Goods Operating through Stripe (ADR 0034): no longer in the customer funds account.
             'sweep_cents' => (int) OperatingSweep::where('status', OperatingSweep::STATUS_SENT)->sum('amount_cents'),
             'sweeps' => OperatingSweep::where('status', OperatingSweep::STATUS_SENT)->count(),
+            // The BID program fee (ADR 0044), always paid through Stripe, and its platform ledger lines.
+            'bid_fee_cents' => (int) BidProgramFeePayment::where('status', BidProgramFeePayment::STATUS_PAID)->sum('amount_cents'),
+            'bid_fees' => BidProgramFeePayment::where('status', BidProgramFeePayment::STATUS_PAID)->count(),
+            'bid_fee_line_cents' => (int) CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_BID_PROGRAM_FEE)->sum('amount_cents'),
         ];
+    }
+
+    /**
+     * The BID program fee (ADR 0044), both ways: every paid program year has
+     * its successful Stripe payment at the same amount, every BID fee payment
+     * Stripe has is a paid year here, the ledger lines add up to the paid
+     * years, and no BID fee payment was refunded. The app never refunds this
+     * fee, so a refund can only have been made by hand in the Stripe
+     * dashboard; it is flagged and nothing is recorded.
+     *
+     * @return list<string>
+     */
+    private function compareBidProgramFees($intents, $allRefunds, array $local): array
+    {
+        $out = [];
+        $paid = BidProgramFeePayment::where('status', BidProgramFeePayment::STATUS_PAID)->with('district')->orderBy('id')->get();
+        $label = fn (BidProgramFeePayment $p) => 'the '.($p->district?->name ?? 'district').' program fee for program year '.$p->program_year;
+
+        foreach ($paid as $payment) {
+            $pi = $intents->get($payment->stripe_payment_intent_id);
+            if ($pi === null) {
+                $out[] = 'Local Goods counts '.$label($payment).' ('.Money::format($payment->amount_cents).') as paid through Stripe ('
+                    .$payment->stripe_payment_intent_id.'), but Stripe has no such successful payment since the last reset.';
+            } elseif (($pi['amount_received'] ?? $pi['amount']) !== $payment->amount_cents) {
+                $out[] = ucfirst($label($payment)).' is '.Money::format($payment->amount_cents).' in the ledger but Stripe received '
+                    .Money::format($pi['amount_received'] ?? $pi['amount']).' ('.$pi['id'].').';
+            }
+        }
+
+        foreach ($intents->except($paid->pluck('stripe_payment_intent_id')->filter()->all()) as $pi) {
+            $pending = BidProgramFeePayment::where('payment_token', $pi['metadata']['lg_bid_fee_token'])->where('status', BidProgramFeePayment::STATUS_PENDING)->first();
+            $out[] = $pending
+                ? $this->awaiting('bid_fee', $pending->updated_at, 'Stripe received '.Money::format($pi['amount_received'] ?? $pi['amount']).' for '.$label($pending).' ('.$pi['id'].'), but Local Goods still shows it due: the webhook has not arrived. Check the webhook endpoint in Stripe.')
+                : 'Stripe has a '.Money::format($pi['amount_received'] ?? $pi['amount']).' BID program fee payment ('.$pi['id'].') that Local Goods has no ledger record of (for example a program year paid twice, or a payment that did not match). Check before acting: Local Goods never refunds this fee in the app.';
+        }
+
+        if ($local['bid_fee_cents'] !== $local['bid_fee_line_cents']) {
+            $out[] = 'BID program fees: paid program years come to '.Money::format($local['bid_fee_cents']).', but the platform account in the ledger has '
+                .Money::format($local['bid_fee_line_cents']).' for them.';
+        }
+
+        $byIntent = $paid->keyBy('stripe_payment_intent_id');
+        $feeIntents = $intents->keys()->merge($byIntent->keys())->filter()->unique()->all();
+        foreach ($allRefunds->filter(fn ($re) => in_array($re['payment_intent'] ?? null, $feeIntents, true) && ($re['status'] ?? null) !== 'failed') as $refund) {
+            $payment = $byIntent->get($refund['payment_intent']);
+            $out[] = 'A '.Money::format($refund['amount']).' refund ('.$refund['id'].') of '.($payment ? $label($payment) : 'a BID program fee payment ('.$refund['payment_intent'].')')
+                .' was made in the Stripe dashboard. Local Goods doesn\'t refund this fee and recorded nothing; check before acting.';
+        }
+
+        return $out;
     }
 
     /**

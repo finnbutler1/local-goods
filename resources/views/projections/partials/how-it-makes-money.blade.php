@@ -1,8 +1,9 @@
-{{-- "How Local Goods makes money" (ADR 0030, ADR 0042): plain words for someone outside the BID world.
-     Figures come from config/projections.php and the model, never typed here; the fee sentence follows
-     EmployerPlatformFee::status(). Dollar figures stay next to "Projection, not results" and the
+{{-- "How Local Goods makes money" (ADR 0030, ADR 0042, ADR 0044): plain words for someone outside the BID world.
+     Figures come from config/projections.php and the model, never typed here; the fee sentences follow
+     EmployerPlatformFee::status() and BidProgramFee::status(). Dollar figures stay next to "Projection, not results" and the
      #assumptions link (PublicClaimsTest). Same summary as the README's Business model section. --}}
 @php
+    use App\Support\BidProgramFee;
     use App\Support\EmployerPlatformFee;
     use App\Support\Projections\Figures;
 
@@ -37,11 +38,13 @@
             brings merchants new sales: independent merchants run on thin margins and already pay card processing.
         </li>
         <li data-bid-program-fee>
-            <span class="font-semibold">Districts would pay an annual program fee.</span>
+            <span class="font-semibold">{{ BidProgramFee::charges() ? 'Districts pay an annual program fee.' : 'Districts would pay an annual program fee.' }}</span>
             It is set by district size: {{ collect($tiers)->map(fn ($t) => $t['name'].' ('.$t['businesses'].') '.Figures::exact($t['fee']).' a year')->join('; ', '; and ') }}.
             Every district pays from its program start date, with no free pilot year. The Golden Triangle, with nearly 6,000 businesses,
             is Large; the model has no size for other districts, so it uses Medium for each of them, paid from the month they launch.
-            Planned, not charged in the app. The business improvement district (BID) would receive a share of the employer fee
+            <span data-bid-program-fee-status>The BID program fee is {{ BidProgramFee::status() }}</span>
+            (<a href="https://github.com/finnbutler1/local-goods/blob/main/docs/adr/0044-bid-program-fee-charged-no-pilot-year.md" class="{{ $linkClass }}">ADR 0044</a>).
+            The business improvement district (BID) would receive a share of the employer fee
             (planned; no money goes to a BID today).
         </li>
         <li data-unspent-credits>

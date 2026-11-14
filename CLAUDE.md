@@ -5,6 +5,33 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**BID annual program fee: no free pilot year, charged in Stripe test mode —
+code done (2026-11-13, ADR 0044), not deployed; switched off.** One additive
+migration (`2026_11_15_000001_add_bid_program_fee`, snapshot
+`before-bid-program-fee`). Fraud gate, AI input, eval data, locks, merchant
+fee and employer fee unchanged.
+
+- Projection: `bid_program_free_months` removed; every district pays from
+  launch. `bid_fee_tiers` has numeric `min_businesses` (the live price).
+- `BID_PROGRAM_FEE_ENABLED` must be exactly `true`; **never set it in a
+  deploy file or seeder** and never turn it on without Finn's say-so.
+  Charges only in Stripe test mode (`BidProgramFee::charges()`).
+- `districts.member_businesses` / `program_starts_on`: empty until the
+  platform admin sets them (`DistrictProgramSettings`, reason, append-only
+  `district_program_changes`); start date fixed once a year is paid.
+- `/bid-admin/program-fee` (menu Program group). `BidProgramFees` is the only
+  place a payment changes: district lock, unique `fee_key`
+  (`district:year`), row reused for every Checkout (hosted). Webhook branch on
+  `lg_bid_fee_token`; amount, currency and metadata must match.
+- Ledger `bid_program_fee` (platform, `bid_program_fee_payment_id`), counted
+  in solvency in-hand/Stripe-in, `recordsAgree`, `stripeEarnedUnswept`,
+  reconciliation (own compare, expected balance, dashboard refunds flagged).
+  Never refunded in the app; platform admin writes a note only. Demo BID
+  admin cap `demo.bid_program_fee_cap_cents` ($5,000).
+- Tests: `BidProgramFeeTest`, `BidProgramFeeChargeTest`,
+  `DistrictProgramSettingsTest`, `BidProgramFeeBooksTest`,
+  `MysqlBidProgramFeeLockTest`, `BidProgramFeeMigrationSafetyTest`.
+
 **Revenue model update — projection and wording only (2026-11-13, ADR
 0043), not deployed.** No fee code, ledger, Stripe, migration or database
 change; no BID or merchant fee is charged in the app.

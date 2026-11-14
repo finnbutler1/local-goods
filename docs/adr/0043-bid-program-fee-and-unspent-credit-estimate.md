@@ -1,6 +1,6 @@
 # 0043. An annual BID program fee and an unspent-credit estimate, in the projection only
 
-**Status:** Accepted, implemented (projection and wording only, 2026-11-13). No charging code.
+**Status:** Accepted, implemented (projection and wording only, 2026-11-13). No charging code. The pilot district's free first year is superseded by [ADR 0044](0044-bid-program-fee-charged-no-pilot-year.md) (no free pilot year; the fee is charged in Stripe test mode when switched on).
 
 ## Context
 

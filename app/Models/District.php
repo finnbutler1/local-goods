@@ -23,7 +23,21 @@ class District extends Model
         return [
             'source_edited_on' => 'date',
             'retrieved_on' => 'date',
+            'program_starts_on' => 'date',
+            'member_businesses' => 'integer',
         ];
+    }
+
+    /** Payments of the BID annual program fee (ADR 0044). */
+    public function programFeePayments(): HasMany
+    {
+        return $this->hasMany(BidProgramFeePayment::class);
+    }
+
+    /** Every change to the member count or program start date, newest first (ADR 0044). */
+    public function programChanges(): HasMany
+    {
+        return $this->hasMany(DistrictProgramChange::class)->latest('id');
     }
 
     private ?BidBoundary $boundary = null;

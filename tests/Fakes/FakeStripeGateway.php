@@ -52,13 +52,11 @@ class FakeStripeGateway implements StripeGateway
                 throw new StripeGatewayException($message);
             }
             $id = 'cs_test_'.$this->next();
-            // Like the real API, retrieving an embedded session returns its client secret too.
+            // Like the real API, retrieving a session returns its client secret (embedded) or its url (hosted) too.
             $this->sessions[$id] = ['id' => $id, 'object' => 'checkout.session', 'status' => 'open', 'ui_mode' => $params['ui_mode'] ?? 'hosted_page']
-                + (($params['ui_mode'] ?? null) === 'embedded_page' ? ['client_secret' => $id.'_secret_fake'] : []);
+                + (($params['ui_mode'] ?? null) === 'embedded_page' ? ['client_secret' => $id.'_secret_fake'] : ['url' => 'https://checkout.stripe.test/'.$id]);
 
-            return ($params['ui_mode'] ?? null) === 'embedded_page'
-                ? $this->sessions[$id]
-                : $this->sessions[$id] + ['url' => 'https://checkout.stripe.test/'.$id];
+            return $this->sessions[$id];
         });
     }
 

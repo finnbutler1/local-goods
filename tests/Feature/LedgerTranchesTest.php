@@ -39,7 +39,7 @@ class LedgerTranchesTest extends TestCase
             $this->assertContains(LedgerTranches::trancheOf($type), [LedgerTranches::CUSTOMER, LedgerTranches::OPERATING]);
         }
         $this->assertSame(
-            [CreditLedgerEntry::TYPE_PLATFORM_FEE, CreditLedgerEntry::TYPE_EMPLOYER_PLATFORM_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED,
+            [CreditLedgerEntry::TYPE_PLATFORM_FEE, CreditLedgerEntry::TYPE_EMPLOYER_PLATFORM_FEE, CreditLedgerEntry::TYPE_BID_PROGRAM_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED,
                 CreditLedgerEntry::TYPE_OPERATING_SWEEP, CreditLedgerEntry::TYPE_OPERATING_SWEEP_RETURNED],
             array_keys(array_filter(LedgerTranches::ACCOUNT_OF_TYPE, fn ($a) => $a === LedgerTranches::PLATFORM)),
             'Only fee lines, and the sweeps that move earned fees to Local Goods Operating (ADR 0034), are operating funds.'

@@ -2,6 +2,7 @@
 
 namespace App\Services\Payments;
 
+use App\Models\BidProgramFeePayment;
 use App\Models\CorrectionAction;
 use App\Models\CreditPurchase;
 use App\Models\Merchant;
@@ -38,6 +39,7 @@ class StripeWebhookHandler
         private StripeOnboarding $onboarding,
         private MerchantPayouts $payouts,
         private CorrectionProcessor $corrections,
+        private BidProgramFees $bidFees,
     ) {}
 
     /** @return string a short outcome, for the log and stripe_events */
@@ -97,8 +99,20 @@ class StripeWebhookHandler
         return $token ? CreditPurchase::where('payment_token', $token)->first() : null;
     }
 
+    /** The BID program fee payment (ADR 0044) a PaymentIntent is for, by its current token. */
+    private function bidFeeFor(array $object): ?BidProgramFeePayment
+    {
+        $token = $object['metadata']['lg_bid_fee_token'] ?? null;
+
+        return is_string($token) && $token !== '' ? BidProgramFeePayment::where('payment_token', $token)->first() : null;
+    }
+
     private function paymentSucceeded(array $pi, Carbon $at): string
     {
+        if (isset($pi['metadata']['lg_bid_fee_token'])) {
+            return $this->bidFeePaid($pi, $at);
+        }
+
         $purchase = $this->purchaseFor($pi);
 
         if ($purchase === null) {
@@ -132,8 +146,53 @@ class StripeWebhookHandler
                 : 'already paid by another payment: '.$pi['id'].' not credited (see reconciliation)');
     }
 
+    /**
+     * The BID program fee (ADR 0044): recorded only for the row's current
+     * token, with amount, currency and metadata matching; otherwise nothing is
+     * written and reconciliation shows the payment as one Local Goods has no
+     * record of.
+     */
+    private function bidFeePaid(array $pi, Carbon $at): string
+    {
+        $payment = $this->bidFeeFor($pi);
+
+        if ($payment === null) {
+            Log::warning('Stripe payment for an unknown BID program fee token', ['payment_intent' => $pi['id'] ?? null]);
+
+            return 'ignored: not a current BID program fee payment (see reconciliation)';
+        }
+
+        if (($pi['status'] ?? null) !== 'succeeded') {
+            return 'ignored: payment not succeeded';
+        }
+
+        try {
+            $paid = $this->bidFees->markPaidByStripe($payment, $pi, $at);
+        } catch (InvalidArgumentException $e) {
+            Log::warning('Stripe BID program fee payment refused', ['bid_fee_payment' => $payment->id, 'payment_intent' => $pi['id'] ?? null]);
+
+            return 'refused: '.$e->getMessage();
+        }
+
+        return $paid
+            ? 'paid: BID program fee #'.$payment->id
+            : ($payment->stripe_payment_intent_id === $pi['id']
+                ? 'already paid: BID program fee #'.$payment->id
+                : 'already paid by another payment: '.$pi['id'].' not recorded (see reconciliation)');
+    }
+
     private function paymentFailed(array $pi): string
     {
+        if (isset($pi['metadata']['lg_bid_fee_token'])) {
+            $payment = $this->bidFeeFor($pi);
+            if ($payment === null || ! $payment->isPending()) {
+                return 'ignored: no pending BID program fee payment';
+            }
+            $payment->forceFill(['payment_error' => Str::limit((string) ($pi['last_payment_error']['message'] ?? 'The card payment failed.'), 250)])->save();
+
+            return 'payment failed: BID program fee #'.$payment->id.' stays due';
+        }
+
         $purchase = $this->purchaseFor($pi);
 
         if ($purchase === null || ! $purchase->isPending()) {
@@ -147,6 +206,17 @@ class StripeWebhookHandler
 
     private function checkoutExpired(array $session): string
     {
+        $fee = BidProgramFeePayment::where('stripe_checkout_session_id', $session['id'] ?? '')->first();
+        if ($fee !== null) {
+            if (! $fee->isPending()) {
+                return 'ignored: BID program fee #'.$fee->id.' is not pending';
+            }
+            // A fresh token, so the next "Pay this year's program fee" opens a new Checkout. The year stays due.
+            $fee->forceFill(['payment_token' => (string) Str::uuid(), 'stripe_checkout_session_id' => null])->save();
+
+            return 'checkout expired: BID program fee #'.$fee->id.' stays due';
+        }
+
         $purchase = CreditPurchase::where('stripe_checkout_session_id', $session['id'] ?? '')->first();
 
         if ($purchase === null || ! $purchase->isPending()) {

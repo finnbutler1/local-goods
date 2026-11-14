@@ -44,6 +44,10 @@ class ProductionConfig
         if (($fee = EmployerPlatformFee::problem()) !== null) {
             $problems[] = $fee;
         }
+        // Off (the default) is always fine; on, unusable tiers stop the deploy (ADR 0044).
+        if (($fee = BidProgramFee::problem()) !== null) {
+            $problems[] = $fee;
+        }
 
         return $problems;
     }

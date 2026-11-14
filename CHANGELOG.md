@@ -3,6 +3,27 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-13: BID annual program fee, charged in Stripe test mode (switched off)
+
+- **No free pilot year.** Every district, the Golden Triangle included, pays
+  its tier fee from its program start date. Break-even is unchanged
+  (DC-wide month 54); the Golden Triangle's first-year revenue in the base
+  case goes from $25,886 to $30,886. Projection, not results.
+- **Program Fee page** for the BID admin (`/bid-admin/program-fee`): the
+  district's tier, the annual amount, this program year (paid, due, not
+  started or not set) and the payment history. With
+  `BID_PROGRAM_FEE_ENABLED` on in Stripe test mode, "Pay this year's program
+  fee" opens Stripe Checkout at the tier's price; one payment per district
+  per program year. Off by default: no button, no charge.
+- The platform admin sets the district's member businesses and program
+  start date, with a reason; every change is logged (who, when, old → new).
+  The fee is never refunded in the app; a refund made in the Stripe
+  dashboard is flagged by reconciliation.
+- The fee is Local Goods' own money on the ledger's platform account:
+  solvency, the operating sweep, reconciliation and Where the Money Is count
+  it; customer funds are unchanged. One additive migration
+  ([ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md)).
+
 ## 2026-11-13: Laravel framework security update
 
 - `laravel/framework` 13.33.0 → 13.42.0, with `laravel/prompts` 0.3.24 →

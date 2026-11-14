@@ -93,6 +93,11 @@ class AppServiceProvider extends ServiceProvider
         // Moving earned money to Local Goods Operating (ADR 0034): platform admin only.
         Gate::define('sweep-operating-funds', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         // The BID partnership (ADR 0031): the BID admin or the platform operator changes it; judges read it.
+        // The BID annual program fee (ADR 0044): the BID pays it (Stripe test mode); the platform operator sets
+        // the district's size and start date and writes notes. Judges never pay, set or note.
+        Gate::define('pay-bid-program-fee', fn (User $user) => $user->hasRole(Role::BidAdmin) && ! $user->isReadOnly());
+        Gate::define('set-district-program', fn (User $user) => $user->hasRole(Role::PlatformAdmin) && ! $user->isReadOnly());
+        Gate::define('note-bid-program-fee', fn (User $user) => $user->hasRole(Role::PlatformAdmin) && ! $user->isReadOnly());
         Gate::define('change-partnership', fn (User $user) => $user->hasRole(Role::BidAdmin, Role::PlatformAdmin));
         Gate::define('manage-reviewers', fn (User $user) => $user->hasRole(Role::PlatformAdmin));
         Gate::define('manage-feedback', fn (User $user) => $user->hasRole(Role::PlatformAdmin));

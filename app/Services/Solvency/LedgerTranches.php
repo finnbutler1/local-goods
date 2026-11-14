@@ -70,6 +70,7 @@ final class LedgerTranches
 
         E::TYPE_PLATFORM_FEE => self::PLATFORM,
         E::TYPE_EMPLOYER_PLATFORM_FEE => self::PLATFORM,
+        E::TYPE_BID_PROGRAM_FEE => self::PLATFORM,
         E::TYPE_PLATFORM_MERCHANT_FEE => self::PLATFORM,
         E::TYPE_PLATFORM_MERCHANT_FEE_RETURNED => self::PLATFORM,
         E::TYPE_OPERATING_SWEEP => self::PLATFORM,
@@ -78,7 +79,7 @@ final class LedgerTranches
 
     /**
      * Lines that move money in hand, with their own amount: paid purchases
-     * and platform fees (both kinds) come in, payouts go out, reversed transfers and
+     * and platform fees (both kinds) and the BID program fee (ADR 0044) come in, payouts go out, reversed transfers and
      * refund reversals come back, sweeps leave for Local Goods Operating
      * (and a refused one comes back). The one other movement, an employer
      * refund going out, is an amount-0 employer_refunded line whose amount
@@ -88,6 +89,7 @@ final class LedgerTranches
         E::TYPE_PURCHASE,
         E::TYPE_PLATFORM_FEE,
         E::TYPE_EMPLOYER_PLATFORM_FEE,
+        E::TYPE_BID_PROGRAM_FEE,
         E::TYPE_PAYOUT,
         E::TYPE_PAYOUT_REVERSED,
         E::TYPE_REFUND_REVERSAL,

@@ -63,7 +63,7 @@ class OperatingSweeps
     /**
      * Earned on Stripe-paid activity and not yet swept through Stripe:
      * platform fees (both kinds) on Stripe-paid purchases, merchant fees on sales paid
-     * out through Stripe, less what refunds gave back, less Stripe sweeps.
+     * out through Stripe, the BID program fee (always Stripe), less what refunds gave back, less Stripe sweeps.
      */
     public function stripeEarnedUnswept(): int
     {
@@ -73,7 +73,9 @@ class OperatingSweeps
             ->whereIn('credit_purchase_id', CreditPurchase::where('status', CreditPurchase::STATUS_PAID)->select('id'))->sum('amount_cents')
             + (int) CreditLedgerEntry::where('platform', true)
                 ->whereIn('type', [CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE, CreditLedgerEntry::TYPE_PLATFORM_MERCHANT_FEE_RETURNED])
-                ->whereIn('redemption_id', $stripeRedemptions)->sum('amount_cents');
+                ->whereIn('redemption_id', $stripeRedemptions)->sum('amount_cents')
+            // The BID program fee (ADR 0044) is only ever written from a verified Stripe payment.
+            + (int) CreditLedgerEntry::where('platform', true)->where('type', CreditLedgerEntry::TYPE_BID_PROGRAM_FEE)->sum('amount_cents');
 
         $swept = -(int) CreditLedgerEntry::whereIn('type', [CreditLedgerEntry::TYPE_OPERATING_SWEEP, CreditLedgerEntry::TYPE_OPERATING_SWEEP_RETURNED])
             ->whereIn('operating_sweep_id', OperatingSweep::where('channel', OperatingSweep::CHANNEL_STRIPE)->select('id'))->sum('amount_cents');

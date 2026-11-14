@@ -393,6 +393,15 @@ private preview). See ADR 0034.
 
 `POST /stripe/webhook` (`App\Http\Controllers\Stripe\StripeWebhookController`):
 
+- **BID program fee (ADR 0044).** A `payment_intent.succeeded` carrying
+  `lg_bid_fee_token` goes to `BidProgramFees::markPaidByStripe`, never to
+  credit purchases: recorded only for the payment's current token, with
+  amount, currency, payment id, district and program year all matching, once
+  (one `bid_program_fee` line on the platform account). `payment_failed` and
+  `checkout.session.expired` keep the year due (an expired Checkout gets a
+  new token). Refunds of the fee are never recorded; reconciliation flags
+  one made in the Stripe dashboard.
+
 - Lives in `routes/stripe.php`, **outside the `web` middleware group**: no
   session, no cookies, no CSRF token, so nobody is ever signed in there and
   the judge write-block has nothing to judge. The Stripe signature is the
@@ -509,6 +518,7 @@ object Local Goods creates carries its environment in Stripe metadata
 | Object | Metadata |
 |---|---|
 | Checkout Session and its PaymentIntent | `lg_env`, `lg_instance`, `lg_purchase_id`, `lg_purchase_token`, `lg_purchase_reference` |
+| BID program fee Checkout Session and its PaymentIntent (ADR 0044) | `lg_env`, `lg_instance`, `lg_bid_fee_token`, `lg_bid_fee_id`, `lg_district_id`, `lg_program_year` |
 | Transfer | `lg_env`, `lg_instance`, `lg_redemption_id`, `lg_payout_key` |
 | Connected account (v2) | `lg_env`, `lg_instance`, `lg_merchant_id`, `lg_merchant` |
 

@@ -10,6 +10,8 @@ use App\Models\DemoActivityDay;
 use App\Models\SolvencyCheckRun;
 use App\Models\User;
 use App\Services\DemoActivity\ActivityGuard;
+use App\Services\Payments\BidProgramFees;
+use App\Services\Payments\StripeReconciliation;
 use App\Services\ReviewerLinks;
 use App\Services\Solvency\SolvencyCheck;
 use Carbon\CarbonImmutable;
@@ -19,6 +21,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\PaysBidProgramFee;
+use Tests\Concerns\UsesFakeStripe;
 use Tests\TestCase;
 
 /**
@@ -28,7 +32,9 @@ use Tests\TestCase;
  */
 class AdminHomeLiveDataTest extends TestCase
 {
+    use PaysBidProgramFee;
     use RefreshDatabase;
+    use UsesFakeStripe;
 
     private const NOT_SET = 'Not set: add PUBLIC_JUDGE_URL in the Beanstalk environment properties.';
 
@@ -156,6 +162,42 @@ class AdminHomeLiveDataTest extends TestCase
         }
 
         $this->get(route('admin.dashboard'))->assertOk()->assertSee('was refused')->assertSee('was recorded');
+    }
+
+    /** @return array<string, array{0: string}> */
+    public static function bidProgramFeeStates(): array
+    {
+        return ['paid' => ['paid'], 'pending' => ['pending'], 'reconciliation found an unmatched fee payment' => ['unmatched']];
+    }
+
+    /**
+     * The BID program fee (ADR 0044) with the reconciliation card: paid, due,
+     * and a stored reconciliation that found a fee payment it has no record
+     * of. The card reads the stored result only (the Nov 4 TypeError came
+     * from reading it as the wrong shape), so every case must render.
+     */
+    #[DataProvider('bidProgramFeeStates')]
+    public function test_home_renders_with_bid_program_fees(string $state): void
+    {
+        $this->fakeStripe();
+        $this->switchOnBidFee();
+        $district = $this->setUpDistrict(6000, now(ActivityGuard::TIMEZONE)->subMonth()->toDateString());
+        $payment = app(BidProgramFees::class)->request($district, $this->signIn(Role::BidAdmin));
+
+        if ($state !== 'pending') {
+            $this->payBidFee($payment)->assertOk();
+        }
+        if ($state === 'unmatched') {
+            $this->stripe->paymentIntents[] = $this->bidFeeIntent($payment->fresh(), ['id' => 'pi_test_unknown_fee'], ['lg_bid_fee_token' => 'f0000000-0000-4000-8000-000000000000']);
+            $report = app(StripeReconciliation::class)->report();
+            $this->assertNotEmpty(array_filter($report['mismatches'], fn ($m) => str_contains($m, 'pi_test_unknown_fee')));
+            $this->dayWithReconciliation(['at' => now()->toIso8601String(), 'state' => null, 'matches' => false, 'waiting_for_webhooks' => false,
+                'mismatches' => array_slice($report['mismatches'], 0, 5)]);
+        }
+
+        $this->signIn(Role::PlatformAdmin);
+        $this->withoutExceptionHandling();
+        $this->get(route('admin.dashboard'))->assertOk()->assertSee($state === 'unmatched' ? 'Mismatch' : 'Reconciliation');
     }
 
     public function test_home_only_counts_many_feedback_rows_from_any_kind_of_reviewer(): void

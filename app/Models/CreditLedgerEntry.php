@@ -91,6 +91,12 @@ class CreditLedgerEntry extends Model
     /** Platform account: Stripe definitely refused a sweep, so its amount is back with the unswept fees (ADR 0034). With TYPE_OPERATING_SWEEP it adds up to zero. */
     public const TYPE_OPERATING_SWEEP_RETURNED = 'operating_sweep_returned';
 
+    /**
+     * Platform account: a district paid its BID annual program fee in Stripe test mode (ADR 0044).
+     * Local Goods revenue, never customer funds. Not a purchase fee: it has no credit purchase.
+     */
+    public const TYPE_BID_PROGRAM_FEE = 'bid_program_fee';
+
     /** "platform" is true on platform-account entries and null on every other one. */
     public const ACCOUNT_COLUMNS = ['employee_id', 'employer_id', 'merchant_id', 'platform'];
 
@@ -99,7 +105,7 @@ class CreditLedgerEntry extends Model
     protected $fillable = [
         'employee_id', 'employer_id', 'merchant_id', 'amount_cents', 'type', 'redemption_id',
         'credit_purchase_id', 'credit_allocation_id', 'merchant_payout_id', 'description', 'decided_by', 'created_at', 'platform',
-        'correction_id', 'operating_sweep_id',
+        'correction_id', 'operating_sweep_id', 'bid_program_fee_payment_id',
     ];
 
     protected function casts(): array

@@ -6,7 +6,7 @@
     $dc = fn ($at) => $at === null ? '—' : (is_string($at) ? Carbon::parse($at, 'UTC') : $at)->setTimezone('America/New_York')->format('M j, Y, g:i A');
     $day = fn ($at) => $at === null ? '—' : $at->setTimezone('America/New_York')->format('M j, Y');
     $windows = $run?->failures['windows'] ?? [];
-    $hasEarned = $earned['merchant_fee_sales'] > 0 || $earned['platform_fee_purchases'] > 0 || $earned['employer_fee_purchases'] > 0;
+    $hasEarned = $earned['merchant_fee_sales'] > 0 || $earned['platform_fee_purchases'] > 0 || $earned['employer_fee_purchases'] > 0 || $earned['bid_fee_years'] > 0;
     $window = fn (array $w) => $dc($w['from']).' to '.($w['to'] === null ? 'now (still on)'
         : ($w['to']->copy()->setTimezone('America/New_York')->isSameDay($w['from']->copy()->setTimezone('America/New_York')) ? $w['to']->setTimezone('America/New_York')->format('g:i A') : $dc($w['to'])));
     $saleDays = $earned['first_sale_at'] === null ? null : ($day($earned['first_sale_at']) === $day($earned['last_sale_at'])
@@ -147,9 +147,15 @@
                             @if ($earned['employer_fee_purchases'] > 0)
                                 {{ $earned['employer_fee_purchases'] }} credit {{ Str::plural('purchase', $earned['employer_fee_purchases']) }} paid the monthly employer platform fee{{ $showsFigures ? ' ('.Money::format($earned['employer_fee_cents']).' in all)' : '' }}.
                             @endif
+                            @if ($earned['bid_fee_years'] > 0)
+                                <span data-earned-bid-fee>{{ $earned['bid_fee_years'] }} program {{ Str::plural('year', $earned['bid_fee_years']) }} of the BID annual program fee {{ $earned['bid_fee_years'] === 1 ? 'was' : 'were' }} paid in Stripe test mode{{ $showsFigures ? ' ('.Money::format($earned['bid_fee_cents']).' in all)' : '' }}.</span>
+                            @endif
                         </p>
                     @endif
                     <p data-charges-now="{{ $earned['charges_now'] ? 'yes' : 'no' }}">
+                        @if (\App\Support\BidProgramFee::charges())
+                            <span data-bid-program-fee-status>The BID program fee is {{ \App\Support\BidProgramFee::status() }}.</span>
+                        @endif
                         @if (\App\Support\EmployerPlatformFee::charges())
                             <span data-employer-fee-status>The employer platform fee is {{ \App\Support\EmployerPlatformFee::status() }}.</span>
                             New credit purchases can earn Local Goods money{{ \App\Support\MerchantFee::current()->isNone() ? '' : ', and so can sales, because the merchant fee is on too' }}.

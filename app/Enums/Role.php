@@ -85,6 +85,7 @@ enum Role: string
                 'impact' => $item('Impact', 'Impact', 'bid-admin.impact', $i['trend']),
                 'participation' => $item('Participation', 'Program', 'bid-admin.participation', $i['people']),
                 'partnership' => $item('Partnership', 'Partner', 'bid-admin.partnership', $i['handshake']),
+                'program-fee' => $item('Program Fee', 'Fee', 'bid-admin.program-fee', $i['ledger']),
                 'district' => $item('District Map', 'Map', 'district', $i['store']),
                 'business-model' => $platform ? $item('Business Model', 'Model', 'business-model', $i['ledger']) : null,
             ])],

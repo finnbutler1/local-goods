@@ -152,7 +152,10 @@ below is worked out from stated assumptions, listed with sources in
   program start date, with no free pilot year. The Golden Triangle, with
   nearly 6,000 businesses, is Large; the model has no size for other
   districts, so it uses Medium for each of them, paid from the month they
-  launch. Planned, not charged in the app. The business improvement
+  launch. In the product the fee is built and tested and switched off by
+  default (`BID_PROGRAM_FEE_ENABLED`); switched on, a BID admin pays it in
+  Stripe test mode (no real money)
+  ([ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md)). The business improvement
   district (BID) would receive a share of the employer fee (planned; no money
   goes to a BID today).
 - **Unspent credits are never revenue.** In the product they don't expire:
@@ -232,7 +235,14 @@ low and high cases on the Business model page.
    with, the merchant's Stripe transfer is the sale less the fee, a refund
    gives back its share of the fee, and reconciliation checks it all. Only
    the platform admin can change it, and every change is logged
-   ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)).
+   ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)). The BID
+   annual program fee is built too, switched off by default: with
+   `BID_PROGRAM_FEE_ENABLED` on, a BID admin pays one program year at a time
+   through Stripe Checkout in test mode, at the price of the district's size
+   tier (set by Local Goods, never by the browser), once per district per
+   year; it is Local Goods' own money, swept and reconciled like the other
+   fees, and never refunded in the app
+   ([ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md)).
 6. **Shops join, and the district boundary is enforced.** An independent
    shop applies at [/apply](https://uselocalgoods.com/apply)
    (no account) and follows a private status link. Local Goods checks the
