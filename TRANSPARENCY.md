@@ -345,9 +345,11 @@ Local Goods holds is a promise, not ours
     nothing, because both fees are off.
 
   Every line in the ledger belongs to one or the other, and a test checks
-  every line of the demo's history. **Unspent credits always remain the
-  employer's money, never ours:** they are never counted as income, spent
-  or invested, and an employer can ask for them back.
+  every line of the demo's history. **Unspent credits are customer funds
+  held for the program, never Local Goods' money:** they are never counted
+  as income, spent or invested. Credits an employer hasn't given out yet
+  stay on its balance and can be refunded on request; credits given to an
+  employee stay in their wallet, with no expiry.
 - **The rule.** The money paid in, less what has been paid out to merchants
   and refunded to employers, must always cover every open promise.
   - Each account counts on its own, so one below zero never hides another.
