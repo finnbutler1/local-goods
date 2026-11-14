@@ -65,6 +65,40 @@ class StripeCheckout
             'lg_purchase_id' => (string) $purchase->id,
         ] + StripeEnvironment::tag();
 
+        $session = $this->stripe->createCheckoutSession([
+            // No payment_method_types: Stripe's current API refuses it for
+            // Checkout. Which methods appear (card, in test mode) is set in
+            // the Stripe Dashboard under Settings → Payment methods.
+            'mode' => 'payment',
+            'ui_mode' => 'embedded_page',
+            'client_reference_id' => $purchase->reference,
+            'line_items' => self::lineItems($purchase),
+            'payment_intent_data' => [
+                'transfer_group' => $purchase->reference,
+                'description' => 'Local Goods credits '.$purchase->reference.' (test mode), held as customer funds',
+                'metadata' => $metadata,
+            ],
+            'metadata' => $metadata,
+            'custom_text' => ['submit' => ['message' => self::submitMessage($purchase)]],
+            'expires_at' => now()->addSeconds(self::OPEN_FOR_SECONDS)->getTimestamp(),
+            // APP_URL in production (the CloudFront address), never this request's host.
+            'return_url' => AppUrl::route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy',
+        ], 'lg-checkout-'.$purchase->payment_token);
+
+        $purchase->forceFill(['stripe_checkout_session_id' => $session['id']])->save();
+
+        return $session['client_secret'];
+    }
+
+    /**
+     * What Checkout charges for: the credits, then each fee on its own line.
+     * Shared with the sandbox's hosted Checkout (SandboxCheckout), so both
+     * show the same lines.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function lineItems(CreditPurchase $purchase): array
+    {
         $item = fn (int $cents, string $name) => [
             'quantity' => 1,
             'price_data' => ['currency' => config('services.stripe.currency'), 'unit_amount' => $cents, 'product_data' => ['name' => $name]],
@@ -79,29 +113,13 @@ class StripeCheckout
             $lineItems[] = $item($purchase->employer_fee_cents, self::employerFeeLine($purchase));
         }
 
-        $session = $this->stripe->createCheckoutSession([
-            // No payment_method_types: Stripe's current API refuses it for
-            // Checkout. Which methods appear (card, in test mode) is set in
-            // the Stripe Dashboard under Settings → Payment methods.
-            'mode' => 'payment',
-            'ui_mode' => 'embedded_page',
-            'client_reference_id' => $purchase->reference,
-            'line_items' => $lineItems,
-            'payment_intent_data' => [
-                'transfer_group' => $purchase->reference,
-                'description' => 'Local Goods credits '.$purchase->reference.' (test mode), held as customer funds',
-                'metadata' => $metadata,
-            ],
-            'metadata' => $metadata,
-            'custom_text' => ['submit' => ['message' => self::CUSTOMER_FUNDS_MESSAGE.($purchase->hasEmployerFee() ? ' '.self::EMPLOYER_FEE_MESSAGE : '')]],
-            'expires_at' => now()->addSeconds(self::OPEN_FOR_SECONDS)->getTimestamp(),
-            // APP_URL in production (the CloudFront address), never this request's host.
-            'return_url' => AppUrl::route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy',
-        ], 'lg-checkout-'.$purchase->payment_token);
+        return $lineItems;
+    }
 
-        $purchase->forceFill(['stripe_checkout_session_id' => $session['id']])->save();
-
-        return $session['client_secret'];
+    /** The text under Stripe's Pay button. */
+    public static function submitMessage(CreditPurchase $purchase): string
+    {
+        return self::CUSTOMER_FUNDS_MESSAGE.($purchase->hasEmployerFee() ? ' '.self::EMPLOYER_FEE_MESSAGE : '');
     }
 
     /** "Platform fee for November 2026: 38 participating employees × $6.00", the same words on Checkout and the receipt. */

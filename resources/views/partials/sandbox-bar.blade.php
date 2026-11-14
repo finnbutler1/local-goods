@@ -8,7 +8,11 @@
     <div class="wrap flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <p role="note" class="font-semibold">
             <x-badge tone="accent">Sandbox</x-badge>
-            Sandbox: your own copy. Nothing here touches the live demo or Stripe. Deleted after 24 hours.
+            @if (\App\Services\Sandbox\SandboxStripe::available())
+                Sandbox: your own copy. Payments use a separate Stripe test account: no real money, and nothing reaches the live demo. Deleted after 24 hours.
+            @else
+                Sandbox: your own copy. Nothing here touches the live demo or Stripe. Deleted after 24 hours.
+            @endif
         </p>
         <div class="flex flex-wrap gap-2">
             <form method="POST" action="{{ route('sandbox.start') }}" data-busy="Starting over…">

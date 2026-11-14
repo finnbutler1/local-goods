@@ -5,6 +5,25 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Sandbox Stripe Checkout on a separate test account — code done
+(2026-11-14, ADR 0045 addendum), not deployed; switched off.** No migration.
+
+- `SANDBOX_STRIPE_ENABLED` (exactly `true`) + `SANDBOX_STRIPE_SECRET`
+  (`sk_test_` only, from a **separate** Stripe test account; Beanstalk only,
+  never in a deploy file or seeder). Only `SandboxStripe` reads the key, only
+  while `Sandbox::active()`; `SandboxStripeClient` = create/retrieve/expire
+  Checkout only, through `StripeNotices::quietlyInSandbox`. Live `STRIPE_*`
+  stay blanked in a sandbox, so everything else is simulated as before.
+  Deploy check refuses the live key as the sandbox key.
+- Hosted Checkout, lines from `StripeCheckout::lineItems`; no webhook:
+  `employer.purchases.sandbox-return` → `SandboxCheckout::confirm` (saved
+  session only; paid + amount + currency + `lg_sandbox`/token/reference) →
+  `markPurchasePaidByStripe` (once). Fallback to simulated: off, bad key,
+  Stripe down, 10 Checkouts used (`sandbox.stripe.checkouts_per_sandbox`).
+  Employer refunds inside a sandbox are simulated (`CorrectionDecisions`).
+  **Never add a webhook in the sandbox Stripe account.**
+- Tests: `SandboxStripeCheckoutTest`, `PublicClaimsSandboxStripeOnTest`.
+
 **"Try it yourself" sandboxes — code done (2026-11-14, ADR 0045), not
 deployed; switched off.** No migration. Fraud prompt, signals, AI input, eval
 data, locks, judge read-only rules (`BlockJudgeWrites` allowlist) and money

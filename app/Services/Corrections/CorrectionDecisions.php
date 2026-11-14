@@ -13,6 +13,7 @@ use App\Models\MerchantPayout;
 use App\Models\Redemption;
 use App\Models\User;
 use App\Services\CreditLedger;
+use App\Services\Sandbox\Sandbox;
 use App\Services\Solvency\SolvencyGuard;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
@@ -199,7 +200,9 @@ class CorrectionDecisions
             $this->ledger->holdEmployerRefund($correction, $amountCents);
 
             foreach ($plan as [$purchase, $take]) {
-                $simulated = ! $purchase->isStripe();
+                // In a sandbox (ADR 0045 addendum) a card purchase was paid on the separate sandbox Stripe
+                // account; its refund is simulated, recorded in the sandbox only, and nothing is sent to Stripe.
+                $simulated = ! $purchase->isStripe() || Sandbox::active();
                 $correction->actions()->create([
                     'kind' => $simulated ? CorrectionAction::KIND_SIMULATED : CorrectionAction::KIND_CARD_REFUND,
                     'credit_purchase_id' => $purchase->id, 'amount_cents' => $take,

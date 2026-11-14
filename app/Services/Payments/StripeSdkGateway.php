@@ -21,6 +21,13 @@ class StripeSdkGateway implements StripeGateway
 {
     private ?StripeClient $client = null;
 
+    /**
+     * $secret is only ever passed by SandboxStripe (the separate sandbox
+     * test account, ADR 0045 addendum). The live gateway is built without
+     * it and reads services.stripe.secret, as before.
+     */
+    public function __construct(private ?string $secret = null) {}
+
     private function client(): StripeClient
     {
         // Stripe's official switch for its informational notices. Not enough on
@@ -29,7 +36,7 @@ class StripeSdkGateway implements StripeGateway
             putenv('STRIPE_SUPPRESS_NOTICES=true');
         }
 
-        return $this->client ??= new StripeClient(['api_key' => (string) config('services.stripe.secret'), 'max_network_retries' => 1]);
+        return $this->client ??= new StripeClient(['api_key' => $this->secret ?? (string) config('services.stripe.secret'), 'max_network_retries' => 1]);
     }
 
     public function createCheckoutSession(array $params, string $idempotencyKey): array

@@ -17,7 +17,11 @@
 
         <ul class="mt-6 list-disc space-y-2 pl-5">
             <li>It is yours alone: nobody else sees it, and nothing in it touches the live demo.</li>
-            <li>Payments are simulated: no card is charged and Stripe is not contacted.</li>
+            @if (\App\Services\Sandbox\SandboxStripe::switchedOn())
+                <li>Buying credits uses a separate Stripe test account (test card 4242 4242 4242 4242): no real money, and nothing reaches the live demo. If Stripe can't be reached, the payment is simulated. Everything else is simulated.</li>
+            @else
+                <li>Payments are simulated: no card is charged and Stripe is not contacted.</li>
+            @endif
             <li>The fraud check is the real one, with up to {{ config('sandbox.ai_calls_per_sandbox') }} AI checks per sandbox. After that, payments are held for a person to review.</li>
             <li>Switch between Employer (HR), Employee, Merchant, BID admin and Local Goods reviewer with one click. No passwords.</li>
             <li>It is deleted after {{ config('sandbox.lifetime_hours') }} hours, or when you press Exit.</li>

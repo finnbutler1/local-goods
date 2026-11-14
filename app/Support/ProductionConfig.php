@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Services\Sandbox\SandboxStripe;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -47,6 +48,10 @@ class ProductionConfig
         // Off (the default) is always fine; on, unusable tiers stop the deploy (ADR 0044).
         if (($fee = BidProgramFee::problem()) !== null) {
             $problems[] = $fee;
+        }
+        // Sandbox Stripe Checkout (ADR 0045 addendum): its key must be from a separate Stripe account.
+        if (($sandbox = SandboxStripe::problem()) !== null) {
+            $problems[] = $sandbox;
         }
 
         return $problems;

@@ -467,6 +467,36 @@ payouts, nothing sent to Stripe. Every page where money moves shows a
 row is labeled by how it was actually paid. A simulated payment is never
 shown as a Stripe one.
 
+## "Try it yourself" sandboxes: a separate Stripe test account (ADR 0045 addendum)
+
+A sandbox never uses this site's Stripe account: it blanks the `STRIPE_*`
+keys, so `StripeMode` is simulated there and payouts, Connect, refunds,
+reconciliation, balances and sweeps stay simulated or refused. One exception,
+off by default: with `SANDBOX_STRIPE_ENABLED` exactly `true` and
+`SANDBOX_STRIPE_SECRET` an `sk_test_` key from a **separate Stripe test
+account**, the sandbox employer's Buy credits opens Stripe's hosted Checkout
+on that account (test card 4242 4242 4242 4242).
+
+- Only `App\Services\Sandbox\SandboxStripe` reads the key, only inside a
+  sandbox; its client can only create, read back and expire a Checkout
+  Session. The live site never uses it, and the deploy check refuses it if it
+  equals `STRIPE_SECRET`.
+- Same lines as the live purchase (`StripeCheckout::lineItems`), including the
+  employer platform fee line when it applies. Metadata `lg_sandbox` (a hash
+  of the sandbox id), `lg_purchase_token`, `lg_purchase_reference`; no
+  `lg_env`/`lg_instance`.
+- **No webhook.** On return, the saved Checkout Session is read with the
+  sandbox key; the purchase is recorded in the sandbox's file through
+  `CreditLedger::markPurchasePaidByStripe` only when it is paid with the
+  expected amount, currency and metadata, once.
+- **Never add a webhook endpoint in the sandbox Stripe account**, and never
+  point anything in it at uselocalgoods.com. (The live webhook would refuse
+  its signature anyway.)
+- Falls back to simulated when off, the key is wrong, Stripe can't be
+  reached, or the sandbox has opened its 10 Checkouts. A refund of such a
+  purchase inside the sandbox is simulated; the test charge stays on the
+  sandbox account.
+
 ## Generated demo activity (ADR 0032)
 
 The demo activity generator pays for credits without a browser:
@@ -570,6 +600,8 @@ reference and amount; transfers carry the redemption number and amount.
 | `STRIPE_CONNECT_WEBHOOK_SECRET` | Signing secret of the destination for connected accounts' events (`account.updated`); recommended in production | Beanstalk only (locally `stripe listen` uses one secret for both) |
 | `STRIPE_SUPPRESS_NOTICES` | Optional, default `true`: hide Stripe's informational notices (logged instead) | not needed anywhere; the code guard works without it |
 | `PLATFORM_FEE_PERCENT` | Optional, default none (no fee). See "Platform fee (off)" | leave unset |
+| `SANDBOX_STRIPE_ENABLED` | Optional, default off: real Checkout for Buy credits inside sandboxes (ADR 0045 addendum) | Beanstalk only, Finn's say-so |
+| `SANDBOX_STRIPE_SECRET` | Secret key `sk_test_…` of a **separate** Stripe test account (never this site's) | Beanstalk only |
 
 Leave all of them blank for simulated mode.
 

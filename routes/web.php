@@ -200,6 +200,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/purchases/{purchase}/checkout', [EmployerDashboardController::class, 'checkout'])->middleware('throttle:20,1,employer.purchases.checkout')->name('purchases.checkout');
         Route::get('/purchases/{purchase}/status', [EmployerDashboardController::class, 'purchaseStatus'])->middleware('throttle:90,1,employer.purchases.status')->name('purchases.status');
         Route::post('/purchases/{purchase}/cancel', [EmployerDashboardController::class, 'cancelPurchase'])->middleware('throttle:10,1,employer.purchases.cancel')->name('purchases.cancel');
+        // Back from Stripe's hosted Checkout inside a sandbox (ADR 0045 addendum); a 404 anywhere else.
+        Route::get('/purchases/{purchase}/sandbox-return', [EmployerDashboardController::class, 'sandboxReturn'])->middleware('throttle:30,1,employer.purchases.sandbox-return')->name('purchases.sandbox-return');
         Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
         // Refund of unspent credits (ADR 0028): a request only; a platform admin decides.
         Route::post('/corrections', [CorrectionRequestController::class, 'employerCredits'])->middleware('throttle:5,1,employer.correction.store')->name('correction.store');

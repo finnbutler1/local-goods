@@ -3,6 +3,23 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: Stripe Checkout inside a sandbox, on a separate test account (switched off)
+
+- **Buy credits can open real Stripe Checkout in a sandbox.** With
+  `SANDBOX_STRIPE_ENABLED` on and a test key from a separate Stripe test
+  account, the sandbox employer pays on Stripe's page with test card 4242
+  4242 4242 4242. The same lines as the live purchase, including the employer
+  platform fee line when it applies. No real money, and nothing reaches the
+  live site's Stripe balance, reconciliation, solvency or sweeps.
+- **No webhook.** Back from Stripe, the purchase is recorded in that sandbox
+  only if Stripe says it is paid, for exactly the expected amount and
+  currency, with this sandbox's and this purchase's details; once only.
+  Anything else records nothing and says why.
+- **Falls back to simulated** when it is off, the key is wrong, Stripe can't
+  be reached or the sandbox has opened its 10 Checkouts. Refunds inside a
+  sandbox stay simulated. No migration
+  ([ADR 0045 addendum](docs/adr/0045-try-it-yourself-sandboxes.md)).
+
 ## 2026-11-14: "Try it yourself" sandboxes (switched off)
 
 - **A private copy of the demo per visitor.** "Try it yourself" on the

@@ -23,6 +23,7 @@ final class SandboxRoutes
         'employer.purchases.pay',
         'employer.purchases.status',
         'employer.purchases.cancel',
+        'employer.purchases.sandbox-return',
         'employer.allocations.store',
         'employer.correction.store',
         // Employee
@@ -80,6 +81,25 @@ final class SandboxRoutes
         ['Try a suspicious payment', 'Press "Try a suspicious redemption", then confirm it on the wallet. The AI usually holds it, but it may clear it.', 'employee', 'employee.demo-tools'],
         ['Decide a held payment', 'In Fraud Review, approve or deny the held payment, with a reason. Approving pays the merchant (simulated).', 'reviewer', 'bid-admin.dashboard'],
     ];
+
+    /** Step 1 of the checklist says to use Stripe's test card when this sandbox has its own Stripe test account. */
+    public const CHECKLIST_STRIPE_BUY = 'Under Buy credits, buy up to $5,000 of credits. You pay on Stripe\'s page with test card 4242 4242 4242 4242 (any future date, any CVC): a separate Stripe test account, no real money, and nothing reaches the live demo.';
+
+    /**
+     * The checklist as shown: CHECKLIST, with step 1's wording following
+     * whether Stripe Checkout is on in this sandbox (ADR 0045 addendum).
+     *
+     * @return list<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    public static function checklist(): array
+    {
+        $steps = self::CHECKLIST;
+        if (SandboxStripe::available()) {
+            $steps[0][1] = self::CHECKLIST_STRIPE_BUY;
+        }
+
+        return $steps;
+    }
 
     public static function allows(?string $routeName): bool
     {

@@ -7,6 +7,8 @@
 
     $input = 'block w-full rounded-xl border-2 bg-surface px-3 py-3 focus-visible:border-primary';
     $readOnly = Gate::denies('manage-employer-program');
+    // A sandbox with its own Stripe test account: hosted Checkout (ADR 0045 addendum).
+    $sandboxStripe = \App\Services\Sandbox\SandboxStripe::available();
     $link = 'font-semibold text-primary underline decoration-accent decoration-2 underline-offset-4 hover:decoration-primary';
 @endphp
 
@@ -225,7 +227,7 @@
             <x-card as="section" id="buy" aria-labelledby="buy-heading" @class(['scroll-mt-24 min-w-0 self-start', 'xl:col-span-12' => $buy['state'] === 'paying', 'xl:col-span-5' => $buy['state'] !== 'paying'])>
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <h3 id="buy-heading" class="text-xl font-bold tracking-tight">Buy credits</h3>
-                    <x-money-mode />
+                    <x-money-mode :mode="$sandboxStripe ? \App\Support\StripeMode::STRIPE : null" />
                 </div>
 
                 @if ($buy['state'] === 'paying')
@@ -296,13 +298,18 @@
                     <p class="mt-1 text-sm text-muted">
                         @if ($stripe)
                             Enter an amount and pay by card right here (Stripe test mode). The credits are ready to give once Stripe confirms the payment.
+                        @elseif ($sandboxStripe)
+                            Enter an amount and pay on Stripe's page. The credits are added when you come back and Stripe confirms the payment.
                         @elseif (\App\Services\Sandbox\Sandbox::active())
                             The credits are added straight away.
                         @else
                             Stripe isn't connected on this server, so buying is simulated: the credits are added straight away with no real money.
                         @endif
                     </p>
-                    @if (\App\Services\Sandbox\Sandbox::active())
+                    @if ($sandboxStripe)
+                        {{-- ADR 0045 addendum: the sandbox's own Stripe test account, never the live one. --}}
+                        <p data-sandbox-stripe class="mt-2 rounded-lg border-2 border-accent px-3 py-2 font-semibold">Stripe test mode (separate sandbox): use card <span class="tabular font-mono">4242 4242 4242 4242</span>. No real money; nothing reaches the live site.</p>
+                    @elseif (\App\Services\Sandbox\Sandbox::active())
                         {{-- ADR 0045: a sandbox never contacts Stripe. --}}
                         <p data-sandbox-simulated class="mt-2 rounded-lg border-2 border-accent px-3 py-2 font-semibold">Simulated payment: no card is charged and Stripe is not contacted.</p>
                     @endif
@@ -311,7 +318,7 @@
                         $feeHint = PlatformFee::enabled() ? ' A '.PlatformFee::label().' platform fee is added on top.' : '';
                         $prefill = old('purchase_amount', $buy['state'] === 'cancelled' ? Money::toDollars($buying->amount_cents) : null);
                     @endphp
-                    <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="{{ $stripe ? 'Opening the payment form…' : 'Buying…' }}" class="mt-4">
+                    <form method="POST" action="{{ route('employer.purchases.store') }}" data-busy="{{ $stripe ? 'Opening the payment form…' : ($sandboxStripe ? 'Opening Stripe…' : 'Buying…') }}" class="mt-4">
                         @csrf
                         <fieldset @disabled($readOnly) class="space-y-4">
                             <legend class="sr-only">Buy credits</legend>
@@ -430,14 +437,20 @@
                                                     @if ($readOnly)
                                                         <span class="text-sm text-muted">Read-only: judges can't pay</span>
                                                     @else
-                                                        <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}" data-busy="{{ $stripe ? 'Opening the payment form…' : 'Paying…' }}">
+                                                        <form method="POST" action="{{ route('employer.purchases.pay', $purchase) }}" data-busy="{{ $stripe || $sandboxStripe ? 'Opening the payment form…' : 'Paying…' }}">
                                                             @csrf
-                                                            @if ($stripe)
+                                                            @if ($stripe || $sandboxStripe)
                                                                 <x-button type="submit" size="sm" aria-label="Continue paying for {{ $purchase->reference }}, Stripe test mode">Continue paying</x-button>
                                                             @else
                                                                 <x-button type="submit" size="sm" aria-label="Pay now for {{ $purchase->reference }}, simulated, no real money">Pay now (simulated, no real money)</x-button>
                                                             @endif
                                                         </form>
+                                                        @if ($sandboxStripe)
+                                                            <form method="POST" action="{{ route('employer.purchases.cancel', $purchase) }}" data-busy="Cancelling…">
+                                                                @csrf
+                                                                <x-button type="submit" size="sm" variant="secondary" aria-label="Cancel payment for {{ $purchase->reference }}">Cancel</x-button>
+                                                            </form>
+                                                        @endif
                                                     @endif
                                                 </div>
                                                 @if ($purchase->payment_error)

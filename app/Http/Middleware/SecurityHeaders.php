@@ -55,7 +55,8 @@ class SecurityHeaders
             'frame-src '.implode(' ', self::STRIPE_FRAMES),
             "frame-ancestors 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            // A sandbox's Buy credits redirects to Stripe's hosted Checkout (ADR 0045 addendum).
+            "form-action 'self' https://checkout.stripe.com",
             "object-src 'none'",
         ]);
     }

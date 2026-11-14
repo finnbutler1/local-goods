@@ -14,6 +14,8 @@ use App\Services\EmployerProgram;
 use App\Services\Payments\StripeCheckout;
 use App\Services\Payments\StripeGatewayException;
 use App\Services\Sandbox\Sandbox;
+use App\Services\Sandbox\SandboxCheckout;
+use App\Services\Sandbox\SandboxCheckoutUnavailable;
 use App\Support\DemoLogins;
 use App\Support\EmployerPlatformFee;
 use App\Support\Money;
@@ -98,6 +100,12 @@ class EmployerDashboardController extends Controller
 
         if ($purchase?->isStripe()) {
             $request->session()->now('status', Money::format($purchase->amount_cents)." in credits added (Stripe test mode, {$purchase->reference}".self::feeClause($purchase, 'charged').'). Ready to give.');
+        }
+
+        // Left Stripe's hosted page without paying (a sandbox's cancel_url, ADR 0045 addendum).
+        $left = Sandbox::active() && $request->query('checkout') === 'left' ? $this->purchaseFromQuery($employer, 'purchase') : null;
+        if ($left?->isPending()) {
+            $request->session()->now('notice', "Payment not finished. Nothing was charged for {$left->reference}; it is waiting under Purchases. Press Continue paying to go back to Stripe, or Cancel.");
         }
     }
 
@@ -296,10 +304,60 @@ class EmployerDashboardController extends Controller
             return redirect()->to(route('employer.dashboard', ['pay' => $purchase->reference]).'#buy');
         }
 
+        // A sandbox with its own Stripe test account (ADR 0045 addendum): Stripe's hosted page.
+        $why = null;
+        if (SandboxCheckout::applies()) {
+            try {
+                if (($url = app(SandboxCheckout::class)->start($purchase)) !== null) {
+                    return redirect()->away($url);
+                }
+            } catch (SandboxCheckoutUnavailable|StripeGatewayException $e) {
+                // A new purchase whose Checkout never opened: nobody can pay it at Stripe, so simulating it is safe.
+                $why = $e instanceof SandboxCheckoutUnavailable ? $e->getMessage() : 'Stripe could not be reached';
+            }
+        }
+
         $ledger->payPurchase($purchase);
 
         return redirect()->to(route('employer.dashboard').'#credits')->with('status',
-            Money::format($purchase->amount_cents)." in credits added (simulated, no real money, {$purchase->reference}".self::feeClause($purchase, 'paid').'). Ready to give.');
+            Money::format($purchase->amount_cents)." in credits added (simulated, no real money, {$purchase->reference}".self::feeClause($purchase, 'paid').').'
+            .($why !== null ? " {$why}, so this payment was simulated." : '').' Ready to give.');
+    }
+
+    /**
+     * Back from Stripe's hosted Checkout in a sandbox (ADR 0045 addendum).
+     * Records the purchase in this sandbox only, once, and only if Stripe
+     * says it is paid and everything matches (SandboxCheckout::confirm).
+     * A 404 outside a sandbox; never touches the live database or Stripe account.
+     */
+    public function sandboxReturn(Request $request, CreditPurchase $purchase, SandboxCheckout $checkout): RedirectResponse
+    {
+        abort_unless(Sandbox::active(), 404);
+        $this->authorizeOwn($purchase);
+
+        if (! SandboxCheckout::applies()) {
+            return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Stripe isn't switched on in this sandbox now, so nothing was recorded for {$purchase->reference}.");
+        }
+
+        $sessionId = $request->query('session_id');
+
+        return $this->afterSandboxConfirm($purchase, $checkout->confirm($purchase, is_string($sessionId) ? $sessionId : null));
+    }
+
+    private function afterSandboxConfirm(CreditPurchase $purchase, string $outcome): RedirectResponse
+    {
+        $ref = $purchase->reference;
+        $to = redirect()->to(route('employer.dashboard').'#credits');
+
+        return match ($outcome) {
+            SandboxCheckout::RECORDED => $to->with('status', Money::format($purchase->amount_cents)." in credits added (Stripe test mode, separate sandbox account, {$ref}"
+                .self::feeClause($purchase->refresh(), 'charged').'). Ready to give.'),
+            SandboxCheckout::ALREADY_PAID => $to->with('status', "{$ref} is already paid. Nothing more was recorded."),
+            SandboxCheckout::CANCELLED => $to->with('error', "{$ref} was cancelled, so nothing was recorded."),
+            SandboxCheckout::NOT_PAID => $to->with('notice', "Stripe hasn't confirmed a payment for {$ref}, so nothing was recorded. Press Continue paying under Purchases to finish it."),
+            SandboxCheckout::UNREACHABLE => $to->with('error', "Couldn't reach Stripe to confirm {$ref}. Nothing was recorded yet: press Continue paying under Purchases to check again."),
+            default => $to->with('error', "That Stripe payment didn't match {$ref}, so nothing was recorded."),
+        };
     }
 
     /**
@@ -356,6 +414,28 @@ class EmployerDashboardController extends Controller
                 : redirect()->to(route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy');
         }
 
+        // A sandbox with its own Stripe test account: back to Stripe's page, or record it if Stripe already has it.
+        $why = null;
+        if (SandboxCheckout::applies() && $purchase->isPending()) {
+            $sandbox = app(SandboxCheckout::class);
+            try {
+                $url = $sandbox->start($purchase);
+            } catch (StripeGatewayException $e) {
+                return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Payment didn't start: {$e->getMessage()} Nothing was charged; {$purchase->reference} is still pending.");
+            } catch (SandboxCheckoutUnavailable $e) {
+                // start() refuses only after checking the old Checkout (if any) has expired, so nothing is payable at Stripe.
+                $url = false;
+                $why = $e->getMessage();
+            }
+
+            if (is_string($url)) {
+                return redirect()->away($url);
+            }
+            if ($url === null) {
+                return $this->afterSandboxConfirm($purchase, $sandbox->confirm($purchase, checkUrl: false));
+            }
+        }
+
         try {
             $ledger->payPurchase($purchase);
         } catch (InvalidArgumentException $e) {
@@ -363,7 +443,8 @@ class EmployerDashboardController extends Controller
         }
 
         return redirect()->to(route('employer.dashboard').'#credits')->with('status',
-            Money::format($purchase->amount_cents)." in credits added (simulated, no real money, {$purchase->reference}".self::feeClause($purchase, 'paid').'). Ready to give.');
+            Money::format($purchase->amount_cents)." in credits added (simulated, no real money, {$purchase->reference}".self::feeClause($purchase, 'paid').').'
+            .($why !== null ? " {$why}, so this payment was simulated." : '').' Ready to give.');
     }
 
     /**
@@ -389,6 +470,20 @@ class EmployerDashboardController extends Controller
             if (! $closed) {
                 return redirect()->to(route('employer.dashboard', ['checkout' => 'returned', 'purchase' => $purchase->reference]).'#buy')->with('notice',
                     "Stripe already has the payment for {$purchase->reference}, so it can't be cancelled. The credits arrive once Stripe confirms it.");
+            }
+        }
+
+        // A sandbox with its own Stripe test account: close its Checkout first; if Stripe has the money, record it instead.
+        if (SandboxCheckout::applies()) {
+            $sandbox = app(SandboxCheckout::class);
+            try {
+                $closed = $sandbox->close($purchase);
+            } catch (StripeGatewayException $e) {
+                return redirect()->to(route('employer.dashboard').'#credits')->with('error', "Couldn't cancel: {$e->getMessage()} Nothing was charged and nothing changed.");
+            }
+
+            if (! $closed) {
+                return $this->afterSandboxConfirm($purchase, $sandbox->confirm($purchase, checkUrl: false));
             }
         }
 

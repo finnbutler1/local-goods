@@ -39,6 +39,36 @@ class StripeNotices
             throw new LogicException("Stripe is never called from a sandbox ({$what}).");
         }
 
+        return self::run($what, $call);
+    }
+
+    /**
+     * The one exception (ADR 0045 addendum): SandboxStripe's Checkout calls,
+     * made with the separate sandbox account's key. Only inside a sandbox,
+     * so this can never carry a live-site call.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $call
+     * @return T
+     */
+    public static function quietlyInSandbox(string $what, callable $call): mixed
+    {
+        if (! Sandbox::active()) {
+            throw new LogicException("The sandbox Stripe account is only used inside a sandbox ({$what}).");
+        }
+
+        return self::run($what, $call);
+    }
+
+    /**
+     * @template T
+     *
+     * @param  callable(): T  $call
+     * @return T
+     */
+    private static function run(string $what, callable $call): mixed
+    {
         // No level mask on purpose: with one, PHP would send every other error
         // to its built-in handler instead of Laravel's. Anything that isn't a
         // user-level notice goes on to the handler that was there before.

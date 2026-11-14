@@ -10,7 +10,7 @@
     </header>
 
     <ol class="space-y-3" aria-label="Try this checklist">
-        @foreach (\App\Services\Sandbox\SandboxRoutes::CHECKLIST as $index => [$title, $how, $role])
+        @foreach (\App\Services\Sandbox\SandboxRoutes::checklist() as $index => [$title, $how, $role])
             <li>
                 <x-card as="section" aria-labelledby="step-{{ $index }}-heading" padding="p-4 sm:p-5">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

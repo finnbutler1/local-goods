@@ -134,3 +134,70 @@ is not contacted."
   fails on any write to the live connection, and a control write; no Stripe
   call), `SandboxIsolationTest`, `SandboxLimitsTest`, `SandboxTemplateTest`,
   `SandboxScheduleScriptsTest` and `PublicClaimsSandboxOnTest`.
+
+## Addendum (2026-11-14): real Stripe Checkout for Buy credits, on a separate Stripe test account
+
+Status: code done, not deployed; switched off.
+
+**What.** Inside a sandbox, with `SANDBOX_STRIPE_ENABLED` exactly `true` and
+`SANDBOX_STRIPE_SECRET` an `sk_test_` key, the employer's Buy credits opens
+Stripe's **hosted** Checkout (a redirect to Stripe's page; no publishable key
+and no Stripe.js). It uses a **separate Stripe test account**, never the live
+site's, so nothing reaches the live Stripe balance, reconciliation, solvency
+or sweeps. The lines are the live purchase's (`StripeCheckout::lineItems`):
+credits, then the employer platform fee line when it applies ("Platform fee
+for November 2026: N participating employees × $6.00"), then the percent fee
+if `PLATFORM_FEE_PERCENT` were set; the same text under the Pay button.
+Metadata: `lg_sandbox` (a hash of the sandbox id, so the file name never goes
+to Stripe), `lg_purchase_token`, `lg_purchase_reference`; deliberately no
+`lg_env`/`lg_instance`.
+
+**No webhook.** Stripe sends the employer back to
+`employer.purchases.sandbox-return` (a 404 outside a sandbox). `SandboxCheckout::confirm`
+reads the Checkout Session **saved on the purchase** (the id in the address
+must equal it) and records the purchase in the sandbox's own file only if
+`payment_status` is `paid`, `amount_total` equals `totalCents()`, the
+currency is USD and the metadata matches this sandbox and this purchase. It
+records through the existing `CreditLedger::markPurchasePaidByStripe`
+(status `paid`, once: a reload or the back button records nothing more).
+Anything else records nothing and says why. Continue paying reopens the open
+Checkout (or a fresh one once expired); Cancel expires it first; if Stripe
+already has the money, both record it instead.
+
+**Keys.** `App\Services\Sandbox\SandboxStripe` is the only reader of the
+sandbox key, and only while a sandbox is active; it builds
+`SandboxStripeClient`, which has only create / retrieve / expire Checkout
+(not a `StripeGateway`, so the key can't reach payouts, transfers, refunds,
+balances or sweeps). Its calls go through `StripeNotices::quietlyInSandbox`,
+which refuses outside a sandbox; `StripeNotices::quietly` still refuses every
+live-key call inside one. The sandbox still blanks the live `STRIPE_*` keys,
+so `StripeMode` stays simulated there and everything else is exactly as
+before (payouts simulated, Connect, reconciliation, balances and sweeps
+refused). `app:check-production-config` refuses a sandbox key equal to
+`STRIPE_SECRET`; that the account really is a different one is checked by
+Finn in the Stripe Dashboard.
+
+**Fallback.** Flag off, key missing or not `sk_test_`, Stripe unreachable when
+opening, or the sandbox's 10 Checkouts used up: the purchase is simulated
+with its label, as before, never a 500. The $5,000 cap still applies first.
+
+**Refunds.** An employer refund of a card purchase inside a sandbox is
+simulated (`CorrectionDecisions`: `Sandbox::active()`), marked refunded in the
+sandbox only; the test charge on the sandbox Stripe account is not refunded.
+
+**Wording.** With it on, the sandbox bar says "Sandbox: your own copy.
+Payments use a separate Stripe test account: no real money, and nothing
+reaches the live demo. Deleted after 24 hours."; Buy credits says "Stripe
+test mode (separate sandbox): use card 4242 4242 4242 4242. No real money;
+nothing reaches the live site."; checklist step 1 names the test card
+(`SandboxRoutes::checklist()`); `/sandbox` says buying uses a separate Stripe
+test account. Fee figures on our pages stay hidden as before. The CSP's
+`form-action` gains `https://checkout.stripe.com` (still report-only).
+
+**Never** add a webhook endpoint in the sandbox Stripe account, and never use
+the live account's key for it.
+
+Tests: `SandboxStripeCheckoutTest` (with a fake client; live and sandbox keys
+both ways, record once, refresh, forged id, every mismatch, fallbacks, the
+10-session limit, the cap, Cancel/Continue, simulated refund, zero writes to
+the live database and zero live Stripe calls), `PublicClaimsSandboxStripeOnTest`.

@@ -31,6 +31,19 @@ return [
     'ai_calls_per_sandbox' => 10,
     'ai_calls_per_day' => 100,
 
+    // Real Stripe Checkout for the employer's Buy credits, inside a sandbox only,
+    // on a SEPARATE Stripe test account (ADR 0045 addendum). Off unless
+    // SANDBOX_STRIPE_ENABLED is exactly "true" and SANDBOX_STRIPE_SECRET is an
+    // sk_test_ key; anything else = simulated as before. Only
+    // App\Services\Sandbox\SandboxStripe reads the key, and only while a
+    // sandbox is active. Never set either in a deploy file or seeder.
+    'stripe' => [
+        'enabled' => env('SANDBOX_STRIPE_ENABLED') === true || env('SANDBOX_STRIPE_ENABLED') === 'true',
+        'secret' => env('SANDBOX_STRIPE_SECRET'),
+        // Checkout Sessions one sandbox may open; after that, Buy credits is simulated.
+        'checkouts_per_sandbox' => 10,
+    ],
+
     // Sandbox logins: one per role, no password anyone knows. ".invalid" is
     // reserved (RFC 2606): it can never receive mail. Sandbox pages offer no
     // password reset or any other mail anyway.

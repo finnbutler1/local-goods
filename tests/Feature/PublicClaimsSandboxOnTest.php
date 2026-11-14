@@ -23,6 +23,12 @@ class PublicClaimsSandboxOnTest extends PublicClaimsTest
         $this->setUpSandboxes();
     }
 
+    /** The sandbox bar's sentence; PublicClaimsSandboxStripeOnTest expects the Stripe one. */
+    protected function expectedBanner(): string
+    {
+        return 'Sandbox: your own copy. Nothing here touches the live demo or Stripe. Deleted after 24 hours.';
+    }
+
     private static function rule(string $name): string
     {
         return (new ReflectionClassConstant(PublicClaimsTest::class, $name))->getValue();
@@ -60,7 +66,7 @@ class PublicClaimsSandboxOnTest extends PublicClaimsTest
                 $text = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html)));
                 $where = "{$uri} in sandbox as {$role}";
 
-                $this->assertStringContainsString('Sandbox: your own copy. Nothing here touches the live demo or Stripe. Deleted after 24 hours.', $text, $where);
+                $this->assertStringContainsString($this->expectedBanner(), $text, $where);
                 foreach (['OVERCLAIM', 'STRIPE_MISSING_OR_LIVE', 'BUSINESS_MODEL_NUMBER'] as $rule) {
                     $this->assertDoesNotMatchRegularExpression(self::rule($rule), $text, "{$where}: {$rule}");
                 }
