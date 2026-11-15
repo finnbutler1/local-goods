@@ -47,7 +47,7 @@ The fraud check is the real one (up to 10 AI checks per sandbox, shared with the
 - Web search in Merchant Eligibility Matching.
 - Handling of card disputes and returned payments.
 - A merchant fee charged in the product (it is set to 0 during the pilot), or unspent credits counted as revenue.
-- Real BID program fees. The BID annual program fee is built (ADR 0044) and charges only in Stripe test mode, with no real money, when `BID_PROGRAM_FEE_ENABLED` is switched on; it is off by default. There is no free pilot year in the model: every district pays from its program start date.
+- Real BID program fees. The BID annual program fee (ADR 0044) is charged only in Stripe test mode, with no real money; the Golden Triangle's first program year was paid on 2026-11-14. There is no free pilot year in the model: every district pays from its program start date.
 
 ## Still to come
 

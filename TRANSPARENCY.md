@@ -341,14 +341,17 @@ Local Goods holds is a promise, not ours
   - *Customer funds held:* employer credits not yet given out, employee
     balances, money owed to merchants, and anything held waiting for a
     person.
-  - *Operating funds:* only what Local Goods has earned. Today that is
-    nothing, because both fees are off.
+  - *Operating funds:* only what Local Goods has earned. Today that is the
+    employer platform fee and the BID program fee, both charged in Stripe
+    test mode, and a few cents from a three-minute test of the merchant fee
+    setting.
 
   Every line in the ledger belongs to one or the other, and a test checks
   every line of the demo's history. **Unspent credits are customer funds
   held for the program, never Local Goods' money:** they are never counted
   as income, spent or invested. Credits an employer hasn't given out yet
-  stay on its balance and can be refunded on request; credits given to an
+  stay on its balance and can be refunded if the employer asks and a Local
+  Goods admin approves it; credits given to an
   employee stay in their wallet, with no expiry.
 - **The rule.** The money paid in, less what has been paid out to merchants
   and refunded to employers, must always cover every open promise.
@@ -374,8 +377,9 @@ Local Goods holds is a promise, not ours
   Local Goods has earned: the platform admin decides it with a reason, it
   is never edited, and the solvency check refuses one that would leave
   customer funds short. Reconciliation checks both balances against
-  Stripe. With both fees off, the only money Local Goods has earned came
-  from one sale during a three-minute test of the fee setting on live; we
+  Stripe. Apart from the two fees charged in Stripe test mode, the only money
+  Local Goods has earned came from one sale during a three-minute test of
+  the merchant fee setting on live; we
   recorded it as earned rather than build a new money path to give it
   back, and Where the money is says exactly that.
 - **Still not a bank trust account.** That is a real separation of
@@ -970,9 +974,9 @@ results, and each says "Projection, not results"
   Goods doesn't rely on them. Local Goods charges no dormancy fees.
 - **The BID program fee has no free pilot year.** Every district, the
   Golden Triangle included, pays from its program start date (ADR 0044).
-  In the product it is built and switched off by default; switched on, it
-  is charged in Stripe test mode only (no real money), at the price of the
-  district's size tier, once per district per program year.
+  In the product it is charged in Stripe test mode only (no real money), at
+  the price of the district's size tier, once per district per program
+  year; the Golden Triangle's first program year was paid on 2026-11-14.
 - **Who sees which figures.** Logged-out visitors see district numbers only.
   Fee, revenue and profit figures appear only on the signed-in Business
   model page and in the README section, each with the label and a link to

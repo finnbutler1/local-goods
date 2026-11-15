@@ -13,9 +13,9 @@ How to read this file: each control names **Where** it lives (a file) and
 
 ## Reporting a problem
 
-Email **butlerf@cua.edu** with what you found and how to reproduce it, or use
-the **Report a vulnerability** button on the repository's Security tab (GitHub
-private vulnerability reporting). Please don't open a public GitHub issue for a
+Use the **Report a vulnerability** button on the repository's Security tab
+(GitHub private vulnerability reporting) and say what you found and how to
+reproduce it. Please don't open a public GitHub issue for a
 vulnerability. I'll reply within about **5 business days**. If you give me a
 reasonable time to fix it before sharing it, I'll credit you if you'd like.
 
@@ -176,4 +176,4 @@ These live in consoles, not in this repository, so no test can check them. Names
 
 ## Last updated
 
-2026-11-14
+2026-11-15

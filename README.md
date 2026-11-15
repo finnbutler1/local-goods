@@ -1,5 +1,16 @@
 # Local Goods
 
+Local Goods lets employers in a Business Improvement District give staff credits that can only be spent at independent local shops, so office spending stays in the neighborhood.
+
+**Try it:** https://uselocalgoods.com → **Try it yourself**
+
+- **Real charging in Stripe test mode.** Employers pay a monthly platform fee for each participating employee with their credit purchase, and a district pays an annual program fee. Both are charged through Stripe in test mode, with no real money ([Business model](#business-model), [ADR 0042](docs/adr/0042-employer-platform-fee-switched-off.md), [ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md)).
+- **A hands-on sandbox.** Press Try it yourself for a private copy of the demo. Move money between the employer, employee, merchant and BID admin, and pay on Stripe's own card form ([walkthrough](JUDGES.md#try-it-yourself), [ADR 0045](docs/adr/0045-try-it-yourself-sandboxes.md)).
+- **Two AI functions, with measured results.** Redemption Fraud Detection caught 17 of 26 suspicious redemptions on cases locked before the AI saw them, and Merchant Eligibility Matching only suggests: a person decides ([how the AI was measured](#how-the-ai-was-measured), [/eval](https://uselocalgoods.com/eval)).
+- **A money safety case.** Employer money is held apart from Local Goods' own, and a check after every money step confirms the books cover every promise ([money safety case](docs/money-safety-case.md), [Where the money is](#where-the-money-is)).
+
+**Video (2–3 min):** coming Nov 20.
+
 ## Local Goods in one minute
 
 Local Goods turns a staff perk into business for the independent shops around
@@ -15,67 +26,109 @@ promised. No one can spend more than they were given. An AI flags unusual
 payments, and a person decides each one. It's a working prototype, running on
 Stripe's test mode with no real money, built and tested in the open.
 
-## For judges
-
-**Start here:** on [uselocalgoods.com](https://uselocalgoods.com), press
-**Try it yourself**. You get a private copy of the demo where you can move
-money between the employer, employee, merchant and BID admin, and pay with
-Stripe test mode. No account or password, and nothing reaches the live demo.
-To just look instead, use **Explore the live demo (read-only)** under the
-button: it signs you straight into a read-only reviewer view of the live app,
-with the guided tour, the AI evaluation, Where the Money Is and the Feedback
-button. If Try it yourself isn't available, use Explore the live demo
-(read-only). Both work until judging closes on November 30, 2026.
-
-**Security:** the plain-English [Security & Trust](https://uselocalgoods.com/security) page lists the protections in place and what isn't done yet. To check it yourself, see [security verification](docs/security-verification.md) (a read-only probe script and the tests that act as attack checks).
-
-**Demo video (2–3 min):** *coming Nov 20.*
-
-Inside, a guided tour walks through each role, **View as** shows the app as an
-employee, BID admin, employer or merchant, and the **Feedback** button on every
-page sends notes scored against the rubric. Named reviewers get a personal link
-instead, so their feedback carries their name
-([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
-
----
-
 ## Judges, start here
 
-Scored on the official rubric. A short path through the app is in [JUDGES.md](JUDGES.md).
+Scored on the official rubric. A five-minute path through the app is in [JUDGES.md](JUDGES.md). Everything below works until judging closes on November 30, 2026.
 
-| Category (weight) | What to look for in Local Goods | Verify it |
-|---|---|---|
-| Functionality & technical execution (25%) | The money loop works end to end in Stripe test mode: an employer buys credits, an employee spends them, a held payment waits for a person, and the merchant is paid. Employers can pay by card, Apple Pay or Google Pay through Stripe Checkout (test mode). The books are checked after every step. | [Where the money is](https://uselocalgoods.com/where-the-money-is), [`FraudGateTest`](tests/Feature/FraudGateTest.php), [Money safety case](docs/money-safety-case.md), [Where the money is (README)](#where-the-money-is) |
-| Problem identification & relevance (20%) | A specific buyer (employer HR), place (Golden Triangle BID) and leak (perk dollars leaving the neighborhood). | [The problem](#the-problem), [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md) |
-| AI integration & innovation (20%) | Two AI functions, each with a person making the decision and a measured result. Fraud detection fails closed and gates real transfers. A blind human review of the disagreement cases was offered to BID staff and judges; it received no votes, so results stand on the locked hand labels. | [/eval](https://uselocalgoods.com/eval), [/eval/merchants](https://uselocalgoods.com/eval/merchants), [How the AI was measured](#how-the-ai-was-measured), [TRANSPARENCY.md](TRANSPARENCY.md#checking-the-persons-labels-blind-adjudication-retired) |
-| Code quality & GitHub transparency (15%) | Tests on two databases, decision records, a locked eval set, and a scan of the whole history for secrets. | [CI](.github/workflows/ci.yml), [`docs/adr/`](docs/adr/), [TRANSPARENCY.md](TRANSPARENCY.md), [security verification](docs/security-verification.md) |
-| UX & design (10%) | Phone-first screens, plain-English AI explanations, honest empty states and a design system applied across the app (DESIGN.md). | [DESIGN.md](DESIGN.md), [accessibility and UX check](docs/accessibility.md), [uselocalgoods.com/judge](https://uselocalgoods.com/judge) |
-| Business impact & presentation (10%) | An employer-first pitch, with the outside-study estimate and the projection each labelled as what they are. Feedback from a business improvement district executive director (Nov 10) shaped the roadmap: resident credits from property owners, the card in Apple Pay, delivery partners. | [/coming-next](https://uselocalgoods.com/coming-next), [Where it's going](#wheres-it-going), [Business model](#business-model) |
-| Bonus, up to +5: accessibility and ethical AI | Names never reach the AI, every AI decision is explained, a person approves each hold, and every page is checked for accessibility. | [`AccessibilityTest`](tests/Feature/AccessibilityTest.php), [Security & Trust](https://uselocalgoods.com/security), [docs/accessibility.md](docs/accessibility.md) |
+| Category (weight) | Strongest evidence |
+|---|---|
+| Functionality & technical execution (25%) | Buying, giving, spending, holding, paying out and refunding all work in Stripe test mode, and the books are re-checked after every money step: [Try it yourself](https://uselocalgoods.com), [`FraudGateTest`](tests/Feature/FraudGateTest.php), [money safety case](docs/money-safety-case.md). |
+| Problem identification & relevance (20%) | A named buyer (employer HR), place (the Golden Triangle) and leak (office spending that goes home at 6 p.m.), with sourced numbers: [The problem, in numbers](#the-problem-in-numbers), [Why I built this](#why-i-built-this), [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
+| AI integration & innovation (20%) | Two AI functions, each with a person deciding and results on locked cases; fraud detection fails closed and gates real transfers: [How the AI was measured](#how-the-ai-was-measured), [/eval](https://uselocalgoods.com/eval), [/eval/merchants](https://uselocalgoods.com/eval/merchants). |
+| Code quality & GitHub transparency (15%) | Tests on two databases in [CI](.github/workflows/ci.yml), [decision records](docs/adr/), a locked eval set and a secret scan of the whole history: [TRANSPARENCY.md](TRANSPARENCY.md), [security verification](docs/security-verification.md). |
+| UX & design (10%) | Phone-first screens, plain-English AI explanations and a tested design system: [Works on iPhone](#works-on-iphone), [DESIGN.md](DESIGN.md), [accessibility check](docs/accessibility.md). |
+| Business impact & presentation (10%) | An employer-first pitch with a sourced, labelled projection: [Business model](#business-model), [/coming-next](https://uselocalgoods.com/coming-next), [Roadmap](#roadmap). |
+| Bonus, up to +5: accessibility and ethical AI | Names never reach the AI, every AI decision is explained, a person approves each hold, and every page is tested for accessibility: [`AccessibilityTest`](tests/Feature/AccessibilityTest.php), [docs/accessibility.md](docs/accessibility.md), [Security & Trust](https://uselocalgoods.com/security). |
 
-[What is deployed right now](https://uselocalgoods.com/version): the commit this copy was built from and when the build was made.
+**How to look around.**
 
-### Screenshots
+- **Try it yourself** (on [uselocalgoods.com](https://uselocalgoods.com)) gives you a private copy of the demo, with no account or password. Nothing you do there reaches the live demo.
+- **Explore the live demo (read-only)**, the link under that button, signs you in to a read-only reviewer view with the guided tour, the AI evaluation, Where the Money Is and the Feedback button. Named reviewers get a personal link instead, so their feedback carries their name ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
+- **Security:** the plain-English [Security & Trust](https://uselocalgoods.com/security) page lists the protections and what isn't done yet; [security verification](docs/security-verification.md) shows how to check it yourself.
+- [What is deployed right now](https://uselocalgoods.com/version): the commit this copy was built from and when.
 
-Taken from a fresh local copy with demo data: every person and business is fictional and no real money moves.
+## Why I built this
 
-![Landing page: the headline "You work here. Spend here." beside a map of the Golden Triangle district with fictional local shops marked as stops.](docs/screenshots/landing-district-map.png)
+My passion for community improvement and public service all started in 2015, when I was only 10 years old. My father took me to volunteer at an organization he had a long-standing relationship with, called the Ministry of Caring. During the afternoon, I helped my dad cook soup and make sandwiches for a community initiative event, helping to raise awareness of growing homelessness in Wilmington, Delaware. It was an experience I would never forget. From then on, I have spent the last 11 years volunteering at the Kingswood Community Center, on several local political campaigns, and working in the United States Senate. Being a proactive member of my community has become a part of my identity. Now, instead of being boots-on-the-ground, I decided to take a step back and create an application that will have a real socio-economic impact on downtown communities and small businesses.
 
-*The landing page: credits that only work at independent shops inside the district boundary.*
+More than a decade ago, my father had a similar idea to Local Goods, which he called "InCity". InCity was based on a pre-paid gift card for employees to spend at local merchants within a Business Improvement District in Wilmington, DE. However, the idea was met with heavy resistance from employers, with many concerns stemming from tax implications to an overall negative sentiment towards the idea. After speaking to him about this contest, he sat me down and walked me through this story, which inspired me to build this platform. Now, I put my own spin on this idea using AI, creating a navigable platform that addresses this problem and a user interface that ties in all entities within a downtown district. I've talked to Mike Maggitti, the Executive Director of Downtown Visions, a BID located in downtown Wilmington, about this platform, where I walked him through the site and gathered feedback to spark interest in making this a long-term solution for an ever-growing problem. Regardless of any outcome, I want to continue working on this platform to create change for Business Improvement Districts around the world, to make a real economic impact on downtown areas, and to bring back pre-pandemic foot traffic levels for employees and downtown constituents.
 
-![Employee wallet on a 390-pixel-wide phone screen: available balance, Order to go and Pay in person tabs, and a merchant picker.](docs/screenshots/employee-wallet-phone.png)
+## The problem, in numbers
 
-*The employee wallet on a phone: balance, two ways to pay, and a menu at each approved shop.*
+Thousands of people work in the Golden Triangle, a business district in downtown Washington, DC, every weekday. Most follow the same loop: commute in, sit at a desk, commute out. That isn't a failing of the people doing it; it's how office work is set up. But it means their spending, and the life they could bring to the streets around them, goes home with them.
 
-![Fraud Review page with one held payment: the AI's automatic-hold explanation, the anonymous signals it was given, and a form where a person enters a reason and approves or denies.](docs/screenshots/fraud-review-held-payment.png)
+**Downtown Washington, DC.** Source for all three: [DowntownDC BID, *State of Downtown 2025*](https://www.downtowndc.org/wp-content/uploads/2026/05/260428_DDC_SoD_2025_Print.pdf) (published May 2026).
 
-*Fraud Review: a held payment waits for a person, who sees the signals and must give a reason to approve or deny.*
+- **Office attendance is still under half.** "From March through December, office attendance was 48% of pre-pandemic activity, up from 44% during the same period in 2024, reaching a new monthly high of 51% of pre-pandemic office activity in July." (2025; page 20 of the PDF)
+- **Overall foot traffic is recovering.** "A 2.5% increase in overall Downtown DC foot traffic in 2025 marked continued progress from prior years." (page 20)
+- **Offices are still emptier than before.** Office vacancy "remains significantly above the pre-pandemic average of 11%." (page 24, CoStar data)
 
-![Where the Money Is page: customer funds held, a table of where each amount sits, and the separate Local Goods Operating account.](docs/screenshots/where-the-money-is.png)
+**Nationally.** Barrero, Bloom and Davis, in a 2021 working paper, project that working from home "will directly reduce spending in major city centers by at least 5-10 percent relative to the pre-pandemic situation." Their survey respondents "spent an average of $288 ($168) per week near their workplaces before COVID" in Manhattan (San Francisco), and they project a 13% drop in consumer spending in Manhattan. These are projections from 2021, not measurements ([NBER Working Paper 28731, April 2021 version](https://www.nber.org/system/files/working_papers/w28731/revisions/w28731.rev0.pdf); NBER's current page carries a later revision).
 
-*Where the Money Is: employer money and Local Goods' own money are kept in two accounts, and the page shows where every cent sits.*
+Employers already pay for perks. Local Goods turns that spending into foot traffic for independent merchants in the district.
 
----
+## Feedback from a BID director
+
+In November 2026 I walked Mike Maggitti, Executive Director of Downtown Visions (a BID in downtown Wilmington, DE), through Local Goods on a video call. His feedback gave us three roadmap ideas: residential property owners funding credits for their residents, a reusable wallet card, and delivery partners for Order to go (see the [Roadmap](#roadmap)).
+
+![A phone screenshot of an email thread. Finn Butler asks to set up a Zoom call at 4:30 pm the coming Tuesday; Mike Maggitti of Downtown Visions replies that he is happy to help and is free at 4:30 on Tuesday, 11/10.](docs/feedback/maggitti.jpg)
+
+*Setting up the walkthrough, November 2026*
+
+Shared with permission. This is feedback, not an endorsement or partnership.
+
+## Screenshots
+
+Taken from the live site and a phone. Every person and business is fictional, and no real money moves.
+
+### Works on iPhone
+
+<p align="center">
+  <img src="docs/screenshots/iphone/wallet.jpg" alt="Employee wallet on a phone: available balance, Order to go and Pay in person tabs, and the redeem form." width="220">
+  <img src="docs/screenshots/iphone/pay-code.jpg" alt="Pay in person on a phone: a six-character pay code to show the cashier, with subtotal, DC meals tax and total." width="220">
+  <img src="docs/screenshots/iphone/apple-pay.png" alt="Employer credit purchase on a phone, with Apple Pay and Link buttons on Stripe's checkout in test mode." width="220">
+  <img src="docs/screenshots/iphone/merchant.png" alt="Merchant dashboard on a phone: cleared sales this month and the Tax collected summary." width="220">
+</p>
+
+*The employee wallet, a pay code at the counter, Apple Pay at checkout (test mode) and the merchant's view.*
+
+### On a computer
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/try-it-yourself.png" alt="The Try it yourself page: a private copy of the demo, the test card to use, a Start my sandbox button and a For judges box."><br><em>Try it yourself: a private copy of the demo for every visitor.</em></td>
+    <td width="50%"><img src="docs/screenshots/sandbox-stripe.png" alt="Buy credits inside a sandbox on Stripe's embedded card form, in test mode, with Apple Pay and card options."><br><em>Buying credits in a sandbox on Stripe's own card form, from a separate Stripe test account.</em></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/fraud-review.png" alt="Fraud Review with one held payment: the AI's explanation, the anonymous signals it was given, and a form where a person gives a reason and approves or denies."><br><em>Fraud Review: a held payment waits for a person, who sees the signals and gives a reason.</em></td>
+    <td width="50%"><img src="docs/screenshots/where-the-money-is.png" alt="Where the Money Is: customer funds held in one Stripe account and Local Goods Operating's own balance in another."><br><em>Where the Money Is: employer money and Local Goods' own money sit in two accounts.</em></td>
+  </tr>
+</table>
+
+<details>
+<summary>More screenshots</summary>
+
+![Employer Credits page inside a sandbox: ready to give, pending payment, given out this month, a Buy credits form with a Stripe test-mode notice, and purchase history.](docs/screenshots/sandbox-employer.png)
+
+*The employer's Credits page in a sandbox.*
+
+![Merchant dashboard inside a sandbox: Take a payment, owed now, held for review and cleared sales net of refunds.](docs/screenshots/sandbox-merchant.png)
+
+*The merchant dashboard in a sandbox.*
+
+![BID impact page: spending at independent merchants, merchants reached, employees and employers participating, and eight weeks of spending.](docs/screenshots/bid-impact.png)
+
+*BID impact: counts and totals only, never names.*
+
+![Program Fee page for the Golden Triangle BID: tier, program start, this program year paid in Stripe test mode, and payment history.](docs/screenshots/program-fee-paid.png)
+
+*The BID's annual Program Fee page, paid in Stripe test mode.*
+
+![Apply to join page for independent shops, with the five steps from applying to going live.](docs/screenshots/merchant-application.png)
+
+*A shop applies to join: a person at the BID decides, and the AI only suggests.*
+
+</details>
 
 ## You work here. Spend here.
 
@@ -83,23 +136,13 @@ At 6 p.m., downtown's workers head home, and their spending goes with them.
 Local Goods gives employees credits that only work at independent local
 businesses, so the district your company calls home gets livelier.
 
-> **Status:** working demo. Redemptions, AI fraud scoring and human approve/deny of held redemptions (with a reason, gating every Stripe transfer) are live. Employer, employee, merchant and BID dashboards cover the whole money loop in the ledger: buying credits, giving them out, spending, merchants owed and paid. Merchant Eligibility Matching is built as a triage tool: the AI screens real BID businesses, a BID admin decides, and approved businesses don't join the demo yet. Payments and payouts run on **Stripe Connect in test mode** (Checkout for employer purchases, Express accounts for the demo merchants, a Transfer per Stripe-funded cleared redemption); no real money moves, and every money page says whether it's Stripe test mode or simulated. Seeded history stays simulated, and without Stripe keys the whole demo falls back to simulated mode. The demo merchants are seeded by hand. Both AI functions, Redemption Fraud Detection and Merchant Eligibility Matching, flag and explain. Redemption Fraud Detection clears redemptions it doesn't flag; people decide every held redemption and every new merchant.
+> **Status:** working demo, running on Stripe's test mode with no real money. Employer, employee, merchant and BID dashboards cover the whole money loop in the ledger: buying credits, giving them out, spending, merchants owed and paid, and corrections. Redemption Fraud Detection scores every redemption, and held ones wait for a person to approve or deny with a reason, which gates every Stripe transfer. Shops apply at /apply, a BID admin approves them, and they set up Stripe payouts and go live. Payments and payouts run on **Stripe Connect in test mode** (Checkout for employer purchases, Express accounts for merchants, a Transfer per Stripe-funded cleared redemption); every money page says whether it's Stripe test mode or simulated. Seeded history stays simulated, and without Stripe keys the whole demo falls back to simulated mode. Both AI functions, Redemption Fraud Detection and Merchant Eligibility Matching, flag and explain. Redemption Fraud Detection clears redemptions it doesn't flag; people decide every held redemption and every new merchant.
 
 **Live app:** https://uselocalgoods.com
 
 [![CI](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml/badge.svg)](https://github.com/finnbutler1/local-goods/actions/workflows/ci.yml)
 
 **Stack:** Laravel 13 · PHP 8.4.1+ (CI on 8.4) · Tailwind CSS 4 (Vite 8) · SQLite (local) / Amazon RDS MySQL (production) · Claude API (`anthropic-ai/sdk`) · AWS Elastic Beanstalk · GitHub Actions · Stripe Connect, test mode (`stripe/stripe-php`)
-
----
-
-## The problem
-
-Thousands of people work in the Golden Triangle, a business district in
-downtown Washington, DC, every weekday. Most follow the same loop: commute
-in, sit at a desk, commute out. That isn't a failing of the people doing it;
-it's how office work is set up. But it means their spending, and the life
-they could bring to the streets around them, goes home with them.
 
 ## Why it matters
 
@@ -126,6 +169,14 @@ Everyone gains, and the district gains most.
 Money spent at independent local businesses tends to recirculate roughly 3x
 more in the local economy than money spent at chains, an effect often called
 the local multiplier. An estimate from an outside study, not measured by Local Goods: the Civic Economics / American Booksellers Association [Indie Impact study](https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html) found independent retailers and restaurants recirculated 52.3% of their revenue locally, against 15.8% for chains, about 3.3 times as much (data from 2011–2012, 134 businesses in 10 U.S. communities, none in DC). Real results here will be measured in a pilot.
+
+## What's new since Nov 12
+
+- **BID annual program fee, charged in Stripe test mode.** A district pays by its size (Small, Medium or Large, set by Local Goods from its member businesses), once per district per program year. There is no free pilot year: every district pays from its program start date. It is Local Goods' own money, kept apart from customer funds and never refunded in the app. The Golden Triangle's first program year was paid on 2026-11-14, with no real money ([ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md); amounts are in [Business model](#business-model)).
+- **Unspent credits are an estimate, never revenue.** The projection shows credits never spent next to revenue, but never counts them in revenue, profit or the break-even month. Credits don't expire, and Local Goods charges no dormancy fees ([ADR 0043](docs/adr/0043-bid-program-fee-and-unspent-credit-estimate.md)).
+- **"Try it yourself" sandbox.** Each visitor gets a private copy of the demo, deleted after 24 hours or when they press Exit. A role bar switches between employer, employee, merchant, BID admin and Local Goods reviewer with no passwords, and the Merchant button opens the shop where the employee last paid. Buying credits uses Stripe's embedded card form on a separate Stripe test account, and falls back to simulated payments if Stripe can't be reached. A new shop can apply, be checked and approved, and go live at once inside the sandbox. AI checks and address lookups are capped per sandbox, and nothing a sandbox does reaches the live site or its Stripe account ([ADR 0045](docs/adr/0045-try-it-yourself-sandboxes.md), [walkthrough](JUDGES.md#try-it-yourself)).
+- **Payroll report, Taxes and a note for banks.** On the employer dashboard, a payroll report downloads the credits given to each employee in a date range as a CSV. A plain-English Taxes section says credits are generally taxable wages and points to [IRS Publication 15-B](https://www.irs.gov/publications/p15b), and a folded note explains the Community Reinvestment Act for banks without saying Local Goods qualifies. An earlier version of this idea stalled because employers worried about taxes, so Local Goods gives employers a payroll report and a plain-English Taxes section. It is general information, not tax advice ([CHANGELOG](CHANGELOG.md)).
+- **A Laravel security update.** On 2026-11-13, `laravel/framework` moved to 13.42.0 for advisory CVE-2026-128083 (low severity). The app doesn't use the affected Concurrency feature, so it was not exposed, and the update cleared the CI security audit ([SECURITY.md](SECURITY.md)).
 
 ## Business model
 
@@ -156,15 +207,14 @@ below is worked out from stated assumptions, listed with sources in
   program start date, with no free pilot year. The Golden Triangle, with
   nearly 6,000 businesses, is Large; the model has no size for other
   districts, so it uses Medium for each of them, paid from the month they
-  launch. In the product the fee is built and tested and switched off by
-  default (`BID_PROGRAM_FEE_ENABLED`); switched on, a BID admin pays it in
-  Stripe test mode (no real money)
+  launch. In the product a BID admin pays it in Stripe test mode (no real money),
+  and the Golden Triangle's first program year was paid on 2026-11-14
   ([ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md)). The business improvement
   district (BID) would receive a share of the employer fee (planned; no money
   goes to a BID today).
 - **Unspent credits are never revenue.** In the product they don't expire:
   credits an employer hasn't given out yet can be refunded if the employer
-  asks, and credits given to an employee stay in their wallet. The table below
+  asks and a Local Goods admin approves it, and credits given to an employee stay in their wallet. The table below
   shows an estimate of credits never spent (about 8% of credits issued) next to
   revenue, but it is never counted in revenue, profit or the break-even month.
   Depending on state law, unspent balances may belong to the employer, the
@@ -186,6 +236,8 @@ below is worked out from stated assumptions, listed with sources in
   Check with your CRA officer.
 - **One district alone does not break even in the base case.** The model breaks
   even DC-wide around month 54.
+
+**Why this scales.** There are more than 1,000 Business Improvement Districts in the United States: the Rutgers and International Downtown Association census counted 1,001 in 2010 ([IDA](https://downtown.org/knowledge-center/2011-u-s-bid-census-report)). The IDA also counts "4,000+ place management organizations globally", often called BIDs ([IDA](https://downtown.org/about-the-industry/); a broader count that is not dated). One district's results sell the next: a BID that can show spending reaching its own independent shops has something to show its neighbours. A new district needs setup, not new code: a boundary and its merchants ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)). The DC-wide and national rows in the table above show what that adds up to. Employers and BIDs pay, and merchants don't, because independent merchants run on thin margins: "In 2019, pre-tax income represented approximately 5% of sales for a typical restaurant" ([National Restaurant Association, 2022](https://restaurant.org/research-and-media/research/economists-notebook/analysis-commentary/bottom-line-impact-of-rising-costs-for-restaurants/)).
 
 The model is worked out month by month from stated assumptions, each with a
 public source or labelled an assumption to check in customer discovery. On the
@@ -254,8 +306,7 @@ low and high cases on the Business model page.
    gives back its share of the fee, and reconciliation checks it all. Only
    the platform admin can change it, and every change is logged
    ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)). The BID
-   annual program fee is built too, switched off by default: with
-   `BID_PROGRAM_FEE_ENABLED` on, a BID admin pays one program year at a time
+   annual program fee is built too: a BID admin pays one program year at a time
    through Stripe Checkout in test mode, at the price of the district's size
    tier (set by Local Goods, never by the browser), once per district per
    year; it is Local Goods' own money, swept and reconciled like the other
@@ -283,19 +334,7 @@ activity**, its people and merchants are fictional, and it runs only in
 Stripe test mode. See what it has done on the BID admin's Demo activity page
 ([ADR 0032](docs/adr/0032-live-demo-activity-in-stripe-test-mode.md)).
 
-**Try it:** [log in](https://uselocalgoods.com/login) with a demo account (available on
-request; there is no public sign-up). As the employee, redeem a normal amount,
-then click **Try a suspicious redemption** (under **Demo Tools** in the account menu). To see tax at checkout, order
-from a menu in the wallet. On **Pay in person**, get a pay
-code, then log in as the merchant and enter it under **Take a payment**. As the BID admin, see the AI's
-score, decision and explanation for each one, approve or deny held
-redemptions, and press **Run a collusion example** to watch the real AI
-check a synthetic credit-to-cash redemption. Open **Corrections** to see how a
-refund or a missed payout is fixed. The [AI eval results](https://uselocalgoods.com/eval) are public.
-Judges and other reviewers sign in with a magic link (no account, no password;
-see **For judges** above) to a read-only view with a guided tour, a "view as"
-switcher for each role, and a Feedback button on every page
-([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)).
+**Try it:** press **Try it yourself** on [uselocalgoods.com](https://uselocalgoods.com) for a private copy of the demo with no account. As the employer, buy credits (Stripe's test card 4242 4242 4242 4242, any future date, any CVC) and give them to an employee. As the employee, redeem a normal amount, or get a pay code under **Pay in person** and take it to the merchant's **Take a payment**. To see tax at checkout, order from a menu in the wallet. Press **Try a suspicious redemption** under **Demo Tools**, then, as the BID admin, approve or deny the held payment, and press **Run a collusion example** to watch the real AI check a synthetic credit-to-cash redemption. Open **Corrections** to see how a refund or a missed payout is fixed, and **Merchant Applications** to see a new shop join. The [AI eval results](https://uselocalgoods.com/eval) are public. Reviewers can also use the read-only live demo, with a guided tour, a "view as" switcher for each role and a Feedback button on every page ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)). The shared demo logins are available on request; there is no public sign-up.
 
 ## The two AI functions
 
@@ -358,7 +397,7 @@ its [tests](tests/Feature/RedemptionFraudDetectorTest.php) and
 
 ## Where the money is
 
-Employers pay for credits before anyone spends them, so most of the money Local Goods holds is a promise, not ours. Every line in the ledger is in one of two places, never both: **customer funds held** (employer credits not yet given out, employee balances, money owed to merchants, and anything held waiting for a person) or **operating funds** (only what Local Goods has earned; both fees are off, and the only money earned so far came from one sale during a three-minute test of the fee setting). **Unspent credits are customer funds held for the program, never Local Goods' money.** Credits an employer hasn't given out yet stay on its balance and can be refunded on request; credits given to an employee stay in their wallet, with no expiry.
+Employers pay for credits before anyone spends them, so most of the money Local Goods holds is a promise, not ours. Every line in the ledger is in one of two places, never both: **customer funds held** (employer credits not yet given out, employee balances, money owed to merchants, and anything held waiting for a person) or **operating funds** (only what Local Goods has earned: the employer platform fee and the BID program fee, both charged in Stripe test mode, and a few cents from a three-minute test of the merchant fee setting). **Unspent credits are customer funds held for the program, never Local Goods' money.** Credits an employer hasn't given out yet stay on its balance and can be refunded if the employer asks and a Local Goods admin approves it; credits given to an employee stay in their wallet, with no expiry.
 
 **Two separate Stripe accounts.** Employer money is held in the **customer funds account** (the Stripe platform balance), which may only pay merchants and refund employers. Local Goods' own money is held in a separate Stripe test-mode account, **Local Goods Operating**. Money gets there only by a recorded **sweep**: decided by the platform admin with a reason, never edited, and refused by the solvency guard if it would leave customer funds short. Reconciliation checks both balances against Stripe, and the employer's Buy credits screen, Stripe Checkout and every merchant payout say which account the money is in ([ADR 0034](docs/adr/0034-two-separate-stripe-balances.md)).
 
@@ -385,21 +424,7 @@ These were built in from the first version of each feature, not added afterwards
 - **Idempotent webhooks.** Stripe events are verified by signature and each one is applied once ([`StripeWebhookHandler`](app/Services/Payments/StripeWebhookHandler.php), [docs/STRIPE.md](docs/STRIPE.md)).
 - **An over-refund guard.** Each refund is re-checked against what was paid, what was already refunded and the tax, before any money moves ([ADR 0028](docs/adr/0028-refunds-and-corrections.md), [`CorrectionLimits`](app/Services/Corrections/CorrectionLimits.php)).
 - **A locked eval set.** The held-out cases are fixed by a SHA-256 per row before the AI sees them, and CI fails if one changes ([`fraud_eval_lock.json`](data/fraud_eval_lock.json), [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it)).
-- **CI on two databases.** Every push runs the suite (1,475 tests as of 2026-10-30, of which 5 need MySQL and are skipped on a plain local run) on both SQLite and MySQL ([`ci.yml`](.github/workflows/ci.yml)).
-
-## How it meets the judging criteria
-
-Only what exists today is claimed. Everything else is marked **planned**.
-
-| Category | Points | Evidence |
-|---|---|---|
-| **Functionality** | 25 | **Live:** after [logging in](https://uselocalgoods.com/login), the employee wallet shows a balance, a redeem form and recent redemptions; the BID admin view shows every AI decision; Approve and Reject buttons for held redemptions ([`RedemptionReviewService`](app/Services/RedemptionReviewService.php)); a Reset demo button; logins with six roles, each with its own dashboard ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md)); read-only reviewer access from magic links (no passwords, valid until judging ends, revocable), with a guided tour, "view as" for each role and in-app feedback scored against this rubric ([ADR 0010](docs/adr/0010-magic-links-for-reviewers.md)); an append-only credit ledger ([`CreditLedgerEntry`](app/Models/CreditLedgerEntry.php)); a BID review queue for Merchant Eligibility Matching with Approve, Reject and Needs research, logged append-only with who and when ([`MerchantReviewDecision`](app/Models/MerchantReviewDecision.php)). **Money loop ([ADR 0014](docs/adr/0014-employer-program-pending-purchases-and-initials.md)):** an employer/HR dashboard with program setup (monthly budget, allowance, optional new-hire, birthday and recognition occasions), buying credits (pending until Stripe confirms payment by a signed webhook, which alone writes the ledger entry) and giving them to one person or many, all or nothing, within the budget ([`CreditLedger`](app/Services/CreditLedger.php)); a wallet with merchant search and category filters, a confirmation screen and full ledger history; a merchant dashboard (owed split into "via Stripe test mode" and "simulated", held ones "not owed yet", Stripe onboarding); a BID participation overview and merchant roster with onboarding status; a BID impact page read from the ledger that rolls up the HR numbers with the same definitions ([ADR 0017](docs/adr/0017-bid-impact-from-the-ledger.md)). **Stripe Connect, test mode ([ADR 0015](docs/adr/0015-stripe-connect-test-mode-separate-charges-and-transfers.md), [docs/STRIPE.md](docs/STRIPE.md)):** Checkout with `transfer_group`, Express onboarding, a Transfer per Stripe-funded cleared redemption with `source_transaction`, a verified idempotent webhook, and a platform-admin reconciliation page that explains every mismatch in plain English. Feature tests cover each flow with Stripe faked, and the cent-exact ledger math. **Planned:** turning an approved candidate into a participant. |
-| **Problem** | 20 | A specific buyer (employer HR via the BID), a specific place (Golden Triangle BID, DC) and a specific leak (perk dollars leaving the neighborhood). See [The problem](#the-problem), [Why it matters](#why-it-matters) and [ADR 0002](docs/adr/0002-one-bid-and-one-employer-for-the-mvp.md). |
-| **AI** | 20 | **Live:** Redemption Fraud Detection with structured JSON output, a [versioned prompt file](resources/prompts/redemption-fraud-detection.md), anonymous [signals](app/Services/Fraud/SignalCalculator.php), the score-70 override and fail-closed handling. **Measured:** [caught 17 of 26 suspicious; 17 of 19 holds were suspicious](docs/evals/fraud-eval-results.md), on 50 unseen cases (26 labeled suspicious) that were labeled by hand and locked with a SHA-256 per row before the AI saw them. 95% confidence intervals: catch rate 46–81%, hold precision 69–97%. Misses are the weak spot: the 9 missed cases mostly had one strong signal at normal hours, and the results break them down by pattern. Earlier, smaller runs are kept below the headline. 90 synthetic cases in all; method in [TRANSPARENCY.md](TRANSPARENCY.md#how-we-measure-it). **Built:** Merchant Eligibility Matching, with a [versioned prompt](resources/prompts/merchant-eligibility.md) that holds the independence rule word for word, four public facts as input, validated JSON, a fail-closed fallback to "undetermined", and a plain statement that the AI has no web access. **Eval:** [`merchant:eval`](app/Console/Commands/MerchantEval.php) runs against 60 hand labels locked before the AI saw them (40 dev, 20 holdout, scored separately; holdout once per prompt version). **Measured on the 20-case holdout, run once with the frozen prompt `458e8c2d`:** it wrongly called 0 of 17 chains and franchises eligible (95% CI 0–18%), called 15 of 17 not eligible, and routed 14 of 20 cases to a person. Agreement (17 of 20) only equals the always-"not eligible" baseline, and it found 0 of 3 independents. **Honest limit:** without web access it recognized only 2 of 11 independents on dev; the rest came back undetermined for a person. So it is a triage tool, not a decider: *The AI is a triage tool: it screens out obvious chains and franchises, routes anything it can't verify to a person, and never approves a merchant on its own.* Web search is future work. [Results](docs/evals/merchant-eval-results.md). |
-| **Code quality / GitHub** | 15 | A [test that sends every write route as a judge](tests/Feature/JudgeReadOnlyTest.php) and checks nothing changes. Automated tests run by [GitHub Actions CI](.github/workflows/ci.yml) on every push, against both SQLite and MySQL (badge above). Tests use a [fake Claude client](tests/Fakes/FakeClaudeClient.php) and a [fake Stripe gateway](tests/Fakes/FakeStripeGateway.php) (webhooks are signed exactly as Stripe signs them), so they need no secrets and never touch the network. Small descriptive commits, [decision records](docs/adr/), a [CHANGELOG](CHANGELOG.md) and a [`CLAUDE.md`](CLAUDE.md) project brief. |
-| **UX** | 10 | A custom brand system, Transit lines ([ADR 0025](docs/adr/0025-transit-lines-brand.md): Overpass + Atkinson Hyperlegible Next, self-hosted; light and dark tokens with every text pair tested for WCAG AA in both modes in [`ColorContrastTest`](tests/Unit/ColorContrastTest.php)), an employer-first landing page, a shared app shell (sidebar on desktop, bottom tabs on mobile), one-click demo flow, plain-English AI explanations, all businesses labeled fictional. A local-only `/styleguide` shows every token and component. The employer/HR dashboard frames results as "your team got out into the neighborhood", and every number has a "How we count this" note; the eight-week trend has a table view. Every page has an empty state, a "working…" state on slow buttons and plain-English error pages, and fits a 320px phone screen ([accessibility and UX check](docs/accessibility.md)). |
-| **Business impact** | 10 | Designed to keep perk spending with independent merchants. An estimate from an outside study, not measured by Local Goods: the Civic Economics / American Booksellers Association [Indie Impact study](https://www.publishersweekly.com/pw/by-topic/industry-news/bookselling/article/55547-news-from-aba-growing-shopping-local.html) found independent retailers and restaurants recirculated 52.3% of their revenue locally, against 15.8% for chains (data from 2011–2012, 134 businesses in 10 U.S. communities, none in DC). BIDs get a tool to sell to employers they already work with. Every redemption is fraud-scored today, merchants are owed only cleared ones, and cleared Stripe-funded ones are paid out through Stripe Connect (test mode), so custody stays with a licensed processor instead of us. **Live metrics:** the employer sees the share of staff who redeemed this month, visits out of the office, local businesses discovered (including first-time visits), dollars spent locally and top categories; the BID sees employees active, merchants reached and dollars spent at independent merchants, with the study's rate shown separately as a labelled outside estimate. Live (test-mode) Stripe payouts; real-money payouts would need only live keys and Stripe's account review. |
-| **Bonus: accessibility & ethical AI** | Bonus | **Accessibility:** every page checked with keyboard only, at 320px and 375px, and with axe (WCAG 2.2 AA rules); errors tied to their fields, focus moved to the result after each action, tables reachable by keyboard, reduced motion respected. [`AccessibilityTest`](tests/Feature/AccessibilityTest.php) checks labels, alt text, names and error wiring on every page for every role. What was and wasn't tested (not yet with a screen reader) is in [docs/accessibility.md](docs/accessibility.md). **Ethical AI:** names never sent to the AI, every decision explained and shown, fails closed, high scores always held, a person approves or denies every hold (name, time and reason recorded) and no money moves until they do, the merchant AI only recommends and never approves a business on its own (enforced in the model and tested), real business names kept off public pages, synthetic demo data only, and employees shown by initials only outside their own wallet (checked on every page by [`EmployeeNamePrivacyTest`](tests/Feature/EmployeeNamePrivacyTest.php)). See [TRANSPARENCY.md](TRANSPARENCY.md). |
+- **CI on two databases.** Every push runs the suite (about 1,800 tests; the few that need MySQL are skipped on a plain local run) on both SQLite and MySQL ([`ci.yml`](.github/workflows/ci.yml)).
 
 ## Which error we chose to minimize
 
@@ -425,7 +450,7 @@ Saying no was part of the design. Each decision below is already in our decision
 |---|---|
 | The merchant fee ships switched off. Nothing is charged, and a test stops any seed from turning it on ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)). | We haven't talked to merchants about pricing yet, so it stays off until customer discovery tells us what is fair. |
 | A payout that was reversed in the Stripe dashboard is not re-sent by us. It is refused, and a person sorts it out in Stripe ([ADR 0028](docs/adr/0028-refunds-and-corrections.md)). | A second automatic money path on top of a reversal Stripe itself made is easy to get wrong, and we won't add one before judging. |
-| Unspent credits are never counted as revenue ([ADR 0030](docs/adr/0030-business-model-projections.md)). | They are customer funds held for the program: credits not yet given out stay on the employer's balance and can be refunded on request, and credits given to an employee stay in their wallet with no expiry. A test checks that revenue doesn't move with the share spent. |
+| Unspent credits are never counted as revenue ([ADR 0030](docs/adr/0030-business-model-projections.md)). | They are customer funds held for the program: credits not yet given out stay on the employer's balance and can be refunded if the employer asks and a Local Goods admin approves it, and credits given to an employee stay in their wallet with no expiry. A test checks that revenue doesn't move with the share spent. |
 | No issued card, so no interchange ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md), [model](docs/finance/MODEL.md)). | The MVP has no card program, and we could not verify the interchange rate, so the model keeps it off. |
 | No admin "Cancel" button on a held in-person payment ([ADR 0026](docs/adr/0026-pay-in-person-with-pay-codes.md)). | The shop is the one who knows the customer paid another way, so only the shop can cancel. An admin's Deny already returns the credits. |
 | No card preview: a Stripe Issuing test card next to pay codes ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)). | Issuing switches on instantly in test mode, but funding cards needs a business account behind an identity check, which we chose not to complete with invented details. We won't show a fake card instead. |
@@ -433,7 +458,7 @@ Saying no was part of the design. Each decision below is already in our decision
 | No email sending in the prototype ([ADR 0007](docs/adr/0007-fortify-for-login-and-a-role-column.md), [ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)). | There is no mail service, so we don't promise a reset link that would never arrive. An applicant's private status link is shown once instead. |
 | The Merchant Eligibility Matching AI has no web search ([ADR 0013](docs/adr/0013-merchant-eligibility-matching.md)). | Adding it means a new prompt version and a fresh unseen test set. Until then it says "undetermined" and a person decides. |
 | We don't reset the live demo for convenience ([CLAUDE.md](CLAUDE.md)). | Reset demo would erase real examples judges can see on the live site, such as the in-person payment, taxed orders and a completed correction, so it is for local use only. |
-| No BID program fee charged in the product ([ADR 0043](docs/adr/0043-bid-program-fee-and-unspent-credit-estimate.md)). | It is already a lever in the projection model, and a new money path adds risk before judging. |
+| Nothing in the app refunds the BID program fee. A platform admin can only record a note ([ADR 0044](docs/adr/0044-bid-program-fee-charged-no-pilot-year.md)). | The fee is Local Goods' own money, kept apart from customer funds, and a refund of it would be one more money path. Any refund is decided outside the app. |
 | No business-model figures on public pages, and the local-spending estimate only with its outside-study label and source ([ADR 0024](docs/adr/README.md), [`PublicClaimsTest`](tests/Feature/PublicClaimsTest.php)). | The figures are a projection, not results, and the estimate comes from an outside study that Local Goods has not measured. |
 | A fee charged during a three-minute check that the fee setting worked is kept as earned income, not given back ([ADR 0034](docs/adr/0034-two-separate-stripe-balances.md)). | On Oct 28, from 12:08 to 12:11 (fee audit log), the merchant fee was switched on live to check that it worked, and one sale was charged a few cents. We considered building a way to give it back, and decided that a new money path for so small an amount, this close to the freeze, was the wrong trade. Instead we recorded exactly what happened and treated it as earned. Otherwise Local Goods charges nothing. |
 | Customer money is never used for anything else: not invested, not lent, and new purchases never pay old promises ([ADR 0033](docs/adr/0033-customer-funds-and-the-solvency-rule.md)). | Unspent credits are customer funds held for the program, never Local Goods' money. A check over the whole ledger history, and a guard on every money operation, refuse anything that would leave less money than has been promised. |
@@ -496,6 +521,7 @@ and try a suspicious redemption, then log in as the BID admin to decide it.
 | Nothing | The whole app, with simulated payments. Credits are bought in one press and merchant payouts are recorded but never sent. The page says **Simulated**. | |
 | `ANTHROPIC_API_KEY` | Real scoring by Redemption Fraud Detection, and `php artisan merchant:eval` | Every redemption is **held for a person**, never cleared: the check fails closed. |
 | `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` (test keys only) | Stripe Checkout, Connect test accounts and transfers, reconciliation | Payments stay simulated. Live keys are refused. Setup and `stripe listen` are in [docs/STRIPE.md](docs/STRIPE.md). |
+| `SANDBOX_ENABLED`; for the card form also `SANDBOX_STRIPE_ENABLED`, `SANDBOX_STRIPE_SECRET`, `SANDBOX_STRIPE_PUBLISHABLE` (test keys from a **separate** Stripe test account) | The Try it yourself button and private sandboxes ([ADR 0045](docs/adr/0045-try-it-yourself-sandboxes.md)) | No button, and every `/sandbox` address answers 404. Without the Stripe keys, sandbox purchases are simulated. |
 
 Keys go in `.env` only and are never committed. Tests need no keys: they use a
 fake Claude client and a fake Stripe, and an in-memory database.
@@ -531,6 +557,8 @@ flowchart TD
     db[("Amazon RDS MySQL")]
     stripe["Stripe Connect, test mode<br/>Checkout, transfers, refunds"]
     anth["Anthropic API"]
+    sandbox[("Try it yourself: a private SQLite copy of the demo<br/>per visitor, deleted after 24 hours")]
+    stripesb["Separate Stripe test account<br/>Checkout for Buy credits only"]
     fraud["Redemption Fraud Detection<br/>sends: anonymous signals only<br/>(amount, balance, visit counts, category, hour)<br/>no names; fails closed to a hold"]
     elig["Merchant Eligibility Matching<br/>sends: name, address, category,<br/>license business activity<br/>suggestion only"]
     person1{{"A person decides:<br/>BID or platform admin approves or denies<br/>each held redemption, with a reason"}}
@@ -549,6 +577,9 @@ flowchart TD
     app -->|"purchases, refunds"| stripe
     stripe -->|"signed events"| cf
     cf --> hook --> ledger
+    app -->|"Try it yourself"| sandbox
+    sandbox -->|"Buy credits only"| stripesb
+    sandbox -->|"AI checks, capped"| anth
 ```
 
 Reading it: a request reaches Laravel only through CloudFront. Money is
@@ -561,6 +592,8 @@ evaluation are stored in `data/merchant_assessments.json`, and a shop that
 applies gets one suggestion for the BID admin to weigh. Everything runs in
 Stripe test mode with no real money.
 
+Try it yourself runs the same app against a private SQLite file for each visitor, with its own login, session and cache. The live Stripe keys are switched off inside it; its Buy credits uses a separate Stripe test account, and nothing it does reaches the live database or the live Stripe account. Its AI checks are capped per sandbox.
+
 Main files:
 
 - **Edge and middleware:** [`infra/cloudfront/canonical-host.js`](infra/cloudfront/canonical-host.js), [`bootstrap/app.php`](bootstrap/app.php), [`RequireCloudFrontOrigin`](app/Http/Middleware/RequireCloudFrontOrigin.php), [`TrustCloudFront`](app/Http/Middleware/TrustCloudFront.php), [`BlockJudgeWrites`](app/Http/Middleware/BlockJudgeWrites.php), [`SecurityHeaders`](app/Http/Middleware/SecurityHeaders.php), [`routes/web.php`](routes/web.php)
@@ -569,89 +602,27 @@ Main files:
 - **Ledger and solvency:** [`CreditLedger`](app/Services/CreditLedger.php), [`SolvencyGuard`](app/Services/Solvency/SolvencyGuard.php), [`SolvencyCheck`](app/Services/Solvency/SolvencyCheck.php)
 - **Stripe:** [`StripeGateway`](app/Services/Payments/StripeGateway.php), [`TransferGate`](app/Services/Payments/TransferGate.php), [`MerchantPayouts`](app/Services/Payments/MerchantPayouts.php), [`StripeWebhookHandler`](app/Services/Payments/StripeWebhookHandler.php), [`routes/stripe.php`](routes/stripe.php), [`docs/STRIPE.md`](docs/STRIPE.md)
 - **Corrections:** [`CorrectionDecisions`](app/Services/Corrections/CorrectionDecisions.php)
+- **Sandboxes:** [`Sandbox`](app/Services/Sandbox/Sandbox.php), [`UseSandbox`](app/Http/Middleware/UseSandbox.php), [`SandboxRoutes`](app/Services/Sandbox/SandboxRoutes.php), [`SandboxStripe`](app/Services/Sandbox/SandboxStripe.php), [`SandboxIsolationTest`](tests/Feature/SandboxIsolationTest.php)
 
-## What's next
+## Roadmap
 
-### Where it is today
+Target dates, not promises. Nothing handles real money until the legal and security reviews are done.
 
-- **A working prototype** at [uselocalgoods.com](https://uselocalgoods.com),
-  designed around Washington, DC's Golden Triangle as the example district.
-  That is a design choice, not a partnership: no district has endorsed or
-  joined it.
-- **Stripe Connect in test mode.** Employers buy credits, staff spend them at
-  approved independent shops, and shops are paid out through Stripe. No real
-  money moves.
-- **Employers can pay by card, Apple Pay or Google Pay.** Stripe Checkout
-  shows the wallets on devices that support them, in test mode. They are
-  switched on in Stripe's payment-method settings, not in our code, and
-  payment methods are limited to those three on purpose.
-- **Two AI functions, with people in charge.** Redemption Fraud Detection
-  holds unusual payments, and Merchant Eligibility Matching recommends which
-  businesses qualify. People decide every held redemption and every new
-  merchant ([TRANSPARENCY.md](TRANSPARENCY.md)).
-- **An append-only ledger** records who is owed what. It is checked against
-  the real Stripe test balances, and a solvency check confirms that the money
-  in hand covers what has been promised.
-- **Employers are set up by Local Goods today;** self sign-up is planned.
-  Merchants already apply on their own, and a BID admin approves or declines
-  each one.
-- **A read-only look-around link** lets visitors see every role in the live
-  app without an account (available through judging, until November 30, 2026).
+| When (target) | What | Why it matters |
+|---|---|---|
+| Dec 2026 (after judging) | Enforce the Content-Security-Policy; update `laravel/tinker` and the other held framework updates; turn on Dependabot security updates; make passing CI a required check; add the refund cap at the ledger layer too; a full screen-reader pass | The free items marked "Still open" in [SECURITY.md](SECURITY.md); the updates were held back during the freeze. Accessibility so far: automated checks, a keyboard pass, and three fixes made from VoiceOver notes ([docs/accessibility.md](docs/accessibility.md)) |
+| Q1 2027 | Employer self sign-up; ask one Business Improvement District to run a test pilot with fictional money; collect feedback from employers and merchants | Employers are set up by Local Goods today. A pilot shows what people actually do, not a projection |
+| Q2 2027 | Legal and tax review (gift-card and unclaimed-property rules, payroll treatment); an independent security review; required two-step sign-in for real staff accounts; handling of card disputes and returned payments; a database guard against negative balances and real two-connection race tests on MySQL; and only then the steps needed before real money (Stripe live mode) | These are the "before real money" gaps in [SECURITY.md](SECURITY.md) and the legal questions in [Where the money is](#where-the-money-is) |
+| Q3 2027 | A first real-money pilot in one district, if the reviews allow; decide on the merchant fee only after merchants see new sales; new fraud signals and web search for Merchant Eligibility Matching, each with a fresh unseen test set | The merchant fee stays at zero until merchants have seen new sales ([ADR 0029](docs/adr/0029-merchant-fee-ready-but-at-zero.md)). The planted collusion rings need new signals ([How the AI was measured](#how-the-ai-was-measured)) |
+| Q4 2027 and beyond | A second district; a web application firewall and a second server (per-server rate limits and sandbox storage today); renew `security.txt` before 2027-11-10; paying for credits by bank transfer (ACH) once returned payments are handled; ideas with no date: residential property owners funding credits, a reusable wallet card (also in Apple Pay and Google Pay), delivery partners for Order to go (all three from Mike Maggitti's feedback), a mobile app, real email delivery and richer BID reports | A new district is a boundary plus its merchants ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)). The rest depends on scale or on partners, and a card needs Stripe Issuing approval, a regulated partner and legal advice ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)) |
 
 ### Where it's going
 
-None of this is built. There are no dates. Some of it is drawn as sketches
-on the [Coming next page](https://uselocalgoods.com/coming-next).
-
-- **A pilot with real independent merchants and one employer.** It takes
-  merchants who agree to join, an employer willing to fund a small program,
-  and a first look at what they actually do, not a projection.
-- **A reusable employer-funded prepaid card.** Staff would pay with a card
-  that works only at approved shops. It takes Stripe Issuing approval, a
-  verified business account, a bank or regulated partner holding the funds,
-  and legal advice on prepaid card rules
-  ([ADR 0036](docs/adr/0036-no-card-preview-yet.md)). The card could also be
-  added to Apple Pay and Google Pay wallets, which needs card-program
-  approval and Apple's and Google's wallet provisioning.
-- **Paying for credits by bank transfer (ACH),** once returned and failed
-  payments are handled.
-- **Residential property owners funding credits for their residents** as a
-  building amenity, spent at local shops on evenings and weekends,
-  especially by residents who live downtown but commute elsewhere for work.
-  It takes a second funder type alongside employers, and building owners
-  willing to fund it.
-- **Delivery partners for "Order to go".** We are exploring this; nothing
-  is built.
-- **A mobile app.** Today it is a phone-friendly website. A native app would
-  add things like a wallet card and notifications.
-- **More districts.** A new Business Improvement District is a boundary plus
-  its merchants, since the rules live in one place
-  ([ADR 0031](docs/adr/0031-districts-partnerships-merchant-joining.md)).
-  It also takes a district that wants to take part.
-- **Real email delivery** for demo requests, receipts and notifications. It
-  takes setting up a mail service. Until then "Request a demo" opens your own
-  email program.
-- **More BID reporting exports.** There is a summary download today. This
-  would add richer reports for a district's own use.
-- **Testing with screen readers and real phones.** The pages are checked with
-  automated tools and a keyboard, but not yet with a screen reader or on a
-  range of real phones ([docs/accessibility.md](docs/accessibility.md)).
-- **Stronger account security** for a real deployment with real staff
-  accounts, such as requiring two-step sign-in (staff can turn it on today,
-  but it is optional).
-
-The residential, wallet and delivery ideas came from feedback from a
-business improvement district director.
-- **Smarter fraud checks.** The planted collusion patterns look ordinary one
-  payment at a time. Catching them needs new signals, so a new prompt version
-  and a fresh unseen test set.
-- **Web search for Merchant Eligibility Matching,** which also needs a new
-  prompt version and a fresh test set.
+The ideas with no dates, some drawn as sketches, are on the [Coming next page](https://uselocalgoods.com/coming-next). None of them is built, and no district or delivery service has agreed to take part.
 
 ### Get involved
 
-Click **Request a demo** on [uselocalgoods.com](https://uselocalgoods.com), or
-email [butlerf@cua.edu](mailto:butlerf@cua.edu).
+Click **Request a demo** on [uselocalgoods.com](https://uselocalgoods.com), which opens your own email program. To report a security problem, use **Report a vulnerability** on this repository's Security tab ([SECURITY.md](SECURITY.md)).
 
 ---
 

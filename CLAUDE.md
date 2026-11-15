@@ -325,7 +325,8 @@ input, eval data or lock change.
   at the top and in its `aria-label`. HTML/CSS only; Apple Pay, Google Pay,
   DoorDash Drive and Uber Direct appear as plain text. It must say "We have
   not partnered with any delivery service." and never imply a partnership or
-  endorsement; never name the director or the district. Keep `$` figures
+  endorsement; the page never names the director or the district (the README
+  names him, with his permission, since 2026-11-15). Keep `$` figures
   away from fee/revenue words (`PublicClaimsTest`). Linked from `/judge` and
   the README. Test: `ComingNextPageTest`.
 
@@ -373,8 +374,9 @@ data or lock change.
   page and the judge tour (a reusable employer-funded prepaid card is on the
   roadmap). README "Where it's going" gains residential property owners
   funding credits, Apple Pay/Google Pay for the card, and delivery partners
-  for Order to go, credited to feedback from "a business improvement district
-  director" (never name the person, district or organization).
+  for Order to go, credited to feedback from Mike Maggitti, Executive Director
+  of Downtown Visions (named in the README and roadmap with his permission,
+  2026-11-15; shown as feedback, never as an endorsement or partnership).
   Test: `LandingPageTest`.
 
 **Request a demo opens an email — code done (2026-11-09), not deployed.**

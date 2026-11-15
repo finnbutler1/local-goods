@@ -27,7 +27,7 @@ class SecurityTxtTest extends TestCase
     {
         $md = file_get_contents(base_path('SECURITY.md'));
 
-        foreach (['butlerf@cua.edu', 'test mode', 'No bug bounty', '5 business days', 'In scope'] as $needle) {
+        foreach (['Report a vulnerability', 'test mode', 'No bug bounty', '5 business days', 'In scope'] as $needle) {
             $this->assertStringContainsString($needle, $md);
         }
     }
