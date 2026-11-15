@@ -71,6 +71,11 @@ class UseSandbox
                 return redirect()->route('sandbox.home');
             }
             if (! SandboxRoutes::allows($route)) {
+                // Feedback is left from the live demo: say so, with Exit, instead of the plain page.
+                if ($request->is('feedback') || $request->is('feedback/*')) {
+                    return response()->view('sandbox.feedback-here', [], 404);
+                }
+
                 return response()->view('sandbox.not-here', [], 404);
             }
 

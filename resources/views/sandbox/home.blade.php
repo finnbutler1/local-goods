@@ -32,6 +32,8 @@
         @endforeach
     </ol>
 
+    @include('sandbox.for-judges', ['inSandbox' => true])
+
     <p class="text-sm text-muted">
         AI checks left in this sandbox: {{ $aiLeft }} of {{ config('sandbox.ai_calls_per_sandbox') }}.
         After that (or if the day's sandbox checks run out), payments are held for a person to review, as when the AI can't be reached.

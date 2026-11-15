@@ -68,15 +68,20 @@ final class SandboxRoutes
         'reviewer' => ['Local Goods reviewer', Role::PlatformAdmin, 'bid-admin.dashboard'],
     ];
 
+    /** Step 2: credits are given from the employer role, not the employee's. */
+    public const GIVE_STEP = 'As Employer (HR): in Give credits, choose Jordan Rivera (that\'s the employee you\'ll play), enter an amount, and press Give.';
+
+    public const PAY_STEP = 'Spend credits at any participating merchant (Farragut Grind is a good first stop): pick items from its menu, or get a pay code to pay in person. Then press Merchant, or "See this as the merchant", to see the sale from the shop\'s side.';
+
     /**
-     * The "Try this" checklist: [what to do, how, role key, page it opens].
+     * The "Try this" checklist: [what to do, how, role key, page it opens, optional #anchor on that page].
      *
-     * @var list<array{0: string, 1: string, 2: string, 3: string}>
+     * @var list<array{0: string, 1: string, 2: string, 3: string, 4?: string}>
      */
     public const CHECKLIST = [
         ['Buy credits', 'Under Buy credits, buy up to $5,000 of credits. The payment is simulated: no card is charged and Stripe is not contacted.', 'employer', 'employer.dashboard'],
-        ['Give credits to an employee', 'Under Give credits, give some to Jordan Rivera.', 'employer', 'employer.dashboard'],
-        ['Pay at a merchant', 'Spend credits at Farragut Grind: pick items from its menu, or get a pay code to pay in person.', 'employee', 'employee.wallet'],
+        ['Give credits to an employee', self::GIVE_STEP, 'employer', 'employer.dashboard', 'allocate'],
+        ['Pay at a merchant', self::PAY_STEP, 'employee', 'employee.wallet'],
         ['See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated)', 'Once the fraud check clears the sale, it shows under Redemptions received and its amount is added to Owed, simulated.', 'merchant', 'merchant.dashboard'],
         ['See the district\'s impact', 'Spending at independent merchants in the district, counted from the ledger.', 'bid_admin', 'bid-admin.impact'],
         ['Try a suspicious payment', 'Press "Try a suspicious redemption", then confirm it on the wallet. The AI usually holds it, but it may clear it.', 'employee', 'employee.demo-tools'],
@@ -90,7 +95,7 @@ final class SandboxRoutes
      * The checklist as shown: CHECKLIST, with step 1's wording following
      * whether Stripe Checkout is on in this sandbox (ADR 0045 addendum).
      *
-     * @return list<array{0: string, 1: string, 2: string, 3: string}>
+     * @return list<array{0: string, 1: string, 2: string, 3: string, 4?: string}>
      */
     public static function checklist(): array
     {

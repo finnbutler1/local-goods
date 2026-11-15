@@ -3,10 +3,6 @@
      while Sandbox::active(); the forms' routes are 404 anywhere else. --}}
 @php
     $current = \App\Services\Sandbox\SandboxRoutes::keyForRole(auth()->user()?->role);
-    // Which merchant to be (ADR 0045 addendum): the merchant login follows where the money went.
-    $sandboxMerchants = app(\App\Services\Sandbox\SandboxMerchant::class);
-    $merchantChoices = $sandboxMerchants->pickable();
-    $merchantNow = $current === 'merchant' ? auth()->user()->merchant?->id : $sandboxMerchants->default()?->id;
 @endphp
 <div data-sandbox-bar class="border-b-2 border-accent bg-surface">
     <div class="wrap flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -43,21 +39,6 @@
                         </x-button>
                     </form>
                 </li>
-                @if ($key === 'merchant' && $merchantChoices->count() > 1)
-                    <li>
-                        <form method="POST" action="{{ route('sandbox.role') }}" data-busy="Switching…" data-sandbox-merchant-picker class="flex items-center gap-1.5">
-                            @csrf
-                            <input type="hidden" name="role" value="merchant">
-                            <label for="sandbox-merchant-pick" class="sr-only">Choose which merchant to be</label>
-                            <select id="sandbox-merchant-pick" name="merchant_id" class="max-w-60">
-                                @foreach ($merchantChoices as $choice)
-                                    <option value="{{ $choice->id }}" @selected($choice->id === $merchantNow)>{{ $choice->name }}</option>
-                                @endforeach
-                            </select>
-                            <x-button type="submit" size="sm" variant="secondary">Switch<span class="sr-only"> to this merchant</span></x-button>
-                        </form>
-                    </li>
-                @endif
             @endforeach
         </ul>
     </nav>

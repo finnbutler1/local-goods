@@ -39,6 +39,12 @@
                     <li>Home</li>
                 </ol>
                 <div class="mt-8 flex flex-wrap gap-3">
+                    @if ($sandbox)
+                        {{-- One starting point (ADR 0045): Try it yourself; the read-only live demo is a quiet link below. --}}
+                        <x-button variant="accent" size="lg" rel="nofollow" :href="route('sandbox.show')">Try it yourself</x-button>
+                        <x-button variant="secondary" size="lg" :href="\App\Support\DemoRequestLink::url()" aria-label="Request a demo (opens your email)">Request a demo</x-button>
+                        <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
+                    @else
                     <x-button variant="accent" size="lg" :href="\App\Support\DemoRequestLink::url()" aria-label="Request a demo (opens your email)">Request a demo</x-button>
                     <x-button variant="secondary" size="lg" :href="route('login')">Log in</x-button>
                     @if ($publicJudgeUrl)
@@ -46,10 +52,17 @@
                     @elseif ($continueLooking)
                         <x-button variant="secondary" size="lg" :href="route('judge.dashboard')">Continue looking around</x-button>
                     @endif
-                    @if ($sandbox)
-                        <x-button variant="secondary" size="lg" rel="nofollow" :href="route('sandbox.show')">Try it yourself</x-button>
                     @endif
                 </div>
+                @if ($sandbox && ($publicJudgeUrl || $continueLooking))
+                    <p class="mt-3 text-sm" data-live-demo-link>Prefer to just look?
+                        @if ($publicJudgeUrl)
+                            <a rel="nofollow" href="{{ $publicJudgeUrl }}" class="tap-target font-semibold text-primary underline decoration-2 underline-offset-4 hover:no-underline">Explore the live demo (read-only)</a>
+                        @else
+                            <a href="{{ route('judge.dashboard') }}" class="tap-target font-semibold text-primary underline decoration-2 underline-offset-4 hover:no-underline">Explore the live demo (read-only)</a>
+                        @endif
+                    </p>
+                @endif
                 <p class="mt-3.5 max-w-[34rem] text-sm text-muted">A working prototype: payments run on Stripe in test mode, and every person and business in the demo is fictional.</p>
             </div>
 

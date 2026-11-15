@@ -14,14 +14,33 @@
                         Thank you for reviewing Local Goods. Your login is read-only, so you can open any page but can't change anything.
                         Use the Feedback button on any page to tell me what works and what doesn't.
                     </p>
-                    @if (\App\Services\Sandbox\Sandbox::enabled())
-                        {{-- ADR 0045: a private copy where money really moves; this login stays read-only. --}}
-                        <p class="mt-4 max-w-[42rem]">Want to move money yourself? Get a private copy of the demo, separate from the live one.</p>
-                        <x-button variant="accent" class="mt-3" :href="route('sandbox.show')">Try it yourself</x-button>
-                    @endif
                 </div>
             </div>
         </header>
+
+        @if (\App\Services\Sandbox\Sandbox::enabled())
+            {{-- One starting point (ADR 0045): a private copy first, the read-only live demo below it. --}}
+            <section data-try-it-card aria-labelledby="try-heading" class="col-span-12 lg:col-span-8">
+                <x-card>
+                    <h2 id="try-heading" class="font-display text-2xl font-extrabold">Try it yourself</h2>
+                    <p class="mt-2 max-w-[42rem]">
+                        Get a private copy of the demo and move money between the employer, employee, merchant and BID admin
+                        @if (\App\Services\Sandbox\SandboxStripe::switchedOn())
+                            yourself, paying with Stripe test mode. Nothing reaches the live demo.
+                        @else
+                            yourself. Payments are simulated, and nothing reaches the live demo.
+                        @endif
+                    </p>
+                    <x-button variant="accent" class="mt-4" :href="route('sandbox.show')">Try it yourself</x-button>
+                </x-card>
+            </section>
+            <div data-live-demo-intro class="col-span-12">
+                <h2 class="font-display text-2xl font-extrabold">Or explore the live demo</h2>
+                <p class="mt-1 max-w-[42rem] text-muted">
+                    Only here: the AI evaluation, Where the Money Is, the Local Goods admin views, and the Feedback button for leaving your notes.
+                </p>
+            </div>
+        @endif
 
         <section aria-labelledby="money-heading" class="col-span-12 md:col-span-6 lg:col-span-4">
             <x-station-sign heading-id="money-heading"><a href="{{ route('money') }}" class="text-on-night underline decoration-night-accent decoration-2 underline-offset-4 hover:decoration-night-primary">Where the Money Is</a></x-station-sign>

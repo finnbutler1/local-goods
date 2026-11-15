@@ -18,6 +18,9 @@
             </p>
         </div>
     @endif
+    @if (\App\Services\Sandbox\Sandbox::active())
+        @include('sandbox.merchant-picker')
+    @endif
     <header>
         <x-station-sign as="p">Merchant dashboard · {{ $merchant->name }}</x-station-sign>
         <h1 class="page-title">Your Local Goods sales</h1>

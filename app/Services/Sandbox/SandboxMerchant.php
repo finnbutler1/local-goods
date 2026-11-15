@@ -91,7 +91,8 @@ class SandboxMerchant
         $user->unsetRelation('merchant');
     }
 
-    private function employee(): ?Employee
+    /** The employee the visitor plays (Jordan Rivera in the template). */
+    public function employee(): ?Employee
     {
         $id = User::where('email', SandboxRoutes::email('employee'))->value('id');
 

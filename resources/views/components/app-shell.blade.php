@@ -83,7 +83,7 @@
 </head>
 <body class="min-h-screen bg-page font-sans text-ink antialiased">
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 rounded-full bg-accent px-4 py-2 font-semibold text-on-accent">Skip to content</a>
-    <x-flash />
+    @unless ($inSandbox)<x-flash />@endunless
 
     {{-- Desktop sidebar --}}
     <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-night text-on-night lg:flex">
@@ -138,6 +138,10 @@
     <div class="pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:pl-64">
         @if ($inSandbox)
             @include('partials.sandbox-bar')
+            {{-- Inside a sandbox the message sits below the bar instead of floating over its text. --}}
+            @if (session()->hasAny(['status', 'notice', 'error']))
+                <div class="wrap pt-3" data-sandbox-flash><x-flash :floating="false" /></div>
+            @endif
         @endif
         {{-- Top bar --}}
         <header class="sticky top-0 z-20 border-b-2 border-frame bg-page">

@@ -16,6 +16,7 @@ use App\Services\Payments\StripeGatewayException;
 use App\Services\Sandbox\Sandbox;
 use App\Services\Sandbox\SandboxCheckout;
 use App\Services\Sandbox\SandboxCheckoutUnavailable;
+use App\Services\Sandbox\SandboxMerchant;
 use App\Services\Sandbox\SandboxStripe;
 use App\Support\DemoLogins;
 use App\Support\EmployerPlatformFee;
@@ -65,9 +66,17 @@ class EmployerDashboardController extends Controller
             ->withSum('ledgerEntries as balance_cents', 'amount_cents')
             ->get();
 
+        // A sandbox: the employee the visitor plays comes first and is labelled as such.
+        $playerId = null;
+        if (Sandbox::active()) {
+            $playerId = app(SandboxMerchant::class)->employee()?->id;
+            $employees = $employees->sortBy(fn ($e) => $e->id === $playerId ? 0 : 1)->values();
+        }
+
         $this->checkoutMessage($request, $employer);
 
         return view('dashboards.employer', [
+            'sandboxPlayerId' => $playerId,
             'employer' => $employer,
             'stripe' => StripeMode::active(),
             // Stripe.js's key for the card form: the live one on the live site, the

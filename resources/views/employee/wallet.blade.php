@@ -95,6 +95,19 @@
         <p class="mt-1 text-sm text-night-muted">Demo account</p>
     </section>
 
+    @if (\App\Services\Sandbox\Sandbox::active() && $balance < 500)
+        {{-- Sandbox only: credits come from the employer role, not this one. --}}
+        <section data-sandbox-no-credits aria-label="Getting credits" class="rounded-2xl border-2 border-accent bg-band p-4">
+            <p class="font-semibold">Credits come from your employer. Switch to Employer (HR) and use Give credits to send some to Jordan.</p>
+            <form method="POST" action="{{ route('sandbox.role') }}" data-busy="Switching…" class="mt-3">
+                @csrf
+                <input type="hidden" name="role" value="employer">
+                <input type="hidden" name="step" value="1">
+                <x-button type="submit" variant="secondary" class="bg-surface">Switch to Employer (HR)</x-button>
+            </form>
+        </section>
+    @endif
+
     {{-- Two ways to pay (ADR 0026). Real tabs with arrow keys when JavaScript runs; plain links to ?tab= without it. --}}
     <div id="wallet-tabs" class="wallet-tabs scroll-mt-24" data-tabs>
         <div role="tablist" aria-label="How to pay" class="grid grid-cols-2 overflow-hidden rounded-2xl border-2 border-frame bg-surface">

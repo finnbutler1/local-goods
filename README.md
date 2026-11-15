@@ -17,11 +17,15 @@ Stripe's test mode with no real money, built and tested in the open.
 
 ## For judges
 
-**Public judge link:** on the home page of
-[uselocalgoods.com](https://uselocalgoods.com), press **Look around
-(read-only)**. It signs you straight into a read-only reviewer view of the
-live app: no account, no password. Works until judging closes on November 30,
-2026.
+**Start here:** on [uselocalgoods.com](https://uselocalgoods.com), press
+**Try it yourself**. You get a private copy of the demo where you can move
+money between the employer, employee, merchant and BID admin, and pay with
+Stripe test mode. No account or password, and nothing reaches the live demo.
+To just look instead, use **Explore the live demo (read-only)** under the
+button: it signs you straight into a read-only reviewer view of the live app,
+with the guided tour, the AI evaluation, Where the Money Is and the Feedback
+button. If Try it yourself isn't available, use Explore the live demo
+(read-only). Both work until judging closes on November 30, 2026.
 
 **Security:** the plain-English [Security & Trust](https://uselocalgoods.com/security) page lists the protections in place and what isn't done yet. To check it yourself, see [security verification](docs/security-verification.md) (a read-only probe script and the tests that act as attack checks).
 

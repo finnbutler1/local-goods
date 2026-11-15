@@ -133,11 +133,13 @@ class SandboxController extends Controller
         $request->session()->regenerate();
 
         $step = isset($data['step']) ? SandboxRoutes::CHECKLIST[(int) $data['step']] : null;
+        $fragment = '';
         if ($step !== null && $step[2] === $data['role']) {
             $landing = $step[3];
+            $fragment = isset($step[4]) ? '#'.$step[4] : '';
         }
 
-        return redirect()->route($landing)->with('status', "You're now the {$label}.");
+        return redirect()->to(route($landing).$fragment)->with('status', "You're now the {$label}.");
     }
 
     /** Delete this sandbox and go back to the live site, signed in (or not) as before. */

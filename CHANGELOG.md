@@ -3,6 +3,27 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: One starting point for judges: Try it yourself, then the live demo
+
+- **Landing page and judge Home.** With sandboxes on, the landing page has one
+  primary button, "Try it yourself", and a small link under it: "Prefer to just
+  look? Explore the live demo (read-only)". Judge Home opens with a "Try it
+  yourself" card, then "Or explore the live demo" with what only the live demo
+  has. With sandboxes off, nothing changes.
+- **"For judges" box** on the sandbox start page and home, with "Exit to the
+  live demo". Feedback asked for from inside a sandbox now explains that it is
+  left from the live demo and offers Exit.
+- **Clearer checklist.** The pay step says any participating merchant and how to
+  see the sale as the merchant. Giving credits is described as an Employer (HR)
+  step that links straight to the Give credits form; the employer page marks
+  Jordan "You'll play this employee" and lists him first, and his wallet says
+  where credits come from when the balance is under $5.
+- **Tidier role bar.** Just the five role buttons; the merchant list moved to
+  "Viewing as <merchant> · Change merchant" in the merchant page header. The
+  role-switch message sits below the sandbox bar instead of covering it.
+- Views and wording only: no access rule, gate, magic link or money change; no
+  migration.
+
 ## 2026-11-14: In a sandbox, the Merchant role follows where the money went (switched off)
 
 - **Merchant opens where you last paid.** In a "Try it yourself" sandbox, the

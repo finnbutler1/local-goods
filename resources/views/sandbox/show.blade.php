@@ -36,6 +36,8 @@
             <p role="status" class="mt-8 rounded-xl bg-band p-4 font-semibold">{{ \App\Http\Controllers\SandboxController::PREPARING }}</p>
         @endif
 
+        <div class="mt-8">@include('sandbox.for-judges', ['inSandbox' => false])</div>
+
         <p class="mt-6 text-sm text-muted">All people and businesses in the sandbox are fictional, as in the rest of the demo.</p>
     </section>
 @endsection

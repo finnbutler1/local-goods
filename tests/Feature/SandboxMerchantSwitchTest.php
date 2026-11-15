@@ -142,14 +142,22 @@ class SandboxMerchantSwitchTest extends TestCase
         $this->sandboxPost(route('employee.redeem'), ['merchant_id' => $this->grindId(), 'amount' => '11.11'])->assertSessionHasNoErrors();
         $this->sandboxPost(route('employee.redeem'), ['merchant_id' => $other->id, 'amount' => '13.37'])->assertSessionHasNoErrors();
 
-        // The role bar lists the merchants, labelled for screen readers.
+        // The role bar is just the five role buttons: no merchant list there any more.
         $this->sandboxGet(route('employee.wallet'))->assertOk()
-            ->assertSee('<label for="sandbox-merchant-pick" class="sr-only">Choose which merchant to be</label>', false)
-            ->assertSee('<option value="'.$other->id.'"', false);
+            ->assertDontSee('sandbox-merchant-pick', false)
+            ->assertDontSee('data-sandbox-merchant-picker', false);
 
         $this->sandboxPost(route('sandbox.role'), ['role' => 'merchant', 'merchant_id' => $other->id])->assertRedirect(route('merchant.dashboard'));
         $this->sandboxGet(route('merchant.dashboard'))->assertOk()->assertSee($other->name)->assertSee('$13.37')->assertDontSee('$11.11');
         $this->assertSame([$other->id], $this->linkedToSandboxMerchant());
+
+        // The merchant page header says who you are and offers a labelled list (a <details>, no JavaScript needed).
+        $this->sandboxGet(route('merchant.dashboard'))
+            ->assertSee('Viewing as '.$other->name)
+            ->assertSee('Change merchant')
+            ->assertSee('data-sandbox-merchant-picker', false)
+            ->assertSee('Choose which merchant to view as')
+            ->assertSee('name="merchant_id" value="'.$this->grindId().'"', false);
 
         $this->sandboxPost(route('sandbox.role'), ['role' => 'merchant', 'merchant_id' => $this->grindId()])->assertRedirect(route('merchant.dashboard'));
         $this->sandboxGet(route('merchant.dashboard'))->assertOk()->assertSee('$11.11')->assertDontSee('$13.37');
