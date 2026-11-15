@@ -7,6 +7,8 @@
         MerchantApplication::DECLINED => 'neutral',
         default => 'hold',
     };
+    // Inside a sandbox (ADR 0045 addendum) shops apply on the sandbox's own form; the public one isn't part of it.
+    $inSandbox = \App\Services\Sandbox\Sandbox::active();
 @endphp
 
 <x-app-shell title="Merchant Applications" active="applications" context="Golden Triangle BID · Washington, DC">
@@ -16,17 +18,24 @@
         <h1 class="page-title">Merchant Applications</h1>
         <p class="mt-3 text-2xl font-bold tracking-tight text-ink">Shops asking to join</p>
         <p class="page-lede">
+            @if ($inSandbox)
+                Independent shops apply on an Apply to join page. In this sandbox, play one with Apply as a new shop. For each one,
+            @else
             Independent shops apply on the public <a href="{{ route('apply') }}" class="{{ $link }}">Apply to join</a> page. For each one,
+            @endif
             run the eligibility check (address and AI suggestion), then approve or decline with a reason the shop will see.
             The AI never decides.
         </p>
         <p class="mt-4 max-w-[52rem] text-sm text-muted">{{ MerchantApplication::APPLICANT_LABEL }} Shops become participants only once approved and set up with Stripe.</p>
+        @if ($inSandbox)
+            <p class="mt-6"><x-button :href="route('sandbox.apply')" variant="secondary" data-sandbox-apply>Apply as a new shop</x-button></p>
+        @endif
     </header>
 
     <p class="rule-top flex items-baseline gap-3 text-lg"><span class="money text-5xl">{{ $waiting }}</span> waiting for the BID.</p>
 
     @if ($applications->isEmpty())
-        <p class="ledger-note text-muted">No applications yet. Shops apply at <a href="{{ route('apply') }}" class="{{ $link }}">/apply</a>.</p>
+        <p class="ledger-note text-muted">No applications yet.@unless ($inSandbox) Shops apply at <a href="{{ route('apply') }}" class="{{ $link }}">/apply</a>.@endunless</p>
     @else
         <x-rtable label="Applications table" class="-mt-4">
             <table data-rtable="stack" class="w-full text-left">

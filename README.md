@@ -578,6 +578,9 @@ Main files:
 - **An append-only ledger** records who is owed what. It is checked against
   the real Stripe test balances, and a solvency check confirms that the money
   in hand covers what has been promised.
+- **Employers are set up by Local Goods today;** self sign-up is planned.
+  Merchants already apply on their own, and a BID admin approves or declines
+  each one.
 - **A read-only look-around link** lets visitors see every role in the live
   app without an account (available through judging, until November 30, 2026).
 

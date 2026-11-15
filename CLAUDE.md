@@ -5,6 +5,28 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Sandbox: a new shop joins (optional step 8) — code done (2026-11-14, ADR
+0045 addendum), not deployed; switched off with the sandbox.** No migration.
+Fraud and eligibility prompts (`8d5e1e70`, `458e8c2d`), AI inputs, eval data,
+locks and money rules unchanged.
+
+- `sandbox.apply` / `sandbox.apply.store` (`SandboxApplyController`, sandbox
+  file only, fixed `new-shop@example.com`, no email, no status link). Public
+  `apply.*` stay closed in a sandbox (`apply.status.sign-in` signs in on the
+  live guard). `SandboxRoutes::ALLOWED` + the five `bid-admin.applications*`
+  routes; checklist `JOIN_STEP` (7).
+- Approve inside a sandbox: `MerchantApplications::goLiveInSandbox` in the
+  same transaction (refuses outside a sandbox): live at once, merchant with no
+  login and no Stripe, so Change merchant can open it. Flash ends with
+  `MerchantApplications::SANDBOX_STEPS_SIMULATED`. Live approve unchanged.
+- Caps: the AI check shares `CappedClaudeClient`; DC lookups through
+  `CappedGeocoder` (`SandboxAddressBudget`, `sandbox.address_lookups_per_sandbox`
+  5, `_per_day` 50). Over a cap or DC down: `ADDRESS_NOT_CHECKED`, nothing
+  changes, decline still works.
+- Live: judge tour step "Merchant Applications" (9 links) and "Employers are
+  set up by Local Goods today; self sign-up is planned." (tour + README).
+- Test: `SandboxMerchantApplicationTest`.
+
 **Sandbox Stripe Checkout on a separate test account — code done
 (2026-11-14, ADR 0045 addendum), not deployed; switched off.** No migration.
 

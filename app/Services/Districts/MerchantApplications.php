@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Eligibility\MerchantEligibilityMatcher;
 use App\Services\Geo\AddressLookup;
 use App\Services\Geo\GeocodeResult;
+use App\Services\Sandbox\Sandbox;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -42,6 +43,12 @@ class MerchantApplications
     public const NEEDS_INSIDE = 'Only an address inside the district can be approved. Run the eligibility check again or decline.';
 
     public const ADDRESS_SERVICE_DOWN = 'DC\'s address service didn\'t answer, so nothing changed and the AI was not asked. Try again in a minute.';
+
+    /** Inside a sandbox: DC was slow, down, or the sandbox used its lookups. Nothing changed; the BID admin can decline. */
+    public const ADDRESS_NOT_CHECKED = 'The address couldn\'t be checked right now. Nothing changed and the AI was not asked: try again later, or decline the application.';
+
+    /** Shown with the approval inside a sandbox, where the last two steps happen at once. */
+    public const SANDBOX_STEPS_SIMULATED = 'On the live site, the shop would now create its own login and finish Stripe onboarding. In the sandbox those steps are simulated.';
 
     public const EMAIL_TAKEN = 'That contact email already has a Local Goods login. Ask the BID to sort it out; nothing changed.';
 
@@ -114,7 +121,7 @@ class MerchantApplications
 
         $place = $this->lookup->lookup($application->address, AddressLookup::ORIGIN_APPLICATION);
         if ($place->status === GeocodeResult::UNAVAILABLE) {
-            throw new InvalidArgumentException(self::ADDRESS_SERVICE_DOWN);
+            throw new InvalidArgumentException(Sandbox::active() ? self::ADDRESS_NOT_CHECKED : self::ADDRESS_SERVICE_DOWN);
         }
 
         $district = $application->district;
@@ -219,6 +226,42 @@ class MerchantApplications
                 'Signed in and started setting up Stripe payouts.');
 
             return $user;
+        });
+    }
+
+    /**
+     * Steps 4 and 5 at once, inside a sandbox only (ADR 0045 addendum): right
+     * after a BID admin approves, the shop goes live with no login of its own
+     * (the sandbox's one merchant login is linked to it from the role bar)
+     * and no Stripe account (payouts in a sandbox are simulated). Approved
+     * for the district through DistrictRules, as on the live path. Refuses
+     * anywhere but a sandbox's own database.
+     */
+    public function goLiveInSandbox(Application $application, User $by): Merchant
+    {
+        if (! Sandbox::active() || DB::getDefaultConnection() !== Sandbox::CONNECTION) {
+            throw new LogicException('Only a sandbox application goes live without onboarding.');
+        }
+        $this->ensureStaff($by);
+
+        return DB::transaction(function () use ($application, $by) {
+            $this->claim($application, Application::BID_APPROVED, Application::STRIPE_ONBOARDING);
+            $merchant = Merchant::create([
+                'bid_id' => Bid::orderBy('id')->firstOrFail()->id, 'name' => $application->business_name,
+                'category' => $application->category, 'address' => $application->address,
+                'latitude' => $application->latitude, 'longitude' => $application->longitude,
+            ]);
+            DistrictRules::approveMerchant($merchant, $application->district, $by);
+            Application::whereKey($application->id)->update(['merchant_id' => $merchant->id]);
+            $this->log($application, Application::BID_APPROVED, Application::STRIPE_ONBOARDING, Event::ACTOR_STAFF, $by,
+                'Sandbox: the shop\'s own login is simulated.');
+
+            $this->claim($application, Application::STRIPE_ONBOARDING, Application::LIVE);
+            $merchant->forceFill(['live_at' => now()])->save();
+            $this->log($application, Application::STRIPE_ONBOARDING, Application::LIVE, Event::ACTOR_STAFF, $by,
+                'Sandbox: Stripe onboarding is simulated, and so are payouts. Employees can now spend credits here.');
+
+            return $merchant;
         });
     }
 

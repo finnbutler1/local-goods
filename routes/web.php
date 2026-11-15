@@ -43,6 +43,7 @@ use App\Http\Controllers\MerchantEvalController;
 use App\Http\Controllers\Money\WhereTheMoneyIsController;
 use App\Http\Controllers\Projections\BusinessModelController;
 use App\Http\Controllers\Projections\ProjectionController;
+use App\Http\Controllers\SandboxApplyController;
 use App\Http\Controllers\SandboxController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\StyleguideController;
@@ -303,6 +304,9 @@ Route::middleware('sandbox:enabled')->prefix('sandbox')->name('sandbox.')->group
         Route::get('/home', [SandboxController::class, 'home'])->name('home');
         Route::post('/role', [SandboxController::class, 'role'])->middleware('throttle:60,1,sandbox.role')->name('role');
         Route::post('/exit', [SandboxController::class, 'exit'])->middleware('throttle:30,1,sandbox.exit')->name('exit');
+        // A new shop joins (ADR 0045 addendum): the sandbox's own Apply to join, saved in the sandbox file only.
+        Route::get('/apply', [SandboxApplyController::class, 'create'])->name('apply');
+        Route::post('/apply', [SandboxApplyController::class, 'store'])->middleware('throttle:5,10,sandbox.apply.store')->name('apply.store');
     });
 });
 

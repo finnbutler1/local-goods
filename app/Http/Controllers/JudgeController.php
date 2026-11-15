@@ -59,8 +59,14 @@ class JudgeController extends Controller
                 'available' => true,
             ],
             [
+                'title' => 'Merchant Applications',
+                'look_for' => 'How a new independent shop joins: it applies, its address is checked against the district boundary, Merchant Eligibility Matching suggests whether it looks independent, and a BID admin approves or declines with a reason the shop sees. Two fictional sample applications are there to look at; reviewers can\'t decide.',
+                'url' => route('bid-admin.applications'),
+                'available' => true,
+            ],
+            [
                 'title' => 'Employer dashboard',
-                'look_for' => 'What the HR buyer sees: how many of their people got out into the neighborhood, visits, local businesses discovered and dollars spent locally, each with how it is counted. Buying credits, giving them out and program setup are shown with their buttons switched off for reviewers. Credits are paid through Stripe test mode, or simulated when Stripe is off.',
+                'look_for' => 'What the HR buyer sees: how many of their people got out into the neighborhood, visits, local businesses discovered and dollars spent locally, each with how it is counted. Buying credits, giving them out and program setup are shown with their buttons switched off for reviewers. Credits are paid through Stripe test mode, or simulated when Stripe is off. Employers are set up by Local Goods today; self sign-up is planned.',
                 'url' => route('judge.view-as', Role::EmployerAdmin->value),
                 'available' => true,
             ],

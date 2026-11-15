@@ -4,7 +4,7 @@
         <x-station-sign as="p">Your sandbox</x-station-sign>
         <h1 class="page-title">Try This</h1>
         <p class="page-lede text-muted">
-            Seven steps through the whole money loop. Each button switches you to the right role and opens the page.
+            Seven steps through the whole money loop, and an optional eighth: a new shop joins. Each button switches you to the right role and opens the page.
             Your sandbox is deleted {{ $expiresAt ? 'at '.$expiresAt->timezone('America/New_York')->format('g:i a \o\n M j').' (DC time)' : 'after 24 hours' }}.
         </p>
     </header>

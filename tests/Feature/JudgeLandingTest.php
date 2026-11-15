@@ -25,16 +25,19 @@ class JudgeLandingTest extends TestCase
             ->assertDontSee('What Local Goods is')
             ->assertSee('commute in, sit at a desk, commute out')
             ->assertSee('Redemption Fraud Detection')
-            ->assertSeeInOrder(['Employee wallet', 'Fraud Review', 'AI Eval', 'Merchant Eligibility', 'Employer dashboard', 'Merchant dashboard'])
+            ->assertSeeInOrder(['Employee wallet', 'Fraud Review', 'AI Eval', 'Merchant Eligibility', 'Merchant Applications', 'Employer dashboard', 'Merchant dashboard'])
+            ->assertSee('Employers are set up by Local Goods today; self sign-up is planned.')
             ->assertDontSee('Coming in a later build')
             ->assertSee('Payments and merchant payouts run on Stripe Connect in test mode (real Stripe transactions, no real money)')
             ->assertDontSee('later build')
             ->assertSee('append-only ledger')
             ->assertDontSee('holds and moves the money');
 
-        // The eight tour links all open for a judge (the adjudication step was retired, ADR 0041).
+        // The nine tour links all open for a judge (the adjudication step was retired, ADR 0041;
+        // Merchant Applications was added with the sandbox's "A new shop joins", ADR 0045 addendum).
         preg_match_all('/<a href="([^"]+)" class="tap-target text-primary underline decoration-primary/', $page->getContent(), $links);
-        $this->assertCount(8, $links[1]);
+        $this->assertCount(9, $links[1]);
+        $this->assertContains(route('bid-admin.applications'), $links[1]);
 
         foreach ($links[1] as $link) {
             $this->followingRedirects()->get($link)->assertOk();

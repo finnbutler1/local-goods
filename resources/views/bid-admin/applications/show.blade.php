@@ -51,7 +51,9 @@
                     {{ $a->inside_district ? 'Inside' : 'Outside' }} the {{ $a->district->name }}: DC matched "{{ $a->matched_address }}".
                 </p>
                 <div class="mt-3"><x-district-map :map="$map" :pins="$pins" labelled-by="where-summary" /></div>
-                <p class="mt-2 text-sm text-muted"><a href="{{ route('district') }}" class="{{ $link }}">The full district map</a></p>
+                @unless (\App\Services\Sandbox\Sandbox::active())
+                    <p class="mt-2 text-sm text-muted"><a href="{{ route('district') }}" class="{{ $link }}">The full district map</a></p>
+                @endunless
             @endif
         </section>
     </div>
@@ -116,6 +118,7 @@
                             @case(MerchantApplication::BID_APPROVED) Approved. Waiting for the shop to sign in from its status link and set up Stripe payouts. @break
                             @case(MerchantApplication::STRIPE_ONBOARDING) The shop is setting up Stripe payouts. It goes live when Stripe confirms. @break
                             @default Live: employees can spend credits at {{ $a->merchant?->name ?? 'this shop' }}.
+                                @if (\App\Services\Sandbox\Sandbox::active()) {{ MerchantApplications::SANDBOX_STEPS_SIMULATED }} @endif
                         @endswitch
                     </p>
                 @endif

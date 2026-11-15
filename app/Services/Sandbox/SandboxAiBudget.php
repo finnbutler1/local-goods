@@ -15,15 +15,28 @@ class SandboxAiBudget
 {
     public const SANDBOX_KEY = 'sandbox.ai_calls';
 
+    /** The daily count's file in the sandbox folder: <prefix>-<DC date>.count. */
+    protected const DAY_FILE_PREFIX = 'ai-calls';
+
     public function __construct(private SandboxFiles $files) {}
+
+    protected function perSandbox(): int
+    {
+        return (int) config('sandbox.ai_calls_per_sandbox');
+    }
+
+    protected function perDay(): int
+    {
+        return (int) config('sandbox.ai_calls_per_day');
+    }
 
     /** Takes one call from both budgets. False means: don't call the AI. */
     public function take(): bool
     {
         // The database store won't increment a missing key, so make it first. Outlives the sandbox (24 hours).
-        Cache::add(self::SANDBOX_KEY, 0, now()->addDays(2));
-        $used = (int) Cache::increment(self::SANDBOX_KEY);
-        if ($used > (int) config('sandbox.ai_calls_per_sandbox')) {
+        Cache::add(static::SANDBOX_KEY, 0, now()->addDays(2));
+        $used = (int) Cache::increment(static::SANDBOX_KEY);
+        if ($used > $this->perSandbox()) {
             return false;
         }
 
@@ -32,7 +45,7 @@ class SandboxAiBudget
 
     public function usedInThisSandbox(): int
     {
-        return (int) Cache::get(self::SANDBOX_KEY, 0);
+        return (int) Cache::get(static::SANDBOX_KEY, 0);
     }
 
     public function usedToday(): int
@@ -44,7 +57,7 @@ class SandboxAiBudget
 
     private function dayFile(): string
     {
-        return $this->files->dir().'/ai-calls-'.Carbon::now('America/New_York')->toDateString().'.count';
+        return $this->files->dir().'/'.static::DAY_FILE_PREFIX.'-'.Carbon::now('America/New_York')->toDateString().'.count';
     }
 
     private function takeFromToday(): bool
@@ -59,7 +72,7 @@ class SandboxAiBudget
                 return false;
             }
             $used = (int) stream_get_contents($handle);
-            if ($used >= (int) config('sandbox.ai_calls_per_day')) {
+            if ($used >= $this->perDay()) {
                 return false;
             }
             ftruncate($handle, 0);

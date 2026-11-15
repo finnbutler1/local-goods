@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
  * see the payout and the impact, review a held payment. Everything else is a
  * 404 inside a sandbox, including every /admin page (reviewer names, Stripe
  * reconciliation, sweeps, fee settings, the public judge link), Your account,
- * sign-in pages, feedback and the evals. Route names, exact or "prefix.*".
+ * sign-in pages, feedback and the evals. Plus one optional step: a new shop
+ * applies (sandbox.apply, the sandbox's own form) and the BID admin decides. Route names, exact or "prefix.*".
  */
 final class SandboxRoutes
 {
@@ -52,6 +53,13 @@ final class SandboxRoutes
         'bid-admin.participation',
         'bid-admin.corrections',
         'bid-admin.corrections.*',
+        // A new shop joins (ADR 0045 addendum): the queue, one application, the check
+        // (address lookup and AI, both capped), approve (live at once here) and decline.
+        'bid-admin.applications',
+        'bid-admin.applications.show',
+        'bid-admin.applications.check',
+        'bid-admin.applications.approve',
+        'bid-admin.applications.decline',
         'money',
     ];
 
@@ -73,6 +81,11 @@ final class SandboxRoutes
 
     public const PAY_STEP = 'Spend credits at any participating merchant (Farragut Grind is a good first stop): pick items from its menu, or get a pay code to pay in person. Then press Merchant, or "See this as the merchant", to see the sale from the shop\'s side.';
 
+    /** The optional last step: the sandbox's own Apply to join, then the BID admin decides (ADR 0045 addendum). */
+    public const JOIN_STEP = 7;
+
+    public const JOIN_HOW = 'As BID admin, open Merchant Applications and press "Apply as a new shop". Make up an independent shop at a real address inside the district (like 1700 K St NW) and send it. Then open it, run the eligibility check (the AI only suggests) and approve it. Press Employee and pay there as Jordan, then press Merchant, or pick the shop under Change merchant, to see the sale from its side.';
+
     /**
      * The "Try this" checklist: [what to do, how, role key, page it opens, optional #anchor on that page].
      *
@@ -86,6 +99,7 @@ final class SandboxRoutes
         ['See the district\'s impact', 'Spending at independent merchants in the district, counted from the ledger.', 'bid_admin', 'bid-admin.impact'],
         ['Try a suspicious payment', 'Press "Try a suspicious redemption", then confirm it on the wallet. The AI usually holds it, but it may clear it.', 'employee', 'employee.demo-tools'],
         ['Decide a held payment', 'In Fraud Review, approve or deny the held payment, with a reason. Approving pays the merchant (simulated).', 'reviewer', 'bid-admin.dashboard'],
+        self::JOIN_STEP => ['Optional: a new shop joins', self::JOIN_HOW, 'bid_admin', 'bid-admin.applications'],
     ];
 
     /** Step 1 of the checklist says to use Stripe's test card when this sandbox has its own Stripe test account. */

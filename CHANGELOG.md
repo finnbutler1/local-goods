@@ -3,6 +3,27 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: In a sandbox, a new shop can join (switched off); judges see Merchant Applications
+
+- **Optional step 8, "A new shop joins".** In a "Try it yourself" sandbox, the
+  BID admin's Merchant Applications page has **Apply as a new shop**: make up
+  an independent shop, run the eligibility check (one DC address lookup and
+  one AI suggestion), approve it, pay there as Jordan and see the sale as that
+  shop with Change merchant. In the sandbox an approved shop goes live at once;
+  on the live site it would create its own login and finish Stripe onboarding.
+  An address outside the district is declined the normal way.
+- **Capped and contained.** The AI suggestion shares the sandbox's 10 AI
+  checks; address lookups stop at 5 per sandbox and 50 a day. When DC's
+  address service is slow, down or over the cap, the check says "The address
+  couldn't be checked right now" and the BID admin can decline. Nothing is
+  emailed, no contact email is asked for, and everything stays in the sandbox
+  file. The eligibility prompt and its inputs are unchanged.
+- **Live judge Home.** The tour now points to Merchant Applications (read-only),
+  and the Employer dashboard step says employers are set up by Local Goods
+  today, with self sign-up planned. README "What's next" says the same.
+- No migration; no money, fraud prompt, eligibility prompt, AI input, eval
+  data or lock change.
+
 ## 2026-11-14: One starting point for judges: Try it yourself, then the live demo
 
 - **Landing page and judge Home.** With sandboxes on, the landing page has one

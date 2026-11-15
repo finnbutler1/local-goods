@@ -277,3 +277,61 @@ payment at any other merchant could not be seen from the merchant's side.
   sandbox-user check in `signInAs`. A pay code looked up as the previous
   merchant is dropped from the session.
 - Test: `SandboxMerchantSwitchTest` (watches the live connection for writes).
+
+## Addendum (2026-11-14): a new shop joins (optional step 8)
+
+Merchant joining (ADR 0031) was built but closed in a sandbox, so a judge
+could only read the BID's applications queue on the live demo. Now, inside a
+sandbox only, a judge can play a new shop, decide it as the BID admin, pay
+there as Jordan and see the sale as that shop.
+
+- **The sandbox's own Apply to join.** `sandbox.apply` (GET) and
+  `sandbox.apply.store` (POST, `throttle:5,10,sandbox.apply.store`) in the
+  `sandbox:active` group, so a 404 everywhere else. `SandboxApplyController`
+  saves through the same `MerchantApplications::submit`, in the sandbox file.
+  It asks for no contact email (a fixed fictional `new-shop@example.com` is
+  stored, so no visitor's address is kept), sends no email and shows no status
+  link. The public `apply.*` pages stay closed in a sandbox, including
+  `apply.status.sign-in`, which creates a login and signs in on the live
+  guard. In a sandbox, Merchant Applications shows "Apply as a new shop"
+  instead of linking to the public form.
+- **Allowlist.** Five routes added to `SandboxRoutes::ALLOWED`:
+  `bid-admin.applications`, `bid-admin.applications.show`,
+  `bid-admin.applications.check`, `bid-admin.applications.approve`,
+  `bid-admin.applications.decline`. Gates are unchanged: the BID admin and the
+  Local Goods reviewer decide; others read.
+- **Approve = live at once, in a sandbox only.** `ApplicationController::approve`
+  calls `MerchantApplications::approve` and then
+  `MerchantApplications::goLiveInSandbox` in one transaction. That method
+  refuses unless a sandbox is active and is the default connection. It moves
+  bid_approved → stripe_onboarding → live (two logged events, "Sandbox: …
+  simulated"), creates the merchant with **no login** and no Stripe account,
+  and approves it through `DistrictRules::approveMerchant` (inside only). The
+  result says "On the live site, the shop would now create its own login and
+  finish Stripe onboarding. In the sandbox those steps are simulated." With
+  no login, the role bar's Merchant button (where the money last went) and
+  "Change merchant" can open it (`SandboxMerchant::linkTo`). On the live site,
+  approve is unchanged.
+- **Outside the district.** The normal path: the check marks it outside,
+  approve is refused (`NEEDS_INSIDE`), the BID admin declines.
+- **Outside calls, capped.** The check makes one DC address lookup (Master
+  Address Repository, keyless, 5-second timeout from
+  `districts.mar_timeout_seconds`) and one Merchant Eligibility Matching call.
+  The AI call goes through the existing `CappedClaudeClient` and shares the
+  fraud budget (10 per sandbox, 100 a day); past it, the matcher's own
+  fail-closed answer is "undetermined, needs review". The prompt (`458e8c2d`)
+  and its inputs are unchanged. The lookup goes through `CappedGeocoder`
+  (`SandboxAddressBudget`, counted like the AI: the sandbox cache plus an
+  `address-lookups-<DC date>.count` file), bound only while a sandbox is
+  active: `sandbox.address_lookups_per_sandbox` 5, `…_per_day` 50. Past a
+  cap, or when DC is slow or down, the check stops before the AI is asked and
+  says "The address couldn't be checked right now…": nothing changes, and the
+  BID admin can try again or decline. Never a 500.
+- **Live judge Home.** The tour gains "Merchant Applications" (read-only queue,
+  two fictional samples), and the Employer dashboard step says "Employers are
+  set up by Local Goods today; self sign-up is planned." (There is no employer
+  sign-up or admin page that creates employers; only the seed and the
+  "Request a demo" email.) This is the only live change.
+- Test: `SandboxMerchantApplicationTest` (watches the live connection for
+  writes; no mail or notification; DC faked, no stray HTTP).
+

@@ -3,6 +3,7 @@
 namespace App\Services\Sandbox;
 
 use App\Services\Ai\ClaudeClient;
+use App\Services\Geo\Geocoder;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,8 @@ use PDO;
  * store keep the main connection by name. The sandbox gets its own cache
  * (a database store inside its file: throttles, the solvency baseline, the AI
  * count), its own login guard (SandboxUserProvider), no Stripe keys, and a
- * Claude client with a call cap. Deactivating puts every one of these back.
+ * Claude client and a DC address lookup, each with a call cap. Deactivating
+ * puts every one of these back.
  *
  * Nothing outside UseSandbox (web requests with a valid sandbox cookie)
  * activates a sandbox: console commands, the scheduler and the Stripe webhook
@@ -99,6 +101,7 @@ class Sandbox
             'cache.stores.database.lock_connection' => config('cache.stores.database.lock_connection'),
             'services.stripe' => config('services.stripe'),
             'claude' => app(ClaudeClient::class),
+            'geocoder' => app(Geocoder::class),
             'limiter' => app(RateLimiter::class),
         ];
 
@@ -124,6 +127,7 @@ class Sandbox
         $this->useLimiter(self::limiterOn($this->saved['limiter'], Cache::store(self::CACHE_STORE)));
         Auth::shouldUse(self::GUARD);
         app()->instance(ClaudeClient::class, new CappedClaudeClient($this->saved['claude'], new SandboxAiBudget($this->files)));
+        app()->instance(Geocoder::class, new CappedGeocoder($this->saved['geocoder'], new SandboxAddressBudget($this->files)));
 
         $this->id = $id;
     }
@@ -168,6 +172,7 @@ class Sandbox
         Auth::shouldUse($this->saved['auth.defaults.guard']);
         $this->useLimiter($this->saved['limiter']);
         app()->instance(ClaudeClient::class, $this->saved['claude']);
+        app()->instance(Geocoder::class, $this->saved['geocoder']);
 
         $this->id = null;
         $this->saved = [];

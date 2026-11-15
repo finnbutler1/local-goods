@@ -25,8 +25,9 @@ Press **Try it yourself** on the home page or at the top of your judge Home (it 
 4. See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated).
 5. See the district's impact as the BID admin.
 6. Try a suspicious payment, and 7. decide it in Fraud Review as the Local Goods reviewer.
+8. Optional: a new shop joins. As the BID admin, open Merchant Applications, press **Apply as a new shop** and make one up at a real address inside the district (like 1700 K St NW). Then run the eligibility check (a DC address lookup and the AI's suggestion; the AI only suggests) and approve it. In the sandbox it goes live at once: on the live site the shop would create its own login and finish Stripe onboarding. Pay there as Jordan, then press Merchant (or pick it under Change merchant) to see the sale. An address outside the district can't be approved; decline it. Nothing is emailed and no contact email is asked for.
 
-The fraud check is the real one (up to 10 AI checks per sandbox; after that payments are held for a person). Nothing you do there touches the live demo or the live site's Stripe account, and your copy is deleted after 24 hours or when you press Exit. Your read-only login is unchanged.
+The fraud check is the real one (up to 10 AI checks per sandbox, shared with the eligibility check in step 8; after that payments are held for a person, and the eligibility suggestion says "undetermined"). Step 8 looks up at most 5 addresses per sandbox. Nothing you do there touches the live demo or the live site's Stripe account, and your copy is deleted after 24 hours or when you press Exit. Your read-only login is unchanged.
 
 ## Where the evidence lives
 

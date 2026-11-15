@@ -31,6 +31,13 @@ return [
     'ai_calls_per_sandbox' => 10,
     'ai_calls_per_day' => 100,
 
+    // Lookups in DC's Master Address Repository for a sandbox merchant
+    // application (the eligibility check). Past either cap DC is not asked and
+    // the check says the address couldn't be checked; the BID admin can decline.
+    // (The check's AI suggestion counts toward the AI caps above.)
+    'address_lookups_per_sandbox' => 5,
+    'address_lookups_per_day' => 50,
+
     // Real Stripe Checkout for the employer's Buy credits, inside a sandbox only,
     // on a SEPARATE Stripe test account (ADR 0045 addendum). Off unless
     // SANDBOX_STRIPE_ENABLED is exactly "true" and SANDBOX_STRIPE_SECRET is an

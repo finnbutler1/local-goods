@@ -5,9 +5,11 @@ namespace App\Http\Controllers\BidAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\MerchantApplication;
 use App\Services\Districts\MerchantApplications;
+use App\Services\Sandbox\Sandbox;
 use App\Support\Districts\DistrictMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -61,6 +63,13 @@ class ApplicationController extends Controller
     {
         Gate::authorize('decide-merchant-applications');
         $reason = $request->validate(['reason' => ['required', 'string', 'min:5', 'max:1000']])['reason'];
+
+        // Inside a sandbox the shop goes live at once (ADR 0045 addendum); on the live site nothing else happens here.
+        if (Sandbox::active()) {
+            return $this->attempt($application, fn () => DB::transaction(fn () => $applications->goLiveInSandbox(
+                $applications->approve($application, $request->user(), $reason), $request->user())),
+                $application->business_name.' approved for the district and live in this sandbox. '.MerchantApplications::SANDBOX_STEPS_SIMULATED);
+        }
 
         return $this->attempt($application, fn () => $applications->approve($application, $request->user(), $reason),
             $application->business_name.' approved for the district. They can now sign in from their status link and set up Stripe payouts.');
