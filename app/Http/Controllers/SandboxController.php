@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Merchant\PayCodeController;
 use App\Models\User;
 use App\Services\Sandbox\Sandbox;
 use App\Services\Sandbox\SandboxAiBudget;
 use App\Services\Sandbox\SandboxFiles;
+use App\Services\Sandbox\SandboxMerchant;
 use App\Services\Sandbox\SandboxRoutes;
 use App\Services\Sandbox\SandboxUserProvider;
 use Illuminate\Cache\RateLimiter;
@@ -101,17 +103,35 @@ class SandboxController extends Controller
     }
 
     /** The role bar: one click, no password. Only inside a sandbox (route middleware sandbox:active). */
-    public function role(Request $request): RedirectResponse
+    public function role(Request $request, SandboxMerchant $merchants): RedirectResponse
     {
         $data = $request->validate([
             'role' => ['required', Rule::in(array_keys(SandboxRoutes::ROLES))],
             // A checklist step: opens that step's page, which must belong to the same role.
             'step' => ['nullable', 'integer', Rule::in(array_keys(SandboxRoutes::CHECKLIST))],
+            // Which merchant to be (the role bar's list, "See this as the merchant"); merchant only.
+            'merchant_id' => ['nullable', 'integer', 'prohibited_unless:role,merchant'],
         ]);
-        $this->signInAs($data['role']);
-        $request->session()->regenerate();
+        // The Merchant role follows where the money went (ADR 0045 addendum). Checked before
+        // anyone is signed in, so a forged id changes nothing.
+        $merchant = null;
+        if ($data['role'] === 'merchant') {
+            $merchant = isset($data['merchant_id'])
+                ? $merchants->pickable()->firstWhere('id', (int) $data['merchant_id'])
+                : $merchants->default();
+            abort_if($merchant === null, 404);
+        }
+        $user = $this->signInAs($data['role']);
 
         [$label, , $landing] = SandboxRoutes::ROLES[$data['role']];
+        if ($merchant !== null) {
+            $merchants->linkTo($merchant, $user);
+            // A pay code looked up as another merchant isn't carried over.
+            $request->session()->forget(PayCodeController::SESSION_KEY);
+            $label .= " ({$merchant->name})";
+        }
+        $request->session()->regenerate();
+
         $step = isset($data['step']) ? SandboxRoutes::CHECKLIST[(int) $data['step']] : null;
         if ($step !== null && $step[2] === $data['role']) {
             $landing = $step[3];
@@ -134,10 +154,12 @@ class SandboxController extends Controller
         return redirect()->route('home');
     }
 
-    private function signInAs(string $key): void
+    private function signInAs(string $key): User
     {
         $user = User::where('email', SandboxRoutes::email($key))->first();
         abort_unless(SandboxUserProvider::isSandboxUser($user), 404);
         Auth::guard(Sandbox::GUARD)->login($user);
+
+        return $user;
     }
 }

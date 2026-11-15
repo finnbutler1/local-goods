@@ -72,6 +72,15 @@
                     @endif
                 </p>
                 <x-button :href="route('employee.wallet')" variant="secondary" class="mt-5 bg-surface">Done</x-button>
+                @if (\App\Services\Sandbox\Sandbox::active())
+                    {{-- Sandbox only (ADR 0045 addendum): see this sale from the merchant's side. --}}
+                    <form method="POST" action="{{ route('sandbox.role') }}" data-busy="Switching…" data-see-as-merchant class="mt-3">
+                        @csrf
+                        <input type="hidden" name="role" value="merchant">
+                        <input type="hidden" name="merchant_id" value="{{ $result->merchant_id }}">
+                        <x-button type="submit" variant="secondary" class="bg-surface">See this as the merchant<span class="sr-only"> ({{ $result->merchant->name }})</span></x-button>
+                    </form>
+                @endif
             </section>
         @endif
     </div>

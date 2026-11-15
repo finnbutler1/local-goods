@@ -3,6 +3,18 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: In a sandbox, the Merchant role follows where the money went (switched off)
+
+- **Merchant opens where you last paid.** In a "Try it yourself" sandbox, the
+  Merchant button opens the merchant where the sandbox's employee most
+  recently paid (Farragut Grind until they've paid somewhere).
+- **Pick any merchant** from a small list beside the Merchant button.
+- **"See this as the merchant"** on the payment confirmation switches straight
+  to that merchant, where the sale shows. Each merchant sees only its own sales.
+- Sandbox only: it moves the sandbox's own merchant login between merchants in
+  the sandbox's file, and never touches the live site's merchant logins. No
+  migration ([ADR 0045 addendum](docs/adr/0045-try-it-yourself-sandboxes.md)).
+
 ## 2026-11-14: The sandbox's Buy credits uses the same card form as the live site (switched off)
 
 - **Embedded Checkout in a sandbox.** With the sandbox Stripe account's

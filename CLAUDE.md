@@ -32,6 +32,12 @@ building, for whom, and the rules for working in this repo.
   Employer refunds inside a sandbox are simulated (`CorrectionDecisions`).
   **Never add a webhook in the sandbox Stripe account.**
 - Tests: `SandboxStripeCheckoutTest`, `PublicClaimsSandboxStripeOnTest`.
+- Merchant role follows the money (2026-11-14, ADR 0045 addendum): the
+  Merchant button opens where the sandbox employee last paid since the
+  sandbox started (else Farragut Grind); picker beside it; "See this as the
+  merchant" on the wallet confirmation. `SandboxMerchant::linkTo` re-links the
+  one sandbox merchant login (`merchants.user_id`, sandbox file only); same
+  `sandbox.role` POST with `merchant_id`. Test: `SandboxMerchantSwitchTest`.
 
 **"Try it yourself" sandboxes — code done (2026-11-14, ADR 0045), not
 deployed; switched off.** No migration. Fraud prompt, signals, AI input, eval

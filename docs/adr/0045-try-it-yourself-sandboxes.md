@@ -242,3 +242,38 @@ it looks the same. Everything above is unchanged unless said here.
 - **CSP** unchanged: the policy already allows the live embedded form's
   origins, and the sandbox page gets the same header (tested).
 - Tests: `SandboxStripeEmbeddedCheckoutTest`, `PublicClaimsSandboxStripeEmbeddedOnTest`.
+
+## Addendum (2026-11-14): the Merchant role follows where the money went
+
+The sandbox had one merchant login, always linked to Farragut Grind, so a
+payment at any other merchant could not be seen from the merchant's side.
+
+- **Merchant button.** Opens the merchant where this sandbox's employee most
+  recently paid *since the sandbox started* (`SandboxFiles::createdAt`), else
+  Farragut Grind. The cut-off matters: Jordan's seeded history ends at another
+  merchant, which would otherwise open before the visitor has paid anywhere.
+  Checklist step 4 goes the same way.
+- **Picker.** Beside the Merchant button, a list of the merchants the sandbox
+  employee can pay at (`Merchant::redeemableFor`) and a Switch button; the
+  list has a screen-reader label ("Choose which merchant to be") and works
+  without JS.
+- **"See this as the merchant"** on the wallet's confirmation (both Order to
+  go and a confirmed pay code), sandbox only, switches to that sale's merchant.
+- **How.** No new users: `SandboxMerchant::linkTo` moves `merchants.user_id`
+  of the one sandbox merchant login from one merchant row to another, in one
+  transaction on the sandbox connection. The merchant pages already show only
+  `$user->merchant`'s sales, so each merchant sees only its own. It refuses
+  unless a sandbox is active and is the default connection, the user is the
+  sandbox's merchant login (`SandboxUserProvider::isSandboxUser`, role
+  Merchant) and the merchant is on the sandbox connection and pickable (no
+  login, or the sandbox merchant's); a merchant run by any other login is
+  never offered or re-linked. The live site's merchant logins and links are
+  never read or written.
+- **Same switch.** The existing POST `sandbox.role` (CSRF, `sandbox:active`,
+  `throttle:60,1,sandbox.role`) takes an optional `merchant_id` (integer,
+  only with `role=merchant`). The merchant is found before anyone is signed in,
+  so an unknown or someone else's id is a 404 and changes nothing. The three
+  locks stay: `sandbox:active`, `Rule::in(SandboxRoutes::ROLES)` and the
+  sandbox-user check in `signInAs`. A pay code looked up as the previous
+  merchant is dropped from the session.
+- Test: `SandboxMerchantSwitchTest` (watches the live connection for writes).
