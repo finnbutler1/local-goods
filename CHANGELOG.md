@@ -3,6 +3,26 @@
 What has shipped in Local Goods so far, newest first. Dates come from the
 commit history.
 
+## 2026-11-14: Payroll report, Taxes and a note for banks on the Community Reinvestment Act
+
+- **Payroll report.** On the employer dashboard, pick two dates and download a
+  CSV of the credits given to each employee (initials and staff number, date
+  given in DC time, occasion, amount), with a total for each employee and a
+  grand total. Only credits actually given count, never credits bought and not
+  yet given; the totals match the ledger. Reads only, rate-limited; judges can
+  download it, and in a "Try it yourself" sandbox it reads only that sandbox.
+- **Taxes, for employers** (employer dashboard and /business-model): credits
+  given are generally taxable wages (IRS Publication 15-B), buying them is
+  generally a business expense, use the payroll report, and Local Goods
+  doesn't give tax advice. No rates or figures.
+- **For banks: the Community Reinvestment Act** (folded on the employer
+  dashboard, and on /business-model): what the CRA encourages, what may and
+  generally wouldn't support a bank's community development goals, that the
+  regulator decides and the rules are being revised (Federal Register notice),
+  and "Check with your CRA officer." It never says Local Goods qualifies.
+- No migration; no money, fee, ledger, Stripe, fraud prompt, AI input, eval
+  data or lock change.
+
 ## 2026-11-14: In a sandbox, a new shop can join (switched off); judges see Merchant Applications
 
 - **Optional step 8, "A new shop joins".** In a "Try it yourself" sandbox, the

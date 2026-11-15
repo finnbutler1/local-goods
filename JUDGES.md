@@ -11,7 +11,7 @@
 | 3. Fraud Review | Each AI score with its anonymous signals, and the separate decision a person made. |
 | 4. AI Eval | Results on cases the AI never saw, with every disagreement. |
 | 5. Merchant Eligibility | The AI only suggests; a BID admin decides. No web search. |
-| 6. Employer dashboard | What the HR buyer sees, with how each number is counted. |
+| 6. Employer dashboard | What the HR buyer sees, with how each number is counted. Under **Payroll report**, pick two dates and download the CSV of credits given to each employee (initials and staff number only); Taxes and, folded, "For banks: the Community Reinvestment Act" sit below it. |
 | 7. Merchant dashboard | Only cleared sales are owed; held ones wait for review. |
 | 8. Corrections | Refunds need a reason, and the books still match. |
 
@@ -20,7 +20,7 @@
 Press **Try it yourself** on the home page or at the top of your judge Home (it appears only while switched on). You get a private copy of the demo where money really moves, a role bar to switch between Employer (HR), Employee, Merchant, BID admin and Local Goods reviewer with one click, no passwords, and a "Try this" checklist. A "For judges" box in the sandbox lists what only the live demo has, with **Exit to the live demo**:
 
 1. Buy credits as the employer. Simulated (no card is charged and Stripe is not contacted), unless the sandbox says payments use a separate Stripe test account: then you pay on Stripe's card form (or Stripe's own page). Use card 4242 4242 4242 4242 with any future expiry date (e.g. 12/34), any 3-digit CVC, any ZIP code and any name. No real money, and nothing reaches the live demo; the email is filled in for you.
-2. As Employer (HR), in Give credits, choose J.R. · #001 (that's Jordan Rivera, the employee you'll pay; employers see initials only) and give some. Credits come from the employer, not the employee.
+2. As Employer (HR), in Give credits, choose J.R. · #001 (that's Jordan Rivera, the employee you'll pay; employers see initials only) and give some. Credits come from the employer, not the employee. The **Payroll report** below it downloads what you gave, from your sandbox only.
 3. Pay at any participating merchant (Farragut Grind is a good first stop) as the employee, then press Merchant, or "See this as the merchant", to see the sale from the shop's side.
 4. See what the merchant is owed (payouts are grouped and paid later; in the sandbox they stay simulated).
 5. See the district's impact as the BID admin.

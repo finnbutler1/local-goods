@@ -29,6 +29,7 @@ use App\Http\Controllers\Districts\WhoDoesWhatController;
 use App\Http\Controllers\Employee\EmployeeWalletController;
 use App\Http\Controllers\Employee\PayCodeController;
 use App\Http\Controllers\Employer\EmployerDashboardController;
+use App\Http\Controllers\Employer\PayrollReportController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FraudEvalController;
 use App\Http\Controllers\JudgeController;
@@ -204,6 +205,8 @@ Route::middleware('auth')->group(function () {
         // Back from Stripe's hosted Checkout inside a sandbox (ADR 0045 addendum); a 404 anywhere else.
         Route::get('/purchases/{purchase}/sandbox-return', [EmployerDashboardController::class, 'sandboxReturn'])->middleware('throttle:30,1,employer.purchases.sandbox-return')->name('purchases.sandbox-return');
         Route::post('/allocations', [EmployerDashboardController::class, 'allocate'])->name('allocations.store');
+        // Payroll report: credits given to each employee in a date range, as a CSV. Reads only.
+        Route::get('/payroll.csv', PayrollReportController::class)->middleware('throttle:30,1,employer.payroll.csv')->name('payroll.csv');
         // Refund of unspent credits (ADR 0028): a request only; a platform admin decides.
         Route::post('/corrections', [CorrectionRequestController::class, 'employerCredits'])->middleware('throttle:5,1,employer.correction.store')->name('correction.store');
     });

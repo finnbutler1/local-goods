@@ -46,7 +46,13 @@ class Employee extends Model
     /** Initials plus a staff number, e.g. "H.M. · #014", so two people with the same initials can be told apart. */
     public function publicLabel(): string
     {
-        return $this->initials().' · #'.str_pad((string) $this->id, 3, '0', STR_PAD_LEFT);
+        return $this->initials().' · '.$this->publicNumber();
+    }
+
+    /** The staff number on its own, e.g. "#014" (the payroll report's Employee ID). */
+    public function publicNumber(): string
+    {
+        return '#'.str_pad((string) $this->id, 3, '0', STR_PAD_LEFT);
     }
 
     /**

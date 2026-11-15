@@ -170,6 +170,20 @@ below is worked out from stated assumptions, listed with sources in
   Depending on state law, unspent balances may belong to the employer, the
   employee or the state (unclaimed property), so Local Goods doesn't rely on
   them. Local Goods charges no dormancy fees.
+- **Taxes, for employers.** Credits given to employees are generally treated as
+  taxable wages (cash equivalents aren't de minimis benefits that can be left
+  out of wages:
+  [IRS Publication 15-B](https://www.irs.gov/publications/p15b)), and buying
+  credits is generally a business expense; the employer dashboard's **Payroll
+  report** (a CSV of credits given to each employee in a date range) helps add
+  them to payroll. Local Goods doesn't give tax advice; check with your payroll
+  provider or tax advisor.
+- **For banks: the Community Reinvestment Act.** Funding a Local Goods program
+  in a qualifying low- or moderate-income area may support a bank's community
+  development goals; buying credits for its own staff generally wouldn't on its
+  own. The bank's regulator decides, and the rules are being revised
+  ([Federal Register notice](https://www.federalregister.gov/documents/2026/08/12/2026-16454/community-reinvestment-act-regulations)).
+  Check with your CRA officer.
 - **One district alone does not break even in the base case.** The model breaks
   even DC-wide around month 54.
 

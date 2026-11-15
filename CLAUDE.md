@@ -5,6 +5,25 @@ building, for whom, and the rules for working in this repo.
 
 ## Current milestone
 
+**Payroll report, Taxes and a CRA note for banks — code done (2026-11-14),
+not deployed.** Reads and wording only: no migration, money, fee, ledger,
+Stripe, fraud prompt, AI input, eval data or lock change.
+
+- `employer.payroll.csv` (`Employer\PayrollReportController`, GET,
+  `throttle:30,1`): credit allocations only (one `allowance` entry each) for
+  the dashboard's employer, `from`/`to` whole days in DC time (default this DC
+  month), rows per employee (`initials()`, `publicNumber()`), a total per
+  employee and a grand total; bad dates go back to `#payroll` (error bag
+  `payroll`). Rows are built before streaming, so a sandbox reads its own
+  file. Judges can download it; in `SandboxRoutes::ALLOWED`.
+- `partials/employer-taxes` (employer dashboard after the report, and
+  /business-model) and `partials/cra-for-banks` (employer dashboard in a
+  collapsed `<details data-cra-details>`, and /business-model). General
+  information only: no rates or figures; never say Local Goods qualifies or
+  describe the district's income level. The old `data-tax-note` line is
+  unchanged. README Business model has one bullet on each.
+- Tests: `PayrollReportTest`, `EmployerTaxesAndCraTest`.
+
 **Sandbox: a new shop joins (optional step 8) — code done (2026-11-14, ADR
 0045 addendum), not deployed; switched off with the sandbox.** No migration.
 Fraud and eligibility prompts (`8d5e1e70`, `458e8c2d`), AI inputs, eval data,

@@ -28,6 +28,7 @@ final class SandboxRoutes
         'employer.purchases.sandbox-return',
         'employer.allocations.store',
         'employer.correction.store',
+        'employer.payroll.csv',
         // Employee
         'employee.wallet',
         'employee.demo-tools',

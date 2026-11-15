@@ -664,6 +664,43 @@
         @endif
     </section>
 
+    {{-- Payroll report (a CSV, reads only), then Taxes and, folded, the CRA note for banks. --}}
+    @php
+        $payrollErrors = $errors->getBag(\App\Http\Controllers\Employer\PayrollReportController::ERRORS);
+        $dcToday = now()->setTimezone(config('fraud.timezone'));
+    @endphp
+    <section id="payroll" aria-labelledby="payroll-heading" class="scroll-mt-24 space-y-8">
+        <x-card>
+            <h2 id="payroll-heading" class="stop-subtitle text-2xl">Payroll report</h2>
+            <p class="mt-1.5 max-w-3xl text-muted">
+                A spreadsheet (CSV) of the credits given to each employee between two dates, both included, in DC time: initials, staff number,
+                date given and amount, with a total for each employee and a grand total. Only credits given to employees count, not credits
+                bought and not yet given.
+            </p>
+            <form method="GET" action="{{ route('employer.payroll.csv') }}" class="mt-5 flex flex-wrap items-end gap-4">
+                <x-field name="from" id="payroll-from" label="First day" :error="$payrollErrors->first('from') ?: false">
+                    <input id="payroll-from" name="from" type="date" required value="{{ old('from', $dcToday->copy()->startOfMonth()->format('Y-m-d')) }}"
+                           class="{{ $input }} border-muted" @if ($payrollErrors->has('from')) aria-invalid="true" aria-describedby="payroll-from-error" @endif>
+                </x-field>
+                <x-field name="to" id="payroll-to" label="Last day" :error="$payrollErrors->first('to') ?: false">
+                    <input id="payroll-to" name="to" type="date" required value="{{ old('to', $dcToday->copy()->endOfMonth()->format('Y-m-d')) }}"
+                           class="{{ $input }} border-muted" @if ($payrollErrors->has('to')) aria-invalid="true" aria-describedby="payroll-to-error" @endif>
+                </x-field>
+                <x-button type="submit" variant="secondary">Download the payroll report (CSV)</x-button>
+            </form>
+        </x-card>
+
+        <section aria-labelledby="taxes-heading" class="rule-top">
+            <h3 id="taxes-heading" class="text-xl font-bold tracking-tight">Taxes</h3>
+            @include('partials.employer-taxes', ['reportHref' => '#payroll'])
+        </section>
+
+        <details class="rule-top text-sm" data-cra-details>
+            <summary class="cursor-pointer font-semibold text-primary">For banks: the Community Reinvestment Act</summary>
+            @include('partials.cra-for-banks')
+        </details>
+    </section>
+
     {{-- Program setup --}}
     <section id="program" aria-labelledby="program-heading" class="scroll-mt-24">
         <x-card>

@@ -321,6 +321,17 @@
             </div>
         </div>
     </section>
+
+    {{-- General information for the two questions buyers ask; not tax or regulatory advice. --}}
+    <section id="taxes" aria-labelledby="taxes-heading" class="stop scroll-mt-6">
+        <x-station-sign heading-id="taxes-heading">Taxes, for employers</x-station-sign>
+        @include('partials.employer-taxes')
+    </section>
+
+    <section id="cra" aria-labelledby="cra-heading" class="stop scroll-mt-6">
+        <x-station-sign heading-id="cra-heading">For banks: the Community Reinvestment Act</x-station-sign>
+        @include('partials.cra-for-banks')
+    </section>
     </div>
 
     <section aria-labelledby="more-heading" class="rule-heavy flex flex-wrap items-center gap-4 pt-6">
