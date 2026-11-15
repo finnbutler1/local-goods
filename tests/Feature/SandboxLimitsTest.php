@@ -51,6 +51,9 @@ class SandboxLimitsTest extends TestCase
     public function test_new_sandboxes_are_limited_per_ip_per_hour_and_one_browser_keeps_one(): void
     {
         config(['sandbox.creations_per_hour' => 3]);
+        // Noon in DC on the template's day, so "an hour later" below never crosses into a
+        // new DC day (which has no template yet) when the suite runs between 11pm and midnight.
+        Carbon::setTestNow(Carbon::now('America/New_York')->setTime(12, 0));
 
         $this->startSandbox();
         $this->startSandbox(); // Start over: replaces the first
