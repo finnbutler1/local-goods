@@ -16,7 +16,7 @@ commit history.
 - **Clearer checklist.** The pay step says any participating merchant and how to
   see the sale as the merchant. Giving credits is described as an Employer (HR)
   step that links straight to the Give credits form; the employer page marks
-  Jordan "You'll play this employee" and lists him first, and his wallet says
+  Jordan "The employee you'll pay" and lists him first, and his wallet says
   where credits come from when the balance is under $5.
 - **Tidier role bar.** Just the five role buttons; the merchant list moved to
   "Viewing as <merchant> · Change merchant" in the merchant page header. The

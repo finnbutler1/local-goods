@@ -151,7 +151,7 @@ class SandboxOneStartingPointTest extends TestCase
             ->assertDontSee('Spend credits at Farragut Grind:')
             ->assertSee('Spend credits at any participating merchant (Farragut Grind is a good first stop)', false)
             ->assertSee('See this as the merchant', false)
-            ->assertSee('As Employer (HR): in Give credits, choose Jordan Rivera', false);
+            ->assertSee('As Employer (HR): in Give credits, choose J.R. · #001 (that&#039;s Jordan Rivera, the employee you&#039;ll pay), enter an amount, and press Give. Employers see initials only, for privacy.', false);
         $this->assertSame(SandboxRoutes::GIVE_STEP, SandboxRoutes::CHECKLIST[1][1]);
         $this->assertStringContainsString('name="step" value="1"', $page->getContent());
     }
@@ -173,15 +173,15 @@ class SandboxOneStartingPointTest extends TestCase
         $this->setUpSandboxes();
         $this->startSandbox();
 
-        $html = $this->sandboxGet(route('employer.dashboard'))->assertOk()->assertSee("You'll play this employee", false)->getContent();
+        $html = $this->sandboxGet(route('employer.dashboard'))->assertOk()->assertSee("The employee you'll pay", false)->assertDontSee('Jordan Rivera', false)->getContent();
         $playerId = $this->insideSandbox(fn () => Employee::whereHas('user', fn ($q) => $q->where('email', SandboxRoutes::email('employee')))->value('id'));
-        $this->assertMatchesRegularExpression('/<option value="">Choose an employee<\/option>\s*<option value="'.$playerId.'"[^>]*>[^<]*You\'ll play this employee/s', $html);
+        $this->assertMatchesRegularExpression('/<option value="">Choose an employee<\/option>\s*<option value="'.$playerId.'"[^>]*>\s*J\.R\. · #001\s*·\s*The employee you\'ll pay\s*·\s*balance \$120\.00/s', $html);
     }
 
     public function test_the_live_employer_page_has_no_play_label(): void
     {
         $this->signIn(Role::EmployerAdmin);
-        $this->get(route('employer.dashboard'))->assertOk()->assertDontSee("You'll play this employee", false);
+        $this->get(route('employer.dashboard'))->assertOk()->assertDontSee("The employee you'll pay", false);
     }
 
     public function test_jordans_wallet_says_where_credits_come_from_only_when_low(): void

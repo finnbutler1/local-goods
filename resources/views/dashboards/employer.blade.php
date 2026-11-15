@@ -569,7 +569,7 @@
                                         <option value="">Choose an employee</option>
                                         @foreach ($employees as $employee)
                                             <option value="{{ $employee->id }}" @selected((string) old('employee_id') === (string) $employee->id)>
-                                                {{ $employee->publicLabel() }}@if (($sandboxPlayerId ?? null) === $employee->id) · You'll play this employee @endif · balance {{ Money::format((int) $employee->balance_cents) }}
+                                                {{ $employee->publicLabel() }}@if (($sandboxPlayerId ?? null) === $employee->id) · The employee you'll pay @endif · balance {{ Money::format((int) $employee->balance_cents) }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -594,7 +594,7 @@
                                                     <label class="flex items-center gap-2 text-sm">
                                                         <input type="checkbox" name="employee_ids[]" value="{{ $employee->id }}" class="size-4 accent-primary"
                                                                @checked(in_array((string) $employee->id, array_map('strval', old('employee_ids', [])), true))>
-                                                        <span class="tabular">{{ $employee->publicLabel() }}@if (($sandboxPlayerId ?? null) === $employee->id) · You'll play this employee @endif</span>
+                                                        <span class="tabular">{{ $employee->publicLabel() }}@if (($sandboxPlayerId ?? null) === $employee->id) · The employee you'll pay @endif</span>
                                                     </label>
                                                 </li>
                                             @endforeach

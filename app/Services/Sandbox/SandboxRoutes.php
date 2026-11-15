@@ -69,7 +69,7 @@ final class SandboxRoutes
     ];
 
     /** Step 2: credits are given from the employer role, not the employee's. */
-    public const GIVE_STEP = 'As Employer (HR): in Give credits, choose Jordan Rivera (that\'s the employee you\'ll play), enter an amount, and press Give.';
+    public const GIVE_STEP = 'As Employer (HR): in Give credits, choose J.R. · #001 (that\'s Jordan Rivera, the employee you\'ll pay), enter an amount, and press Give. Employers see initials only, for privacy.';
 
     public const PAY_STEP = 'Spend credits at any participating merchant (Farragut Grind is a good first stop): pick items from its menu, or get a pay code to pay in person. Then press Merchant, or "See this as the merchant", to see the sale from the shop\'s side.';
 
