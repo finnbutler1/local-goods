@@ -9,7 +9,7 @@ Local Goods lets employers in a Business Improvement District give staff credits
 - **Two AI functions, with measured results.** Redemption Fraud Detection caught 17 of 26 suspicious redemptions on cases locked before the AI saw them, and Merchant Eligibility Matching only suggests: a person decides ([how the AI was measured](#how-the-ai-was-measured), [/eval](https://uselocalgoods.com/eval)).
 - **A money safety case.** Employer money is held apart from Local Goods' own, and a check after every money step confirms the books cover every promise ([money safety case](docs/money-safety-case.md), [Where the money is](#where-the-money-is)).
 
-**Video (2–3 min):** coming Nov 20.
+**Video:** [Watch on YouTube](https://www.youtube.com/watch?v=NmJUAjeaWLI)
 
 ## Local Goods in one minute
 
